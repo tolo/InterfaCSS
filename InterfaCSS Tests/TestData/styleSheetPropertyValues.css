@@ -1,0 +1,80 @@
+
+.simple {
+    alpha: 1;
+    autoresizingMask: width height left right top bottom;
+    clipsToBounds: YES;
+    contentMode: bottomRight;
+    text: "Text";
+    title: Title;
+    prompt: 'Prompt';
+    shadowOffset: offset(1, 2);
+    contentSize: size(3, 4);
+    contentInset: insets(10, 20, 30, 40);
+    center: point(5, 6);
+    frame: rect(1,2,3,4);
+    bounds: size(10,20);
+    color: rgb(128, 128, 128);
+    tintColor: #ffffff;
+    titleColor(selectedHighlighted): blue;
+    textColor: rgba(64, 64, 64, 0.5);
+    shadowColor: red;
+    transform: rotate(10) scale(20,30) translate(40,50);
+}
+
+
+.point1 {
+    center: parent(50, -50);
+}
+
+.point2 {
+    center: window(50, -50);
+}
+
+
+.rect1 { // Parent insets
+    frame: parent(10, 10); // dx/dy inset
+    bounds: parent(10, 20, 30, 40); // top, left, bottom, right inset
+}
+
+.rect2 { // Window insets
+    frame: window(10, 10); // dx/dy inset
+    bounds: window(10, 20, 30, 40); // top, left, bottom, right inset
+}
+
+.rect3 { // Parent relative size
+    frame: size(10%, 20%).left(10).top(20);
+    bounds: size(30%, 40%).right(30).bottom(40);
+}
+
+.rect4 { // Automatic sizes with parent relative insets/positioning
+    frame: size(auto, auto).left(10%).top(20%);
+    bounds: left(50%).right(5);
+}
+
+
+@font1: HelveticaNeue-Medium 14;
+.font1 {
+    font: @font1;
+}
+.font2 {
+    font: bigger(@font1, 1);
+}
+.font3 {
+    font: smaller(@font1, 1);
+}
+.font4 {
+    font: fontWithSize(@font1, 10);
+}
+
+
+.image1 {
+    image: image.png;
+    backgroundImage: "image.png";
+    shadowImage: 'image.png';
+    progressImage: image(image.png);
+    trackImage: image("image.png");
+    highlightedImage: image('image.png');
+    onImage: image(image.png, 1, 2);
+    offImage: image(image.png, 1, 2, 3, 4);
+}
+

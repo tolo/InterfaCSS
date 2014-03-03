@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view class="prototypeExampleMainView">
+    <label property="mainTitleLabel" class="mainTitleLabel"/>
+    <label property="mainSubtitleLabel" class="mainSubtitleLabel"/>
+    
+    <tableview property="tableView" class="prototypeExampleTable">
+        <PrototypeExampleCell prototype="prototypeExampleCell" class="prototypeExampleCell">
+            <label property="label1" class="prototypeExampleCellLabel1"/>
+            <label property="label2" class="prototypeExampleCellLabel2"/>
+            <label property="label3" class="prototypeExampleCellLabel3"/>
+        </PrototypeExampleCell>
+    </tableview>
+</view>

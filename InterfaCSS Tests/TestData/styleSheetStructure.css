@@ -1,0 +1,38 @@
+/* Variables: */
+@variable: 1;
+
+// Type selector
+uilabel {
+    alpha: @variable;
+}
+
+// Type+class selector
+uilabel.class1 {
+    alpha: 1;
+}
+
+// Class selector
+.class1 {
+    alpha: 1;
+}
+
+// Descendant selector chain
+type .class1 .class2 {
+    alpha: 1;
+}
+
+// Multiple selector (chains)
+uilabel, uilabel.class1, .class1, type .class1 .class2 {
+    alpha: 1;
+}
+
+// Nested declarations
+uiview {
+    alpha: 1;
+    .class1 {
+        alpha: 1;
+        .class2 {
+            alpha: 1;
+        }
+    }
+}

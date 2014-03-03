@@ -1,0 +1,150 @@
+
+/* Variables: */
+@stdFont1: HelveticaNeue-Medium 14;
+@stdFont2: HelveticaNeue-CondensedBold 14;
+@stdFont3: HelveticaNeue-CondensedBlack 18;
+@stdColor1: rgb(0, 0, 255);
+
+
+/* Common stuff */
+
+.tabBarStyle1 UITabBarItem {
+    font: HelveticaNeue-CondensedBlack 24;
+    textColor: lightGray;
+    textColor(selected): magenta;
+    titlePositionAdjustment: offset(0, -10);
+}
+
+UILabel {
+    minimumScaleFactor: 0.75;
+    adjustsFontSizeToFitWidth: YES;
+    autoresizingMask: none;
+    textAlignment: left;
+}
+
+.mainTitleLabel {
+    frame: rect(15, 30, 160, 30);
+    textColor: rgb(255, 255, 255);
+    font: @stdFont3;
+    alpha: 1;
+    backgroundColor: clear;
+    cornerRadius: 5;
+}
+
+.landscape .mainTitleLabel { // Landscape orientation
+    alpha: 0.5;
+    textAlignment: center;
+}
+
+.mainSubtitleLabel {
+    frame: rect(15, 60, 90, 20);
+    textColor: rgb(255, 255, 255);
+    font: @stdFont1;
+    textAlignment: center;
+    anchorPoint: point(0, 0);
+    transform: rotate(5);
+}
+
+.landscape .mainSubtitleLabel { // Landscape orientation
+    anchorPoint: point(0.5, 0.5);
+    transform: rotate(180);
+}
+
+
+/* SimpleSampleViewController */
+
+
+.simpleSampleMainView { // Root view of SimpleSampleViewController
+    autoresizingMask: width height;
+    backgroundColor: gradient(red, yellow);
+}
+
+.simpleSampleContentView {
+    bounds: size(200, 230);
+    center: parent(0, 0);
+    backgroundColor: desaturate(@stdColor1, 30%);
+    layer.cornerRadius: 10;
+    clipsToBounds: YES;
+}
+
+.simpleSampleContentTitleLabel {
+    frame: rect(20, 10, 160, 30);
+    textColor: rgb(255, 255, 255);
+    font: smaller(@stdFont1, 2);
+}
+
+.simpleSampleContentSubtitleLabel {
+    frame: rect(20, 40, 160, 20);
+    textColor: rgb(196, 196, 196);
+    font: smaller(@stdFont1, 4);
+}
+
+.simpleSampleButtonContainer {
+    frame: rect(10, 80, 180, 140);
+    backgroundColor: #88cc44;
+}
+
+.simpleSampleMainButton {
+    bounds: size(160, 40);
+    center: parent(0, 0);
+    cornerRadius: 6;
+    clipsToBounds: YES;
+    titleLabel.font: @stdFont2;
+    titleColor(highlighted): magenta;
+    backgroundImage: @stdColor1;
+    title: MainButton;
+    transform: identity;
+}
+
+button.touched {
+    transform: rotate(180);
+}
+
+
+
+/* PrototypeExampleViewController */
+
+
+.prototypeExampleMainView {
+    autoresizingMask: width height;
+    backgroundColor: #f0f0f0;
+
+    .mainTitleLabel, .mainSubtitleLabel {
+        textColor: magenta;
+    }
+    
+    .prototypeExampleTable {
+        frame: parent(100, 10, 10, 10);
+        clipsToBounds: YES;
+        cornerRadius: 6;
+        borderColor: darkGray;
+        borderWidth: 1;
+        
+        .prototypeExampleCellLabel1, .prototypeExampleCellLabel2, .prototypeExampleCellLabel3 {
+            textColor: #4f4f4f;
+        }
+        
+        .prototypeExampleCellLabel1 {
+            frame: rect(5, 2, 120, 21);
+            font: HelveticaNeue-CondensedBlack 16;
+        }
+
+        .prototypeExampleCellLabel2 {
+            frame: rect(5, 21, 120, 21);
+            font: HelveticaNeue-CondensedBold 12;
+        }
+
+        .prototypeExampleCellLabel3 {
+            frame: size(auto, auto).left(50%).right(3%);
+            font: HelveticaNeue-UltraLight 36;
+            adjustsFontSizeToFitWidth: YES;
+            minimumScaleFactor: 0.5;
+            textAlignment: right;
+        }
+    }
+}
+
+// Landscape orientation adjustment for tableview:
+.landscape .prototypeExampleTable {
+    frame: parent(80, 10, 10, 10);
+}
