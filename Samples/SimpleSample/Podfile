@@ -1,4 +1,3 @@
 platform :ios, '6.0'
 xcodeproj 'SimpleSample'
 pod 'InterfaCSS', :path => '../../'
-#odspec :path => '../../InterfaCSS.podspec'
