@@ -32,12 +32,12 @@
         
         .prototypeExampleCellLabel1 {
             frame: rect(5, 2, 120, 21);
-            font: HelveticaNeue-CondensedBlack 16;
+            font: @stdFont4;
         }
 
         .prototypeExampleCellLabel2 {
             frame: rect(5, 21, 120, 21);
-            font: HelveticaNeue-CondensedBold 12;
+            font: @stdFont5;
         }
 
         .prototypeExampleCellLabel3 {

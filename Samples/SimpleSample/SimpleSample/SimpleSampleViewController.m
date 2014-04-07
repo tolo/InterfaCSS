@@ -9,10 +9,10 @@
 
 #import "SimpleSampleViewController.h"
 
-#import "InterfaCSS.h"
-#import "ISSViewBuilder.h"
-#import "UIView+InterfaCSS.h"
-#import "ISSViewHierarchyParser.h"
+#import <InterfaCSS.h>
+#import <InterfaCSS/ISSViewBuilder.h>
+#import <InterfaCSS/UIView+InterfaCSS.h>
+#import <InterfaCSS/ISSViewHierarchyParser.h>
 
 
 @interface SimpleSampleViewController ()

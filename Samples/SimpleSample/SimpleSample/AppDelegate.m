@@ -9,16 +9,19 @@
 
 #import "AppDelegate.h"
 
-#import "InterfaCSS.h"
+#import <InterfaCSS.h>
+#import <InterfaCSS/UIView+InterfaCSS.h>
+#import <InterfaCSS/NSObject+ISSLogSupport.h>
 #import "SimpleSampleViewController.h"
 #import "PrototypeExampleViewController.h"
-#import "UIView+InterfaCSS.h"
-
 
 @implementation AppDelegate
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // If you really want to get the log messages flowing, uncomment below:
+    //[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];
+    
     [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"main.css"];
     
     // When developing your app, consider using an auto refreshable stylesheet that is loaded from a web server (or perhaps a cloud service like Dropbox,

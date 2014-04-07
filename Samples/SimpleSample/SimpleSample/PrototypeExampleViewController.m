@@ -9,10 +9,10 @@
 
 #import "PrototypeExampleViewController.h"
 
-#import "InterfaCSS.h"
-#import "ISSViewBuilder.h"
-#import "UITableView+InterfaCSS.h"
-#import "UIView+InterfaCSS.h"
+#import <InterfaCSS.h>
+#import <InterfaCSS/ISSViewBuilder.h>
+#import <InterfaCSS/UITableView+InterfaCSS.h>
+#import <InterfaCSS/UIView+InterfaCSS.h>
 
 
 @interface PrototypeExampleCell : UITableViewCell
