@@ -14,19 +14,16 @@
 #define ISS_LOG_LEVEL_DEBUG     2
 #define ISS_LOG_LEVEL_TRACE     3
 
-#ifndef ISS_LOG_LEVEL
-    #if DEBUG == 1
-        #define ISS_LOG_LEVEL ISS_LOG_LEVEL_DEBUG
-    #else
-        #define ISS_LOG_LEVEL ISS_LOG_LEVEL_WARNING
-    #endif
-#endif
-
 #define ISSLogTrace(__FORMAT__, ...) [self iss_logTrace:__FORMAT__, ##__VA_ARGS__]
 #define ISSLogDebug(__FORMAT__, ...) [self iss_logDebug:__FORMAT__, ##__VA_ARGS__]
 #define ISSLogWarning(__FORMAT__, ...) [self iss_logWarning:__FORMAT__, ##__VA_ARGS__]
 
 @interface NSObject (ISSLogSupport)
+
+/**
+ * Sets the logging level for InterfaCSS - valid values are ISS_LOG_LEVEL_NONE, ISS_LOG_LEVEL_WARNING, ISS_LOG_LEVEL_DEBUG and ISS_LOG_LEVEL_TRACE.
+ */
++ (void) iss_setLogLevel:(NSInteger)logLevel;
 
 - (void) iss_logTrace:(NSString*)format, ...;
 - (void) iss_logDebug:(NSString*)format, ...;
