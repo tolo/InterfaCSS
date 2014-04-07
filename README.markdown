@@ -44,16 +44,21 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 * Set up your view hierarchy and set some initial styles classes on your views. This you can do in a few different ways: 
     * By using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hiearchy, like this: `self.view = [ISSViewBuilder rootViewWithStyle:@"myFancyStyleClass" ....` 
-    * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this: `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];` 
-    * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h). 
+    * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this: 
+    `self.view = ` `[ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];` 
+    * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance: 
+        * `self.view.styleClassISS = @"groovyStyle";`
+        * `[self.view addStyleClassISS:@"groovyStyle"];`
     
 * Update styles as you go
     * At any time you can add or remove style classes using the methods provided in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
-    * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStyling` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
+    * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStylingISS` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
 
 * To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (web server, cloud service or file in the local file system for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. This is how you do it: `[[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:[NSURL URLWithString:@"..."]];`
 
-
+* If you get stuck and starting feel the urge to break something, consider doing this first:
+    * Try using `-[InterfaCSS logMatchingStyleDeclarationsForUIElement:]` to log the active style declarations for your view, and see if they are whay you expect them to be.
+    * Enable more verbose logging by invoking `[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];`, defined in [`NSObject+ISSLogSupport.h`](InterfaCSS/Util/NSObject+ISSLogSupport.h)
 
 
 <a name="StylesheetFormat">Stylesheet format</a>
@@ -61,11 +66,16 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 InterfaCSS does not try to impose some artificial mapping layer between the stylesheet format and iOS - the names of stylesheet properties are the same as the actual UI object properties they set (except that case is not important and you may insert dashes anywhere you fancy). That being said, there are some areas in which InterfaCSS tries to make life easier, but more on that below.
 
-The format of the stylesheet files used by InterfaCSS is in structure essentially the same as standard CSS used for the web - what differs is basically the properties you can use and the supported [selectors](http://www.w3.org/TR/CSS21/selector.html).
+The format of the stylesheet files used by InterfaCSS is in structure essentially the same as standard CSS used for the web - what differs is basically the properties you can use and the supported [selectors](http://www.w3.org/TR/selectors).
 
 This is what InterfaCSS supports: 
 
-* Type, style class, descendant and wildcard selectors are supported (more may come).
+* Type, style class and wildcard selectors are supported.
+* Descendant, child, adjacent sibling and general sibling selector combinators.
+* Pseudo classes:
+    * [Structural pseudo classes](http://www.w3.org/TR/selectors/#structural-pseudos)
+    * Enabled/disabled (for `UIControl` and onthers)
+    * Interface orientation (`landscape`, `landscapeLeft`, `landscapeRight`, `portrait`, `portraitUpright`, `portraitUpSideDown`)
 * Multiple selectors / selector chains may be specified for each declaration block.
 * Supported type selectors are most of the typical UIKit view (and view related) classes, such as `UIView` etc (case insensitive, 'UI' is optional)
 * If multiple declarations match, the last one wins. This rule also applies to stylesheets, i.e the stylesheet added last may override declarations in previously added stylesheets.
@@ -144,11 +154,10 @@ Below is an example of how a stylesheet file for InterfaCSS could look like:
     }
 
 
-
 Project status
 --------------
 
-The current version (as of 2014-02-19) is 0.8. This basically means that most of the basic stuff is in place, and it's just that last 20% of polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.8 (0.9 is soon to be released). This basically means that most of the basic stuff is in place, and it's just that last 20% of polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
