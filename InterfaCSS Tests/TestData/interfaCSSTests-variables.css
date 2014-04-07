@@ -1,0 +1,3 @@
+.reuseTest {
+    alpha: @globalVariableTest;
+}

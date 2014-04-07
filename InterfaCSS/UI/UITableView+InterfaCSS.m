@@ -10,16 +10,19 @@
 #import "UITableView+InterfaCSS.h"
 
 #import "InterfaCSS.h"
-#import "UIView+InterfaCSS.h"
+#import "ISSUIElementDetails.h"
 
 @implementation UITableView (InterfaCSS)
 
-- (id) dequeueReusablePrototypeCellWithIdentifier:(NSString*)prototypeName {
+- (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
     id cell = [self dequeueReusableCellWithIdentifier:prototypeName];
-    return cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+    cell = cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell];
+    elementDetails.additionalDetails[ISSTableViewCellIndexPathKey] = indexPath;
+    return cell;
 }
 
-- (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifier:(NSString*)prototypeName {
+- (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName {
     id cell = [self dequeueReusableHeaderFooterViewWithIdentifier:prototypeName];
     return cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
 }

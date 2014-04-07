@@ -91,7 +91,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 }
 
 - (BOOL) autoHeight {
-    return _rect.size.width == ISSRectValueAuto;
+    return _rect.size.height == ISSRectValueAuto;
 }
 
 
@@ -212,9 +212,9 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 #pragma mark - NSObject overrides
 
 - (NSString*) description {
-    if( _type == ISSRectValueTypeParentInsets || _type == ISSRectValueTypeWindowInsets ) return [NSString stringWithFormat:@"ISSRectValue(%d - %@)", _type, NSStringFromUIEdgeInsets(_insets)];
-    else if( _type == ISSRectValueTypeParentRelative ) return [NSString stringWithFormat:@"ISSRectValue(%d - %@, %@)", _type, NSStringFromCGRect(_rect), NSStringFromUIEdgeInsets(_insets)];
-    else return [NSString stringWithFormat:@"ISSRectValue(%d - %@)", _type, NSStringFromCGRect(_rect)];
+    if( _type == ISSRectValueTypeParentInsets || _type == ISSRectValueTypeWindowInsets ) return [NSString stringWithFormat:@"ISSRectValue(%ld - %@)", (long)_type, NSStringFromUIEdgeInsets(_insets)];
+    else if( _type == ISSRectValueTypeParentRelative ) return [NSString stringWithFormat:@"ISSRectValue(%ld - %@, %@)", (long)_type, NSStringFromCGRect(_rect), NSStringFromUIEdgeInsets(_insets)];
+    else return [NSString stringWithFormat:@"ISSRectValue(%ld - %@)", (long)_type, NSStringFromCGRect(_rect)];
 }
 
 @end

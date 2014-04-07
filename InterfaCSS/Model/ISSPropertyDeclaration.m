@@ -71,7 +71,7 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if( [object isKindOfClass:self.class] && [[object property] isEqual:self.property] ) {
+    if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] ) {
         if( [object parameters] == self.parameters ) return YES;
         else return [[object parameters] isEqualToArray:self.parameters];
     }

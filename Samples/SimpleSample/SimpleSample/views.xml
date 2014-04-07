@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <view class="prototypeExampleMainView">
     <label property="mainTitleLabel" class="mainTitleLabel"/>
     <label property="mainSubtitleLabel" class="mainSubtitleLabel"/>
@@ -8,6 +9,11 @@
             <label property="label1" class="prototypeExampleCellLabel1"/>
             <label property="label2" class="prototypeExampleCellLabel2"/>
             <label property="label3" class="prototypeExampleCellLabel3"/>
+            
+            <!-- Example of how you can directly set the backgroundView and selectedBackgroundView properties of a UITableViewCell: -->
+            <view property="backgroundView" class="cellBackgroundView" add="NO"/>
+            <view property="selectedBackgroundView" class="cellBackgroundViewSelected" add="NO"/>
         </PrototypeExampleCell>
     </tableview>
+    
 </view>

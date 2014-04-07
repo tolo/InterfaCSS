@@ -9,20 +9,20 @@
 
 @interface UIColor (ISSColorAdditions)
 
-+ (UIColor*) colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b;
-+ (UIColor*) colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b A:(float)a;
-+ (UIColor*) colorWithHexString:(NSString*)hex;
++ (UIColor*) iss_colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b;
++ (UIColor*) iss_colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b A:(float)a;
++ (UIColor*) iss_colorWithHexString:(NSString*)hex;
 
-- (NSArray*) rgbaComponents;
+- (NSArray*) iss_rgbaComponents;
 
-- (UIColor*) colorByIncreasingBrightnessBy:(CGFloat)amount;
-- (UIColor*) colorByIncreasingSaturationBy:(CGFloat)amount;
-- (UIColor*) colorByIncreasingAlphaBy:(CGFloat)amount;
+- (UIColor*) iss_colorByIncreasingBrightnessBy:(CGFloat)amount;
+- (UIColor*) iss_colorByIncreasingSaturationBy:(CGFloat)amount;
+- (UIColor*) iss_colorByIncreasingAlphaBy:(CGFloat)amount;
 
-+ (UIImage*) colorAsUIImage:(UIColor*)color;
-- (UIImage*) asUIImage;
++ (UIImage*) iss_colorAsUIImage:(UIColor*)color;
+- (UIImage*) iss_asUIImage;
 
-- (UIImage*) topDownLinearGradientImageToColor:(UIColor*)color height:(CGFloat)height;
-- (UIColor*) topDownLinearGradientToColor:(UIColor*)color height:(CGFloat)height;
+- (UIImage*) iss_topDownLinearGradientImageToColor:(UIColor*)color height:(CGFloat)height;
+- (UIColor*) iss_topDownLinearGradientToColor:(UIColor*)color height:(CGFloat)height;
 
 @end

@@ -17,22 +17,37 @@ uilabel.class1 {
 }
 
 // Descendant selector chain
-type .class1 .class2 {
+uiview .class1 .class2 {
+    alpha: 1;
+}
+
+// Child/sibling selector chain
+uiview > .class1 + .class2 ~ .class3 {
     alpha: 1;
 }
 
 // Multiple selector (chains)
-uilabel, uilabel.class1, .class1, type .class1 .class2 {
+uilabel, uilabel.class1, .class1, uiview .class1 .class2 {
     alpha: 1;
 }
 
 // Nested declarations
 uiview {
     alpha: 1;
-    .class1 {
+    .classN1 {
         alpha: 1;
-        .class2 {
+        .classN2 {
             alpha: 1;
         }
     }
 }
+
+// Pseudo classes
+uiview:onlychild {
+    alpha: 1;
+}
+
+uiview:nthchild(2n+1) {
+    alpha: 1;
+}
+

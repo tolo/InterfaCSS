@@ -14,39 +14,44 @@
 
 @implementation NSString (ISSStringAdditions)
 
-- (BOOL) isEmpty {
-	return [[self trim] length] == 0;
++ (BOOL) iss_string:(NSString*)string1 isEqualToString:(NSString*)string2 {
+    if (string1 == string2) return YES;
+    else return [string1 isEqualToString:string2];
 }
 
-- (BOOL) hasData {
-    return ![self isEmpty];
+- (BOOL) iss_isEmpty {
+	return [[self iss_trim] length] == 0;
 }
 
-- (NSString*) trim {
+- (BOOL) iss_hasData {
+    return ![self iss_isEmpty];
+}
+
+- (NSString*) iss_trim {
 	return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-- (NSString*) trimQuotes {
-	return [[self trim] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\"\'"]];
+- (NSString*) iss_trimQuotes {
+	return [[self iss_trim] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\"\'"]];
 }
 
-- (NSArray*) trimmedSplit:(NSString*)sep {
+- (NSArray*) iss_trimmedSplit:(NSString*)sep {
     NSMutableArray* vals = [[self componentsSeparatedByString:sep] mutableCopy];
     for (unsigned int i=0; i<vals.count; i++) {
-        vals[i] = [vals[i] trim];
+        vals[i] = [vals[i] iss_trim];
     }
     return vals;
 }
 
-- (NSArray*) trimmedSplitWithSet:(NSCharacterSet*)characterSet {
+- (NSArray*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet {
     NSMutableArray* vals = [[self componentsSeparatedByCharactersInSet:characterSet] mutableCopy];
     for (unsigned int i=0; i<vals.count; i++) {
-        vals[i] = [vals[i] trim];
+        vals[i] = [vals[i] iss_trim];
     }
     return vals;
 }
 
-- (NSString*) stringBySeparatingCamelCaseComponentsWithDash {
+- (NSString*) iss_stringBySeparatingCamelCaseComponentsWithDash {
     NSMutableString* result = [NSMutableString stringWithString:self];
     NSCharacterSet* uppercaseLetterCharacterSet = [NSCharacterSet uppercaseLetterCharacterSet];
 
@@ -62,12 +67,12 @@
     return [result lowercaseString];
 }
 
-- (BOOL) isNumeric {
+- (BOOL) iss_isNumeric {
     NSRange r = [self rangeOfString:@"^(?:|0|[1-9]\\d+)(?:\\.\\d*)?$" options:NSRegularExpressionSearch];
     return r.location != NSNotFound;
 }
 
-- (BOOL) isEqualIgnoreCase:(NSString*)otherString {
+- (BOOL) iss_isEqualIgnoreCase:(NSString*)otherString {
     return [self caseInsensitiveCompare:otherString] == NSOrderedSame;
 }
 
@@ -79,7 +84,7 @@
     return dateFormatter;
 }
 
-- (NSDate*) parseHttpDate {
+- (NSDate*) iss_parseHttpDate {
     return [ISSDateUtils parseHttpDate:self];
 }
 

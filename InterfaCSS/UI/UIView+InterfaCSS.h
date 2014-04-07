@@ -7,30 +7,54 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <UIKit/UIKit.h>
-
 @interface UIView (InterfaCSS)
 
-@property (nonatomic, weak) NSString* styleClass;
-@property (nonatomic, weak) NSSet* styleClasses;
+@property (nonatomic, strong, getter=getStyleClassISS, setter=setStyleClassISS:) NSString* styleClassISS;
+@property (nonatomic, strong, getter=getStyleClassesISS, setter=setStyleClassesISS:) NSSet* styleClassesISS;
 
-- (void) setStyleClasses:(NSSet*)classes;
-- (void) setStyleClasses:(NSSet*)classes animated:(BOOL)animated;
+- (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+- (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated;
 
-- (void) setStyleClass:(NSString*)styleClass;
-- (void) setStyleClass:(NSString*)styleClass animated:(BOOL)animated;
+- (BOOL) hasStyleClassISS:(NSString*)styleClass;
 
-- (void) addStyleClass:(NSString*)styleClass;
-- (void) addStyleClass:(NSString*)styleClass animated:(BOOL)animated;
+- (void) addStyleClassISS:(NSString*)styleClass;
+- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
 
-- (void) removeStyleClass:(NSString*)styleClass;
-- (void) removeStyleClass:(NSString*)styleClass animated:(BOOL)animated;
+- (void) removeStyleClassISS:(NSString*)styleClass;
+- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
 
-- (void) scheduleApplyStyling;
-- (void) scheduleApplyStyling:(BOOL)animated;
+- (void) scheduleApplyStylingISS;
+- (void) scheduleApplyStylingISS:(BOOL)animated;
 
-- (void) applyStyling;
-- (void) applyStyling:(BOOL)invalidateStyles;
-- (void) applyStylingWithAnimation;
+- (void) applyStylingISS;
+- (void) applyStylingISS:(BOOL)invalidateStyles;
+- (void) applyStylingWithAnimationISS;
+
+
+/*
+
+@property (nonatomic, strong, getter=getStyleClassISS, setter=setStyleClassISS:) NSString* styleClassISS;
+@property (nonatomic, strong, getter=getStyleClassesISS, setter=setStyleClassesISS:) NSSet* styleClassesISS;
+
+- (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+- (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated;
+
+- (BOOL) hasStyleClassISS:(NSString*)styleClass;
+
+- (void) addStyleClassISS:(NSString*)styleClass;
+- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+
+- (void) removeStyleClassISS:(NSString*)styleClass;
+- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+
+- (void) scheduleApplyStylingISS;
+- (void) scheduleApplyStylingISS:(BOOL)animated;
+
+- (void) applyStylingISS;
+- (void) applyStylingISS:(BOOL)invalidateStyles;
+- (void) applyStylingWithAnimationISS;
+
+*/
+
 
 @end

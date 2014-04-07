@@ -7,10 +7,17 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-@class ISSStyleSheet;
+#import "ISSPropertyDefinition.h"
 
-@interface ISSStyleSheetParser : NSObject
+@class ISSStyleSheet;
+@class ISSPropertyDefinition;
+
+@protocol ISSStyleSheetParser <NSObject>
 
 - (NSMutableArray*) parse:(NSString*)styleSheetData;
+
+- (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType;
+
+- (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
 
 @end

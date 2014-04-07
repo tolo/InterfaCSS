@@ -14,16 +14,30 @@
 
 @implementation ISSRootView
 
+- (void) commonInitWithView:(UIView*)view {
+    self.wrappedRootView = view;
+    self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+}
+
 - (id) init {
-    return [self initWithView:nil];
+    if ( self = [super init] ) {
+        [self commonInitWithView:nil];
+        self.frame = [[ISSRectValue windowRect] rectForView:self];
+    }
+    return self;
+}
+
+- (id) initWithFrame:(CGRect)frame {
+    if ( self = [super initWithFrame:frame] ) {
+        [self commonInitWithView:nil];
+    }
+    return self;
 }
 
 - (id) initWithView:(UIView*)view {
-    self = [super init];
-    if ( self ) {
-        self.wrappedRootView = view;
+    if ( self = [super init] ) {
+        [self commonInitWithView:view];
         self.frame = [[ISSRectValue windowRect] rectForView:self];
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     }
     return self;
 }
@@ -37,11 +51,11 @@
 - (void) setFrame:(CGRect)frame {
     [super setFrame:frame];
     _wrappedRootView.frame = self.bounds;
-    [self scheduleApplyStyling];
+    [self scheduleApplyStylingISS];
 }
 
 - (void) didMoveToSuperview {
-    [self scheduleApplyStyling];
+    [self scheduleApplyStylingISS];
 }
 
 @end

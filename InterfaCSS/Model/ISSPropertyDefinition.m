@@ -7,9 +7,9 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <objc/runtime.h>
 #import "ISSStyleSheetParser.h"
 
-#import "ISSPropertyDefinition.h"
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSStringAdditions.h"
 #import "ISSRectValue.h"
@@ -29,9 +29,10 @@ typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObje
 
 #define S(selName) NSStringFromSelector(@selector(selName))
 
+static NSDictionary* classesToTypeNames;
+static NSDictionary* typeNamesToClasses;
 
 static NSDictionary* classProperties;
-static NSDictionary* classesToNames;
 static NSSet* allProperties;
 static NSSet* validPrefixKeyPaths;
 
@@ -42,39 +43,38 @@ static NSSet* validPrefixKeyPaths;
 @property (nonatomic, strong) NSDictionary* enumValues;
 @property (nonatomic, copy) PropertySetterBlock propertySetterBlock;
 
-- (id) initWithName:(NSString *)name type:(ISStyleSheetPropertyType)type;
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type;
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type enumBlock:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType;
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type enumValues:(NSDictionary*)enumValues
+- (id) initWithName:(NSString *)name type:(ISSPropertyType)type;
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type;
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumBlock:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType;
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
           enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(void (^)(ISSPropertyDefinition*, id, id, NSArray*))setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues;
 
 @end
 
 
 
-static ISSPropertyDefinition* p(NSString* name, ISStyleSheetPropertyType type) {
+static ISSPropertyDefinition* p(NSString* name, ISSPropertyType type) {
     return [[ISSPropertyDefinition alloc] initWithName:name type:type];
 }
 
-static ISSPropertyDefinition* ps(NSString* name, ISStyleSheetPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* ps(NSString* name, ISSPropertyType type, PropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
                                           enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
 }
 
-static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISStyleSheetPropertyType type) {
+static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISSPropertyType type) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type];
 }
 
 static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISStyleSheetPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
 }
 
 static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISStyleSheetPropertyTypeEnumType enumValues:enumValues
-                                      enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
 }
 
-static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISStyleSheetPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSPropertyType type, PropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
                                       enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
 }
@@ -95,19 +95,23 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 @implementation ISSPropertyDefinition
 
-- (id) initWithName:(NSString *)name type:(ISStyleSheetPropertyType)type {
+- (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type {
+    return [self initWithName:@"ISSAnonymousPropertyDefinition" aliases:@[] type:type];
+}
+
+- (id) initWithName:(NSString *)name type:(ISSPropertyType)type {
     return [self initWithName:name aliases:@[] type:type];
 }
 
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type {
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type {
     return [self initWithName:name aliases:aliases type:type enumBlock:nil enumBitMaskType:NO];
 }
 
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type enumBlock:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumBlock:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
     return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:nil parameterEnumValues:nil];
 }
 
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISStyleSheetPropertyType)type enumValues:(NSDictionary*)enumValues
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
           enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(void (^)(ISSPropertyDefinition*, id, id, NSArray*))setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
     if (self = [super init]) {
         _name = name;
@@ -116,11 +120,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         if( aliases ) _allNames = [_allNames arrayByAddingObjectsFromArray:aliases];
 
         _type = type;
-        _enumValues = [enumValues dictionaryWithLowerCaseKeys];
+        _enumValues = [enumValues iss_dictionaryWithLowerCaseKeys];
         _enumBitMaskType = enumBitMaskType;
 
         _propertySetterBlock = setterBlock;
-        _parameterEnumValues = [parameterEnumValues dictionaryWithLowerCaseKeys];
+        _parameterEnumValues = [parameterEnumValues iss_dictionaryWithLowerCaseKeys];
     }
     return self;
 }
@@ -133,7 +137,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         } else {
             // Then attempt to match prefix key path against known prefix key paths, and make sure correct name is used
             for(NSString* validPrefix in validPrefixKeyPaths) {
-                if( [validPrefix isEqualIgnoreCase:prefixKeyPath] && [obj respondsToSelector:NSSelectorFromString(validPrefix)] ) {
+                if( [validPrefix iss_isEqualIgnoreCase:prefixKeyPath] && [obj respondsToSelector:NSSelectorFromString(validPrefix)] ) {
                     return [obj valueForKeyPath:validPrefix];
                 }
             }
@@ -149,19 +153,15 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         NSString* propertyName = _name;
         NSArray* dotSeparatedComponents = [propertyName componentsSeparatedByString:@"."];
         if( dotSeparatedComponents.count > 1 ) { // For instance layer.cornerRadius...
-            if( ![prefixKeyPath hasData] ) prefixKeyPath = dotSeparatedComponents[0];
+            if( ![prefixKeyPath iss_hasData] ) prefixKeyPath = dotSeparatedComponents[0];
             propertyName = dotSeparatedComponents[1];
         }
 
         obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
-
-        if( [obj respondsToSelector:NSSelectorFromString(propertyName)] ) {
-            if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithViewObject:obj];
-            if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
-            [obj setValue:value forKeyPath:propertyName];
-        } else {
-            ISSLogDebug(@"Property %@ not found in %@", _name, obj);
-        }
+        
+        if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithViewObject:obj];
+        if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
+        [obj setValue:value forKeyPath:propertyName]; // Will throw exception if property doesn't exist
     } @catch (NSException* e) {
         ISSLogDebug(@"Unable to set value for property %@ - %@", _name, e);
     }
@@ -169,7 +169,6 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
 #pragma mark - Public interface
-
 
 - (void) setValue:(id)value onTarget:(id)obj withPrefixKeyPath:(NSString*)prefixKeyPath {
     if( value && value != [NSNull null] ) {
@@ -195,21 +194,26 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return self.name;
 }
 
+- (NSString*) uniqueTypeDescription {
+    if( self.type == ISSPropertyTypeEnumType ) return [NSString stringWithFormat:@"Enum(%@)", _name];
+    else return [self typeDescription];
+}
+
 - (NSString*) typeDescription {
     switch(self.type) {
-        case ISStyleSheetPropertyTypeBool : return @"Boolean";
-        case ISStyleSheetPropertyTypeNumber : return @"Number";
-        case ISStyleSheetPropertyTypeOffset : return @"UIOffset";
-        case ISStyleSheetPropertyTypeRect : return @"CGRect";
-        case ISStyleSheetPropertyTypeSize : return @"CGSize";
-        case ISStyleSheetPropertyTypePoint : return @"CGPoint";
-        case ISStyleSheetPropertyTypeEdgeInsets : return @"UIEdgeInsets";
-        case ISStyleSheetPropertyTypeColor : return @"UIColor";
-        case ISStyleSheetPropertyTypeCGColor : return @"CGColor";
-        case ISStyleSheetPropertyTypeTransform : return @"CGAffineTransform";
-        case ISStyleSheetPropertyTypeFont : return @"UIFont";
-        case ISStyleSheetPropertyTypeImage : return @"UIImage";
-        case ISStyleSheetPropertyTypeEnumType : return @"Enum";
+        case ISSPropertyTypeBool : return @"Boolean";
+        case ISSPropertyTypeNumber : return @"Number";
+        case ISSPropertyTypeOffset : return @"UIOffset";
+        case ISSPropertyTypeRect : return @"CGRect";
+        case ISSPropertyTypeSize : return @"CGSize";
+        case ISSPropertyTypePoint : return @"CGPoint";
+        case ISSPropertyTypeEdgeInsets : return @"UIEdgeInsets";
+        case ISSPropertyTypeColor : return @"UIColor";
+        case ISSPropertyTypeCGColor : return @"CGColor";
+        case ISSPropertyTypeTransform : return @"CGAffineTransform";
+        case ISSPropertyTypeFont : return @"UIFont";
+        case ISSPropertyTypeImage : return @"UIImage";
+        case ISSPropertyTypeEnumType : return @"Enum";
         default: return @"NSString";
     }
 }
@@ -226,7 +230,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 }
 
 - (BOOL) isEqual:(id)object {
-    return [object isKindOfClass:[ISSPropertyDefinition class]] &&
+    return [object isKindOfClass:ISSPropertyDefinition.class] &&
            [self.name isEqualToString:((ISSPropertyDefinition*)object).name] &&
            self.type == ((ISSPropertyDefinition*)object).type;
 }
@@ -243,7 +247,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return allProperties;
 }
 
-+ (NSSet*) propertyDefinitionsForType:(ISStyleSheetPropertyType)propertyType {
++ (NSSet*) propertyDefinitionsForType:(ISSPropertyType)propertyType {
     return [allProperties filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary* bindings) {
         return ((ISSPropertyDefinition*)evaluatedObject).type == propertyType;
     }]];
@@ -259,13 +263,27 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return viewClassProperties;
 }
 
-+ (NSString*) typeForViewClass:(Class)viewClass {
-    for(Class clazz in classesToNames.allKeys) {
-        if( [viewClass isSubclassOfClass:clazz] ) {
-            return classesToNames[clazz];
-        }
++ (NSString*) canonicalTypeForViewClass:(Class)viewClass {
+    NSString* type = classesToTypeNames[viewClass];
+    if( type ) return type;
+    else { // Custom view class or "unsupported" UIKit view class
+        Class superClass = [viewClass superclass];
+        if( superClass && superClass != NSObject.class ) return [self canonicalTypeForViewClass:superClass];
+        else return nil;
     }
-    return @"uiview"; // Default type
+}
+
++ (Class) canonicalTypeClassForViewClass:(Class)viewClass {
+    if( classesToTypeNames[viewClass] ) return viewClass;
+    else { // Custom view class or "unsupported" UIKit view class
+        Class superClass = [viewClass superclass];
+        if( superClass && superClass != NSObject.class ) return [self canonicalTypeClassForViewClass:superClass];
+        else return nil;
+    }
+}
+
++ (Class) canonicalTypeClassForType:(NSString*)type {
+    return typeNamesToClasses[[type lowercaseString]];
 }
 
 #if DEBUG == 1
@@ -333,7 +351,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     // Common properties:
 
-    ISSPropertyDefinition* backgroundImage = pp(S(backgroundImage), barMetricsPositionAndControlStateParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* backgroundImage = pp(S(backgroundImage), barMetricsPositionAndControlStateParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         UIBarPosition position = parameters.count > 0 ? (UIBarPosition)[parameters[0] unsignedIntegerValue] : UIBarPositionAny;
         UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
@@ -353,7 +371,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* image = pp(S(image), controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* image = pp(S(image), controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setImage:forState:)] ) {
             [viewObject setImage:value forState:state];
@@ -362,7 +380,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* shadowImage = pp(S(shadowImage), barPositionParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* shadowImage = pp(S(shadowImage), barPositionParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setShadowImage:forToolbarPosition:)] ) {
             UIBarPosition position = parameters.count > 0 ? (UIBarPosition) [parameters[0] unsignedIntegerValue] : UIBarPositionAny;
             [viewObject setShadowImage:value forToolbarPosition:position];
@@ -371,7 +389,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* title = pp(S(title), controlStateParametersValues, ISStyleSheetPropertyTypeString, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* title = pp(S(title), controlStateParametersValues, ISSPropertyTypeString, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setBackgroundImage:forState:)] ) {
             [viewObject setTitle:value forState:state];
@@ -380,7 +398,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISStyleSheetPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setFont:)] ) {
             [viewObject setFont:value];
         } else {
@@ -388,7 +406,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* textColor = pp(S(textColor), controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* textColor = pp(S(textColor), controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
             [viewObject setTextColor:value];
         } else {
@@ -396,7 +414,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* shadowColor = pp(S(shadowColor), controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* shadowColor = pp(S(shadowColor), controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setShadowColor:)] ) {
             [viewObject setShadowColor:value];
         } else {
@@ -404,7 +422,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* shadowOffset = pp(S(shadowOffset), controlStateParametersValues, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* shadowOffset = pp(S(shadowOffset), controlStateParametersValues, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setShadowOffset:)] ) {
             [viewObject setShadowOffset:[value CGSizeValue]];
         } else {
@@ -412,13 +430,13 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* barTintColor = p(S(barTintColor), ISStyleSheetPropertyTypeColor);
+    ISSPropertyDefinition* barTintColor = p(S(barTintColor), ISSPropertyTypeColor);
 
     ISSPropertyDefinition* barStyle = pe(S(barStyle), @{@"default" : @(UIBarStyleDefault), @"black" : @(UIBarStyleBlack), @"blackOpaque" : @(UIBarStyleBlackOpaque), @"blackTranslucent" : @(UIBarStyleBlackTranslucent)});
 
-    ISSPropertyDefinition* translucent = p(@"translucent", ISStyleSheetPropertyTypeBool);
+    ISSPropertyDefinition* translucent = p(@"translucent", ISSPropertyTypeBool);
 
-    ISSPropertyDefinition* titlePositionAdjustment = pp(S(titlePositionAdjustment), barMetricsParameters, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* titlePositionAdjustment = pp(S(titlePositionAdjustment), barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setTitlePositionAdjustment:forBarMetrics:)] ) {
             UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
             [viewObject setTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
@@ -427,41 +445,45 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* allowsSelection = p(S(allowsSelection), ISStyleSheetPropertyTypeBool);
+    ISSPropertyDefinition* allowsSelection = p(S(allowsSelection), ISSPropertyTypeBool);
 
-    ISSPropertyDefinition* allowsMultipleSelection = p(S(allowsMultipleSelection), ISStyleSheetPropertyTypeBool);
+    ISSPropertyDefinition* allowsMultipleSelection = p(S(allowsMultipleSelection), ISSPropertyTypeBool);
 
 
     NSSet* viewProperties = [NSSet setWithArray:@[
-            p(S(alpha), ISStyleSheetPropertyTypeNumber),
-            p(S(autoresizesSubviews), ISStyleSheetPropertyTypeBool),
+            p(S(alpha), ISSPropertyTypeNumber),
+            p(S(autoresizesSubviews), ISSPropertyTypeBool),
             peo(S(autoresizingMask), @{ @"none" : @(UIViewAutoresizingNone), @"width" : @(UIViewAutoresizingFlexibleWidth), @"height" : @(UIViewAutoresizingFlexibleHeight),
                                     @"bottom" : @(UIViewAutoresizingFlexibleBottomMargin), @"top" : @(UIViewAutoresizingFlexibleTopMargin),
                                     @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"right" : @(UIViewAutoresizingFlexibleRightMargin)}
             ),
-            p(S(backgroundColor), ISStyleSheetPropertyTypeColor),
-            ps(S(bounds), ISStyleSheetPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+            p(S(backgroundColor), ISSPropertyTypeColor),
+            ps(S(bounds), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
                 if( [viewObject isKindOfClass:UIView.class] ) {
                     UIView* v = viewObject;
                     v.bounds = [value rectForView:v];
                 }
             }),
-            ps(S(center), ISStyleSheetPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+            ps(S(center), ISSPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
                 if( [viewObject isKindOfClass:UIView.class] ) {
                     UIView* v = viewObject;
+                    // Handle case when attempting to set frame on transformed view
+                    CGAffineTransform t = v.transform;
+                    v.transform = CGAffineTransformIdentity;
                     v.center = [value pointForView:v];
+                    v.transform = t;
                 }
             }),
-            p(S(clearsContextBeforeDrawing), ISStyleSheetPropertyTypeBool),
-            p(S(clipsToBounds), ISStyleSheetPropertyTypeBool),
+            p(S(clearsContextBeforeDrawing), ISSPropertyTypeBool),
+            p(S(clipsToBounds), ISSPropertyTypeBool),
             pe(S(contentMode), @{@"scaleToFill" : @(UIViewContentModeScaleToFill), @"scaleAspectFit" : @(UIViewContentModeScaleAspectFit),
                         @"scaleAspectFill" : @(UIViewContentModeScaleAspectFill), @"redraw" : @(UIViewContentModeRedraw), @"center" : @(UIViewContentModeCenter), @"top" : @(UIViewContentModeTop),
                         @"bottom" : @(UIViewContentModeBottom), @"left" : @(UIViewContentModeLeft), @"right" : @(UIViewContentModeRight), @"topLeft" : @(UIViewContentModeTopLeft),
                         @"topRight" : @(UIViewContentModeTopRight), @"bottomLeft" : @(UIViewContentModeBottomLeft), @"bottomRight" : @(UIViewContentModeBottomRight)}
             ),
-            p(S(contentScaleFactor), ISStyleSheetPropertyTypeNumber),
-            p(@"exclusiveTouch", ISStyleSheetPropertyTypeBool),
-            ps(S(frame), ISStyleSheetPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+            p(S(contentScaleFactor), ISSPropertyTypeNumber),
+            p(@"exclusiveTouch", ISSPropertyTypeBool),
+            ps(S(frame), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
                 if( [viewObject isKindOfClass:UIView.class] ) {
                     UIView* v = viewObject;
                     // Handle case when attempting to set frame on transformed view
@@ -471,25 +493,25 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                     v.transform = t;
                 }
             }),
-            p(@"hidden", ISStyleSheetPropertyTypeBool),
-            pa(@"layer.anchorPoint", @[@"anchorPoint", @"anchor-point"], ISStyleSheetPropertyTypePoint),
-            pa(@"layer.cornerRadius", @[@"cornerradius", @"corner-radius"], ISStyleSheetPropertyTypeNumber),
-            pa(@"layer.borderColor", @[@"bordercolor", @"border-color"], ISStyleSheetPropertyTypeCGColor),
-            pa(@"layer.borderWidth", @[@"borderwidth", @"border-width"], ISStyleSheetPropertyTypeNumber),
-            p(@"multipleTouchEnabled", ISStyleSheetPropertyTypeBool),
-            p(@"opaque", ISStyleSheetPropertyTypeBool),
-            p(S(tintColor), ISStyleSheetPropertyTypeColor),
+            p(@"hidden", ISSPropertyTypeBool),
+            pa(@"layer.anchorPoint", @[@"anchorPoint", @"anchor-point"], ISSPropertyTypePoint),
+            pa(@"layer.cornerRadius", @[@"cornerradius", @"corner-radius"], ISSPropertyTypeNumber),
+            pa(@"layer.borderColor", @[@"bordercolor", @"border-color"], ISSPropertyTypeCGColor),
+            pa(@"layer.borderWidth", @[@"borderwidth", @"border-width"], ISSPropertyTypeNumber),
+            p(@"multipleTouchEnabled", ISSPropertyTypeBool),
+            p(@"opaque", ISSPropertyTypeBool),
+            p(S(tintColor), ISSPropertyTypeColor),
             pe(S(tintAdjustmentMode), @{@"automatic" : @(UIViewTintAdjustmentModeAutomatic), @"normal" : @(UIViewTintAdjustmentModeNormal), @"dimmed" : @(UIViewTintAdjustmentModeDimmed)}),
-            p(S(transform), ISStyleSheetPropertyTypeTransform),
-            p(@"userInteractionEnabled", ISStyleSheetPropertyTypeBool),
+            p(S(transform), ISSPropertyTypeTransform),
+            p(@"userInteractionEnabled", ISSPropertyTypeBool),
     ]];
     allProperties = viewProperties;
 
 
     NSSet* controlProperties = [NSSet setWithArray:@[
-            p(@"enabled", ISStyleSheetPropertyTypeBool),
-            p(@"highlighted", ISStyleSheetPropertyTypeBool),
-            p(@"selected", ISStyleSheetPropertyTypeBool),
+            p(@"enabled", ISSPropertyTypeBool),
+            p(@"highlighted", ISSPropertyTypeBool),
+            p(@"selected", ISSPropertyTypeBool),
             pe(S(contentVerticalAlignment), @{@"center" : @(UIControlContentVerticalAlignmentCenter), @"top" : @(UIControlContentVerticalAlignmentTop),
                     @"bottom" : @(UIControlContentVerticalAlignmentBottom), @"fill" : @(UIControlContentVerticalAlignmentFill)}),
             pe(S(contentHorizontalAlignment), @{@"center" : @(UIControlContentHorizontalAlignmentCenter), @"left" : @(UIControlContentHorizontalAlignmentLeft),
@@ -499,48 +521,48 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
     NSSet* scrollViewProperties = [NSSet setWithArray:@[
-            p(S(contentOffset), ISStyleSheetPropertyTypePoint),
-            p(S(contentSize), ISStyleSheetPropertyTypeSize),
-            p(S(contentInset), ISStyleSheetPropertyTypeEdgeInsets),
-            p(@"directionalLockEnabled", ISStyleSheetPropertyTypeBool),
-            p(S(bounces), ISStyleSheetPropertyTypeBool),
-            p(S(alwaysBounceVertical), ISStyleSheetPropertyTypeBool),
-            p(S(alwaysBounceHorizontal), ISStyleSheetPropertyTypeBool),
-            p(@"pagingEnabled", ISStyleSheetPropertyTypeBool),
-            p(@"scrollEnabled", ISStyleSheetPropertyTypeBool),
-            p(S(showsHorizontalScrollIndicator), ISStyleSheetPropertyTypeBool),
-            p(S(showsVerticalScrollIndicator), ISStyleSheetPropertyTypeBool),
-            p(S(scrollIndicatorInsets), ISStyleSheetPropertyTypeEdgeInsets),
+            p(S(contentOffset), ISSPropertyTypePoint),
+            p(S(contentSize), ISSPropertyTypeSize),
+            p(S(contentInset), ISSPropertyTypeEdgeInsets),
+            p(@"directionalLockEnabled", ISSPropertyTypeBool),
+            p(S(bounces), ISSPropertyTypeBool),
+            p(S(alwaysBounceVertical), ISSPropertyTypeBool),
+            p(S(alwaysBounceHorizontal), ISSPropertyTypeBool),
+            p(@"pagingEnabled", ISSPropertyTypeBool),
+            p(@"scrollEnabled", ISSPropertyTypeBool),
+            p(S(showsHorizontalScrollIndicator), ISSPropertyTypeBool),
+            p(S(showsVerticalScrollIndicator), ISSPropertyTypeBool),
+            p(S(scrollIndicatorInsets), ISSPropertyTypeEdgeInsets),
             pe(S(indicatorStyle), @{@"default" : @(UIScrollViewIndicatorStyleDefault), @"black" : @(UIScrollViewIndicatorStyleBlack), @"white" : @(UIScrollViewIndicatorStyleWhite)}),
             pe(S(decelerationRate), @{@"normal" : @(UIScrollViewDecelerationRateNormal), @"fast" : @(UIScrollViewDecelerationRateFast)}),
-            p(S(delaysContentTouches), ISStyleSheetPropertyTypeBool),
-            p(S(canCancelContentTouches), ISStyleSheetPropertyTypeBool),
-            p(S(minimumZoomScale), ISStyleSheetPropertyTypeNumber),
-            p(S(maximumZoomScale), ISStyleSheetPropertyTypeNumber),
-            p(S(bouncesZoom), ISStyleSheetPropertyTypeBool),
-            p(S(scrollsToTop), ISStyleSheetPropertyTypeBool),
+            p(S(delaysContentTouches), ISSPropertyTypeBool),
+            p(S(canCancelContentTouches), ISSPropertyTypeBool),
+            p(S(minimumZoomScale), ISSPropertyTypeNumber),
+            p(S(maximumZoomScale), ISSPropertyTypeNumber),
+            p(S(bouncesZoom), ISSPropertyTypeBool),
+            p(S(scrollsToTop), ISSPropertyTypeBool),
             pe(S(keyboardDismissMode), @{@"none" : @(UIScrollViewKeyboardDismissModeNone), @"onDrag" : @(UIScrollViewKeyboardDismissModeOnDrag), @"interactive" : @(UIScrollViewKeyboardDismissModeInteractive)})
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:scrollViewProperties];
 
     NSSet* tableViewProperties = [NSSet setWithArray:@[
-            p(S(rowHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(sectionHeaderHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(sectionFooterHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(estimatedRowHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(estimatedSectionHeaderHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(estimatedSectionFooterHeight), ISStyleSheetPropertyTypeNumber),
-            p(S(separatorInset), ISStyleSheetPropertyTypeEdgeInsets),
+            p(S(rowHeight), ISSPropertyTypeNumber),
+            p(S(sectionHeaderHeight), ISSPropertyTypeNumber),
+            p(S(sectionFooterHeight), ISSPropertyTypeNumber),
+            p(S(estimatedRowHeight), ISSPropertyTypeNumber),
+            p(S(estimatedSectionHeaderHeight), ISSPropertyTypeNumber),
+            p(S(estimatedSectionFooterHeight), ISSPropertyTypeNumber),
+            p(S(separatorInset), ISSPropertyTypeEdgeInsets),
             allowsSelection,
-            p(S(allowsSelectionDuringEditing), ISStyleSheetPropertyTypeBool),
+            p(S(allowsSelectionDuringEditing), ISSPropertyTypeBool),
             allowsMultipleSelection,
-            p(S(allowsMultipleSelectionDuringEditing), ISStyleSheetPropertyTypeBool),
-            p(S(sectionIndexMinimumDisplayRowCount), ISStyleSheetPropertyTypeNumber),
-            p(S(sectionIndexColor), ISStyleSheetPropertyTypeColor),
-            p(S(sectionIndexBackgroundColor), ISStyleSheetPropertyTypeColor),
-            p(S(sectionIndexTrackingBackgroundColor), ISStyleSheetPropertyTypeColor),
+            p(S(allowsMultipleSelectionDuringEditing), ISSPropertyTypeBool),
+            p(S(sectionIndexMinimumDisplayRowCount), ISSPropertyTypeNumber),
+            p(S(sectionIndexColor), ISSPropertyTypeColor),
+            p(S(sectionIndexBackgroundColor), ISSPropertyTypeColor),
+            p(S(sectionIndexTrackingBackgroundColor), ISSPropertyTypeColor),
             pe(S(separatorStyle), @{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine), @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)}),
-            p(S(separatorColor), ISStyleSheetPropertyTypeColor)
+            p(S(separatorColor), ISSPropertyTypeColor)
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:tableViewProperties];
 
@@ -549,18 +571,18 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                         @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)};
 
     NSSet* webViewProperties = [NSSet setWithArray:@[
-            p(S(scalesPageToFit), ISStyleSheetPropertyTypeBool),
+            p(S(scalesPageToFit), ISSPropertyTypeBool),
             pe(S(dataDetectorTypes), dataDetectorTypesValues),
-            p(S(allowsInlineMediaPlayback), ISStyleSheetPropertyTypeBool),
-            p(S(mediaPlaybackRequiresUserAction), ISStyleSheetPropertyTypeBool),
-            p(S(mediaPlaybackAllowsAirPlay), ISStyleSheetPropertyTypeBool),
-            p(S(suppressesIncrementalRendering), ISStyleSheetPropertyTypeBool),
-            p(S(keyboardDisplayRequiresUserAction), ISStyleSheetPropertyTypeBool),
+            p(S(allowsInlineMediaPlayback), ISSPropertyTypeBool),
+            p(S(mediaPlaybackRequiresUserAction), ISSPropertyTypeBool),
+            p(S(mediaPlaybackAllowsAirPlay), ISSPropertyTypeBool),
+            p(S(suppressesIncrementalRendering), ISSPropertyTypeBool),
+            p(S(keyboardDisplayRequiresUserAction), ISSPropertyTypeBool),
             pe(S(paginationMode), @{@"unpaginated" : @(UIWebPaginationModeUnpaginated), @"lefttoright" : @(UIWebPaginationModeLeftToRight),
                     @"toptobottom" : @(UIWebPaginationModeTopToBottom), @"bottomtotop" : @(UIWebPaginationModeBottomToTop), @"righttoleft" : @(UIWebPaginationModeRightToLeft)}),
             pe(S(paginationBreakingMode), @{@"page" : @(UIWebPaginationBreakingModePage), @"column" : @(UIWebPaginationBreakingModeColumn)}),
-            p(S(pageLength), ISStyleSheetPropertyTypeNumber),
-            p(S(gapBetweenPages), ISStyleSheetPropertyTypeNumber),
+            p(S(pageLength), ISSPropertyTypeNumber),
+            p(S(gapBetweenPages), ISSPropertyTypeNumber),
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:webViewProperties];
 
@@ -574,26 +596,26 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* activityIndicatorProperties = [NSSet setWithArray:@[
             pe(S(activityIndicatorViewStyle), @{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)}),
-            p(S(color), ISStyleSheetPropertyTypeColor),
-            p(S(hidesWhenStopped), ISStyleSheetPropertyTypeBool)
+            p(S(color), ISSPropertyTypeColor),
+            p(S(hidesWhenStopped), ISSPropertyTypeBool)
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:activityIndicatorProperties];
 
 
     NSSet* buttonProperties = [NSSet setWithArray:@[
-            p(S(showsTouchWhenHighlighted), ISStyleSheetPropertyTypeBool),
-            p(S(adjustsImageWhenHighlighted), ISStyleSheetPropertyTypeBool),
-            p(S(adjustsImageWhenDisabled), ISStyleSheetPropertyTypeBool),
-            p(S(contentEdgeInsets), ISStyleSheetPropertyTypeEdgeInsets),
-            p(S(titleEdgeInsets), ISStyleSheetPropertyTypeEdgeInsets),
-            p(S(imageEdgeInsets), ISStyleSheetPropertyTypeEdgeInsets),
-            p(S(reversesTitleShadowWhenHighlighted), ISStyleSheetPropertyTypeBool),
+            p(S(showsTouchWhenHighlighted), ISSPropertyTypeBool),
+            p(S(adjustsImageWhenHighlighted), ISSPropertyTypeBool),
+            p(S(adjustsImageWhenDisabled), ISSPropertyTypeBool),
+            p(S(contentEdgeInsets), ISSPropertyTypeEdgeInsets),
+            p(S(titleEdgeInsets), ISSPropertyTypeEdgeInsets),
+            p(S(imageEdgeInsets), ISSPropertyTypeEdgeInsets),
+            p(S(reversesTitleShadowWhenHighlighted), ISSPropertyTypeBool),
             title,
-            pp(@"titleColor", controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"titleColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setTitleColor:value forState:state];
             }),
-            pp(@"titleShadowColor", controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"titleShadowColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setTitleShadowColor:value forState:state];
             }),
@@ -610,9 +632,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
 
     NSSet* resizableTextProperties = [NSSet setWithArray:@[
-            p(S(adjustsFontSizeToFitWidth), ISStyleSheetPropertyTypeBool),
-            p(S(minimumFontSize), ISStyleSheetPropertyTypeNumber),
-            p(S(minimumScaleFactor), ISStyleSheetPropertyTypeNumber)
+            p(S(adjustsFontSizeToFitWidth), ISSPropertyTypeBool),
+            p(S(minimumFontSize), ISSPropertyTypeNumber),
+            p(S(minimumScaleFactor), ISSPropertyTypeNumber)
     ]];
 
     NSSet* labelProperties = [NSSet setWithArray:@[
@@ -623,12 +645,12 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                     @"clip" : @(NSLineBreakByClipping), @"truncateHead" : @(NSLineBreakByTruncatingHead), @"truncateTail" : @(NSLineBreakByTruncatingTail),
                     @"truncateMiddle" : @(NSLineBreakByTruncatingMiddle)}
             ),
-            p(S(numberOfLines), ISStyleSheetPropertyTypeNumber),
-            p(S(preferredMaxLayoutWidth), ISStyleSheetPropertyTypeNumber),
+            p(S(numberOfLines), ISSPropertyTypeNumber),
+            p(S(preferredMaxLayoutWidth), ISSPropertyTypeNumber),
             shadowOffset,
-            p(S(highlightedTextColor), ISStyleSheetPropertyTypeColor),
+            p(S(highlightedTextColor), ISSPropertyTypeColor),
             shadowColor,
-            p(S(text), ISStyleSheetPropertyTypeString)
+            p(S(text), ISSPropertyTypeString)
     ]];
     labelProperties = [labelProperties setByAddingObjectsFromSet:textProperties];
     labelProperties = [labelProperties setByAddingObjectsFromSet:resizableTextProperties];
@@ -636,17 +658,17 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
     NSSet* progressViewProperties = [NSSet setWithArray:@[
-            p(S(progressTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(progressImage), ISStyleSheetPropertyTypeImage),
+            p(S(progressTintColor), ISSPropertyTypeColor),
+            p(S(progressImage), ISSPropertyTypeImage),
             pe(S(progressViewStyle), @{@"default" : @(UIProgressViewStyleDefault), @"bar" : @(UIProgressViewStyleBar)}),
-            p(S(trackTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(trackImage), ISStyleSheetPropertyTypeImage),
+            p(S(trackTintColor), ISSPropertyTypeColor),
+            p(S(trackImage), ISSPropertyTypeImage),
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:progressViewProperties];
 
 
     NSSet* minimalTextInputProperties = [NSSet setWithArray:@[
-            p(S(autocapitalizationType), ISStyleSheetPropertyTypeBool),
+            p(S(autocapitalizationType), ISSPropertyTypeBool),
             pe(S(autocorrectionType), @{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)}),
             pe(S(spellCheckingType), @{@"default" : @(UITextSpellCheckingTypeDefault), @"no" : @(UITextSpellCheckingTypeNo), @"yes" : @(UITextSpellCheckingTypeYes)}),
             pe(S(keyboardType), @{@"default" : @(UIKeyboardTypeDefault), @"alphabet" : @(UIKeyboardTypeAlphabet), @"asciiCapable" : @(UIKeyboardTypeASCIICapable),
@@ -656,26 +678,26 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ]];
 
     NSSet* textInputProperties = [NSSet setWithArray:@[
-            p(S(enablesReturnKeyAutomatically), ISStyleSheetPropertyTypeBool),
+            p(S(enablesReturnKeyAutomatically), ISSPropertyTypeBool),
             pe(S(keyboardAppearance), @{@"default" : @(UIKeyboardAppearanceDefault), @"alert" : @(UIKeyboardAppearanceAlert),
                     @"dark" : @(UIKeyboardAppearanceDark), @"light" : @(UIKeyboardAppearanceLight)}),
 
             pe(S(returnKeyType), @{@"default" : @(UIReturnKeyDefault), @"go" : @(UIReturnKeyGo), @"google" : @(UIReturnKeyGoogle), @"join" : @(UIReturnKeyJoin),
                                                     @"next" : @(UIReturnKeyNext), @"route" : @(UIReturnKeyRoute), @"search" : @(UIReturnKeySearch), @"send" : @(UIReturnKeySend),
                                                     @"yahoo" : @(UIReturnKeyYahoo), @"done" : @(UIReturnKeyDone), @"emergencyCall" : @(UIReturnKeyEmergencyCall)}),
-            p(@"secureTextEntry", ISStyleSheetPropertyTypeBool),
-            p(S(clearsOnInsertion), ISStyleSheetPropertyTypeBool),
-            p(S(placeholder), ISStyleSheetPropertyTypeString),
-            p(S(text), ISStyleSheetPropertyTypeString)
+            p(@"secureTextEntry", ISSPropertyTypeBool),
+            p(S(clearsOnInsertion), ISSPropertyTypeBool),
+            p(S(placeholder), ISSPropertyTypeString),
+            p(S(text), ISSPropertyTypeString)
         ]];
     textInputProperties = [textInputProperties setByAddingObjectsFromSet:minimalTextInputProperties];
     allProperties = [allProperties setByAddingObjectsFromSet:textInputProperties];
 
     NSSet* textFieldProperties = [NSSet setWithArray:@[
-            p(S(clearsOnBeginEditing), ISStyleSheetPropertyTypeBool),
+            p(S(clearsOnBeginEditing), ISSPropertyTypeBool),
             pe(S(borderStyle), @{@"none" : @(UITextBorderStyleNone), @"bezel" : @(UITextBorderStyleBezel), @"line" : @(UITextBorderStyleLine), @"roundedRect" : @(UITextBorderStyleRoundedRect)}),
-            p(S(background), ISStyleSheetPropertyTypeImage),
-            p(S(disabledBackground), ISStyleSheetPropertyTypeImage)
+            p(S(background), ISSPropertyTypeImage),
+            p(S(disabledBackground), ISSPropertyTypeImage)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:textFieldProperties];
@@ -686,11 +708,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
     NSSet* textViewProperties = [NSSet setWithArray:@[
-            p(S(allowsEditingTextAttributes), ISStyleSheetPropertyTypeBool),
+            p(S(allowsEditingTextAttributes), ISSPropertyTypeBool),
             peo(S(dataDetectorTypes), dataDetectorTypesValues),
-            p(@"editable", ISStyleSheetPropertyTypeBool),
-            p(@"selectable", ISStyleSheetPropertyTypeBool),
-            p(S(textContainerInset), ISStyleSheetPropertyTypeEdgeInsets)
+            p(@"editable", ISSPropertyTypeBool),
+            p(@"selectable", ISSPropertyTypeBool),
+            p(S(textContainerInset), ISSPropertyTypeEdgeInsets)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:textViewProperties];
@@ -701,36 +723,36 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet*imageViewProperties = [NSSet setWithArray:@[
             image,
-            p(S(highlightedImage), ISStyleSheetPropertyTypeImage)
+            p(S(highlightedImage), ISSPropertyTypeImage)
         ]];
     allProperties = [allProperties setByAddingObjectsFromSet:imageViewProperties];
 
 
     NSSet* switchProperties = [NSSet setWithArray:@[
-            p(S(onTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(thumbTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(onImage), ISStyleSheetPropertyTypeImage),
-            p(S(offImage), ISStyleSheetPropertyTypeImage)
+            p(S(onTintColor), ISSPropertyTypeColor),
+            p(S(thumbTintColor), ISSPropertyTypeColor),
+            p(S(onImage), ISSPropertyTypeImage),
+            p(S(offImage), ISSPropertyTypeImage)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:switchProperties];
 
 
     NSSet* sliderProperties = [NSSet setWithArray:@[
-            p(S(minimumValueImage), ISStyleSheetPropertyTypeImage),
-            p(S(maximumValueImage), ISStyleSheetPropertyTypeImage),
-            p(S(minimumTrackTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(maximumTrackTintColor), ISStyleSheetPropertyTypeColor),
-            p(S(thumbTintColor), ISStyleSheetPropertyTypeColor),
-            pp(@"maximumTrackImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            p(S(minimumValueImage), ISSPropertyTypeImage),
+            p(S(maximumValueImage), ISSPropertyTypeImage),
+            p(S(minimumTrackTintColor), ISSPropertyTypeColor),
+            p(S(maximumTrackTintColor), ISSPropertyTypeColor),
+            p(S(thumbTintColor), ISSPropertyTypeColor),
+            pp(@"maximumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setMaximumTrackImage:value forState:state];
             }),
-            pp(@"minimumTrackImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"minimumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setMinimumTrackImage:value forState:state];
             }),
-            pp(@"thumbImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"thumbImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setThumbImage:value forState:state];
             }),
@@ -740,22 +762,22 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
     NSSet* stepperProperties = [NSSet setWithArray:@[
-            p(@"continuous", ISStyleSheetPropertyTypeBool),
-            p(S(autorepeat), ISStyleSheetPropertyTypeBool),
-            p(S(wraps), ISStyleSheetPropertyTypeBool),
-            p(S(minimumValue), ISStyleSheetPropertyTypeNumber),
-            p(S(maximumValue), ISStyleSheetPropertyTypeNumber),
-            p(S(stepValue), ISStyleSheetPropertyTypeNumber),
+            p(@"continuous", ISSPropertyTypeBool),
+            p(S(autorepeat), ISSPropertyTypeBool),
+            p(S(wraps), ISSPropertyTypeBool),
+            p(S(minimumValue), ISSPropertyTypeNumber),
+            p(S(maximumValue), ISSPropertyTypeNumber),
+            p(S(stepValue), ISSPropertyTypeNumber),
             backgroundImage,
-            pp(@"decrementImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"decrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setDecrementImage:value forState:state];
             }),
-            pp(@"incrementImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"incrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setIncrementImage:value forState:state];
             }),
-            pp(@"dividerImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"dividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 if( parameters.count > 1 ) {
                     [viewObject setDividerImage:value forLeftSegmentState:(UIControlState)[parameters[0] unsignedIntegerValue] rightSegmentState:(UIControlState)[parameters[1] unsignedIntegerValue]];
                 }
@@ -773,18 +795,18 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         ]];
     allProperties = [allProperties setByAddingObjectsFromSet:statefulTitleTextAttributes];
 
-
     NSSet* segmentedControlProperties = [NSSet setWithArray:@[
-            p(S(apportionsSegmentWidthsByContent), ISStyleSheetPropertyTypeBool),
+            p(S(apportionsSegmentWidthsByContent), ISSPropertyTypeBool),
+            p(@"momentary", ISSPropertyTypeBool),
             backgroundImage,
-            pp(@"contentPositionAdjustment", barMetricsSegmentAndControlStateParameters, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"contentPositionAdjustment", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 if( parameters.count > 0 ) {
                     UISegmentedControlSegment segment = parameters.count > 0 ? (UISegmentedControlSegment)[parameters[0] integerValue] : UISegmentedControlSegmentAny;
                     UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
                     [viewObject setContentPositionAdjustment:[value UIOffsetValue] forSegmentType:segment barMetrics:metrics];
                 }
             }),
-            pp(@"dividerImage", barMetricsSegmentAndControlStateParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"dividerImage", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 if( parameters.count > 1 ) {
                     UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                     UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
@@ -799,31 +821,31 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
     NSSet* barButtonProperties = [NSSet setWithArray:@[
-            p(@"enabled", ISStyleSheetPropertyTypeBool),
-            p(S(title), ISStyleSheetPropertyTypeString),
+            p(@"enabled", ISSPropertyTypeBool),
+            p(S(title), ISSPropertyTypeString),
             image,
-            p(S(landscapeImagePhone), ISStyleSheetPropertyTypeImage),
-            p(S(imageInsets), ISStyleSheetPropertyTypeEdgeInsets),
-            p(S(landscapeImagePhoneInsets), ISStyleSheetPropertyTypeEdgeInsets),
+            p(S(landscapeImagePhone), ISSPropertyTypeImage),
+            p(S(imageInsets), ISSPropertyTypeEdgeInsets),
+            p(S(landscapeImagePhoneInsets), ISSPropertyTypeEdgeInsets),
             pe(S(style), @{@"plain" : @(UIBarButtonItemStylePlain), @"bordered" : @(UIBarButtonItemStyleBordered),
                                 @"done" : @(UIBarButtonItemStyleDone)}),
-            p(S(width), ISStyleSheetPropertyTypeNumber),
+            p(S(width), ISSPropertyTypeNumber),
             backgroundImage,
-            pp(@"backgroundVerticalPositionAdjustment", barMetricsParameters, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 [viewObject setBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
             }),
             titlePositionAdjustment,
-            pp(@"backButtonBackgroundImage", barMetricsAndControlStateParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backButtonBackgroundImage", barMetricsAndControlStateParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics) [parameters[1] integerValue] : UIBarMetricsDefault;
                 [viewObject setBackButtonBackgroundImage:value forState:state barMetrics:metrics];
             }),
-            pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 [viewObject setBackButtonBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
             }),
-            pp(@"backButtonTitlePositionAdjustment", barMetricsParameters, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backButtonTitlePositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 [viewObject setBackButtonTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
             }),
@@ -838,17 +860,17 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* tableViewCellProperties = [NSSet setWithArray:@[
             pe(S(selectionStyle), @{@"none" : @(UITableViewCellSelectionStyleNone), @"default" : @(UITableViewCellSelectionStyleDefault), @"blue" : @(UITableViewCellSelectionStyleBlue), @"gray" : @(UITableViewCellSelectionStyleGray)}),
-            p(@"selected", ISStyleSheetPropertyTypeBool),
-            p(@"highlighted", ISStyleSheetPropertyTypeBool),
+            p(@"selected", ISSPropertyTypeBool),
+            p(@"highlighted", ISSPropertyTypeBool),
             pe(S(selectionStyle), @{@"none" : @(UITableViewCellEditingStyleNone), @"delete" : @(UITableViewCellEditingStyleDelete), @"insert" : @(UITableViewCellEditingStyleInsert)}),
-            p(S(showsReorderControl), ISStyleSheetPropertyTypeBool),
-            p(S(shouldIndentWhileEditing), ISStyleSheetPropertyTypeBool),
+            p(S(showsReorderControl), ISSPropertyTypeBool),
+            p(S(shouldIndentWhileEditing), ISSPropertyTypeBool),
             pe(S(accessoryType), accessoryTypes),
             pe(S(editingAccessoryType), accessoryTypes),
-            p(S(indentationLevel), ISStyleSheetPropertyTypeNumber),
-            p(S(indentationWidth), ISStyleSheetPropertyTypeNumber),
-            p(S(separatorInset), ISStyleSheetPropertyTypeEdgeInsets),
-            p(@"editing", ISStyleSheetPropertyTypeBool)
+            p(S(indentationLevel), ISSPropertyTypeNumber),
+            p(S(indentationWidth), ISSPropertyTypeNumber),
+            p(S(separatorInset), ISSPropertyTypeEdgeInsets),
+            p(@"editing", ISSPropertyTypeBool)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:tableViewCellProperties];
@@ -871,8 +893,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             barTintColor,
             backgroundImage,
             shadowImage,
-            p(S(backIndicatorImage), ISStyleSheetPropertyTypeImage),
-            p(S(backIndicatorTransitionMaskImage), ISStyleSheetPropertyTypeImage)
+            p(S(backIndicatorImage), ISSPropertyTypeImage),
+            p(S(backIndicatorTransitionMaskImage), ISSPropertyTypeImage)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:navigationBarProperties];
@@ -886,52 +908,52 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* searchBarProperties = [NSSet setWithArray:@[
             barStyle,
-            p(S(text), ISStyleSheetPropertyTypeString),
-            p(S(prompt), ISStyleSheetPropertyTypeString),
-            p(S(placeholder), ISStyleSheetPropertyTypeString),
-            p(S(showsBookmarkButton), ISStyleSheetPropertyTypeBool),
-            p(S(showsCancelButton), ISStyleSheetPropertyTypeBool),
-            p(S(showsSearchResultsButton), ISStyleSheetPropertyTypeBool),
-            p(@"searchResultsButtonSelected", ISStyleSheetPropertyTypeBool),
+            p(S(text), ISSPropertyTypeString),
+            p(S(prompt), ISSPropertyTypeString),
+            p(S(placeholder), ISSPropertyTypeString),
+            p(S(showsBookmarkButton), ISSPropertyTypeBool),
+            p(S(showsCancelButton), ISSPropertyTypeBool),
+            p(S(showsSearchResultsButton), ISSPropertyTypeBool),
+            p(@"searchResultsButtonSelected", ISSPropertyTypeBool),
             barTintColor,
             pe(S(searchBarStyle), @{@"default" : @(UISearchBarStyleDefault), @"minimal" : @(UISearchBarStyleMinimal), @"prominent" : @(UISearchBarStyleProminent)}),
             translucent,
-            p(S(showsScopeBar), ISStyleSheetPropertyTypeBool),
-            p(S(scopeBarBackgroundImage), ISStyleSheetPropertyTypeImage),
+            p(S(showsScopeBar), ISSPropertyTypeBool),
+            p(S(scopeBarBackgroundImage), ISSPropertyTypeImage),
             backgroundImage,
-            pp(@"searchFieldBackgroundImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"searchFieldBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setSearchFieldBackgroundImage:value forState:state];
             }),
-            pp(@"imageForSearchBarIcon", statefulSearchBarIconParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"imageForSearchBarIcon", statefulSearchBarIconParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
                 UIControlState state = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setImage:value forSearchBarIcon:icon state:state];
             }),
-            pp(@"scopeBarButtonBackgroundImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setScopeBarButtonBackgroundImage:value forState:state];
             }),
-            pp(@"scopeBarButtonDividerImage", controlStateParametersValues, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonDividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
                 [viewObject setScopeBarButtonDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState];
             }),
-            pp(@"scopeBarButtonTitleFont", controlStateParametersValues, ISStyleSheetPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonTitleFont", controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
             }),
-            pp(@"scopeBarButtonTitleTextColor", controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonTitleTextColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextColor);
             }),
-            pp(@"scopeBarButtonTitleShadowColor", controlStateParametersValues, ISStyleSheetPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonTitleShadowColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
             }),
-            pp(@"scopeBarButtonTitleShadowOffset", controlStateParametersValues, ISStyleSheetPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"scopeBarButtonTitleShadowOffset", controlStateParametersValues, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
             }),
-            p(S(searchFieldBackgroundPositionAdjustment), ISStyleSheetPropertyTypeOffset),
-            p(S(searchTextPositionAdjustment), ISStyleSheetPropertyTypeOffset),
-            pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISStyleSheetPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            p(S(searchFieldBackgroundPositionAdjustment), ISSPropertyTypeOffset),
+            p(S(searchTextPositionAdjustment), ISSPropertyTypeOffset),
+            pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
                 [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
             })
@@ -943,19 +965,19 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* tabBarProperties = [NSSet setWithArray:@[
             barTintColor,
-            p(S(selectedImageTintColor), ISStyleSheetPropertyTypeColor),
+            p(S(selectedImageTintColor), ISSPropertyTypeColor),
             backgroundImage,
-            p(S(selectionIndicatorImage), ISStyleSheetPropertyTypeImage),
+            p(S(selectionIndicatorImage), ISSPropertyTypeImage),
             shadowImage,
             pe(S(itemPositioning), @{@"automatic" : @(UITabBarItemPositioningAutomatic), @"centered" : @(UITabBarItemPositioningCentered), @"fill" : @(UITabBarItemPositioningFill)}),
-            p(S(itemWidth), ISStyleSheetPropertyTypeNumber),
-            p(S(itemSpacing), ISStyleSheetPropertyTypeNumber),
+            p(S(itemWidth), ISSPropertyTypeNumber),
+            p(S(itemSpacing), ISSPropertyTypeNumber),
             barStyle,
             translucent
         ]];
 
     NSSet* tabBarItemProperties = [NSSet setWithArray:@[
-            p(S(selectedImage), ISStyleSheetPropertyTypeImage),
+            p(S(selectedImage), ISSPropertyTypeImage),
             titlePositionAdjustment,
     ]];
 
@@ -993,13 +1015,16 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     };
 
     NSMutableDictionary* _classesToNames = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary* _typeNamesToClasses = [[NSMutableDictionary alloc] init];
     for(Class clazz in classProperties.allKeys) {
-        if( clazz != UIView.class ) {
-            _classesToNames[resistanceIsFutile clazz] = [[clazz description] lowercaseString];
-        }
+        NSString* typeName = [[clazz description] lowercaseString];
+        _classesToNames[resistanceIsFutile clazz] = typeName;
+        _typeNamesToClasses[typeName] = clazz;
     }
     _classesToNames[resistanceIsFutile UIWindow.class] = @"uiwindow";
-    classesToNames = _classesToNames;
+    _typeNamesToClasses[@"uiwindow"] = UIWindow.class;
+    classesToTypeNames = [NSDictionary dictionaryWithDictionary:_classesToNames];
+    typeNamesToClasses = [NSDictionary dictionaryWithDictionary:_typeNamesToClasses];
 }
 
 

@@ -9,18 +9,18 @@
 
 #import "Parcoa+ISSAdditions.h"
 
-#define SKIP_SPACE_AND_NEWLINES while( i < input.length && [self.whitespaceAndNewLineSet characterIsMember:[input characterAtIndex:i]] ) i++
+#define SKIP_SPACE_AND_NEWLINES while( i < input.length && [[self iss_whitespaceAndNewLineSet] characterIsMember:[input characterAtIndex:i]] ) i++
 
 static NSCharacterSet* whitespaceAndNewLineSet = nil;
 
 @implementation Parcoa (ISSAdditions)
 
-+ (NSCharacterSet*) whitespaceAndNewLineSet {
++ (NSCharacterSet*) iss_whitespaceAndNewLineSet {
     if( !whitespaceAndNewLineSet ) whitespaceAndNewLineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
     return whitespaceAndNewLineSet;
 }
 
-+ (ParcoaParser*) quickUnichar:(unichar)c skipSpace:(BOOL)skipSpace {
++ (ParcoaParser*) iss_quickUnichar:(unichar)c skipSpace:(BOOL)skipSpace {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;
         if( skipSpace ) SKIP_SPACE_AND_NEWLINES;
@@ -38,11 +38,11 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"satisfy" summary:@"quickUnichar"];
 }
 
-+ (ParcoaParser*) quickUnichar:(unichar)c {
-    return [self quickUnichar:c skipSpace:NO];
++ (ParcoaParser*) iss_quickUnichar:(unichar)c {
+    return [self iss_quickUnichar:c skipSpace:NO];
 }
 
-+ (ParcoaParser*) stringIgnoringCase:(NSString*)string {
++ (ParcoaParser*) iss_stringIgnoringCase:(NSString*)string {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         if ( [[input lowercaseString] hasPrefix:string]) {
             return [ParcoaResult ok:string residual:[input substringFromIndex:string.length] expected:[ParcoaExpectation unsatisfiable]];
@@ -52,7 +52,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"stringIgnoringCase" summaryWithFormat:@"\"%@\"", string];
 }
 
-+ (ParcoaParser*) takeUntil:(MatcherBlock)block minCount:(NSUInteger)minCount {
++ (ParcoaParser*) iss_takeUntil:(MatcherBlock)block minCount:(NSUInteger)minCount {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = block(input);
 
@@ -71,42 +71,42 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"takeUntil" summary:@"takeUntil"];
 }
 
-+ (ParcoaParser*) takeUntilInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount {
-    return [self takeUntil:^NSUInteger(NSString *input) {
++ (ParcoaParser*) iss_takeUntilInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount {
+    return [self iss_takeUntil:^NSUInteger(NSString* input) {
         return [input rangeOfCharacterFromSet:characterSet].location;
-    } minCount:minCount];
+    }                 minCount:minCount];
 }
 
-+ (ParcoaParser*) takeUntilChar:(unichar)character {
++ (ParcoaParser*) iss_takeUntilChar:(unichar)character {
     NSString* characterString = [NSString stringWithFormat:@"%C", character];
-    return [self takeUntil:^NSUInteger(NSString *input) {
+    return [self iss_takeUntil:^NSUInteger(NSString* input) {
         return [input rangeOfString:characterString].location;
-    } minCount:0];
+    }                 minCount:0];
 }
 
-+ (ParcoaParser*) anythingButBasicControlChars:(NSUInteger)minCount {
++ (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@":;{}"];
-    return [self takeUntilInSet:characterSet minCount:minCount];
+    return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
-+ (ParcoaParser*) anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount {
++ (ParcoaParser*) iss_anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@",:;{}()"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    return [self takeUntilInSet:characterSet minCount:minCount];
+    return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
-+ (NSCharacterSet*) validIdentifierCharsSet {
++ (NSCharacterSet*) iss_validIdentifierCharsSet {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
     return characterSet;
 }
 
-+ (ParcoaParser*) validIdentifierChars:(NSUInteger)minCount {
-    NSCharacterSet* characterSet = [self validIdentifierCharsSet];
-    return [self takeUntilInSet:[characterSet invertedSet] minCount:minCount];
++ (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount {
+    NSCharacterSet* characterSet = [self iss_validIdentifierCharsSet];
+    return [self iss_takeUntilInSet:[characterSet invertedSet] minCount:minCount];
 }
 
-+ (ParcoaParser*) safeDictionary:(ParcoaParser*)parser {
++ (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser {
     return [parser transform:^id(id value) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         [value enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
@@ -118,8 +118,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"safeDictionary"];
 }
 
-+ (ParcoaResult*) partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i {
-    //NSRange prefixRange = [input rangeOfString:prefix options:NSCaseInsensitiveSearch range:NSMakeRange(i, input.length-i)].location;
++ (ParcoaResult*) iss_partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i {
     NSRange prefixRange = [input rangeOfString:prefix options:NSCaseInsensitiveSearch range:NSMakeRange(i, input.length-i)];
     if( prefixRange.location == i ) {
         i += prefix.length;
@@ -138,37 +137,37 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return nil;
 }
 
-+ (ParcoaParser*) parameterStringWithPrefixes:(NSArray*)prefixes {
++ (ParcoaParser*) iss_parameterStringWithPrefixes:(NSArray*)prefixes {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;
         SKIP_SPACE_AND_NEWLINES; // Skip space
 
         for(NSString* prefix in prefixes) {
-            ParcoaResult* result = [self partialParserForPrefix:prefix input:input startIndex:i];
+            ParcoaResult* result = [self iss_partialParserForPrefix:prefix input:input startIndex:i];
             if( result ) return result;
         }
         return [ParcoaResult failWithRemaining:input expected:@"Line matching parameter string"];
     } name:@"parameterStringWithPrefix" summary:@"parameterStringWithPrefix"];
 }
 
-+ (ParcoaParser*) parameterStringWithPrefix:(NSString*)prefix {
++ (ParcoaParser*) iss_parameterStringWithPrefix:(NSString*)prefix {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;
         SKIP_SPACE_AND_NEWLINES; // Skip space
 
-        ParcoaResult* result = [self partialParserForPrefix:prefix input:input startIndex:i];
+        ParcoaResult* result = [self iss_partialParserForPrefix:prefix input:input startIndex:i];
         if( result ) return result;
         else return [ParcoaResult failWithRemaining:input expected:@"Line matching parameter string"];
     } name:@"parameterStringWithPrefix" summary:prefix];
 }
 
-+ (ParcoaParser*) twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right {
-    ParcoaParser* parser = [[self stringIgnoringCase:name] then:[self quickUnichar:'(' skipSpace:YES]];
-    parser = [[[parser keepRight:left] keepLeft:[self quickUnichar:',' skipSpace:YES]] then:right];
-    return [parser keepLeft:[self quickUnichar:')' skipSpace:YES]];
++ (ParcoaParser*) iss_twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right {
+    ParcoaParser* parser = [[self iss_stringIgnoringCase:name] then:[self iss_quickUnichar:'(' skipSpace:YES]];
+    parser = [[[parser keepRight:left] keepLeft:[self iss_quickUnichar:',' skipSpace:YES]] then:right];
+    return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
 }
 
-+ (ParcoaParser*) nameValueSeparator {
++ (ParcoaParser*) iss_nameValueSeparator {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;
         SKIP_SPACE_AND_NEWLINES; // Skip space
@@ -186,7 +185,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"nameValueSeparator" summary:@""];
 }
 
-+ (ParcoaParser*) parseLineUpToInvalidCharactersInString:(NSString*)invalid {
++ (ParcoaParser*) iss_parseLineUpToInvalidCharactersInString:(NSString*)invalid {
     NSCharacterSet* invalidChars = [NSMutableCharacterSet characterSetWithCharactersInString:[@"\r\n" stringByAppendingString:invalid]];
 
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
@@ -213,7 +212,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"parseLineUpToInvalidCharactersInString" summary:invalid];
 }
 
-+ (ParcoaParser*) commentParser {
++ (ParcoaParser*) iss_commentParser {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;
 

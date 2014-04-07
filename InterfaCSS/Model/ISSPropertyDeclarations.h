@@ -7,7 +7,7 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
+@class ISSUIElementDetails;
 
 @interface ISSPropertyDeclarations : NSObject
 
@@ -17,6 +17,8 @@
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSDictionary*)properties;
 
-- (BOOL) matchesView:(UIView*)view;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
+
+- (NSString*) displayDescription:(BOOL)withProperties;
 
 @end

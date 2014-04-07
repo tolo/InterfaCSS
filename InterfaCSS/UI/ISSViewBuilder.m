@@ -41,11 +41,11 @@ id InterfaCSS_SetupLeafView(UIView* theView, NSString* styleClassName) {
     if( styleClassName ) {
         static NSCharacterSet* characterSet = nil;
         if( !characterSet ) characterSet = [NSCharacterSet characterSetWithCharactersInString:@" ,"];
-        NSArray* styles = [styleClassName trimmedSplitWithSet:characterSet];
+        NSArray* styles = [styleClassName iss_trimmedSplitWithSet:characterSet];
         if( styles.count > 1 ) {
-            for(NSString* style in styles) [theView addStyleClass:style];
+            for(NSString* style in styles) [theView addStyleClassISS:style];
         }
-        else theView.styleClass = styleClassName;
+        else theView.styleClassISS = styleClassName;
     }
     
     if( subViewBlock ) {

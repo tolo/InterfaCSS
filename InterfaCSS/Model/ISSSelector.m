@@ -10,64 +10,84 @@
 #import "ISSSelector.h"
 
 #import "InterfaCSS.h"
-#import "ISSPropertyDefinition.h"
 #import "NSString+ISSStringAdditions.h"
+#import "NSObject+ISSLogSupport.h"
+#import "ISSPseudoClass.h"
+#import "ISSUIElementDetails.h"
 
-@implementation ISSSelector
-
-#pragma mark - Utility methods
-
-- (BOOL) isEqual:(NSString*)string1 string2:(NSString*)string2 {
-    if (string1 == string2) return YES;
-    else return [string1 isEqualToString:string2];
+@implementation ISSSelector {
+    BOOL _wildcardType;
 }
-
 
 #pragma mark - ISSelector interface
 
-- (id) initWithType:(NSString*)type class:(NSString*)styleClass {
+- (instancetype) initWithType:(Class)type wildcardType:(BOOL)wildcardType class:(NSString*)styleClass pseudoClass:(ISSPseudoClass*)pseudoClass {
     self = [super init];
     if (self) {
+        _wildcardType = wildcardType;
         _type = type;
-        _styleClass = styleClass;
+        _styleClass = [styleClass lowercaseString];
+        _pseudoClass = pseudoClass;
     }
     return self;
 }
 
-- (id) copyWithZone:(NSZone*)zone {
-    return [[self.class allocWithZone:zone] initWithType:self.type class:self.styleClass];
++ (instancetype) selectorWithType:(NSString*)type class:(NSString*)styleClass pseudoClass:(ISSPseudoClass*)pseudoClass {
+    Class typeClass = nil;
+    BOOL wildcardType = NO;
+
+    if( [type iss_hasData] ) {
+        if( [type isEqualToString:@"*"] ) wildcardType = YES;
+        else {
+            type = [type lowercaseString];
+            if( ![type hasPrefix:@"ui"] ) type = [@"ui" stringByAppendingString:type];
+            typeClass = [ISSPropertyDefinition canonicalTypeClassForType:type];
+        }
+    }
+
+    if( typeClass || styleClass ) {
+        return [[self alloc] initWithType:typeClass wildcardType:wildcardType class:styleClass pseudoClass:pseudoClass];
+    } else if( [type iss_hasData] && !typeClass && !wildcardType ) {
+        ISSLogWarning(@"Unrecognized type: %@", type);
+    }  else {
+        ISSLogWarning(@"Invalid selector - type and style class missing!");
+    }
+    return nil;
 }
 
-- (BOOL) matchesComponent:(id)component {
-    BOOL typeMatch = !self.type || [self.type isEqualToString:@"*"];
-    
-    if( !typeMatch ) {
-        NSString* componentType = [ISSPropertyDefinition typeForViewClass:[component class]];
-        typeMatch = [componentType isEqualIgnoreCase:self.type];
-        if( !typeMatch ) { // Remove leading "ui"
-            componentType = [componentType stringByReplacingCharactersInRange:NSMakeRange(0, 2) withString:@""];
-            typeMatch = [componentType isEqualIgnoreCase:self.type];
-        }
-    }
-    
+- (instancetype) copyWithZone:(NSZone*)zone {
+    return [[self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType class:self.styleClass pseudoClass:self.pseudoClass];
+}
+
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
     // TYPE
-    if( typeMatch ) {
-        // STYLE CLASS
-        if( !self.styleClass ) return YES;
-        else {
-            NSSet* styleClasses = [[InterfaCSS interfaCSS] styleClassesForUIObject:component];
-            for(NSString* componentClass in styleClasses) {
-                if ( [componentClass compare:self.styleClass options:NSCaseInsensitiveSearch] == NSOrderedSame ) return YES;
-            }
-        }
+    BOOL match = !self.type || _wildcardType;
+    if( !match ) {
+        match = elementDetails.canonicalType == self.type;
     }
-    return NO;
+
+    // STYLE CLASS
+    if( match && self.styleClass ) {
+        match = [elementDetails.styleClasses containsObject:self.styleClass];
+    }
+
+    // PSEUDO CLASS
+    if( match && self.pseudoClass ) {
+        match = [self.pseudoClass matchesElement:elementDetails];
+    }
+
+    return match;
 }
 
 - (NSString*) displayDescription {
-    if ( _type && _styleClass ) return [NSString stringWithFormat:@"%@.%@", _type, _styleClass];
-    else if ( _type ) return [NSString stringWithFormat:@"%@", _type];
-    else return [NSString stringWithFormat:@".%@", _styleClass];
+    NSString* pseudoClassSuffix = @"";
+    NSString* typeString = _type ? [ISSPropertyDefinition canonicalTypeForViewClass:_type] : nil;
+    if( !_type && _wildcardType ) typeString = @"*";
+    
+    if( self.pseudoClass ) pseudoClassSuffix = [NSString stringWithFormat:@":%@", self.pseudoClass.displayDescription];
+    if ( typeString && _styleClass ) return [NSString stringWithFormat:@"%@.%@%@", typeString, _styleClass, pseudoClassSuffix];
+    else if ( typeString ) return [NSString stringWithFormat:@"%@%@", typeString, pseudoClassSuffix];
+    else return [NSString stringWithFormat:@".%@%@", _styleClass, pseudoClassSuffix];
 }
 
 
@@ -78,14 +98,16 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if ( [object isKindOfClass:[ISSSelector class]] ) {
+    if ( [object isKindOfClass:ISSSelector.class] ) {
         ISSSelector* other = (ISSSelector*)object;
-        return [self isEqual:self.type string2:other.type] && [self isEqual:self.styleClass string2:other.styleClass];
+        return _wildcardType == other->_wildcardType && self.type == other.type &&
+            [NSString iss_string:self.styleClass isEqualToString:other.styleClass] &&
+            self.pseudoClass == other.pseudoClass ? YES : [self.pseudoClass isEqual:other.pseudoClass];
     } else return NO;
 }
 
 - (NSUInteger) hash {
-    return 31 * [self.type hash] + [self.styleClass hash];
+    return 31*31 * [self.type hash] + 31*[self.styleClass hash] + [self.pseudoClass hash] + (_wildcardType ? 1 : 0);
 }
 
 @end

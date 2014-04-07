@@ -9,6 +9,7 @@
 
 #import "PrototypeExampleViewController.h"
 
+#import "InterfaCSS.h"
 #import "ISSViewBuilder.h"
 #import "UITableView+InterfaCSS.h"
 #import "UIView+InterfaCSS.h"
@@ -65,10 +66,13 @@
 }
 
 - (void) loadView {
+    // To prevent a lot of up front loading when application starts, loading of a stylesheet can be postponed until it's actually needed
+    [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"prototypeExample.css"];
+    
     // Load the complete view hierachy for this view controller from the view definition file 'views.xml'
     self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];
     
-    self.mainTitleLabel.text = @"Prototype Example Main";
+    self.mainTitleLabel.text = @"Prototype Example";
     self.mainSubtitleLabel.text = @"Sample Sub";
 }
 
@@ -85,16 +89,23 @@
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    PrototypeExampleCell* cell = [tableView dequeueReusablePrototypeCellWithIdentifier:@"prototypeExampleCell"];
+    PrototypeExampleCell* cell = [tableView dequeueReusablePrototypeCellWithIdentifierISS:@"prototypeExampleCell" forIndexPath:indexPath];
+    
     NSArray* item = items[indexPath.row];
     cell.label1.text = item[0];
     cell.label2.text = item[1];
     cell.label3.text = item[2];
+    
     return cell;
 }
 
 - (void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
-    [cell applyStyling];
+    [cell applyStylingISS];
+}
+
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
+    [cell.selectedBackgroundView applyStylingWithAnimationISS];
 }
 
 @end

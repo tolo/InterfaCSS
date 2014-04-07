@@ -11,9 +11,8 @@
 
 #import "ISSPropertyDeclarations.h"
 #import "ISSStyleSheetParser.h"
-#import "NSString+ISSStringAdditions.h"
-#import "ISSDateUtils.h"
 #import "NSObject+ISSLogSupport.h"
+#import "ISSUIElementDetails.h"
 
 
 @implementation ISSStyleSheet {
@@ -34,11 +33,14 @@
    return self;
 }
 
-- (NSDictionary*) stylesForView:(UIView*)view {
+- (NSDictionary*) stylesForElement:(ISSUIElementDetails*)elementDetails {
     NSMutableDictionary* styles = [NSMutableDictionary dictionary];
 
+    ISSLogTrace(@"Getting styles for %@:", elementDetails.uiElement);
+
     for(ISSPropertyDeclarations* declarations in _declarations) {
-        if ( [declarations matchesView:view] ) {
+        if ( [declarations matchesElement:elementDetails] ) {
+            ISSLogTrace(@"Matching declarations: %@", declarations);
             [styles addEntriesFromDictionary:declarations.properties];
         }
     }
@@ -46,10 +48,20 @@
     return styles;
 }
 
+- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails {
+    NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
+    for(ISSPropertyDeclarations* declarations in _declarations) {
+        if ( [declarations matchesElement:elementDetails] ) {
+            [matchingDeclarations addObject:declarations];
+        }
+    }
+    return matchingDeclarations;
+}
+
 
 #pragma mark - Refreshable stylesheet methods
 
-- (void) refresh:(void (^)(void))completionHandler parse:(ISSStyleSheetParser*)styleSheetParser {
+- (void) refresh:(void (^)(void))completionHandler parse:(id<ISSStyleSheetParser>)styleSheetParser {
     [super refresh:self.styleSheetURL completionHandler:^(NSString* responseString) {
         NSMutableArray* declarations = [styleSheetParser parse:responseString];
         if( declarations ) {
@@ -73,11 +85,11 @@
         else [str appendFormat:@", \n\t%@", descr];
     }
     if( str.length > 0 ) [str appendString:@"\n"];
-    return [NSString stringWithFormat:@"ISSStyleSheet[%@ - %@]", self.styleSheetURL, str];
+    return [NSString stringWithFormat:@"ISSStyleSheet[%@ - %@]", self.styleSheetURL.lastPathComponent, str];
 }
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"ISSStyleSheet[%@, %d]", self.styleSheetURL, self.declarations.count];
+    return [NSString stringWithFormat:@"ISSStyleSheet[%@, %ld decls]", self.styleSheetURL.lastPathComponent, (long)self.declarations.count];
 }
 
 @end

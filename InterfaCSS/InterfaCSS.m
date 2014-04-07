@@ -9,45 +9,15 @@
 
 #import "InterfaCSS.h"
 
-#import <QuartzCore/QuartzCore.h>
-#import "ISSStyleSheetParser.h"
-#import "UIView+InterfaCSS.h"
 #import "ISSStyleSheetParser.h"
 #import "ISSParcoaStyleSheetParser.h"
 #import "ISSStyleSheet.h"
-#import "ISSViewBuilder.h"
 #import "ISSPropertyDeclaration.h"
 #import "NSObject+ISSLogSupport.h"
 #import "ISSViewPrototype.h"
-
-
-@interface ViewProperties : NSObject
-
-@property (nonatomic, weak) id uiObject;
-@property (nonatomic, weak) UIView* viewSuperview;
-@property (nonatomic, strong) NSSet* styleClasses;
-
-@end
-
-@implementation ViewProperties
-
-- (id) initForView:(id)uiObject {
-    self = [super init];
-    if (self) {
-        self.uiObject = uiObject;
-        if( [uiObject isKindOfClass:[UIView class]] ) {
-            UIView* view = (UIView*)uiObject;
-            self.viewSuperview = view.superview;
-        }
-    }
-    return self;
-}
-
-- (UIView*) view {
-    return [self.uiObject isKindOfClass:UIView.class] ? self.uiObject : nil;
-}
-
-@end
+#import "ISSUIElementDetails.h"
+#import "ISSPropertyDeclarations.h"
+#import "ISSSelectorChain.h"
 
 
 static InterfaCSS* singleton = nil;
@@ -57,6 +27,8 @@ static InterfaCSS* singleton = nil;
 @interface InterfaCSS ()
 
 @property (nonatomic, strong) NSMutableArray* styleSheets;
+
+@property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
 
 @property (nonatomic, strong) NSMapTable* cachedStylesForViews; // UIView (weak reference) -> NSDictionary
 @property (nonatomic, strong) NSMapTable* trackedViews; // UIView (weak reference) -> ViewProperties
@@ -88,6 +60,7 @@ static InterfaCSS* singleton = nil;
 + (void) clearResetAndUnload {
     singleton.parser = nil;
     [singleton.styleSheets removeAllObjects];
+    [singleton.styleSheetsVariables removeAllObjects];
     [singleton.trackedViews removeAllObjects];
     [singleton.cachedStylesForViews removeAllObjects];
     [singleton.prototypes removeAllObjects];
@@ -96,30 +69,47 @@ static InterfaCSS* singleton = nil;
 }
 
 - (id) init {
-    [NSException raise:NSInternalInconsistencyException format:@"Hold on there professor, use +[InterfaCSS interfaCSS] instead!"];
-    return self;
+    @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, use +[InterfaCSS interfaCSS] instead!" userInfo:nil]);
 }
 
 - (id) initInternal {
     if( (self = [super init]) ) {
         self.styleSheets = [[NSMutableArray alloc] init];
+        self.styleSheetsVariables = [[NSMutableDictionary alloc] init];
+
         self.trackedViews = [NSMapTable weakToStrongObjectsMapTable];
         self.cachedStylesForViews = [NSMapTable weakToStrongObjectsMapTable];
         self.prototypes = [[NSMutableDictionary alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
 
+        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+        
         [self performSelector:@selector(initViewHierarchy) withObject:nil afterDelay:0];
     }
     return self;
 }
 
 - (void) dealloc {
+    [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void) memoryWarning:(NSNotification*)notification {
     [self.cachedStylesForViews removeAllObjects];
+}
+
+
+#pragma mark - Device orientation
+
+- (void) deviceOrientationChanged:(NSNotification*)notification {
+    UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
+    if( UIDeviceOrientationIsValidInterfaceOrientation(orientation) ) {
+        ISSLogTrace(@"Triggering re-styling due to device orientation change");
+        if( self.keyWindow ) [self applyStylingWithAnimation:self.keyWindow];
+    }
 }
 
 
@@ -147,7 +137,7 @@ static InterfaCSS* singleton = nil;
 
 #pragma mark - Parsing Internals
 
-- (ISSStyleSheetParser*) parser {
+- (id<ISSStyleSheetParser>) parser {
     if ( !_parser ) {
         _parser = [[ISSParcoaStyleSheetParser alloc] init];
     }
@@ -157,6 +147,13 @@ static InterfaCSS* singleton = nil;
 - (ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFile {
     ISSStyleSheet* styleSheet = nil;
 
+    for(ISSStyleSheet* existingStyleSheet in self.styleSheets) {
+        if( [existingStyleSheet.styleSheetURL isEqual:styleSheetFile] ) {
+            ISSLogDebug(@"Stylesheet %@ already loaded", styleSheetFile);
+            return existingStyleSheet;
+        }
+    }
+    
     NSError* error = nil;
     NSString* styleSheetData = [NSString stringWithContentsOfURL:styleSheetFile usedEncoding:nil error:&error];
 
@@ -170,7 +167,7 @@ static InterfaCSS* singleton = nil;
             [self refreshStyling];
         }
     } else {
-        ISSLogDebug(@"Error loading stylesheet data from '%@' - %@", styleSheetFile, error);
+        ISSLogWarning(@"Error loading stylesheet data from '%@' - %@", styleSheetFile, error);
     }
 
     return styleSheet;
@@ -180,15 +177,6 @@ static InterfaCSS* singleton = nil;
     [styleSheet refresh:^{
         [self refreshStyling];
     } parse:self.parser];
-}
-
-- (ViewProperties*) viewPropertiesForView:(id)view {
-    ViewProperties* properties = [self.trackedViews objectForKey:view];
-    if( !properties ) {
-        properties = [[ViewProperties alloc] initForView:view];
-        [self.trackedViews setObject:properties forKey:view];
-    }
-    return properties;
 }
 
 
@@ -208,40 +196,42 @@ static InterfaCSS* singleton = nil;
     if( self.keyWindow ) [self applyStyling:self.keyWindow];
 }
 
-- (NSMutableDictionary*) effectiveStylesForUIObject:(id)uiObject {
+- (NSMutableDictionary*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails {
     NSMutableDictionary* effectiveStyles = [NSMutableDictionary dictionary];
 
-    // Get inherited styles - NOTE: disabled for now, possibly undesired
+    // Get inherited styles - disabled for now, need to be reviewed
     //if ( view.superview ) [effectiveStyles addEntriesFromDictionary:[self effectiveStylesForView:view.superview]];
 
     // Get view styles from cache
-    NSMutableDictionary* viewStyles = [self.cachedStylesForViews objectForKey:uiObject];
+    NSMutableDictionary* viewStyles = elementDetails.stylesCacheable ? [self.cachedStylesForViews objectForKey:elementDetails.uiElement] : nil;
     
     if ( !viewStyles ) {
         // Otherwise - build styles
         viewStyles = [NSMutableDictionary dictionary];
 
         for (ISSStyleSheet* styleSheet in self.styleSheets) {
-            NSDictionary* styleSheetStyles = [styleSheet stylesForView:uiObject];
-            if ( styleSheetStyles ) {
-                [viewStyles addEntriesFromDictionary:styleSheetStyles];
+            if( styleSheet.active ) {
+                NSDictionary* styleSheetStyles = [styleSheet stylesForElement:elementDetails];
+                if ( styleSheetStyles ) {
+                    [viewStyles addEntriesFromDictionary:styleSheetStyles];
+                }
             }
         }
 
-        [self.cachedStylesForViews setObject:viewStyles forKey:uiObject];
+        if( elementDetails.stylesCacheable ) [self.cachedStylesForViews setObject:viewStyles forKey:elementDetails.uiElement];
     }
 
     [effectiveStyles addEntriesFromDictionary:viewStyles];
     return effectiveStyles;
 }
 
-- (void) styleUIObject:(id)uiObject {
-    NSMutableDictionary* styles = [self effectiveStylesForUIObject:uiObject];
+- (void) styleUIElement:(ISSUIElementDetails*)elementDetails {
+    NSMutableDictionary* styles = [self effectiveStylesForUIElement:elementDetails];
     
     for (ISSPropertyDeclaration* propertyDeclaration in styles.allKeys) {
         id value = styles[propertyDeclaration];
         if ( value ) {
-            [propertyDeclaration setValue:value onTarget:uiObject];
+            [propertyDeclaration setValue:value onTarget:elementDetails.uiElement];
         }
     }
 }
@@ -251,54 +241,60 @@ static InterfaCSS* singleton = nil;
 
 #pragma mark - Styling
 
-- (void) clearCachedStylesForUIObject:(id)uiObject {
-    [self.cachedStylesForViews removeObjectForKey:uiObject];
+- (ISSUIElementDetails*) detailsForUIElement:(id)uiElement {
+    if( !uiElement ) return nil;
+    ISSUIElementDetails* details = [self.trackedViews objectForKey:uiElement];
+    if( !details ) {
+        details = [[ISSUIElementDetails alloc] initWithUIElement:uiElement];
+        [self.trackedViews setObject:details forKey:uiElement];
+    }
+    return details;
+}
 
-    UIView* view = [uiObject isKindOfClass:[UIView class]] ? (UIView*)uiObject : nil;
+- (void) clearCachedStylesForUIElement:(id)uiElement {
+    [self.cachedStylesForViews removeObjectForKey:uiElement];
+
+    UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
     for(UIView* subView in view.subviews) {
-        [self clearCachedStylesForUIObject:subView];
+        [self clearCachedStylesForUIElement:subView];
     }
 }
 
-- (UIView*) parentViewForUIObject:(id)uiObject {
-    return [self viewPropertiesForView:uiObject].viewSuperview;
-}
-
-- (void) scheduleApplyStyling:(id)uiObject animated:(BOOL)animated {
+- (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated {
     if( animated ) {
-        //[NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:@selector(applyStyling:) object:nil];
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiObject afterDelay:0];
+        //[NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStyling:) object:nil];
+        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
     } else {
-        //[NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:@selector(applyStylingWithAnimation:) object:nil];
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiObject afterDelay:0];
+        //[NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStylingWithAnimation:) object:nil];
+        [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
     }
 }
 
-- (void) applyStyling:(id)uiObject {
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:_cmd object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:@selector(applyStylingWithAnimation:) object:nil];
-    [self applyStyling:uiObject includeSubViews:YES];
+- (void) applyStyling:(id)uiElement {
+    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:_cmd object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStylingWithAnimation:) object:nil];
+    [self applyStyling:uiElement includeSubViews:YES];
 }
 
-- (void) applyStyling:(id)uiObject includeSubViews:(BOOL)includeSubViews {
-    BOOL applied = NO;
+- (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
+    BOOL styleAppliedToView = NO;
     if( !self.keyWindow && includeSubViews ) {
-        applied = [self initViewHierarchy];
+        BOOL keyWindowInitialized = [self initViewHierarchy];
+        styleAppliedToView = keyWindowInitialized && view.window == self.keyWindow; // Make sure style is applied to view if not in view hierarchy
     }
-    if( !applied ) {
-        ISSLogTrace(@"Applying style to %@", uiObject);
-
-        UIView* view = [uiObject isKindOfClass:[UIView class]] ? (UIView*)uiObject : nil;
+    if( !styleAppliedToView ) {
+        ISSLogTrace(@"Applying style to %@", uiElement);
 
         // Reset cached styles if superview has changed
-        ViewProperties* viewProperties = [self viewPropertiesForView:uiObject];
-        if( view && view.superview != viewProperties.viewSuperview ) {
+        ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+        if( view && view.superview != uiElementDetails.parentView ) {
             ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
-            [self clearCachedStylesForUIObject:view];
-            viewProperties.viewSuperview = view.superview;
+            [self clearCachedStylesForUIElement:view];
+            uiElementDetails.parentView = view.superview;
         }
         
-        [self styleUIObject:uiObject];
+        [self styleUIElement:uiElementDetails];
 
         if( includeSubViews ) {
             NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
@@ -320,8 +316,8 @@ static InterfaCSS* singleton = nil;
             for(id subView in subviews) {
                 // If subview isn't view (i.e. UIToolbarItem for instance) - set parent view as super view in ViewProperties
                 if( ![subView isKindOfClass:UIView.class] && parentView ) {
-                    ViewProperties* subViewProperties = [self viewPropertiesForView:subView];
-                    if( !subViewProperties.viewSuperview ) subViewProperties.viewSuperview = parentView;
+                    ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
+                    if( !subViewDetails.parentView ) subViewDetails.parentView = parentView;
                 }
                 [self applyStyling:subView];
             }
@@ -329,57 +325,65 @@ static InterfaCSS* singleton = nil;
     }
 }
 
-- (void) applyStylingWithAnimation:(id)uiObject {
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:_cmd object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiObject selector:@selector(applyStyling:) object:nil];
-    [self applyStylingWithAnimation:uiObject includeSubViews:YES];
+- (void) applyStylingWithAnimation:(id)uiElement {
+    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:_cmd object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStyling:) object:nil];
+    [self applyStylingWithAnimation:uiElement includeSubViews:YES];
 }
 
-- (void) applyStylingWithAnimation:(id)uiObject includeSubViews:(BOOL)includeSubViews {
-    [UIView animateWithDuration:0.5 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^() {
-        [self applyStyling:uiObject includeSubViews:includeSubViews];
+- (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^() {
+        [self applyStyling:uiElement includeSubViews:includeSubViews];
     } completion:nil];
 }
 
 
 #pragma mark - Style classes
 
-- (NSSet*) styleClassesForUIObject:(id)uiObject {
-    return [self viewPropertiesForView:uiObject].styleClasses;
+- (NSSet*) styleClassesForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement].styleClasses;
 }
 
-- (void) setStyleClasses:(NSSet*)styleClasses forUIObject:(id)uiObject {
+- (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement {
     if( styleClasses.count ) {
-        [self viewPropertiesForView:uiObject].styleClasses = styleClasses;
+        NSMutableSet* lcStyleClasses = [[NSMutableSet alloc] init];
+        for(NSString* styleClass in styleClasses) [lcStyleClasses addObject:[styleClass lowercaseString]];
+        [self detailsForUIElement:uiElement].styleClasses = lcStyleClasses;
     } else {
-        [self viewPropertiesForView:uiObject].styleClasses = nil;
+        [self detailsForUIElement:uiElement].styleClasses = nil;
     }
 
-    [self clearCachedStylesForUIObject:uiObject];
+    [self clearCachedStylesForUIElement:uiElement];
 }
 
-- (void) addStyleClass:(NSString*)styleClass forUIObject:(id)uiObject {
-    ViewProperties* viewProperties = [self viewPropertiesForView:uiObject];
+- (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass {
+    return [[self styleClassesForUIElement:uiElement] containsObject:[styleClass lowercaseString]];
+}
+
+- (void) addStyleClass:(NSString*)styleClass forUIElement:(id)uiElement {
+    styleClass = [styleClass lowercaseString];
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     
     NSSet* newClasses = [NSSet setWithObject:styleClass];
-    NSSet* existingClasses = viewProperties.styleClasses;
+    NSSet* existingClasses = uiElementDetails.styleClasses;
     if( existingClasses ) newClasses = [newClasses setByAddingObjectsFromSet:existingClasses];
-    viewProperties.styleClasses = newClasses;
+    uiElementDetails.styleClasses = newClasses;
 
-    [self clearCachedStylesForUIObject:uiObject];
+    [self clearCachedStylesForUIElement:uiElement];
 }
 
-- (void) removeStyleClass:(NSString*)styleClass forUIObject:(id)uiObject {
-    ViewProperties* viewProperties = [self viewPropertiesForView:uiObject];
+- (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement {
+    styleClass = [styleClass lowercaseString];
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
 
-    NSSet* existingClasses = viewProperties.styleClasses;
+    NSSet* existingClasses = uiElementDetails.styleClasses;
     if( existingClasses ) {
         NSPredicate* predicate = [NSPredicate predicateWithBlock:^(id o, NSDictionary *b) {
             return (BOOL)![styleClass isEqual:o];
         }];
-        viewProperties.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
+        uiElementDetails.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
     }
-    [self clearCachedStylesForUIObject:uiObject];
+    [self clearCachedStylesForUIElement:uiElement];
 }
 
 
@@ -423,6 +427,59 @@ static InterfaCSS* singleton = nil;
     [self.styleSheets removeAllObjects];
     [self.cachedStylesForViews removeAllObjects];
     if( refreshStyling ) [self refreshStyling];
+}
+
+
+#pragma mark - Variables
+
+- (NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName {
+    return [self.styleSheetsVariables objectForKey:variableName];
+}
+
+- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType {
+    NSString* value = [self.styleSheetsVariables objectForKey:variableName];
+    if( value ) return [self.parser transformValue:value asPropertyType:propertyType];
+    else return nil;
+}
+
+- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition {
+    NSString* value = [self.styleSheetsVariables objectForKey:variableName];
+    if( value ) return [self.parser transformValue:value forPropertyDefinition:propertyDefinition];
+    else return nil;
+}
+
+- (void) setValue:(NSString*)value forStyleSheetVariableWithName:(NSString*)variableName {
+    return [self.styleSheetsVariables setObject:value forKey:variableName];
+}
+
+
+#pragma mark - Debugging support
+
+- (void) logMatchingStyleDeclarationsForUIElement:(id)uiElement {
+    ISSUIElementDetails* elementDetails = [self detailsForUIElement:uiElement];
+    NSString* objectIdentity = [NSString stringWithFormat:@"<%@: %p>", [uiElement class], uiElement];
+
+    NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
+    BOOL match = NO;
+    for (ISSStyleSheet* styleSheet in self.styleSheets) {
+        NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails] mutableCopy];
+        if( matchingDeclarations.count ) {
+            [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {
+                NSMutableArray* chainsCopy = [((ISSPropertyDeclarations*)declarationObj).selectorChains mutableCopy];
+                [chainsCopy enumerateObjectsUsingBlock:^(id chainObj, NSUInteger idx2, BOOL *stop2) {
+                    if( [existingSelectorChains containsObject:chainObj] ) chainsCopy[idx2] =  [NSString stringWithFormat:@"%@ (WARNING - DUPLICATE)", [chainObj displayDescription]];
+                    else chainsCopy[idx2] = [chainObj displayDescription];
+                    [existingSelectorChains addObject:chainObj];
+                }];
+
+                matchingDeclarations[idx1] = [NSString stringWithFormat:@"%@ {...}", [chainsCopy componentsJoinedByString:@", "]];
+            }];
+            
+            NSLog(@"Declarations in '%@' matching %@: [\n\t%@\n]", styleSheet.styleSheetURL.lastPathComponent, objectIdentity, [matchingDeclarations componentsJoinedByString:@", \n\t"]);
+            match = YES;
+        }
+    }
+    if( !match ) NSLog(@"No declarations match %@", objectIdentity);
 }
 
 @end

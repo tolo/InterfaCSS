@@ -83,7 +83,7 @@
 #pragma mark - NSObject overrides
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"ISSPointValue(%d - %@)", _type, NSStringFromCGPoint(_point)];
+    return [NSString stringWithFormat:@"ISSPointValue(%ld - %@)", (long)_type, NSStringFromCGPoint(_point)];
 }
 
 @end

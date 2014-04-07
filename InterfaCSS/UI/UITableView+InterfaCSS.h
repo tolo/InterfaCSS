@@ -9,8 +9,8 @@
 
 @interface UITableView (InterfaCSS)
 
-- (id) dequeueReusablePrototypeCellWithIdentifier:(NSString*)prototypeName;
+- (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath;
 
-- (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifier:(NSString*)prototypeName;
+- (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName;
 
 @end

@@ -11,7 +11,8 @@
 
 #import "ISSRefreshableResource.h"
 
-@class ISSStyleSheetParser;
+@protocol ISSStyleSheetParser;
+@class ISSUIElementDetails;
 
 
 @interface ISSStyleSheet : ISSRefreshableResource
@@ -25,8 +26,10 @@
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations;
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable;
 
-- (NSDictionary*) stylesForView:(UIView*)view;
+- (NSDictionary*) stylesForElement:(ISSUIElementDetails*)elementDetails;
 
-- (void) refresh:(void (^)(void))completionHandler parse:(ISSStyleSheetParser*)styleSheetParser;
+- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails;
+
+- (void) refresh:(void (^)(void))completionHandler parse:(id<ISSStyleSheetParser>)styleSheetParser;
 
 @end

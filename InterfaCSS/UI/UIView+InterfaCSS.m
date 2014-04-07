@@ -14,73 +14,77 @@
 
 @implementation UIView (InterfaCSS)
 
-- (NSSet*) styleClasses {
-    return [[InterfaCSS interfaCSS] styleClassesForUIObject:self];
+- (NSString*) getStyleClassISS {
+    return [self.styleClassesISS anyObject];
 }
 
-- (void) setStyleClasses:(NSSet*)classes {
-    [self setStyleClasses:classes animated:NO];
+- (void) setStyleClassISS:(NSString*)styleClass {
+    [self setStyleClassesISS:[NSSet setWithObject:styleClass] animated:NO];
 }
 
-- (void) scheduleApplyStyling {
+- (NSSet*) getStyleClassesISS {
+    return [[InterfaCSS interfaCSS] styleClassesForUIElement:self];
+}
+
+- (void) setStyleClassesISS:(NSSet*)classes {
+    [self setStyleClassesISS:classes animated:NO];
+}
+
+- (void) scheduleApplyStylingISS {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO];
 }
 
-- (void) scheduleApplyStyling:(BOOL)animated {
+- (void) scheduleApplyStylingISS:(BOOL)animated {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:animated];
 }
 
-- (void) setStyleClasses:(NSSet*)classes animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] setStyleClasses:classes forUIObject:self];
-    [self scheduleApplyStyling:animated];
+- (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated {
+    [[InterfaCSS interfaCSS] setStyleClasses:classes forUIElement:self];
+    [self scheduleApplyStylingISS:animated];
 }
 
-- (NSString*) styleClass {
-    return [self.styleClasses anyObject];
+- (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    [self setStyleClassesISS:[NSSet setWithObject:styleClass]];
 }
 
-- (void) setStyleClass:(NSString*)styleClass {
-    [self setStyleClasses:[NSSet setWithObject:styleClass] animated:NO];
+- (BOOL) hasStyleClassISS:(NSString*)styleClass {
+    return [[InterfaCSS interfaCSS] uiElement:self hasStyleClass:styleClass];
 }
 
-- (void) setStyleClass:(NSString*)styleClass animated:(BOOL)animated {
-    [self setStyleClasses:[NSSet setWithObject:styleClass]];
+- (void) addStyleClassISS:(NSString*)styleClass {
+    [self addStyleClassISS:styleClass animated:NO];
 }
 
-- (void) addStyleClass:(NSString*)styleClass {
-    [self addStyleClass:styleClass animated:NO];
+- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIElement:self];
+    [self scheduleApplyStylingISS:animated];
 }
 
-- (void) addStyleClass:(NSString*)styleClass animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIObject:self];
-    [self scheduleApplyStyling:animated];
+- (void) removeStyleClassISS:(NSString*)styleClass {
+    [self removeStyleClassISS:styleClass animated:NO];
 }
 
-- (void) removeStyleClass:(NSString*)styleClass {
-    [self removeStyleClass:styleClass animated:NO];
+- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIElement:self];
+    [self scheduleApplyStylingISS:animated];
 }
 
-- (void) removeStyleClass:(NSString*)styleClass animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIObject:self];
-    [self scheduleApplyStyling:animated];
-}
-
-- (void) applyStyling:(BOOL)invalidateStyles {
-    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIObject:self];
+- (void) applyStylingISS:(BOOL)invalidateStyles {
+    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
     [[InterfaCSS interfaCSS] applyStyling:self];
 }
 
-- (void) applyStyling {
-    [self applyStyling:NO];
+- (void) applyStylingISS {
+    [self applyStylingISS:NO];
 }
 
-- (void) applyStylingWithAnimation:(BOOL)invalidateStyles {
-    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIObject:self];
+- (void) applyStylingWithAnimationISS:(BOOL)invalidateStyles {
+    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
     [[InterfaCSS interfaCSS] applyStylingWithAnimation:self];
 }
 
-- (void) applyStylingWithAnimation {
-    [self applyStylingWithAnimation:NO];
+- (void) applyStylingWithAnimationISS {
+    [self applyStylingWithAnimationISS:NO];
 }
 
 @end

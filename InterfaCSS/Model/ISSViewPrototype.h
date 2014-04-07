@@ -18,11 +18,12 @@ typedef UIView* (^ViewBuilderBlock)();
 @property (nonatomic, strong, readonly) NSString* name;
 
 @property (nonatomic, strong, readonly) NSString* propertyName;
+@property (nonatomic, readonly) BOOL addAsSubView;
 
 @property (nonatomic, copy, readonly) ViewBuilderBlock viewBuilderBlock;
 @property (nonatomic, strong) NSArray* subviewPrototypes;
 
-+ (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
++ (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
 
 - (UIView*) createViewObjectFromPrototype:(id)parentObject;
 

@@ -7,19 +7,19 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
-
 @class ISSSelector;
+@class ISSUIElementDetails;
 
 @interface ISSSelectorChain : NSObject<NSCopying>
 
 @property (nonatomic, readonly) NSArray* selectorComponents;
 @property (nonatomic, readonly) NSString* displayDescription;
 
-- (id) initWithComponents:(NSArray*)components;
-- (ISSSelectorChain*) selectorChainByAddingSelector:(ISSSelector*)selector;
-- (ISSSelectorChain*) selectorChainByAddingSelectorChain:(ISSSelectorChain*)selectorChain;
++ (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents;
 
-- (BOOL) matchesView:(id)view;
+- (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector;
+- (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain;
+
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
 
 @end

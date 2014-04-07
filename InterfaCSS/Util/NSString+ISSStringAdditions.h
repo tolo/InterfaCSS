@@ -9,20 +9,22 @@
 
 @interface NSString (ISSStringAdditions)
 
-- (BOOL) isEmpty;
-- (BOOL) hasData;
++ (BOOL) iss_string:(NSString*)string1 isEqualToString:(NSString*)string2;
 
-- (NSString*) trim;
-- (NSString*) trimQuotes;
-- (NSArray*) trimmedSplit:(NSString*)sep;
-- (NSArray*) trimmedSplitWithSet:(NSCharacterSet*)characterSet;
+- (BOOL) iss_isEmpty;
+- (BOOL) iss_hasData;
 
-- (NSString*) stringBySeparatingCamelCaseComponentsWithDash;
+- (NSString*) iss_trim;
+- (NSString*) iss_trimQuotes;
+- (NSArray*) iss_trimmedSplit:(NSString*)sep;
+- (NSArray*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet;
 
-- (BOOL) isNumeric;
+- (NSString*) iss_stringBySeparatingCamelCaseComponentsWithDash;
 
-- (BOOL) isEqualIgnoreCase:(NSString*)otherString;
+- (BOOL) iss_isNumeric;
 
-- (NSDate*) parseHttpDate;
+- (BOOL) iss_isEqualIgnoreCase:(NSString*)otherString;
+
+- (NSDate*) iss_parseHttpDate;
 
 @end

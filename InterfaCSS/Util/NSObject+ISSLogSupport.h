@@ -22,14 +22,14 @@
     #endif
 #endif
 
-#define ISSLogTrace(__FORMAT__, ...) [self ISSLogTrace:__FORMAT__, ##__VA_ARGS__]
-#define ISSLogDebug(__FORMAT__, ...) [self ISSLogDebug:__FORMAT__, ##__VA_ARGS__]
-#define ISSLogWarning(__FORMAT__, ...) [self ISSLogWarning:__FORMAT__, ##__VA_ARGS__]
+#define ISSLogTrace(__FORMAT__, ...) [self iss_logTrace:__FORMAT__, ##__VA_ARGS__]
+#define ISSLogDebug(__FORMAT__, ...) [self iss_logDebug:__FORMAT__, ##__VA_ARGS__]
+#define ISSLogWarning(__FORMAT__, ...) [self iss_logWarning:__FORMAT__, ##__VA_ARGS__]
 
 @interface NSObject (ISSLogSupport)
 
-- (void) ISSLogTrace:(NSString*)format, ...;
-- (void) ISSLogDebug:(NSString*)format, ...;
-- (void) ISSLogWarning:(NSString*)format, ...;
+- (void) iss_logTrace:(NSString*)format, ...;
+- (void) iss_logDebug:(NSString*)format, ...;
+- (void) iss_logWarning:(NSString*)format, ...;
 
 @end

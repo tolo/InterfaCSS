@@ -11,6 +11,6 @@
 
 @interface NSDictionary (ISSDictionaryAdditions)
 
-- (NSDictionary*) dictionaryWithLowerCaseKeys;
+- (NSDictionary*) iss_dictionaryWithLowerCaseKeys;
 
 @end

@@ -7,10 +7,8 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
-
 #import "ISSStyleSheetParser.h"
 
-@interface ISSParcoaStyleSheetParser : ISSStyleSheetParser
+@interface ISSParcoaStyleSheetParser : NSObject <ISSStyleSheetParser>
 
 @end

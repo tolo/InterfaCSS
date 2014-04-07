@@ -12,22 +12,22 @@
 #import "ISSViewBuilder.h"
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSStringAdditions.h"
-#import "ISSRootView.h"
 #import "ISSViewPrototype.h"
 #import "InterfaCSS.h"
-#import "ISSRootView.h"
 
 
 @implementation ISSViewHierarchyParser {
     id fileOwner;
     ISSRootView* rootView;
     NSMutableArray* viewStack;
+    NSMutableSet* addViewAsSubView;
 }
 
 + (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner {
     ISSViewHierarchyParser* viewParser = [[ISSViewHierarchyParser alloc] init];
     viewParser->viewStack = [[NSMutableArray alloc] init];
     viewParser->fileOwner = fileOwner;
+    viewParser->addViewAsSubView = [[NSMutableSet alloc] init];
 
     @try {
         NSXMLParser* parser = [[NSXMLParser alloc] initWithData:fileData];
@@ -58,13 +58,14 @@
 
 - (void) parser:(NSXMLParser*)parser didStartElement:(NSString*)elementName namespaceURI:(NSString*)nameSpaceURI qualifiedName:(NSString*)qName attributes:(NSDictionary*)attributeDict {
 
-    elementName = [elementName trim];
+    elementName = [elementName iss_trim];
     NSString* lcElementName = [elementName lowercaseString];
     if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName stringByReplacingCharactersInRange:NSMakeRange(0, 2) withString:@""];
 
     NSString* styleClass = nil;
     NSString* propertyName = nil;
     NSString* prototypeName = nil;
+    BOOL add = YES;
     for (NSString* key in attributeDict.allKeys) {
         if ( [[key lowercaseString] hasPrefix:@"class"] ) {
             styleClass = [attributeDict objectForKey:key];
@@ -72,6 +73,8 @@
             prototypeName = [attributeDict objectForKey:key];
         } else if ( [[key lowercaseString] hasPrefix:@"property"] ) {
             propertyName = [attributeDict objectForKey:key];
+        } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
+            add = [[attributeDict objectForKey:key] boolValue];
         }
     }
 
@@ -134,14 +137,15 @@
     id currentViewObject;
 
     if ( parentPrototype && viewBuilderBlock ) {
-        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName viewBuilderBlock:viewBuilderBlock];
-    } else if ( [prototypeName hasData] ) {
-        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName viewBuilderBlock:viewBuilderBlock];
+        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
+    } else if ( [prototypeName iss_hasData] ) {
+        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
     } else if( viewBuilderBlock ) {
         currentViewObject = viewBuilderBlock();
-        if( [propertyName hasData] ) {
+        if( [propertyName iss_hasData] ) {
             [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:fileOwner];
         }
+        if( add ) [addViewAsSubView addObject:currentViewObject];
     }
 
     if( !rootView ) {
@@ -168,7 +172,7 @@
         [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
     }
     // Child view end tag
-    else if ( viewObject && superViewObject ) {
+    else if ( viewObject && superViewObject && [addViewAsSubView containsObject:viewObject] ) {
         [superViewObject addSubview:viewObject];
     }
 }

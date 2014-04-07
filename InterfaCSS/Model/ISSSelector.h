@@ -7,16 +7,26 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
+@class ISSPseudoClass;
+@class ISSUIElementDetails;
+
+typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
+    ISSSelectorCombinatorDescendant,
+    ISSSelectorCombinatorChild,
+    ISSSelectorCombinatorAdjacentSibling,
+    ISSSelectorCombinatorGeneralSibling,
+};
 
 @interface ISSSelector : NSObject<NSCopying>
 
-@property (nonatomic, readonly) NSString* type;
+@property (nonatomic, readonly) Class type;
 @property (nonatomic, readonly) NSString* styleClass;
+@property (nonatomic, readonly) ISSPseudoClass* pseudoClass;
+
 @property (nonatomic, readonly) NSString* displayDescription;
 
-- (id) initWithType:(NSString*)type class:(NSString*)styleClass;
++ (instancetype) selectorWithType:(NSString*)type class:(NSString*)styleClass pseudoClass:(ISSPseudoClass*)pseudoClass;
 
-- (BOOL) matchesComponent:(id)component;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
 
 @end

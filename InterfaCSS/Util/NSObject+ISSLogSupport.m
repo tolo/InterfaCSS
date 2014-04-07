@@ -11,34 +11,34 @@
 
 @implementation NSObject (ISSLogSupport)
 
-- (void) log:(NSString*)level format:(NSString*)format withParameters:(va_list)vl {
+- (void) iss_log:(NSString*)level format:(NSString*)format withParameters:(va_list)vl {
     NSString* logMessage = [[NSString alloc] initWithFormat:format arguments:vl];
     NSLog(@"%@InterfaCSS.%@ - %@", level, self, logMessage);
 }
 
-- (void) ISSLogTrace:(NSString*)format, ... {
+- (void) iss_logTrace:(NSString*)format, ... {
 #if ISS_LOG_LEVEL >= ISS_LOG_LEVEL_TRACE
     va_list vl;
     va_start(vl, format);
-    [self log:@"[TRACE] " format:format withParameters:vl];
+    [self iss_log:@"[TRACE] " format:format withParameters:vl];
     va_end(vl);
 #endif
 }
 
-- (void) ISSLogDebug:(NSString*)format, ... {
+- (void) iss_logDebug:(NSString*)format, ... {
 #if ISS_LOG_LEVEL >= ISS_LOG_LEVEL_DEBUG
     va_list vl;
     va_start(vl, format);
-    [self log:@"[DEBUG] " format:format withParameters:vl];
+    [self iss_log:@"[DEBUG] " format:format withParameters:vl];
     va_end(vl);
 #endif
 }
 
-- (void) ISSLogWarning:(NSString*)format, ... {
+- (void) iss_logWarning:(NSString*)format, ... {
 #if ISS_LOG_LEVEL >= ISS_LOG_LEVEL_WARNING
     va_list vl;
     va_start(vl, format);
-    [self log:@"[WARNING] " format:format withParameters:vl];
+    [self iss_log:@"[WARNING] " format:format withParameters:vl];
     va_end(vl);
 #endif
 }

@@ -38,19 +38,18 @@
 
 
 @implementation ISSStyleSheetParserTests {
-    ISSStyleSheetParser* parser;
+    id<ISSStyleSheetParser> parser;
 }
 
 + (void) setUp {
     [super setUp];
-    NSLog(@"%@", [ISSPropertyDefinition propertyDescriptionsForMarkdown]);
+    //NSLog(@"%@", [ISSPropertyDefinition propertyDescriptionsForMarkdown]);
 }
 
 - (void) setUp {
     [super setUp];
 
     parser = [[ISSParcoaStyleSheetTestParser alloc] init];
-    //parser = [InterfaCSS interfaCSS].parser;
 }
 
 - (void) tearDown {
@@ -124,8 +123,9 @@
 - (void) testStylesheetStructure {
     NSArray* result = [self parseStyleSheet:@"styleSheetStructure"];
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @".class1",
-                                                                            @"type .class1 .class2", @"uilabel, uilabel.class1, .class1, type .class1 .class2",
-                                                                            @"uiview", @"uiview .class1", @"uiview .class1 .class2"]];
+                                                                            @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
+                                                                            @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
+                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)"]];
     
     for (ISSPropertyDeclarations* d in result) {
         NSMutableArray* chains = [NSMutableArray array];
@@ -138,7 +138,9 @@
         if( decl && [d.properties[decl] isEqual:@(1)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
                 [expectedSelectors removeObject:selectorDescription];
-            } else NSLog(@"Didn't find: %@", selectorDescription);
+            } else {
+                NSLog(@"Didn't find: %@", selectorDescription);
+            }
         } else NSLog(@"Didn't find: %@", selectorDescription);
     }
     
@@ -300,9 +302,9 @@
 
 - (void) testUIColorPropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"simple"];
-    XCTAssertEqualObjects(values[0], [UIColor colorWithR:128 G:128 B:128]);
-    XCTAssertEqualObjects(values[1], [UIColor colorWithR:255 G:255 B:255]);
-    XCTAssertEqualObjects(values[2], [UIColor colorWithR:64 G:64 B:64 A:0.5]);
+    XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:128 G:128 B:128]);
+    XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:255 G:255 B:255]);
+    XCTAssertEqualObjects(values[2], [UIColor iss_colorWithR:64 G:64 B:64 A:0.5]);
     XCTAssertEqualObjects(values[3], [UIColor redColor]);
 }
 
@@ -356,7 +358,6 @@
 
 - (void) testImagePropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage", @"shadowImage", @"progressImage", @"trackImage", @"highlightedImage", @"onImage", @"offImage"] fromStyleClass:@"image1"];
-    NSLog(@"MU: %@", [NSBundle allBundles]);
     for (id value in values) {
         XCTAssertTrue([value isKindOfClass:UIImage.class], @"Expected image");
     }

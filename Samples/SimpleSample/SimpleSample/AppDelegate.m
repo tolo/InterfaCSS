@@ -10,7 +10,6 @@
 #import "AppDelegate.h"
 
 #import "InterfaCSS.h"
-#import "RootViewController.h"
 #import "SimpleSampleViewController.h"
 #import "PrototypeExampleViewController.h"
 #import "UIView+InterfaCSS.h"
@@ -33,11 +32,10 @@
     SimpleSampleViewController* viewController = [[SimpleSampleViewController alloc] init];
     PrototypeExampleViewController* prototypeExampleViewController = [[PrototypeExampleViewController alloc] init];
 
-    RootViewController* tabBarController = [[RootViewController alloc] init];
-    [tabBarController.tabBar addStyleClass:@"tabBarStyle1"];
+    UITabBarController* tabBarController = [[UITabBarController alloc] init];
+    tabBarController.tabBar.styleClassISS = @"tabBarStyle1";
     tabBarController.viewControllers = @[viewController, prototypeExampleViewController];
     tabBarController.selectedIndex = 0;
-    tabBarController.tabBar.translucent = NO;
     
     self.window.rootViewController = tabBarController;
     [self.window makeKeyAndVisible];

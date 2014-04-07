@@ -11,7 +11,6 @@
 
 #import "InterfaCSS.h"
 #import "ISSViewBuilder.h"
-#import "ISSViewBuilderDSL.h"
 #import "UIView+InterfaCSS.h"
 #import "ISSViewHierarchyParser.h"
 
@@ -61,6 +60,7 @@
     [self.mainButton addTarget:self action:@selector(touchedButton:event:) forControlEvents:UIControlEventAllTouchEvents];
     
     self.mainTitleLabel.text = @"Simple Sample Main";
+    self.mainTitleLabel.tag = 123;
     self.mainSubtitleLabel.text = @"Sample Sub";
     
     self.contentTitleLabel.text = @"Content Main";
@@ -71,15 +71,33 @@
     return UIInterfaceOrientationMaskAll;
 }
 
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    // Debug log matching styles for self.mainTitleLabel:
+#if DEBUG == 1
+    [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
+#endif
+}
+
+- (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
+    
+    // Debug log matching styles for self.mainTitleLabel:
+#if DEBUG == 1
+    [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
+#endif
+}
+
 
 #pragma mark - Actions 
 
 - (void) touchedButton:(id)btn event:(UIEvent*)event {
     UITouch* touch = [event.allTouches anyObject];
     if( touch.phase == UITouchPhaseBegan ) {
-        [self.mainButton addStyleClass:@"touched" animated:YES];
+        [self.mainButton addStyleClassISS:@"touched" animated:YES];
     } else if( touch.phase == UITouchPhaseEnded || touch.phase == UITouchPhaseCancelled ) {
-        [self.mainButton removeStyleClass:@"touched" animated:YES];
+        [self.mainButton removeStyleClassISS:@"touched" animated:YES];
     }
 }
 

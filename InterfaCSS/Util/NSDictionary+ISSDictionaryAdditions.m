@@ -11,7 +11,7 @@
 
 @implementation NSDictionary (ISSDictionaryAdditions)
 
-- (NSDictionary*) dictionaryWithLowerCaseKeys {
+- (NSDictionary*) iss_dictionaryWithLowerCaseKeys {
     NSMutableDictionary* result = [[NSMutableDictionary alloc] initWithCapacity:self.count];
     [self enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
         result[[key lowercaseString]] = obj;

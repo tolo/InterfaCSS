@@ -10,6 +10,7 @@
 #import "ISSPropertyDeclarations.h"
 
 #import "ISSSelectorChain.h"
+#import "ISSUIElementDetails.h"
 
 @implementation ISSPropertyDeclarations {
     NSArray* _selectorChains;
@@ -28,20 +29,24 @@
     return self;
 }
 
-- (BOOL) matchesView:(UIView*)view {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
     for(ISSSelectorChain* selectorChain in _selectorChains) {
-        if ( [selectorChain matchesView:view] )  return YES;
+        if ( [selectorChain matchesElement:elementDetails] )  return YES;
     }
     return NO;
 }
 
+- (NSString*) displayDescription:(BOOL)withProperties {
+    NSMutableArray* chainsCopy = [_selectorChains mutableCopy];
+    [chainsCopy enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) { chainsCopy[idx] = [obj displayDescription]; }];
+    NSString* chainsDescription = [chainsCopy componentsJoinedByString:@", "];
+
+    if( withProperties ) return [NSString stringWithFormat:@"%@ : %@", chainsDescription, _properties];
+    else return chainsDescription;
+}
+
 - (NSString*) displayDescription {
-    NSMutableString* chains = [NSMutableString string];
-    for(ISSSelectorChain* chain in _selectorChains) {
-        if( chains.length == 0 ) [chains appendFormat:@"%@", chain.displayDescription];
-        else [chains appendFormat:@", %@", chain.displayDescription];
-    }
-    return [NSString stringWithFormat:@"%@ : %@", chains, _properties];
+    return [self displayDescription:YES];
 }
 
 
@@ -53,7 +58,7 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    return [[object class] isKindOfClass:self.class] && [_selectorChains isEqualToArray:[object selectorChains]] &&
+    return [object isKindOfClass:ISSPropertyDeclarations.class] && [_selectorChains isEqualToArray:[object selectorChains]] &&
                                                          [_properties isEqualToDictionary:[object properties]];
 }
 

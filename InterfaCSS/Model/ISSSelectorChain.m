@@ -11,37 +11,65 @@
 
 #import "InterfaCSS.h"
 #import "ISSSelector.h"
-#import "ISSStyleSheetParser.h"
+#import "ISSUIElementDetails.h"
 
-@implementation ISSSelectorChain {
-    NSArray* _selectorComponents;
-}
-
+@implementation ISSSelectorChain
 
 #pragma mark - Utility methods
 
-+ (BOOL) matchComponent:(id)lastComponent againstSelectorChain:(NSArray*)selectorComponents firstMatch:(BOOL)firstMatch {
-    if ( selectorComponents.count && lastComponent ) {
-        ISSSelector* lastSelectorComponent = [selectorComponents lastObject];
-        
-        BOOL selectorMatch = NO;
-        // TODO: Add support for combinators '+' and '>'
-        
-        if ( (selectorMatch = [lastSelectorComponent matchesComponent:lastComponent]) ) {
-            // If match - move up the selector chain
-            selectorComponents = [selectorComponents subarrayWithRange:NSMakeRange(0, selectorComponents.count-1)];
++ (ISSUIElementDetails*) findMatchingDescendantSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
+    if( !parentDetails ) return nil;
+    else if( [selector matchesElement:parentDetails] ) return parentDetails;
+    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentView] forSelector:selector];
+}
+
++ (ISSUIElementDetails*) findMatchingChildSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
+    if( parentDetails && [selector matchesElement:parentDetails] ) return parentDetails;
+    else return nil;
+}
+
++ (ISSUIElementDetails*) findMatchingAdjacentSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
+    NSArray* subviews = parentDetails.view.subviews;
+    NSInteger index = [subviews indexOfObject:elementDetails.uiElement];
+    if( index != NSNotFound && (index-1) >= 0 ) {
+        UIView* sibling = [subviews objectAtIndex:(NSUInteger)(index-1)];
+        ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
+        if( [selector matchesElement:siblingDetails] ) return siblingDetails;
+    }
+    return nil;
+}
+
++ (ISSUIElementDetails*) findMatchingGeneralSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
+    for(UIView* sibling in parentDetails.view.subviews) {
+        ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
+        if( sibling != elementDetails.uiElement && [selector matchesElement:siblingDetails] ) return siblingDetails;
+    }
+    return nil;
+}
+
++ (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails withSelector:(ISSSelector*)selector andCombinator:(ISSSelectorCombinator)combinator {
+    ISSUIElementDetails* nextUIElementDetails = nil;
+    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:elementDetails.parentView];
+    parentDetails = [parentDetails copy]; // Use copy of parent to make sure any modification to stylesCacheable flag does not affect original object
+    switch (combinator) {
+        case ISSSelectorCombinatorDescendant: {
+            nextUIElementDetails = [self findMatchingDescendantSelectorParent:parentDetails forSelector:selector];
+            break;
         }
-        if ( firstMatch && !selectorMatch ) {
-            return NO; // Rightmost selector must match
-        } else {
-            // Move up the component chain
-            lastComponent = [lastComponent respondsToSelector:@selector(superview)] ? [lastComponent superview] :
-                                    [[InterfaCSS interfaCSS] parentViewForUIObject:lastComponent];
-            return [ISSSelectorChain matchComponent:lastComponent againstSelectorChain:selectorComponents firstMatch:NO];
+        case ISSSelectorCombinatorChild: {
+            nextUIElementDetails = [self findMatchingChildSelectorParent:parentDetails forSelector:selector];
+            break;
+        }
+        case ISSSelectorCombinatorAdjacentSibling: {
+            nextUIElementDetails = [self findMatchingAdjacentSiblingTo:elementDetails inParent:parentDetails forSelector:selector];
+            break;
+        }
+        case ISSSelectorCombinatorGeneralSibling: {
+            nextUIElementDetails = [self findMatchingGeneralSiblingTo:elementDetails inParent:parentDetails forSelector:selector];
+            break;
         }
     }
-    else if ( !selectorComponents.count ) return YES; // All selector components matched - match success
-    else return NO;
+    return nextUIElementDetails;
 }
 
 
@@ -54,29 +82,73 @@
     return self;
 }
 
++ (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents {
+    // Validate selector components
+    if( selectorComponents.count % 2 == 1 ) { // Selector chain must always contain odd number of components
+        for(NSUInteger i=0; i<selectorComponents.count; i++) {
+            if( i%2 == 0 && ![selectorComponents[i] isKindOfClass:ISSSelector.class] ) return nil;
+            else if( i%2 == 1 && ![selectorComponents[i] isKindOfClass:NSNumber.class] ) return nil;
+        }
+        return [[self alloc] initWithComponents:selectorComponents];
+    }
+    return nil;
+}
+
 - (id) copyWithZone:(NSZone*)zone {
     return [[ISSSelectorChain allocWithZone:zone] initWithComponents:self.selectorComponents];
 }
 
-- (ISSSelectorChain*) selectorChainByAddingSelector:(ISSSelector*)selector {
-    return [[ISSSelectorChain alloc] initWithComponents:[self.selectorComponents arrayByAddingObject:selector]];
+- (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector {
+    NSArray* newComponents = [self.selectorComponents arrayByAddingObjectsFromArray:@[@(ISSSelectorCombinatorDescendant), selector]];
+    return [[ISSSelectorChain alloc] initWithComponents:newComponents];
 }
 
-- (ISSSelectorChain*) selectorChainByAddingSelectorChain:(ISSSelectorChain*)selectorChain {
-    return [[ISSSelectorChain alloc] initWithComponents:[self.selectorComponents arrayByAddingObjectsFromArray:selectorChain.selectorComponents]];
+- (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain {
+    NSArray* newComponents = [self.selectorComponents arrayByAddingObject:@(ISSSelectorCombinatorDescendant)];
+    newComponents = [newComponents arrayByAddingObjectsFromArray:selectorChain.selectorComponents];
+    return [[ISSSelectorChain alloc] initWithComponents:newComponents];
 }
 
 - (NSString*) displayDescription {
     NSMutableString* str = [NSMutableString string];
-    for(ISSSelector* comp in _selectorComponents) {
-        if( str.length == 0 ) [str appendFormat:@"%@", comp.displayDescription];
-        else [str appendFormat:@" %@", comp.displayDescription];
+    for(id selectorComponent in _selectorComponents) {
+        if( [selectorComponent isKindOfClass:ISSSelector.class] ) [str appendString:[selectorComponent displayDescription]];
+        else {
+            switch ((ISSSelectorCombinator)[selectorComponent integerValue]) {
+                case ISSSelectorCombinatorDescendant: {
+                    [str appendString:@" "]; break;
+                }
+                case ISSSelectorCombinatorChild: {
+                    [str appendString:@" > "]; break;
+                }
+                case ISSSelectorCombinatorAdjacentSibling: {
+                    [str appendString:@" + "]; break;
+                }
+                case ISSSelectorCombinatorGeneralSibling: {
+                    [str appendString:@" ~ "]; break;
+                }
+            }
+        }
     }
     return str;
 }
 
-- (BOOL) matchesView:(id)view {
-    return [ISSSelectorChain matchComponent:view againstSelectorChain:_selectorComponents firstMatch:YES];
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
+    ISSSelector* lastSelector = [_selectorComponents lastObject];
+    if( [lastSelector matchesElement:elementDetails] ) { // Match last selector...
+        NSUInteger remainingCount = _selectorComponents.count - 1;
+        ISSUIElementDetails* nextUIElementDetails = elementDetails;
+        for(NSUInteger i=remainingCount; i>1 && nextUIElementDetails; i-=2) { // ...then rest of selector chain
+            ISSSelectorCombinator combinator = (ISSSelectorCombinator)[_selectorComponents[i - 1] integerValue];
+            ISSSelector* selector = _selectorComponents[i-2];
+            nextUIElementDetails = [ISSSelectorChain matchElement:elementDetails withSelector:selector andCombinator:combinator];
+            // If parent element styles are not cacheable - disable caching for styles of current element:
+            if( nextUIElementDetails && !nextUIElementDetails.stylesCacheable ) elementDetails.stylesCacheable = NO;
+        }
+        return nextUIElementDetails != nil;
+    } else {
+        return NO;
+    }
 }
 
 
@@ -87,7 +159,7 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    return [[object class] isKindOfClass:self.class] && [_selectorComponents isEqualToArray:[object selectorComponents]];
+    return [object isKindOfClass:ISSSelectorChain.class] && [_selectorComponents isEqualToArray:[object selectorComponents]];
 }
 
 - (NSUInteger) hash {

@@ -13,40 +13,40 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 @interface Parcoa (ISSAdditions)
 
-+ (ParcoaParser*) quickUnichar:(unichar)c skipSpace:(BOOL)skipSpace;
++ (ParcoaParser*) iss_quickUnichar:(unichar)c skipSpace:(BOOL)skipSpace;
 
-+ (ParcoaParser*) quickUnichar:(unichar)c;
++ (ParcoaParser*) iss_quickUnichar:(unichar)c;
 
-+ (ParcoaParser*) stringIgnoringCase:(NSString*)string;
++ (ParcoaParser*) iss_stringIgnoringCase:(NSString*)string;
 
-+ (ParcoaParser*) takeUntil:(MatcherBlock)block minCount:(NSUInteger)minCount;
++ (ParcoaParser*) iss_takeUntil:(MatcherBlock)block minCount:(NSUInteger)minCount;
 
-+ (ParcoaParser*) takeUntilInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount;
++ (ParcoaParser*) iss_takeUntilInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount;
 
-+ (ParcoaParser*) takeUntilChar:(unichar)character;
++ (ParcoaParser*) iss_takeUntilChar:(unichar)character;
 
-+ (ParcoaParser*) anythingButBasicControlChars:(NSUInteger)minCount;
++ (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount;
 
-+ (ParcoaParser*) anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount;
++ (ParcoaParser*) iss_anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount;
 
-+ (NSCharacterSet*) validIdentifierCharsSet;
++ (NSCharacterSet*) iss_validIdentifierCharsSet;
 
-+ (ParcoaParser*) validIdentifierChars:(NSUInteger)minCount;
++ (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount;
 
-+ (ParcoaParser*) safeDictionary:(ParcoaParser*)parser;
++ (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser;
 
-+ (ParcoaResult*) partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i;
++ (ParcoaResult*) iss_partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i;
 
-+ (ParcoaParser*) parameterStringWithPrefixes:(NSArray*)prefixes;
++ (ParcoaParser*) iss_parameterStringWithPrefixes:(NSArray*)prefixes;
 
-+ (ParcoaParser*) parameterStringWithPrefix:(NSString*)prefix;
++ (ParcoaParser*) iss_parameterStringWithPrefix:(NSString*)prefix;
 
-+ (ParcoaParser*) twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right;
++ (ParcoaParser*) iss_twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right;
 
-+ (ParcoaParser*) nameValueSeparator;
++ (ParcoaParser*) iss_nameValueSeparator;
 
-+ (ParcoaParser*) parseLineUpToInvalidCharactersInString:(NSString*)invalid;
++ (ParcoaParser*) iss_parseLineUpToInvalidCharactersInString:(NSString*)invalid;
 
-+ (ParcoaParser*) commentParser;
++ (ParcoaParser*) iss_commentParser;
 
 @end

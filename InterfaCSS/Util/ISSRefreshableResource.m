@@ -19,8 +19,8 @@
 }
 
 - (NSDate*) parseLastModifiedFromResponse:(NSHTTPURLResponse*)response {
-    NSDate* updatedLastModified = [response.allHeaderFields[@"Last-Modified"] parseHttpDate];
-    if( !updatedLastModified ) updatedLastModified = [response.allHeaderFields[@"Date"] parseHttpDate];
+    NSDate* updatedLastModified = [response.allHeaderFields[@"Last-Modified"] iss_parseHttpDate];
+    if( !updatedLastModified ) updatedLastModified = [response.allHeaderFields[@"Date"] iss_parseHttpDate];
     return updatedLastModified;
 }
 

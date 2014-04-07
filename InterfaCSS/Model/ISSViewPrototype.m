@@ -14,10 +14,11 @@
 
 @implementation ISSViewPrototype
 
-+ (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock {
++ (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock {
     ISSViewPrototype* prototypeDefinition = [[self alloc] init];
     prototypeDefinition->_name = name;
     prototypeDefinition->_propertyName = propertyName;
+    prototypeDefinition->_addAsSubView = addAsSubView;
     prototypeDefinition->_viewBuilderBlock = viewBuilderBlock;
     prototypeDefinition.subviewPrototypes = @[];
     return prototypeDefinition;
@@ -25,11 +26,11 @@
 
 - (UIView*) createViewObjectFromPrototype:(id)parentObject {
     UIView* view = _viewBuilderBlock();
-    if( [_propertyName hasData] ) [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil];
+    if( [_propertyName iss_hasData] ) [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil];
 
     for (ISSViewPrototype* subviewPrototype in self.subviewPrototypes) {
         UIView* subview = [subviewPrototype createViewObjectFromPrototype:view];
-        [view addSubview:subview];
+        if( subviewPrototype.addAsSubView ) [view addSubview:subview];
     }
     return view;
 }
