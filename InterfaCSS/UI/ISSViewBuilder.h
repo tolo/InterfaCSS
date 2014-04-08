@@ -9,14 +9,34 @@
 
 #import "ISSRootView.h" // Import this here to avoid users having to import this file as well when using methods like rootViewWithStyle...
 
+#ifdef ISS_VIEW_BUILDER_SHORTHAND_ENABLED
+#define ISSBuildRoot ISSViewBuilder rootViewWithStyle
+#define ISSBuildView ISSViewBuilder viewWithStyle
+#define ISSBuildCollectionView ISSViewBuilder collectionViewWithStyle
+#define ISSBuildImageView ISSViewBuilder imageViewWithStyle
+#define ISSBuildScrollView ISSViewBuilder scrollViewWithStyle
+#define ISSBuildTableView ISSViewBuilder tableViewWithStyle
+#define ISSBuildWebView ISSViewBuilder webViewWithStyle
+
+#define ISSBuildButton ISSViewBuilder buttonWithStyle
+#define ISSBuildLabel ISSViewBuilder labelWithStyle
+#define ISSBuildProgressView ISSViewBuilder progressViewWithStyle
+#define ISSBuildSlider ISSViewBuilder sliderWithStyle
+#define ISSBuildStepper ISSViewBuilder stepperWithStyle
+#define ISSBuildSwitch ISSViewBuilder switchWithStyle
+#define ISSBuildTextField ISSViewBuilder textFieldWithStyle
+#define ISSBuildTextView ISSViewBuilder textViewWithStyle
+#define ISSBuildTableViewCell ISSViewBuilder tableViewCellWithStyle
+
+#define ISSEndContainer ]; }];
+#define ISSEndRoot ISSEndContainer );
+
+#define beginSubViews andSubViews:^{ return @[
+#define endSubViews ]; }
+
+#endif
+
 typedef NSArray* (^SubViewBlock)();
-
-id InterfaCSS_BuildComponent(NSString* styleClassName);
-id InterfaCSS_BuildView(NSString* styleClassName, SubViewBlock subViewBlock);
-
-id InterfaCSS_SetupComponent(UIView* theView, NSString* styleClassName);
-id InterfaCSS_SetupView(UIView* theView, NSString* styleClassName, SubViewBlock subViewBlock);
-
 
 @interface ISSViewBuilder : NSObject
 

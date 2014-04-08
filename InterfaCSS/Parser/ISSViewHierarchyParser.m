@@ -41,10 +41,11 @@
 }
 
 + (void) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner {
-    if( [parent respondsToSelector:NSSelectorFromString(propertyName)] ) {
-        [parent setValue:value forKey:propertyName];
-    } else if( [fileOwner respondsToSelector:NSSelectorFromString(propertyName)] ) {
+    SEL selector = NSSelectorFromString(propertyName);
+    if( [fileOwner respondsToSelector:selector] ) {
         [fileOwner setValue:value forKey:propertyName];
+    } else if( [parent respondsToSelector:selector] ) {
+        [parent setValue:value forKey:propertyName];
     } else {
         if( fileOwner && parent ) ISSLogWarning(@"Property '%@' not found in file owner or parent view!", propertyName);
         else if( fileOwner ) ISSLogWarning(@"Property '%@' not found in file owner!", propertyName);

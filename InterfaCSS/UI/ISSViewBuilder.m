@@ -15,23 +15,6 @@
 #import "ISSViewHierarchyParser.h"
 
 
-id InterfaCSS_BuildView(NSString* styleClassName, SubViewBlock subViewBlock) {
-    return [ISSViewBuilder viewWithStyle:styleClassName andSubViews:subViewBlock];
-}
-
-id InterfaCSS_BuildLeafView(NSString* styleClassName) {
-    return [ISSViewBuilder viewWithStyle:styleClassName];
-}
-
-id InterfaCSS_SetupView(UIView* theView, NSString* styleClassName, SubViewBlock subViewBlock) {
-    return [ISSViewBuilder setupView:theView withStyleClass:styleClassName andSubViews:subViewBlock];
-}
-
-id InterfaCSS_SetupLeafView(UIView* theView, NSString* styleClassName) {
-    return [ISSViewBuilder setupView:theView withStyleClass:styleClassName];
-}
-
-
 @implementation ISSViewBuilder
 
 
