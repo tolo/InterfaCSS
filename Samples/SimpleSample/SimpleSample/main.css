@@ -10,10 +10,6 @@
 
 /* Common stuff */
 
-.tabBarStyle1 {
-    translucent: NO;
-}
-
 .tabBarStyle1 UITabBarItem {
     font: HelveticaNeue-CondensedBlack 24;
     textColor: lightGray;

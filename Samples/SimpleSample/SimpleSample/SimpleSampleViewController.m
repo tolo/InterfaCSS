@@ -9,6 +9,9 @@
 
 #import "SimpleSampleViewController.h"
 
+// Define this to enable using ISSViewBuilder shorthand macros:
+//#define ISS_VIEW_BUILDER_SHORTHAND_ENABLED
+
 #import <InterfaCSS.h>
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
@@ -51,6 +54,7 @@
           [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
                 self.contentTitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentTitleLabel"],
                 self.contentSubtitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentSubtitleLabel"],
+                // You can also add and setup an already existing view object using the view builder:
                 [ISSViewBuilder setupView:[[UIView alloc] init] withStyleClass:@"simpleSampleButtonContainer" andSubViews:^{
                     return @[ self.mainButton = [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton"] ];
                 }] ];
@@ -78,6 +82,9 @@
 #if DEBUG == 1
     [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
 #endif
+    
+    [self.view applyStylingISS];
+    NSLog(@"Frame: %@", NSStringFromCGRect(self.view.frame));
 }
 
 - (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {

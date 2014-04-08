@@ -36,6 +36,7 @@
     PrototypeExampleViewController* prototypeExampleViewController = [[PrototypeExampleViewController alloc] init];
 
     UITabBarController* tabBarController = [[UITabBarController alloc] init];
+    tabBarController.tabBar.translucent = NO;
     tabBarController.tabBar.styleClassISS = @"tabBarStyle1";
     tabBarController.viewControllers = @[viewController, prototypeExampleViewController];
     tabBarController.selectedIndex = 0;

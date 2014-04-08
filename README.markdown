@@ -4,7 +4,7 @@ InterfaCSS
 
 InterfaCSS emerged out of frustration with the shortcomings of the available Interface Building tools, one of the most important being the constant need to repeat yourself when it comes to styling of user interface elements. There had to be a better way. 
 
-And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting and maturing and whatnot, finally is taking shape. One area where particularly much fermentation has been going on is in the stylesheet parsing department, even though the choice of a CSS-like syntax was made quite early. A few parser implementations have come and gone, but the one that finally stuck is [Parcoa](https://github.com/brotchie/Parcoa).
+And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting finally is here to make your iOS-user-interface-coding-life a little bit easier. So go ahead, create yourself some fantastic [styles](#StylesheetFormat) and some amazing [layouts](#Layout), and you'll never look back!
 
 
 What InterfaCSS does
@@ -16,6 +16,7 @@ What InterfaCSS does
 * Provides an easy way to setup you view hierarchy though a view builder class (`ISSViewBuilder`) or through the use of a view definition file ([XML](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference)).
 * Enables you to load an auto-refreshable stylesheet from a URL, which will speed up and simplify UI development considerably.
 * InterfaCSS is completely free of dodgy Objective-C runtime manipulations (such as method swizzling and whatnot), something that may or may not make you sleep better at night.
+* The default CSS parser of InterfaCSS is built upon the amazing parser combinator framework [Parcoa](https://github.com/brotchie/Parcoa).
 
 
 
@@ -152,6 +153,74 @@ Below is an example of how a stylesheet file for InterfaCSS could look like:
     .landscape .mainTable {
         frame: parent(80, 10, 10, 10);
     }
+
+
+<a name="Layout">Layout</a>
+------
+In the layout department, InterfaCSS can help you in these ways:
+
+* Make it easier to create the view hierarcy through the use of the builder methods defined in [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) or by using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference).
+* Make positioning and sizing of views easier, by making it possible to use parent relative values when setting frame, bounds and center properties in the stylesheet.
+
+### Create the view hierarcy
+
+#### Using ISSViewBuilder view builder methods
+ISSViewBuilder lets you programmatically create a view heirarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma).
+
+Example of using ISSViewBuilder in the `loadView method of a view controller:
+
+    - (void) loadView {
+        self.view = [ISSViewBuilder rootViewWithStyle:@"mainView" andSubViews:^{
+            return @[
+                self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainLabel stdLabel"],
+                [ISSViewBuilder labelWithStyle:@"subLabel stdLabel"],
+                [ISSViewBuilder viewWithStyle:@"contentView" andSubViews:^{
+                    return @[
+                        [ISSViewBuilder labelWithStyle:@"contentTitleLabel"],
+                        [ISSViewBuilder labelWithStyle:@"contentSubtitleLabel"]
+                    ];
+                }]
+            ];
+        }];
+    }
+
+You can also use a shorthand style by defining the macro `ISS_VIEW_BUILDER_SHORTHAND_ENABLED`:
+
+    self.view = [ISSBuildRoot:@"mainView" beginSubViews
+            self.mainTitleLabel = [ISSBuildLabel:@"mainLabel stdLabel"],
+            [ISSBuildLabel:@"subLabel stdLabel"],
+            [ISSBuildView:@"contentView" beginSubViews
+                [ISSBuildLabel:@"contentTitleLabel"],
+                [ISSBuildLabel:@"contentSubtitleLabel"]
+            endSubViews]
+    endSubViews];
+
+#### Using a view definition file
+Another way of creating a view hiearchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute ("fileOwner" is first attempted, then superview).
+
+Using a view definition file, you also have the option of creating prototype views (use the `protype` attribute), which can be useful for table view cells for instance.
+
+Example of loading a view hierarchy from a view definition file in the `loadView method of a view controller:
+
+    - (void) loadView {
+        self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];
+    }
+
+
+### Positioning and sizing
+Besides setting fixed values for `frame`, `bounds` and `center` properties, you also have the option of using parent (or window) relative values. These relative values are evaluated during styling of a view, which means that you may have to manually apply styling when the parent view frame changes, unless you are using using a `ISSRootView` as the root view of the a view hierarchy.
+
+####[Rect](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGRect) (frame / bounds)
+A relative rect value can be created in these ways:
+
+* `parent` - the bounds of the superview
+* `parent(xInset, yInset)` - the bounds of the superview, with the specified insets applied (using `CGRectInset`)
+* `size(width, height)` - sets the size using absolute point values or parent relative values. Relative values can either be percentage values like `50%` or the keyword `auto`. The auto keyword is only useful if insets are specified along with the size, for instance: `size(50%, auto).left(5%).right(50)`. When auto is used, InterfaCSS makes sure that the sum of width/height and insets always adds up to the width/height of the parent.
+
+
+####[Point](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGPoint) (center):
+* `parent` - the center point in the superview
+* `parent(xOffset, yOffset)` - the center point in the superview, offset with the specifed offsets.
 
 
 Project status
