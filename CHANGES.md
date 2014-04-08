@@ -1,6 +1,6 @@
 #Changes
 
-##Version 0.9.0 (yet to be released)
+##Version 0.9.0
 
 ### New features & changes
 * Added support for child, adjacent sibling and general sibling selector combinators.
