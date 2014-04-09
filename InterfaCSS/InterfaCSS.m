@@ -158,7 +158,9 @@ static InterfaCSS* singleton = nil;
     NSString* styleSheetData = [NSString stringWithContentsOfURL:styleSheetFile usedEncoding:nil error:&error];
 
     if( styleSheetData ) {
+        NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
         NSMutableArray* declarations = [self.parser parse:styleSheetData];
+        ISSLogDebug(@"Loaded stylesheet '%@' in %g seconds", [styleSheetFile lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
 
         if( declarations ) {
             styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile declarations:declarations];
