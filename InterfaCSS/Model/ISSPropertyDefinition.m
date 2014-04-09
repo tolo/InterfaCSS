@@ -613,11 +613,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             title,
             pp(@"titleColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setTitleColor:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setTitleColor:forState:)] ) [viewObject setTitleColor:value forState:state];
             }),
             pp(@"titleShadowColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setTitleShadowColor:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setTitleShadowColor:forState:)] ) [viewObject setTitleShadowColor:value forState:state];
             }),
             image,
             backgroundImage
@@ -746,15 +746,15 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(thumbTintColor), ISSPropertyTypeColor),
             pp(@"maximumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setMaximumTrackImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setMaximumTrackImage:forState:)] ) [viewObject setMaximumTrackImage:value forState:state];
             }),
             pp(@"minimumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setMinimumTrackImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setMinimumTrackImage:forState:)] ) [viewObject setMinimumTrackImage:value forState:state];
             }),
             pp(@"thumbImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setThumbImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setThumbImage:forState:)] ) [viewObject setThumbImage:value forState:state];
             }),
         ]];
 
@@ -771,14 +771,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             backgroundImage,
             pp(@"decrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setDecrementImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setDecrementImage:forState:)] ) [viewObject setDecrementImage:value forState:state];
             }),
             pp(@"incrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setIncrementImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setIncrementImage:forState:)] ) [viewObject setIncrementImage:value forState:state];
             }),
             pp(@"dividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-                if( parameters.count > 1 ) {
+                if( parameters.count > 1 && [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:)] ) {
                     [viewObject setDividerImage:value forLeftSegmentState:(UIControlState)[parameters[0] unsignedIntegerValue] rightSegmentState:(UIControlState)[parameters[1] unsignedIntegerValue]];
                 }
             })
@@ -800,14 +800,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(@"momentary", ISSPropertyTypeBool),
             backgroundImage,
             pp(@"contentPositionAdjustment", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-                if( parameters.count > 0 ) {
+                if( parameters.count > 0 && [viewObject respondsToSelector:@selector(setContentPositionAdjustment:forSegmentType:barMetrics:)] ) {
                     UISegmentedControlSegment segment = parameters.count > 0 ? (UISegmentedControlSegment)[parameters[0] integerValue] : UISegmentedControlSegmentAny;
                     UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
                     [viewObject setContentPositionAdjustment:[value UIOffsetValue] forSegmentType:segment barMetrics:metrics];
                 }
             }),
             pp(@"dividerImage", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-                if( parameters.count > 1 ) {
+                if( parameters.count > 1 && [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:)] ) {
                     UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                     UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
                     UIBarMetrics metrics = parameters.count > 2 ? (UIBarMetrics)[parameters[2] integerValue] : UIBarMetricsDefault;
@@ -833,21 +833,29 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             backgroundImage,
             pp(@"backgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
-                [viewObject setBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                if( [viewObject respondsToSelector:@selector(setBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
+                    [viewObject setBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                }
             }),
             titlePositionAdjustment,
             pp(@"backButtonBackgroundImage", barMetricsAndControlStateParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics) [parameters[1] integerValue] : UIBarMetricsDefault;
-                [viewObject setBackButtonBackgroundImage:value forState:state barMetrics:metrics];
+                if( [viewObject respondsToSelector:@selector(setBackButtonBackgroundImage:forState:barMetrics:)] ) {
+                    [viewObject setBackButtonBackgroundImage:value forState:state barMetrics:metrics];
+                }
             }),
             pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
-                [viewObject setBackButtonBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                if( [viewObject respondsToSelector:@selector(setBackButtonBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
+                    [viewObject setBackButtonBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                }
             }),
             pp(@"backButtonTitlePositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
-                [viewObject setBackButtonTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
+                if( [viewObject respondsToSelector:@selector(setBackButtonTitlePositionAdjustment:forBarMetrics:)] ) {
+                    [viewObject setBackButtonTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
+                }
             }),
     ]];
 
@@ -923,21 +931,23 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             backgroundImage,
             pp(@"searchFieldBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setSearchFieldBackgroundImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setSearchFieldBackgroundImage:forState:)] ) [viewObject setSearchFieldBackgroundImage:value forState:state];
             }),
             pp(@"imageForSearchBarIcon", statefulSearchBarIconParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
                 UIControlState state = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setImage:value forSearchBarIcon:icon state:state];
+                if( [viewObject respondsToSelector:@selector(setImage:forSearchBarIcon:state:)] ) [viewObject setImage:value forSearchBarIcon:icon state:state];
             }),
             pp(@"scopeBarButtonBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setScopeBarButtonBackgroundImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setScopeBarButtonBackgroundImage:forState:)] ) [viewObject setScopeBarButtonBackgroundImage:value forState:state];
             }),
             pp(@"scopeBarButtonDividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
-                [viewObject setScopeBarButtonDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState];
+                if( [viewObject respondsToSelector:@selector(setScopeBarButtonDividerImage:forLeftSegmentState:rightSegmentState:)] ) {
+                    [viewObject setScopeBarButtonDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState];
+                }
             }),
             pp(@"scopeBarButtonTitleFont", controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
@@ -955,7 +965,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(searchTextPositionAdjustment), ISSPropertyTypeOffset),
             pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
-                [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
+                if( [viewObject respondsToSelector:@selector(setPositionAdjustment:forSearchBarIcon:)] ) [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
             })
         ]];
 
