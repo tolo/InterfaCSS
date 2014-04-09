@@ -148,4 +148,57 @@
     XCTAssertTrue([descendantChain matchesElement:labelDetails], @"Descendant first child selector chain must match!");
 }
 
+- (void) testWildcardSelectorFirst {
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
+    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" class:@"childClass" pseudoClass:nil];
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[wildcardSelector, @(ISSSelectorCombinatorDescendant), clildSelector]];
+    
+    UILabel* label = [[UILabel alloc] init];
+    [rootView addSubview:label];
+    [label addStyleClassISS:@"childClass"];
+    ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    
+    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+}
+
+- (void) testWildcardSelectorMiddle {
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiwindow" class:nil pseudoClass:nil];
+    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" class:@"childClass" pseudoClass:nil];
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector, @(ISSSelectorCombinatorDescendant),
+                                                                              wildcardSelector, @(ISSSelectorCombinatorDescendant), clildSelector]];
+    
+    UILabel* label = [[UILabel alloc] init];
+    [rootView addSubview:label];
+    [label addStyleClassISS:@"childClass"];
+    ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    
+    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+}
+
+- (void) testWildcardSelectorLast {
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:nil pseudoClass:nil];
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector, @(ISSSelectorCombinatorDescendant), wildcardSelector]];
+    
+    UILabel* label = [[UILabel alloc] init];
+    [rootView addSubview:label];
+    ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    
+    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+}
+
+- (void) testWildcardSelectorFirstAndLast {
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:nil pseudoClass:nil];
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[wildcardSelector, @(ISSSelectorCombinatorDescendant),
+                                                                              parentSelector, @(ISSSelectorCombinatorDescendant), wildcardSelector]];
+    
+    UILabel* label = [[UILabel alloc] init];
+    [rootView addSubview:label];
+    ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    
+    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+}
+
 @end
