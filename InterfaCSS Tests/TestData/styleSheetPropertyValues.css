@@ -65,6 +65,9 @@
 .font4 {
     font: fontWithSize(@font1, 10);
 }
+.font5 {
+    font: HelveticaNeue-Medium 5;
+}
 
 
 .image1 {

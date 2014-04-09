@@ -68,7 +68,7 @@
 }
 
 - (BOOL) iss_isNumeric {
-    NSRange r = [self rangeOfString:@"^(?:|0|[1-9]\\d+)(?:\\.\\d*)?$" options:NSRegularExpressionSearch];
+    NSRange r = [self rangeOfString:@"^(?:|0|[1-9]\\d*)(?:\\.\\d*)?$" options:NSRegularExpressionSearch];
     return r.location != NSNotFound;
 }
 

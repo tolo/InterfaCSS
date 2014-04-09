@@ -125,7 +125,8 @@
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @".class1",
                                                                             @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
-                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)"]];
+                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)",
+                                                                            @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
     
     for (ISSPropertyDeclarations* d in result) {
         NSMutableArray* chains = [NSMutableArray array];
@@ -354,6 +355,9 @@
     
     value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font4"] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:10], @"Font function 'fontWithSize' not applied correctly");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font5"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:5], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {
