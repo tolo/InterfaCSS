@@ -86,23 +86,43 @@
     XCTAssertEqual(label.alpha, 0.99f, @"Unexpected property value");
 }
 
+- (void) applyStyle:(NSString*)style onView:(UIView*)view andExpectAlpha:(CGFloat)alpha {
+    [view addStyleClassISS:style];
+    [view applyStylingISS];
+    [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:view];
+    XCTAssertEqual(view.alpha, alpha, @"Unexpected property value");
+}
+
 - (void) testMultipleMatchingClassesWithSameProperty {
+    UIView* rootView = [[UIView alloc] init];
+    [rootView addStyleClassISS:@"classTop"];
+
+    UIView* intermediateView = [[UIView alloc] init];
+    [rootView addSubview:intermediateView];
+    [intermediateView addStyleClassISS:@"classMiddle"];
+
     UILabel* label = [[UILabel alloc] init];
-    [label addStyleClassISS:@"class10"];
-    [label applyStylingISS];
-    XCTAssertEqual(label.alpha, 0.1f, @"Unexpected property value");
+    [intermediateView addSubview:label];
+
+    [self applyStyle:@"class10" onView:label andExpectAlpha:0.1f];
     
-    [label addStyleClassISS:@"class11"];
-    [label applyStylingISS];
-    XCTAssertEqual(label.alpha, 0.2f, @"Unexpected property value");
+    [self applyStyle:@"class11" onView:label andExpectAlpha:0.2f];
     
-    [label addStyleClassISS:@"class12"]; // class12 defines alpha as 0.3, but appears before class11, so value of class11 should still apply
-    [label applyStylingISS];
-    XCTAssertEqual(label.alpha, 0.2f, @"Unexpected property value");
+    [self applyStyle:@"class12" onView:label andExpectAlpha:0.2f]; // class12 defines alpha as 0.3, but appears before class11, so value of class11 should still apply
     
     [label removeStyleClassISS:@"class11"]; // After class11 is removed, value of class12 should apply
     [label applyStylingISS];
     XCTAssertEqual(label.alpha, 0.3f, @"Unexpected property value");
+
+    // Test ordering - attempt to make sure that class name doesn't affect ordering
+    [self applyStyle:@"abc123" onView:label andExpectAlpha:0.31f];
+    [self applyStyle:@"123abc" onView:label andExpectAlpha:0.32f];
+    [self applyStyle:@"zyxvyt" onView:label andExpectAlpha:0.33f];
+    [self applyStyle:@"abc123abc" onView:label andExpectAlpha:0.34f];
+    [self applyStyle:@"123abc123" onView:label andExpectAlpha:0.35f];
+    
+    
+    [self applyStyle:@"class13" onView:label andExpectAlpha:0.4f];
 }
 
 @end

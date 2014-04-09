@@ -29,6 +29,42 @@
 
 typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
 
+static NSUInteger selectorChainsDeclarationCounter = 0;
+
+// Selector chains declaration wrapper class, to keep track of ordering
+@interface ISSSelectorChainsDeclaration : NSObject<NSCopying>
+@property (nonatomic, readonly) NSUInteger index;
+@property (nonatomic, strong, readonly) NSArray* chains;
++ (instancetype) selectorChainsWithArray:(NSArray*)chains;
+@end
+
+@implementation ISSSelectorChainsDeclaration
++ (instancetype) selectorChainsWithArray:(NSArray*)chains {
+    ISSSelectorChainsDeclaration* chainsDeclaration = [[ISSSelectorChainsDeclaration alloc] init];
+    chainsDeclaration->_index = selectorChainsDeclarationCounter++;
+    chainsDeclaration->_chains = chains;
+    return chainsDeclaration;
+}
+- (instancetype) copyWithZone:(NSZone*)zone {
+    ISSSelectorChainsDeclaration* chainsDeclaration = [[ISSSelectorChainsDeclaration alloc] init];
+    chainsDeclaration->_index = self.index;
+    chainsDeclaration->_chains = self.chains;
+    return chainsDeclaration;
+}
+- (NSString*)description {
+    return [NSString stringWithFormat:@"[%ld - %@]", (long)self.index, self.chains];
+}
+- (BOOL) isEqual:(id)object {
+    if( [object isKindOfClass:ISSSelectorChainsDeclaration.class] && (self.index == [object index]) ) {
+        if (self.chains == [object chains]) return YES;
+        else [self.chains isEqualToArray:[object chains]];
+    }
+    return NO;
+}
+- (NSUInteger) hash {
+    return 31 * self.index + self.chains.hash;
+}
+@end
 
 @implementation ISSParcoaStyleSheetParser {
     // Common parsers
@@ -830,14 +866,17 @@ typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
             else return result;
         } name:@"selectorChain"];
 
-        ParcoaParser* selectors = [[selectorChain skipSurroundingSpaces] sepBy1:comma];
+        ParcoaParser* selectorsChainsDeclaration = [[[selectorChain skipSurroundingSpaces] sepBy1:comma] transform:^id(id value) {
+            if( ![value isKindOfClass:NSArray.class] ) value = @[value];
+            return [ISSSelectorChainsDeclaration selectorChainsWithArray:value];
+        } name:@"selectorsChainsDeclaration"];
 
 
         // Properties
         transformedValueCache = [[NSMutableDictionary alloc] init];
-        ParcoaParser* propertyDeclarations = [self propertyParsers:selectors];
+        ParcoaParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclaration];
 
-        ParcoaParser* rulesetParser = [[selectors then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] dictionaryWithKeys:@[@"selectors", @"declarations"]];
+        ParcoaParser* rulesetParser = [[selectorsChainsDeclaration then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] dictionaryWithKeys:@[@"selectors", @"declarations"]];
 
 
          // Unrecognized content
@@ -860,26 +899,37 @@ typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
     NSArray* selectorChains = [_selectorChains filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary* bindings) {
         return [evaluatedObject isKindOfClass:ISSSelectorChain.class];
     }]];
-
+    
     if( selectorChains.count ) {
+        // Make sure order of nested declarations is correct
+        NSMutableArray* nestedDeclarationsInProperties = [[NSMutableArray alloc] init];
         for(id key in properties.allKeys) {
-            if( [key isKindOfClass:NSArray.class] ) {
-                // Remove mapping for nested selector chains in properties
-                NSMutableDictionary* nestedProperties = properties[key];
-                [properties removeObjectForKey:key];
+            if( [key isKindOfClass:ISSSelectorChainsDeclaration.class] ) {
+                [nestedDeclarationsInProperties addObject:key];
+            }
+        }
+        [nestedDeclarationsInProperties sortUsingComparator:^NSComparisonResult(ISSSelectorChainsDeclaration* obj1, ISSSelectorChainsDeclaration* obj2) {
+            if ( obj1.index > obj2.index ) return NSOrderedDescending;
+            if ( obj1.index < obj2.index ) return NSOrderedAscending;
+            return NSOrderedSame;
+        }];
 
-                // Construct new selector chains by appending selector to parent selector chains
-                NSMutableArray* nestedSelectorChains = [[NSMutableArray alloc] init];
-                for(ISSSelectorChain* selectorChain in key) {
-                    for(ISSSelectorChain* parentChain in selectorChains) {
-                        if( [selectorChain isKindOfClass:ISSSelectorChain.class] ) {
-                            [nestedSelectorChains addObject:[parentChain selectorChainByAddingDescendantSelectorChain:selectorChain]];
-                        }
+        for(ISSSelectorChainsDeclaration* selectorChainsDeclaration in nestedDeclarationsInProperties) {
+            // Remove mapping for nested selector chains in properties
+            NSMutableDictionary* nestedProperties = properties[selectorChainsDeclaration];
+            [properties removeObjectForKey:selectorChainsDeclaration];
+
+            // Construct new selector chains by appending selector to parent selector chains
+            NSMutableArray* nestedSelectorChains = [[NSMutableArray alloc] init];
+            for(ISSSelectorChain* selectorChain in selectorChainsDeclaration.chains) {
+                for(ISSSelectorChain* parentChain in selectorChains) {
+                    if( [selectorChain isKindOfClass:ISSSelectorChain.class] ) {
+                        [nestedSelectorChains addObject:[parentChain selectorChainByAddingDescendantSelectorChain:selectorChain]];
                     }
                 }
-
-                [nestedDeclarations addObject:@[nestedProperties, nestedSelectorChains]];
             }
+
+            [nestedDeclarations addObject:@[nestedProperties, nestedSelectorChains]];
         }
 
         // Add declaration
@@ -898,11 +948,8 @@ typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
 #pragma mark - ISSStyleSheet interface
 
 - (NSMutableArray*) parse:(NSString*)styleSheetData {
-    NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-
     ParcoaResult* result = [styleSheetData iss_hasData] ? [cssParser parse:styleSheetData] : nil;
     if( result.isOK ) {
-        ISSLogDebug(@"Done parsing stylesheet in %g seconds", ([NSDate timeIntervalSinceReferenceDate] - t));
         NSMutableArray* declarations = [NSMutableArray array];
 
         for(id element in result.value) {
@@ -910,9 +957,9 @@ typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
                 NSDictionary* declaration = (NSDictionary*)element;
 
                 NSMutableDictionary* properties = declaration[@"declarations"];
-                NSArray* selectorChains = declaration[@"selectors"];
+                ISSSelectorChainsDeclaration* selectorChainsDeclaration = declaration[@"selectors"];
 
-                [self processProperties:properties withSelectorChains:selectorChains andAddToDeclarations:declarations];
+                [self processProperties:properties withSelectorChains:selectorChainsDeclaration.chains andAddToDeclarations:declarations];
             }
         }
 

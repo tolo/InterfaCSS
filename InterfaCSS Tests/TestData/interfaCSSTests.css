@@ -26,10 +26,38 @@
     alpha: 0.1;
 }
 
-.class12 {
-    alpha: 0.3;
+.classTop {
+    .classMiddle {
+        .class12 {
+            alpha: 0.3;
+        }
+
+        .class11 {
+            alpha: 0.2;
+        }
+        
+        .abc123 {
+            alpha: 0.31;
+        }
+        
+        .123abc {
+            alpha: 0.32;
+        }
+
+        .zyxvyt {
+            alpha: 0.33;
+        }
+        
+        .abc123abc {
+            alpha: 0.34;
+        }
+        
+        .123abc123 {
+            alpha: 0.35;
+        }
+    }
 }
 
-.class11 {
-    alpha: 0.2;
+.class13 {
+    alpha: 0.4;
 }

@@ -159,7 +159,11 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    return [object isKindOfClass:ISSSelectorChain.class] && [_selectorComponents isEqualToArray:[object selectorComponents]];
+    if( [object isKindOfClass:ISSSelectorChain.class] ) {
+        if (self.selectorComponents == [object selectorComponents]) return YES;
+        else [self.selectorComponents isEqualToArray:[object selectorComponents]];
+    }
+    return NO;
 }
 
 - (NSUInteger) hash {
