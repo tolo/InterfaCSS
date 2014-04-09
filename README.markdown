@@ -72,7 +72,7 @@ The format of the stylesheet files used by InterfaCSS is in structure essentiall
 This is what InterfaCSS supports: 
 
 * Type, style class and wildcard selectors are supported.
-* Descendant, child, adjacent sibling and general sibling selector combinators.
+* Descendant (whitespace), child (`>`), adjacent sibling (`+`) and general sibling (`~`) selector combinators.
 * Pseudo classes:
     * [Structural pseudo classes](http://www.w3.org/TR/selectors/#structural-pseudos)
     * Enabled/disabled (for `UIControl` and onthers)
