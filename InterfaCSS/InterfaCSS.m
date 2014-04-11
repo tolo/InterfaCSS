@@ -273,9 +273,10 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) applyStyling:(id)uiElement {
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:_cmd object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStylingWithAnimation:) object:nil];
     [self applyStyling:uiElement includeSubViews:YES];
+    // Cancel scheduled calls after styling has been applied, to avoid "loop"
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:uiElement];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithAnimation:) object:uiElement];
 }
 
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews {
@@ -328,13 +329,13 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement {
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:_cmd object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStyling:) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:uiElement];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStyling:) object:uiElement];
     [self applyStylingWithAnimation:uiElement includeSubViews:YES];
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews {
-    [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^() {
+    [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionLayoutSubviews animations:^() {
         [self applyStyling:uiElement includeSubViews:includeSubViews];
     } completion:nil];
 }
