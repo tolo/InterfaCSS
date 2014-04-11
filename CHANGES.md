@@ -1,5 +1,19 @@
 #Changes
 
+
+##Version 0.9.1 (yet to be released)
+
+### Bug fixes
+
+* Fixed problem with wildcard selectors not being recognized properly.
+
+* Fixed ordering issue with nested declarations in stylesheets.
+
+* Fixed problem with parsing font sizes with only one digit.
+
+* Fixed broken cancellation of delayed calls to `applyStyling:` and `applyStylingWithAnimation:`.
+
+
 ##Version 0.9.0
 
 ### New features & changes
@@ -28,3 +42,5 @@
 * Fixed problems with matching types for view classes (`ISSSelector`).
 
 * Fixed caching issue with enum properties.
+
+
