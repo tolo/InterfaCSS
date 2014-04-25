@@ -25,10 +25,7 @@
         static NSCharacterSet* characterSet = nil;
         if( !characterSet ) characterSet = [NSCharacterSet characterSetWithCharactersInString:@" ,"];
         NSArray* styles = [styleClassName iss_trimmedSplitWithSet:characterSet];
-        if( styles.count > 1 ) {
-            for(NSString* style in styles) [theView addStyleClassISS:style];
-        }
-        else theView.styleClassISS = styleClassName;
+        for(NSString* style in styles) [theView addStyleClassISS:style];
     }
     
     if( subViewBlock ) {
@@ -77,11 +74,11 @@
 }
 
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass {
-    return [self setupView:[[UICollectionView alloc] init] withStyleClass:styleClass];
+    return [self setupView:[[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass];
 }
 
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
-    return [self setupView:[[UICollectionView alloc] init] withStyleClass:styleClass andSubViews:subViewBlock];
+    return [self setupView:[[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
 + (UIImageView*) imageViewWithStyle:(NSString*)styleClass {
