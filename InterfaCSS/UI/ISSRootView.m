@@ -55,6 +55,12 @@
 }
 
 - (void) didMoveToSuperview {
+    [super didMoveToSuperview];
+    [self scheduleApplyStylingISS];
+}
+
+- (void) didMoveToWindow {
+    [super didMoveToWindow];
     [self scheduleApplyStylingISS];
 }
 
