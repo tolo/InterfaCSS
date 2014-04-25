@@ -46,7 +46,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 
 + (ISSRectValue*) parentInsetRectWithSize:(CGSize)insetSize {
     return [[self alloc] initWithType:ISSRectValueTypeParentInsets rect:CGRectZero
-                               insets:UIEdgeInsetsMake(insetSize.height, insetSize.width, insetSize.height, insetSize.height)];
+                               insets:UIEdgeInsetsMake(insetSize.height, insetSize.width, insetSize.height, insetSize.width)];
 }
 
 + (ISSRectValue*) parentInsetRectWithInsets:(UIEdgeInsets)insets {
