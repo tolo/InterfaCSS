@@ -10,6 +10,7 @@
 #import "ISSPropertyDeclaration.h"
 
 #import "ISSPropertyDefinition.h"
+#import "NSString+ISSStringAdditions.h"
 
 @implementation ISSPropertyDeclaration
 
@@ -71,7 +72,7 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] ) {
+    if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] && [NSString iss_string:[object prefix] isEqualToString:self.prefix] ) {
         if( [object parameters] == self.parameters ) return YES;
         else return [[object parameters] isEqualToArray:self.parameters];
     }
