@@ -42,7 +42,9 @@ static InterfaCSS* singleton = nil;
 @end
 
 
-@implementation InterfaCSS
+@implementation InterfaCSS {
+    BOOL deviceIsRotating;
+}
 
 
 #pragma mark - Creation & destruction
@@ -108,8 +110,17 @@ static InterfaCSS* singleton = nil;
     UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
     if( UIDeviceOrientationIsValidInterfaceOrientation(orientation) ) {
         ISSLogTrace(@"Triggering re-styling due to device orientation change");
-        if( self.keyWindow ) [self applyStylingWithAnimation:self.keyWindow];
+
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetDeviceIsRotatingFlag) object:nil];
+        deviceIsRotating = YES;
+        [self performSelector:@selector(resetDeviceIsRotatingFlag) withObject:nil afterDelay:0.1];
+
+        if( self.keyWindow ) [self scheduleApplyStyling:self.keyWindow animated:YES];
     }
+}
+
+- (void) resetDeviceIsRotatingFlag {
+    deviceIsRotating = NO;
 }
 
 
@@ -263,11 +274,11 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated {
-    if( animated ) {
-        //[NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStyling:) object:nil];
+    if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
+        [self applyStyling:uiElement];
+    } else if( animated ) {
         [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
     } else {
-        //[NSObject cancelPreviousPerformRequestsWithTarget:uiElement selector:@selector(applyStylingWithAnimation:) object:nil];
         [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
     }
 }
