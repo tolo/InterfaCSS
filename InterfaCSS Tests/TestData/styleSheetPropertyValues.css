@@ -4,7 +4,7 @@
     autoresizingMask: width height left right top bottom;
     clipsToBounds: YES;
     contentMode: bottomRight;
-    text: "Text";
+    text: "Text:";
     title: Title;
     prompt: 'Prompt';
     shadowOffset: offset(1, 2);

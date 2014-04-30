@@ -69,7 +69,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 @implementation ISSParcoaStyleSheetParser {
     // Common parsers
     ParcoaParser *dot, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
-            *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars,
+            *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *quotedStringOrAnythingButControlChars, 
             *identifier, *number, *anyValue, *quotedString, *commentParser;
 
     NSCharacterSet* validVariableNameSet;
@@ -319,6 +319,9 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
             else return [self transformEnumValue:result.value forProperty:p];
         }
     }
+    else if( p.type == ISSPropertyTypeString ) {
+        return propertyValue;
+    }
     // Other properties
     else {
         ParcoaParser* valueParser = typeToParser[@(p.type)];
@@ -380,11 +383,6 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
             propertyNameToProperty[[alias lowercaseString]] = p;
         }
     }
-
-
-    // String
-    ParcoaParser* stringValueParser = [Parcoa choice:@[quotedString, anyName]];
-    typeToParser[@(ISSPropertyTypeString)] = stringValueParser;
 
 
     // BOOL
@@ -702,7 +700,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     
 
     // Property pair
-    ParcoaParser* propertyPairParser = [[[anythingButControlChars keepLeft:propertyNameValueSeparator] then:[anythingButControlChars keepLeft:semiColonSkipSpace]] transform:^id(id value) {
+    ParcoaParser* propertyPairParser = [[[anythingButControlChars keepLeft:propertyNameValueSeparator] then:[quotedStringOrAnythingButControlChars keepLeft:semiColonSkipSpace]] transform:^id(id value) {
         return [self transformPropertyPair:value];
     } name:@"propertyPair"];
 
@@ -758,6 +756,8 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
         ParcoaParser* notQuote = [Parcoa noneOf:@"'\""];
         quotedString = [[quote keepRight:[notQuote concatMany]] keepLeft:quote];
 
+        quotedStringOrAnythingButControlChars = [[Parcoa choice:@[quotedString, anythingButControlChars]] concatMany1];
+        
 
         // Comments
         commentParser = [[Parcoa iss_commentParser] transform:^id(id value) {

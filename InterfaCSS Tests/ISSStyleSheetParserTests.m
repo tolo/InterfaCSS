@@ -164,7 +164,7 @@
 
 - (void) testStringPropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"prompt"] fromStyleClass:@"simple"];
-    XCTAssertEqualObjects(values[0], @"Text", @"Expected value 'Text' for property text");
+    XCTAssertEqualObjects(values[0], @"Text:", @"Expected value 'Text:' for property text");
     XCTAssertEqualObjects(values[1], @"Title", @"Expected value 'Title' for property title");
     XCTAssertEqualObjects(values[2], @"Prompt", @"Expected value 'Prompt' for property prompt");
 }
