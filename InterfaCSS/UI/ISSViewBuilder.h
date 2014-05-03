@@ -18,6 +18,7 @@
 #define ISSBuildTableView ISSViewBuilder tableViewWithStyle
 #define ISSBuildWebView ISSViewBuilder webViewWithStyle
 
+#define ISSBuildActivityIndicator ISSViewBuilder activityIndicatorViewWithStyle
 #define ISSBuildButton ISSViewBuilder buttonWithStyle
 #define ISSBuildLabel ISSViewBuilder labelWithStyle
 #define ISSBuildProgressView ISSViewBuilder progressViewWithStyle
@@ -74,6 +75,7 @@ typedef NSArray* (^SubViewBlock)();
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 
 
++ (UIActivityIndicatorView*) activityIndicatorViewWithStyle:(NSString*)styleClass;
 
 + (UIButton*) buttonWithStyle:(NSString*)styleClass;
 + (UIButton*) buttonWithStyle:(NSString*)styleClass andButtonType:(UIButtonType)buttonType;

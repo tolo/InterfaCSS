@@ -116,7 +116,7 @@
 
 #pragma mark - Components
 
-+ (UIActivityIndicatorView*) activityViewWithStyle:(NSString*)styleClass {
++ (UIActivityIndicatorView*) activityIndicatorViewWithStyle:(NSString*)styleClass {
     return [self setupView:[[UIActivityIndicatorView alloc] init] withStyleClass:styleClass];
 }
 
