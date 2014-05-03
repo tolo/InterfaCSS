@@ -61,3 +61,8 @@
 .class13 {
     alpha: 0.4;
 }
+
+.overwriteTest {
+    alpha: 0.5;
+    titleLabel.alpha: 0.25;
+}

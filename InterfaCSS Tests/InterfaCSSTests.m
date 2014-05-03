@@ -125,4 +125,9 @@
     [self applyStyle:@"class13" onView:label andExpectAlpha:0.4f];
 }
 
+- (void) testThatPrefixedPropertyDoesntOverwrite {
+    UIButton* btn = [[UIButton alloc] init];
+    [self applyStyle:@"overwriteTest" onView:btn andExpectAlpha:0.5f];
+}
+
 @end
