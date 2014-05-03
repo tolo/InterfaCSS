@@ -22,6 +22,13 @@
 
 static InterfaCSS* singleton = nil;
 
+// Private extension of ISSUIElementDetails
+@interface ISSUIElementDetailsInterfaCSS : ISSUIElementDetails
+@property (nonatomic) BOOL beingStyled;
+@end
+@implementation ISSUIElementDetailsInterfaCSS
+@end
+
 
 // Private interface
 @interface InterfaCSS ()
@@ -258,7 +265,7 @@ static InterfaCSS* singleton = nil;
     if( !uiElement ) return nil;
     ISSUIElementDetails* details = [self.trackedViews objectForKey:uiElement];
     if( !details ) {
-        details = [[ISSUIElementDetails alloc] initWithUIElement:uiElement];
+        details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
         [self.trackedViews setObject:details forKey:uiElement];
     }
     return details;
@@ -283,25 +290,44 @@ static InterfaCSS* singleton = nil;
     }
 }
 
-- (void) applyStyling:(id)uiElement {
-    [self applyStyling:uiElement includeSubViews:YES];
-    // Cancel scheduled calls after styling has been applied, to avoid "loop"
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:uiElement];
+- (void) cancelScheduledApplyStyling:(id)uiElement {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStyling:) object:uiElement];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithAnimation:) object:uiElement];
 }
 
+- (void) applyStyling:(id)uiElement {
+    [self applyStyling:uiElement includeSubViews:YES];
+}
+
+// Main styling method
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews {
-    UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
+    ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
+
+    if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
+        @try {
+            uiElementDetails.beingStyled = YES;
+            [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews];
+        }
+        @finally {
+            uiElementDetails.beingStyled = NO;
+            // Cancel scheduled calls after styling has been applied, to avoid "loop"
+            [self cancelScheduledApplyStyling:uiElement];
+        }
+    }
+}
+
+// Internal styling method - should only be called by -[applyStyling:includeSubViews:].
+- (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews {
+    UIView* view = uiElementDetails.view;
     BOOL styleAppliedToView = NO;
     if( !self.keyWindow && includeSubViews ) {
         BOOL keyWindowInitialized = [self initViewHierarchy];
         styleAppliedToView = keyWindowInitialized && view.window == self.keyWindow; // Make sure style is applied to view if not in view hierarchy
     }
     if( !styleAppliedToView ) {
-        ISSLogTrace(@"Applying style to %@", uiElement);
+        ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
 
         // Reset cached styles if superview has changed
-        ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
         if( view && view.superview != uiElementDetails.parentView ) {
             ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
             [self clearCachedStylesForUIElement:view];
@@ -340,12 +366,13 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:uiElement];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStyling:) object:uiElement];
     [self applyStylingWithAnimation:uiElement includeSubViews:YES];
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    // Cancel scheduled styling calls for uiElement
+    [self cancelScheduledApplyStyling:uiElement];
+
     [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionLayoutSubviews animations:^() {
         [self applyStyling:uiElement includeSubViews:includeSubViews];
     } completion:nil];
