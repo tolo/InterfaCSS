@@ -1,7 +1,7 @@
 #Changes
 
 
-##Version 0.9.1 (yet to be released)
+##Version 0.9.1
 
 ### Bug fixes
 
@@ -27,7 +27,6 @@
 	* Interface orientation: (`landscape, landscapeLeft, landscapeRight, portrait, portraitUpright, portraitUpSideDown`)
 	* Component state: (`enabled, disabled`)
 	* Structural (`nthchild, nthlastchild, onlychild, firstchild, lastchild, nthoftype, nthlastofyype, onlyoftype, firstoftype, lastoftype, empty`)
-
 * Stylesheet variables are now global (i.e. can be reused in multiple stylesheets).
 * Stylesheet variables can now be accessed and manipulated in code, using methods in class InterfaCSS.
 * Added suffix/prefix to all category methods (methods `UIView+InterfaCSS.h` now all have a "ISS" suffix).
