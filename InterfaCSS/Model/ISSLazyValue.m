@@ -15,7 +15,11 @@
 
 @implementation ISSLazyValue
 
-- (id) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block {
++ (instancetype) lazyValueWithBlock:(ISSLazyValueBlock)block {
+    return [[[self class] alloc] initWithLazyEvaluationBlock:block];
+}
+
+- (instancetype) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block {
     self = [super init];
     if ( self ) {
         self.lazyValueBlock = block;
@@ -23,8 +27,12 @@
     return self;
 }
 
-- (id) evaluateWithViewObject:(id)viewObject {
-    return self.lazyValueBlock(viewObject);
+- (id) evaluate {
+    return self.lazyValueBlock(nil);
+}
+
+- (id) evaluateWithParameter:(id)parameter {
+    return self.lazyValueBlock(parameter);
 }
 
 @end

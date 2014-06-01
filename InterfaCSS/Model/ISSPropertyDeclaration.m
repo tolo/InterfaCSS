@@ -11,6 +11,8 @@
 
 #import "ISSPropertyDefinition.h"
 #import "NSString+ISSStringAdditions.h"
+#import "ISSLazyValue.h"
+#import "NSObject+ISSLogSupport.h"
 
 @implementation ISSPropertyDeclaration
 
@@ -44,19 +46,41 @@
 #pragma mark - NSCopying
 
 - (id) copyWithZone:(NSZone*)zone {
-    return [[self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters prefix:self.prefix];
+    ISSPropertyDeclaration* decl;
+    if( _unrecognizedName ) decl = [[self.class allocWithZone:zone] initWithUnrecognizedProperty:_unrecognizedName];
+    else {
+        decl = [[self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters prefix:self.prefix];
+        decl.propertyValue = self.propertyValue;
+        decl.lazyPropertyTransformationBlock = self.lazyPropertyTransformationBlock;
+    }
+    return decl;
 }
 
 
 #pragma mark - Public interface
 
-- (BOOL) setValue:(id)value onTarget:(id)target {
+
+- (void) transformValueIfNeeded {
+    if( self.lazyPropertyTransformationBlock ) {
+        id propertyValue = self.lazyPropertyTransformationBlock(self);
+        if( !propertyValue ) {
+            NSLog(@"Muu");
+        }
+        self.propertyValue = propertyValue;
+        self.lazyPropertyTransformationBlock = nil;
+    }
+}
+
+- (BOOL) applyPropertyValueOnTarget:(id)target {
     if( !self.property ) return NO;
 
+    [self transformValueIfNeeded];
+    if( !self.propertyValue ) return NO;
+
     if ( self.parameters.count ) {
-        [self.property setValue:value onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
+        [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
     } else {
-        [self.property setValue:value onTarget:target withPrefixKeyPath:self.prefix];
+        [self.property setValue:self.propertyValue onTarget:target withPrefixKeyPath:self.prefix];
     }
     return YES;
 }
@@ -72,7 +96,9 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] && [NSString iss_string:[object prefix] isEqualToString:self.prefix] ) {
+    if( object == self ) return YES;
+    else if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] &&
+            [NSString iss_string:[object prefix] isEqualToString:self.prefix] ) {
         if( [object parameters] == self.parameters ) return YES;
         else return [[object parameters] isEqualToArray:self.parameters];
     }

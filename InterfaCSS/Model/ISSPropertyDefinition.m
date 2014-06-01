@@ -27,6 +27,9 @@ typedef void (^EnumValuesBlock)(ISSPropertyDefinition*);
 typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
 
 
+NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefinition";
+
+
 #define S(selName) NSStringFromSelector(@selector(selName))
 
 static NSDictionary* classesToTypeNames;
@@ -70,6 +73,10 @@ static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
 }
 
+static ISSPropertyDefinition* pea(NSString* name, NSArray* aliases, NSDictionary* enumValues) {
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
+}
+
 static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
 }
@@ -96,7 +103,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 @implementation ISSPropertyDefinition
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type {
-    return [self initWithName:@"ISSAnonymousPropertyDefinition" aliases:@[] type:type];
+    return [self initWithName:ISSAnonymousPropertyDefinitionName aliases:@[] type:type];
 }
 
 - (id) initWithName:(NSString *)name type:(ISSPropertyType)type {
@@ -129,6 +136,10 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return self;
 }
 
+- (BOOL) anonymous {
+    return self.name == ISSAnonymousPropertyDefinitionName;
+}
+
 - (id) targetObjectForObject:(id)obj andPrefixKeyPath:(NSString*)prefixKeyPath {
     if( prefixKeyPath ) {
         // First, check if prefix key path is a valid selector
@@ -159,7 +170,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
         obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
         
-        if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithViewObject:obj];
+        if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
         if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
         [obj setValue:value forKeyPath:propertyName]; // Will throw exception if property doesn't exist
     } @catch (NSException* e) {
@@ -182,7 +193,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 - (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath {
     obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
-    if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithViewObject:obj];
+    if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
     if( value && value != [NSNull null] ) _propertySetterBlock(self, obj, value, params);
 }
 
@@ -230,7 +241,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 }
 
 - (BOOL) isEqual:(id)object {
-    return [object isKindOfClass:ISSPropertyDefinition.class] &&
+    if( object == self ) return YES;
+    else return [object isKindOfClass:ISSPropertyDefinition.class] &&
            [self.name isEqualToString:((ISSPropertyDefinition*)object).name] &&
            self.type == ((ISSPropertyDefinition*)object).type;
 }
@@ -494,10 +506,10 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 }
             }),
             p(@"hidden", ISSPropertyTypeBool),
-            pa(@"layer.anchorPoint", @[@"anchorPoint", @"anchor-point"], ISSPropertyTypePoint),
-            pa(@"layer.cornerRadius", @[@"cornerradius", @"corner-radius"], ISSPropertyTypeNumber),
-            pa(@"layer.borderColor", @[@"bordercolor", @"border-color"], ISSPropertyTypeCGColor),
-            pa(@"layer.borderWidth", @[@"borderwidth", @"border-width"], ISSPropertyTypeNumber),
+            pa(@"layer.anchorPoint", @[@"anchorPoint"], ISSPropertyTypePoint),
+            pa(@"layer.cornerRadius", @[@"cornerradius"], ISSPropertyTypeNumber),
+            pa(@"layer.borderColor", @[@"bordercolor"], ISSPropertyTypeCGColor),
+            pa(@"layer.borderWidth", @[@"borderwidth"], ISSPropertyTypeNumber),
             p(@"multipleTouchEnabled", ISSPropertyTypeBool),
             p(@"opaque", ISSPropertyTypeBool),
             p(S(tintColor), ISSPropertyTypeColor),
@@ -628,7 +640,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSSet* textProperties = [NSSet setWithArray:@[
             font,
             textColor,
-            pe(S(textAlignment), @{@"left" : @(NSTextAlignmentLeft), @"center" : @(NSTextAlignmentCenter), @"right" : @(NSTextAlignmentRight)})
+            pea(S(textAlignment), @[@"textalign"], @{@"left" : @(NSTextAlignmentLeft), @"center" : @(NSTextAlignmentCenter), @"right" : @(NSTextAlignmentRight)})
     ]];
 
     NSSet* resizableTextProperties = [NSSet setWithArray:@[

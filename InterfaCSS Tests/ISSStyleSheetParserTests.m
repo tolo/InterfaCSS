@@ -84,8 +84,11 @@
     
     for(NSString* name in names) {
         id value = nil;
-        for(ISSPropertyDeclaration* d in declarations.properties.allKeys) {
-            if( [d.property.name isEqualToString:name] ) value = declarations.properties[d];
+        for(ISSPropertyDeclaration* d in declarations.properties) {
+            if( [d.property.name isEqualToString:name] ) {
+                [d transformValueIfNeeded];
+                value = d.propertyValue;
+            }
         }
         
         if( value ) [values addObject:value];
@@ -108,12 +111,12 @@
     
     ISSPropertyDeclarations* declarations = result[0];
     XCTAssertEqual(declarations.properties.count, (NSUInteger)1, @"Expected one property declaration");
-    ISSPropertyDeclaration* declaration = declarations.properties.allKeys[0];
+    ISSPropertyDeclaration* declaration = declarations.properties[0];
     XCTAssertEqualObjects(declaration.property.name, @"alpha", @"Expected property alpha");
     
     declarations = result[1];
     XCTAssertEqual(declarations.properties.count, (NSUInteger)1, @"Expected one property declaration");
-    declaration = declarations.properties.allKeys[0];
+    declaration = declarations.properties[0];
     XCTAssertEqualObjects(declaration.property.name, @"clipsToBounds", @"Expected property clipsToBounds");
 }
 
@@ -135,8 +138,9 @@
         }];
         NSString* selectorDescription = [chains componentsJoinedByString:@", "];
         
-        ISSPropertyDeclaration* decl = d.properties.count ? d.properties.allKeys[0] : nil;
-        if( decl && [d.properties[decl] isEqual:@(1)] ) {
+        ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
+        [decl transformValueIfNeeded];
+        if( decl && [decl.propertyValue isEqual:@(1)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
                 [expectedSelectors removeObject:selectorDescription];
             } else {
@@ -312,7 +316,7 @@
 - (void) testParameterizedProperty {
     ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"styleSheetPropertyValues"];
     ISSPropertyDeclaration* decl = nil;
-    for(ISSPropertyDeclaration* d in declarations.properties.allKeys) {
+    for(ISSPropertyDeclaration* d in declarations.properties) {
         if( [d.property.name isEqualToString:@"titleColor"] ) decl = d;
     }
     

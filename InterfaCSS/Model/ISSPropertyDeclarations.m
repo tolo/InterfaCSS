@@ -12,16 +12,12 @@
 #import "ISSSelectorChain.h"
 #import "ISSUIElementDetails.h"
 
-@implementation ISSPropertyDeclarations {
-    NSArray* _selectorChains;
-    NSDictionary* _properties;
-}
-
+@implementation ISSPropertyDeclarations
 
 #pragma mark - ISSPropertyDeclarations interface
 
 
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSDictionary*)properties {
+- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties {
     if( self = [super init] ) {
         _selectorChains = selectorChains;
         _properties = properties;
@@ -58,8 +54,9 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    return [object isKindOfClass:ISSPropertyDeclarations.class] && [_selectorChains isEqualToArray:[object selectorChains]] &&
-                                                         [_properties isEqualToDictionary:[object properties]];
+    if( object == self ) return YES;
+    else return [object isKindOfClass:ISSPropertyDeclarations.class] && [_selectorChains isEqualToArray:[object selectorChains]] &&
+                                                         [_properties isEqualToArray:[(ISSPropertyDeclarations*)object properties]];
 }
 
 - (NSUInteger) hash {

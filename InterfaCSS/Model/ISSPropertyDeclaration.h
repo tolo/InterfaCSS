@@ -7,7 +7,7 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
+#import "ISSLazyValue.h"
 
 @class ISSPropertyDefinition;
 
@@ -17,11 +17,15 @@
 @property (nonatomic, readonly) ISSPropertyDefinition* property;
 @property (nonatomic, readonly) NSArray* parameters;
 @property (nonatomic, readonly) NSString* unrecognizedName;
+@property (nonatomic, strong) id propertyValue;
+@property (nonatomic, copy) ISSLazyValueBlock lazyPropertyTransformationBlock;
 
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property prefix:(NSString*)prefix;
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters prefix:(NSString*)prefix;
 - (instancetype) initWithUnrecognizedProperty:(NSString*)unrecognizedPropertyName;
 
-- (BOOL) setValue:(id)value onTarget:(id)target;
+- (void) transformValueIfNeeded;
+
+- (BOOL) applyPropertyValueOnTarget:(id)target;
 
 @end

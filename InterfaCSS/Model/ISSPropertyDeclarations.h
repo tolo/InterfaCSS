@@ -12,10 +12,10 @@
 @interface ISSPropertyDeclarations : NSObject
 
 @property (nonatomic, readonly) NSArray* selectorChains;
-@property (nonatomic, readonly) NSDictionary* properties;
+@property (nonatomic, readonly) NSArray* properties;
 @property (nonatomic, readonly) NSString* displayDescription;
 
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSDictionary*)properties;
+- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
 

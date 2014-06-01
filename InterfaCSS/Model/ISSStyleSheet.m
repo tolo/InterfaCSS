@@ -13,6 +13,7 @@
 #import "ISSStyleSheetParser.h"
 #import "NSObject+ISSLogSupport.h"
 #import "ISSUIElementDetails.h"
+#import "NSMutableArray+ISSAdditions.h"
 
 
 @implementation ISSStyleSheet {
@@ -33,15 +34,15 @@
    return self;
 }
 
-- (NSDictionary*) stylesForElement:(ISSUIElementDetails*)elementDetails {
-    NSMutableDictionary* styles = [NSMutableDictionary dictionary];
+- (NSArray*) stylesForElement:(ISSUIElementDetails*)elementDetails {
+    NSMutableArray* styles = [[NSMutableArray alloc] init];
 
     ISSLogTrace(@"Getting styles for %@:", elementDetails.uiElement);
 
     for(ISSPropertyDeclarations* declarations in _declarations) {
         if ( [declarations matchesElement:elementDetails] ) {
             ISSLogTrace(@"Matching declarations: %@", declarations);
-            [styles addEntriesFromDictionary:declarations.properties];
+            [styles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
         }
     }
 

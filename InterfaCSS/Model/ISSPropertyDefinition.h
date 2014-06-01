@@ -27,6 +27,7 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 @interface ISSPropertyDefinition : NSObject
 
 @property (nonatomic, readonly) NSString* name;
+@property (nonatomic, readonly) BOOL anonymous;
 @property (nonatomic, readonly) NSArray* allNames;
 
 @property (nonatomic, readonly) ISSPropertyType type;

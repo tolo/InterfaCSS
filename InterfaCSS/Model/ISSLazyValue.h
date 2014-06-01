@@ -7,13 +7,15 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-typedef id (^ISSLazyValueBlock)(id uiObject);
+typedef id (^ISSLazyValueBlock)(id parameter);
 
 
 @interface ISSLazyValue : NSObject
 
-- (id) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block;
++ (instancetype) lazyValueWithBlock:(ISSLazyValueBlock)block;
+- (instancetype) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block;
 
-- (id) evaluateWithViewObject:(id)viewObject;
+- (id) evaluate;
+- (id) evaluateWithParameter:(id)parameter;
 
 @end

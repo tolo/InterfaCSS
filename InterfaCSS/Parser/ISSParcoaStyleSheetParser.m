@@ -27,42 +27,33 @@
 #import "InterfaCSS.h"
 
 
-typedef void (^RectInsetBlock)(ISSRectValue* rectValue);
-
-static NSUInteger selectorChainsDeclarationCounter = 0;
-
-// Selector chains declaration wrapper class, to keep track of ordering
+// Selector chains declaration wrapper class, to keep track of property ordering and of nested declarations
 @interface ISSSelectorChainsDeclaration : NSObject<NSCopying>
-@property (nonatomic, readonly) NSUInteger index;
-@property (nonatomic, strong, readonly) NSArray* chains;
-+ (instancetype) selectorChainsWithArray:(NSArray*)chains;
+@property (nonatomic, strong, readonly) NSMutableArray* chains;
+@property (nonatomic, strong) NSMutableArray* properties;
++ (instancetype) selectorChainsWithArray:(NSMutableArray*)chains;
 @end
 
 @implementation ISSSelectorChainsDeclaration
-+ (instancetype) selectorChainsWithArray:(NSArray*)chains {
++ (instancetype) selectorChainsWithArray:(NSMutableArray*)chains {
     ISSSelectorChainsDeclaration* chainsDeclaration = [[ISSSelectorChainsDeclaration alloc] init];
-    chainsDeclaration->_index = selectorChainsDeclarationCounter++;
     chainsDeclaration->_chains = chains;
     return chainsDeclaration;
 }
 - (instancetype) copyWithZone:(NSZone*)zone {
     ISSSelectorChainsDeclaration* chainsDeclaration = [[ISSSelectorChainsDeclaration alloc] init];
-    chainsDeclaration->_index = self.index;
     chainsDeclaration->_chains = self.chains;
     return chainsDeclaration;
 }
 - (NSString*)description {
-    return [NSString stringWithFormat:@"[%ld - %@]", (long)self.index, self.chains];
+    return [NSString stringWithFormat:@"[%@ - %@]", self.chains, self.properties];
 }
 - (BOOL) isEqual:(id)object {
-    if( [object isKindOfClass:ISSSelectorChainsDeclaration.class] && (self.index == [object index]) ) {
-        if (self.chains == [object chains]) return YES;
-        else [self.chains isEqualToArray:[object chains]];
+    if( object == self ) return YES;
+    else if( [object isKindOfClass:ISSSelectorChainsDeclaration.class] ) {
+        if( ISEQUAL(self.chains, [object chains]) && ISEQUAL(self.properties, [(ISSPropertyDeclarations*)object properties]) ) return YES;
     }
     return NO;
-}
-- (NSUInteger) hash {
-    return 31 * self.index + self.chains.hash;
 }
 @end
 
@@ -70,7 +61,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     // Common parsers
     ParcoaParser *dot, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
             *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *quotedStringOrAnythingButControlChars, 
-            *identifier, *number, *anyValue, *quotedString, *commentParser;
+            *identifier, *number, *anyValue, *commentParser;
 
     NSCharacterSet* validVariableNameSet;
 
@@ -128,20 +119,22 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 - (NSArray*) basicColorValueParsers:(BOOL)cgColor {
     ParcoaParser* rgb = [[Parcoa iss_parameterStringWithPrefix:@"rgb"] transform:^id(id value) {
         NSArray* cc = [(NSString*) value iss_trimmedSplit:@","];
-        UIColor* color;
+        UIColor* color = [UIColor magentaColor];
         if( cc.count == 3 ) {
             color = [UIColor iss_colorWithR:[cc[0] intValue] G:[cc[1] intValue] B:[cc[2] intValue]];
-        } else color = [UIColor magentaColor];
+        }
+
         if( cgColor ) return (id)color.CGColor;
         else return color;
     } name:@"rgb"];
 
     ParcoaParser* rgba = [[Parcoa iss_parameterStringWithPrefix:@"rgba"] transform:^id(id value) {
         NSArray* cc = [(NSString*) value iss_trimmedSplit:@","];
-        UIColor* color;
+        UIColor* color = [UIColor magentaColor];
         if( cc.count == 4 ) {
             color = [UIColor iss_colorWithR:[cc[0] intValue] G:[cc[1] intValue] B:[cc[2] intValue] A:[cc[3] floatValue]];
-        } else color = [UIColor magentaColor];
+        }
+
         if( cgColor ) return (id)color.CGColor;
         else return color;
     } name:@"rgba"];
@@ -155,67 +148,123 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
         else return color;
     } name:@"hex"];
 
-    ParcoaParser* preDefColor = [[Parcoa iss_takeUntilInSet:[[NSCharacterSet letterCharacterSet] invertedSet] minCount:1] transform:^id(id value) {
-        UIColor* color = [UIColor magentaColor];
-        NSString* colorString = [value lowercaseString];
-        if( ![colorString hasSuffix:@"color"] ) colorString = [colorString stringByAppendingString:@"color"];
+    return @[rgb, rgba, hexColor];
+}
 
-        unsigned int c = 0;
-        Method* methods = class_copyMethodList(object_getClass([UIColor class]), &c);
-        for(int i=0; i<c; i++) {
-            NSString* selectorName = [[NSString alloc] initWithCString:sel_getName(method_getName(methods[i])) encoding:NSUTF8StringEncoding];
-            if( [colorString iss_isEqualIgnoreCase:selectorName] ) {
-                color = [UIColor performSelector:NSSelectorFromString(selectorName)];
-                break;
-            }
+- (id) parsePredefColorValue:(id)value cgColor:(BOOL)cgColor {
+    UIColor* color = [UIColor magentaColor];
+    NSString* colorString = [value lowercaseString];
+    if( ![colorString hasSuffix:@"color"] ) colorString = [colorString stringByAppendingString:@"color"];
+
+    unsigned int c = 0;
+    Method* methods = class_copyMethodList(object_getClass([UIColor class]), &c);
+    for(int i=0; i<c; i++) {
+        NSString* selectorName = [[NSString alloc] initWithCString:sel_getName(method_getName(methods[i])) encoding:NSUTF8StringEncoding];
+        if( [colorString iss_isEqualIgnoreCase:selectorName] ) {
+            color = [UIColor performSelector:NSSelectorFromString(selectorName)];
+            break;
         }
+    }
+
+    if( cgColor ) return (id)color.CGColor;
+    else return color;
+}
+
+- (NSArray*) colorCatchAllParser:(BOOL)cgColor imageParser:(ParcoaParser*)imageParser {
+    // Parses an arbitrary text string as a predefined color (i.e. redColor) or pattern image from file name - in that order
+    ParcoaParser* catchAll = [anyName transform:^id(id value) {
+        id color = [self parsePredefColorValue:value cgColor:cgColor];
+        if( !color ) {
+            UIImage* image = [self imageNamed:value];
+            if( image && cgColor ) return (id)[UIColor colorWithPatternImage:image].CGColor;
+            else if( image ) return [UIColor colorWithPatternImage:image];
+            if( cgColor ) return (id)[UIColor magentaColor].CGColor;
+            else return [UIColor magentaColor];
+        } else {
+            return color;
+        }
+    } name:@"colorCatchAllParser"];
+
+    // Parses well defined image value (i.e. "image(...)") as pattern image
+    ParcoaParser* patternImageParser = [imageParser transform:^id(id value) {
+        UIColor* color = [UIColor magentaColor];
+        if( [value isKindOfClass:UIImage.class] ) color = [UIColor colorWithPatternImage:value];
 
         if( cgColor ) return (id)color.CGColor;
         else return color;
-    } name:@"preDefColor"];
-
-    return @[rgb, rgba, hexColor, preDefColor];
-}
-
-- (ParcoaParser*) colorParser:(BOOL)cgColor colorValueParsers:(NSArray*)colorValueParsers imageParser:(ParcoaParser*)imageParser {
-    ParcoaParser* patternImageParser = [imageParser transform:^id(id value) {
-        if( [value isKindOfClass:UIImage.class] ) return [UIColor colorWithPatternImage:value];
-        else return [UIColor magentaColor];
     } name:@"patternImage"];
 
+    return @[patternImageParser, catchAll];
+}
+
+- (ParcoaParser*) imageCatchAllParser:(ParcoaParser*)colorParser {
+    // Parses an arbitrary text string as an image from file name or pre-defined color name - in that order
+    ParcoaParser* catchAll = [anythingButControlChars transform:^id(id value) {
+        UIImage* image = [self imageNamed:value];
+        if( !image ) {
+            UIColor* color = [self parsePredefColorValue:value cgColor:NO];
+            if( color ) return [color iss_asUIImage];
+            else return [NSNull null];
+        } else {
+            return image;
+        }
+    } name:@"imageCatchAllParser"];
+
+    // Parses well defined color values (i.e. [-basicColorValueParsers])
+    ParcoaParser* imageAsColorParser = [colorParser transform:^id(id value) {
+        return [value iss_asUIImage];
+    } name:@"patternImage"];
+
+    return [Parcoa choice:@[imageAsColorParser, catchAll]];
+}
+
+- (ParcoaParser*) colorParser:(BOOL)cgColor colorValueParsers:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {
+    ParcoaParser* preDefColorParser = [identifier transform:^id(id value) {
+        return [self parsePredefColorValue:value cgColor:cgColor];
+    } name:@"preDefColorParser"];
+
+    ParcoaParserForward* colorFunctionParserProxy = [ParcoaParserForward forwardWithName:@"colorFunctionParserProxy" summary:@""];
+    colorValueParsers = [@[colorFunctionParserProxy] arrayByAddingObjectsFromArray:colorValueParsers];
+    colorValueParsers = [colorValueParsers arrayByAddingObject:preDefColorParser];
+
+    ParcoaParser* colorFunctionParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES],
+        [Parcoa choice:colorValueParsers], [Parcoa iss_quickUnichar:',' skipSpace:YES], anyName, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
+            UIColor* color = [UIColor magentaColor];
+            if( [value[2] isKindOfClass:UIColor.class] ) {
+                if( [@"lighten" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingBrightnessBy:[value[4] floatValue]];
+                else if( [@"darken" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingBrightnessBy:-[value[4] floatValue]];
+                else if( [@"saturate" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingSaturationBy:[value[4] floatValue]];
+                else if( [@"desaturate" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingSaturationBy:-[value[4] floatValue]];
+                else if( [@"fadein" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingAlphaBy:[value[4] floatValue]];
+                else if( [@"fadeout" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingAlphaBy:-[value[4] floatValue]];
+                else color = value[2];
+            }
+
+            if( cgColor ) return (id)color.CGColor;
+            else return color;
+    } name:@"colorFunctionParser"];
+    [colorFunctionParserProxy setImplementation:colorFunctionParser];
+
     ParcoaParser* gradientParser = [[Parcoa iss_twoParameterFunctionParserWithName:@"gradient" leftParameterParser:[Parcoa choice:colorValueParsers] rightParameterParser:[Parcoa choice:colorValueParsers]] transform:^id(id value) {
-        return [[ISSLazyValue alloc] initWithLazyEvaluationBlock:^id(id uiObject) {
+        return [ISSLazyValue lazyValueWithBlock:^id(id uiObject) {
+            UIColor* color = [UIColor magentaColor];
             if( [uiObject isKindOfClass:UIView.class] ) {
                 CGRect frame = [uiObject frame];
                 if( frame.size.height > 0 ) {
                     UIColor* color1 = value[0];
                     UIColor* color2 = value[1];
-                    return [color1 iss_topDownLinearGradientToColor:color2 height:frame.size.height];
-                } else return [UIColor clearColor];
-            } else return [UIColor magentaColor];
+                    color = [color1 iss_topDownLinearGradientToColor:color2 height:frame.size.height];
+                } else color = [UIColor clearColor];
+            }
+
+            if( cgColor ) return (id)color.CGColor;
+            else return color;
         }];
     } name:@"gradient"];
 
-    ParcoaParserForward* colorFunctionParserProxy = [ParcoaParserForward forwardWithName:@"colorFunctionParserProxy" summary:@""];
-
-    colorValueParsers = [@[patternImageParser, gradientParser, colorFunctionParserProxy] arrayByAddingObjectsFromArray:colorValueParsers];
-
-    ParcoaParser* colorFunctionParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES],
-        [Parcoa choice:colorValueParsers], [Parcoa iss_quickUnichar:',' skipSpace:YES], anyName, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
-            if( [value[2] isKindOfClass:UIColor.class] ) {
-                if( [@"lighten" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingBrightnessBy:[value[4] floatValue]];
-                else if( [@"darken" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingBrightnessBy:-[value[4] floatValue]];
-                else if( [@"saturate" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingSaturationBy:[value[4] floatValue]];
-                else if( [@"desaturate" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingSaturationBy:-[value[4] floatValue]];
-                else if( [@"fadein" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingAlphaBy:[value[4] floatValue]];
-                else if( [@"fadeout" iss_isEqualIgnoreCase:value[0]] ) return [value[2] iss_colorByIncreasingAlphaBy:-[value[4] floatValue]];
-                else return value[2];
-            }
-            return [UIColor magentaColor];
-    } name:@"colorFunctionParser"];
-    [colorFunctionParserProxy setImplementation:colorFunctionParser];
-
-    return [Parcoa choice:colorValueParsers];
+    NSArray* finalColorParsers = [@[gradientParser] arrayByAddingObjectsFromArray:colorValueParsers];
+    finalColorParsers = [finalColorParsers arrayByAddingObjectsFromArray:colorCatchAllParsers];
+    return [Parcoa choice:finalColorParsers];
 }
 
 - (ISSPropertyDeclaration*) parsePropertyDeclaration:(NSString*)propertyNameString {
@@ -333,39 +382,53 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     return nil;
 }
 
-- (NSArray*) transformPropertyPair:(NSArray*)propertyPair {
+- (id) transformValueWithCaching:(NSString*)propertyValue forProperty:(ISSPropertyDefinition*)p {
+    id transformedValue = nil;
+    NSMutableDictionary* cache = nil;
+
+    // Caching is not supported for anonymous properties
+    if( !p.anonymous ) {
+        cache = transformedValueCache[p.uniqueTypeDescription];
+        transformedValue = cache[propertyValue];
+        if ( !cache ) {
+            cache = [[NSMutableDictionary alloc] init];
+            transformedValueCache[p.uniqueTypeDescription] = cache;
+        }
+    }
+
+    // Transform value if not already transformed (and cached)
+    if( !transformedValue ) {
+        transformedValue = [self doTransformValue:propertyValue forProperty:p];
+        if( transformedValue ) { // Update cache with transformed value
+            cache[propertyValue] = transformedValue;
+        }
+    }
+
+    return transformedValue;
+}
+
+- (ISSPropertyDeclaration*) transformPropertyPair:(NSArray*)propertyPair {
     if( propertyPair[1] && [propertyPair[1] isKindOfClass:NSString.class] ) {
         NSString* propertyValue = [propertyPair[1] iss_trim];
 
         propertyValue = [self replaceVariableReferences:propertyValue];
 
-        // Parse property value
+        // Parse property declaration
         ISSPropertyDeclaration* decl = [self parsePropertyDeclaration:propertyPair[0]];
         if( decl ) {
-            ISSPropertyDefinition* p = decl.property;
-            NSMutableDictionary* cache = transformedValueCache[p.uniqueTypeDescription];
-            id transformedValue = cache[propertyValue];
-            if( !cache ) {
-                cache = [[NSMutableDictionary alloc] init];
-                transformedValueCache[p.uniqueTypeDescription] = cache;
-            }
-
-            // Already transformed value
-            if( transformedValue ) {
-                return @[decl, transformedValue];
-            } else {
-                transformedValue = [self doTransformValue:propertyValue forProperty:p];
-                if( transformedValue ) { // Update cache with transformed value
-                    cache[propertyValue] = transformedValue;
-                    return @[decl, transformedValue];
-                }
-            }
+            // Perform lazy transformation of property value
+            decl.lazyPropertyTransformationBlock = ^id(ISSPropertyDeclaration* decl) {
+                return [self transformValueWithCaching:propertyValue forProperty:decl.property];
+            };
+            decl.propertyValue = propertyValue; // Raw value
+            return decl;
         }
     }
 
     ISSPropertyDeclaration* unrecognized = [[ISSPropertyDeclaration alloc] initWithUnrecognizedProperty:propertyPair[0]];
+    unrecognized.propertyValue = propertyPair[1];
     ISSLogWarning(@"Unrecognized property '%@' with value: '%@'", propertyPair[0], propertyPair[1]);
-    return @[unrecognized, propertyPair[1]];
+    return unrecognized;
 }
 
 - (UIImage*) imageNamed:(NSString*)name { // For testing purposes...
@@ -402,7 +465,8 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     // CGRect
     // Ex: rect(0, 0, 320, 480)
     // Ex: size(320, 480)
-    // Ex: size(50%, 70).right(5).top(5)     // TODO: min(50, *).max(500, *)
+    // Ex: size(50%, 70).right(5).top(5)     // TODO: min(50, *).max(500, *), or size(auto [<=50,>=100], 480)
+    // Ex: size(50%, 70).insets(0,0,0,0)
     // Ex: parent (=parent(0,0))
     // Ex: parent(10, 10) // dx, dy - CGRectInset
     // Ex: window (=window(0,0))
@@ -453,30 +517,47 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     } name:@"rectSize"];
 
     ParcoaParser* insetParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES], anyName, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
-        return ^(ISSRectValue* rectValue) {
+        // Use ISSLazyValue to create a typed block container for setting the insets on the ISSRectValue (see below)
+        return [ISSLazyValue lazyValueWithBlock:^id(ISSRectValue* rectValue) {
             if( [@"left" iss_isEqualIgnoreCase:value[0]] ) [rectValue setLeftInset:[value[2] floatValue] relative:[self isRelativeValue:value[2]]];
             else if( [@"right" iss_isEqualIgnoreCase:value[0]] ) [rectValue setRightInset:[value[2] floatValue] relative:[self isRelativeValue:value[2]]];
             else if( [@"top" iss_isEqualIgnoreCase:value[0]] ) [rectValue setTopInset:[value[2] floatValue] relative:[self isRelativeValue:value[2]]];
             else if( [@"bottom" iss_isEqualIgnoreCase:value[0]] ) [rectValue setBottomInset:[value[2] floatValue] relative:[self isRelativeValue:value[2]]];
             else ISSLogWarning(@"Unknown inset: %@", value[0]);
-        };
+            return nil;
+        }];
     } name:@"insetParser"];
 
+    ParcoaParser* insetsParser = [[Parcoa iss_parameterStringWithPrefix:@"insets"] transform:^id(id value) {
+        NSArray* c = [(NSString*) value iss_trimmedSplit:@","];
+        // Use ISSLazyValue to create a typed block container for setting the insets on the ISSRectValue (see below)
+        return [ISSLazyValue lazyValueWithBlock:^id(ISSRectValue* rectValue) {
+            if( c.count == 4 ) {
+                [rectValue setTopInset:[value[0] floatValue] relative:[self isRelativeValue:value[0]]];
+                [rectValue setLeftInset:[value[1] floatValue] relative:[self isRelativeValue:value[1]]];
+                [rectValue setBottomInset:[value[2] floatValue] relative:[self isRelativeValue:value[2]]];
+                [rectValue setRightInset:[value[3] floatValue] relative:[self isRelativeValue:value[3]]];
+            }
+            return nil;
+        }];
+    } name:@"insets"];
+
     ParcoaParser* partSeparator = [[Parcoa choice:@[[Parcoa space], dot]] many1];
-    ParcoaParser* relativeRectParser = [[[Parcoa choice:@[rectSizeValueParser, insetParser]] sepBy:partSeparator] transform:^id(id value) {
+    ParcoaParser* relativeRectParser = [[[Parcoa choice:@[rectSizeValueParser, insetParser, insetsParser]] sepBy:partSeparator] transform:^id(id value) {
         ISSRectValue* rectValue = [ISSRectValue zeroRect];
         if( [value isKindOfClass:[NSArray class]] ) {
             ISSRectValue* sizeValue = [ISSRectValue parentRelativeRectWithSize:CGSizeMake(ISSRectValueAuto, ISSRectValueAuto) relativeWidth:YES relativeHeight:YES];
+            // Find actual size value (ISSRectValue)
             for(id element in value) {
                 if( [element isKindOfClass:ISSRectValue.class] ) {
                     sizeValue = element;
                     break;
                 }
             }
+            // Evaluate insets
             for(id element in value) {
-                if( ![element isKindOfClass:ISSRectValue.class] ) { // i.e. RectInsetBlock // TODO: Improve this "type" check
-                    RectInsetBlock block = element;
-                    block(sizeValue);
+                if( [element isKindOfClass:ISSLazyValue.class] ) {
+                    [element evaluateWithParameter:sizeValue];
                 }
             }
             return sizeValue;
@@ -563,13 +644,6 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     // Ex: image(image.png);
     // Ex: image(image.png, 1, 2);
     // Ex: image(image.png, 1, 2, 3, 4);
-    ParcoaParser* simpleImageParser = [[Parcoa choice:@[quotedString, [Parcoa sequential:@[identifier, dot, identifier]]]] transform:^id(id value) {
-        UIImage* img;
-        if( [value isKindOfClass:NSArray.class] ) img = [self imageNamed:[value componentsJoinedByString:@""]];
-        else img = [self imageNamed:value];
-        if( img ) return img;
-        else return [NSNull null];
-    } name:@"simpleImage"];
     ParcoaParser* imageParser = [[Parcoa iss_parameterStringWithPrefix:@"image"] transform:^id(id value) {
             NSArray* cc = [(NSString*) value iss_trimmedSplit:@","];
             UIImage* img = nil;
@@ -585,25 +659,27 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
             if( img ) return img;
             else return [NSNull null];
         } name:@"image"];
-    imageParser = [Parcoa choice:@[imageParser, simpleImageParser]];
 
 
     // UIColor
+    NSArray* colorCatchAllParsers = [self colorCatchAllParser:NO imageParser:imageParser];
     NSArray* uiColorValueParsers = [self basicColorValueParsers:NO];
-    ParcoaParser* colorPropertyParser = [self colorParser:NO colorValueParsers:uiColorValueParsers imageParser:imageParser];
+    //uiColorValueParsers = [uiColorValueParsers arrayByAddingObjectsFromArray:colorCatchAllParsers];
+    ParcoaParser* colorPropertyParser = [self colorParser:NO colorValueParsers:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
     typeToParser[@(ISSPropertyTypeColor)] = colorPropertyParser;
 
     // CGColor
+    colorCatchAllParsers = [self colorCatchAllParser:YES imageParser:imageParser];
     NSArray* cgColorValueParsers = [self basicColorValueParsers:YES];
-    ParcoaParser* cgColorPropertyParser = [self colorParser:YES colorValueParsers:cgColorValueParsers imageParser:imageParser];
+    //uiColorValueParsers = [uiColorValueParsers arrayByAddingObjectsFromArray:colorCatchAllParsers];
+    ParcoaParser* cgColorPropertyParser = [self colorParser:YES colorValueParsers:cgColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
     typeToParser[@(ISSPropertyTypeCGColor)] = cgColorPropertyParser;
 
 
     // UIImage (2)
-    ParcoaParser* imageWithColorParser = [[Parcoa choice:uiColorValueParsers] transform:^id(id value) {
-        return [value iss_asUIImage];
-    } name:@"imageWithColor"];
-    ParcoaParser* imageParsers = [Parcoa choice:@[imageParser, imageWithColorParser]];
+    ParcoaParser* basicColorParser = [Parcoa choice:uiColorValueParsers];
+    ParcoaParser* imageCatchAllParser = [self imageCatchAllParser:basicColorParser];
+    ParcoaParser* imageParsers = [Parcoa choice:@[imageParser, imageCatchAllParser]];
     typeToParser[@(ISSPropertyTypeImage)] = imageParsers;
 
 
@@ -647,7 +723,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     // Ex: smaller(@font, 1)
     // Ex: fontWithSize(@font, 12)
     ParcoaParser* commaOrSpace = [[Parcoa choice:@[[Parcoa space], comma]] many1];
-    ParcoaParser* fontValueParser = [Parcoa choice:@[quotedString, anyName]];
+    ParcoaParser* fontValueParser = anyName;
     fontValueParser = [[fontValueParser keepLeft:commaOrSpace] then:fontValueParser];
     fontValueParser = [fontValueParser transform:^id(id value) {
         CGFloat fontSize = [UIFont systemFontSize];
@@ -718,10 +794,14 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 
     // Property declarations
     ParcoaParser* propertyParser = [Parcoa choice:@[commentParser, propertyPairParser, nestedRulesetParserProxy, unsupportedNestedRulesetParser, unrecognizedLine]];
-    propertyParser = [Parcoa iss_safeDictionary:[propertyParser many]];
+    propertyParser = [Parcoa iss_safeArray:[propertyParser many]];
 
     // Create parser for nested declarations (and unsupported nested declarations, to prevent those to interfere with current declarations)
-    ParcoaParser* nestedRulesetParser = [selectorsParser then:[propertyParser between:openBraceSkipSpace and:closeBraceSkipSpace]];
+    ParcoaParser* nestedRulesetParser = [[selectorsParser then:[propertyParser between:openBraceSkipSpace and:closeBraceSkipSpace]] transform:^id(id value) {
+        ISSSelectorChainsDeclaration* selectorChainsDeclaration = value[0];
+        selectorChainsDeclaration.properties = value[1];
+        return selectorChainsDeclaration;
+    } name:@"nestedRulesetParser"];
     [nestedRulesetParserProxy setImplementation:nestedRulesetParser];
 
     return propertyParser;
@@ -743,7 +823,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
         untilSemiColon = [Parcoa iss_takeUntilChar:';'];
         propertyNameValueSeparator = [Parcoa iss_nameValueSeparator];
 
-        anyName = [Parcoa iss_anythingButWhiteSpaceAndControlChars:1];
+        anyName = [Parcoa iss_anythingButWhiteSpaceAndExtendedControlChars:1];
         anythingButControlChars = [Parcoa iss_anythingButBasicControlChars:1];
         identifier = [Parcoa iss_validIdentifierChars:1];
         anyValue = untilSemiColon;
@@ -754,7 +834,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 
         ParcoaParser* quote = [Parcoa oneOf:@"'\""];
         ParcoaParser* notQuote = [Parcoa noneOf:@"'\""];
-        quotedString = [[quote keepRight:[notQuote concatMany]] keepLeft:quote];
+        ParcoaParser* quotedString = [[quote keepRight:[notQuote concatMany]] keepLeft:quote];
 
         quotedStringOrAnythingButControlChars = [[Parcoa choice:@[quotedString, anythingButControlChars]] concatMany1];
         
@@ -876,7 +956,12 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
         transformedValueCache = [[NSMutableDictionary alloc] init];
         ParcoaParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclaration];
 
-        ParcoaParser* rulesetParser = [[selectorsChainsDeclaration then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] dictionaryWithKeys:@[@"selectors", @"declarations"]];
+        // Ruleset
+        ParcoaParser* rulesetParser = [[selectorsChainsDeclaration then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] transform:^id(id value) {
+            ISSSelectorChainsDeclaration* selectorChainsDeclaration = value[0];
+            selectorChainsDeclaration.properties = value[1];
+            return selectorChainsDeclaration;
+        } name:@"rulesetParser"];
 
 
          // Unrecognized content
@@ -893,7 +978,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 
 #pragma mark - Property declaration processing (setup of nested declarations)
 
-- (void) processProperties:(NSMutableDictionary*)properties withSelectorChains:(NSArray*)_selectorChains andAddToDeclarations:(NSMutableArray*)declarations {
+- (void) processProperties:(NSMutableArray*)properties withSelectorChains:(NSArray*)_selectorChains andAddToDeclarations:(NSMutableArray*)declarations {
     NSMutableArray* nestedDeclarations = [[NSMutableArray alloc] init];
     // Make sure selector chains are valid
     NSArray* selectorChains = [_selectorChains filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary* bindings) {
@@ -901,39 +986,32 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
     }]];
     
     if( selectorChains.count ) {
-        // Make sure order of nested declarations is correct
-        NSMutableArray* nestedDeclarationsInProperties = [[NSMutableArray alloc] init];
-        for(id key in properties.allKeys) {
-            if( [key isKindOfClass:ISSSelectorChainsDeclaration.class] ) {
-                [nestedDeclarationsInProperties addObject:key];
-            }
-        }
-        [nestedDeclarationsInProperties sortUsingComparator:^NSComparisonResult(ISSSelectorChainsDeclaration* obj1, ISSSelectorChainsDeclaration* obj2) {
-            if ( obj1.index > obj2.index ) return NSOrderedDescending;
-            if ( obj1.index < obj2.index ) return NSOrderedAscending;
-            return NSOrderedSame;
-        }];
+        NSMutableArray* propertyDeclarations = [[NSMutableArray alloc] init];
+        for(id entry in properties) {
+            ISSSelectorChainsDeclaration* selectorChainsDeclaration = [entry isKindOfClass:ISSSelectorChainsDeclaration.class] ? entry : nil;
 
-        for(ISSSelectorChainsDeclaration* selectorChainsDeclaration in nestedDeclarationsInProperties) {
-            // Remove mapping for nested selector chains in properties
-            NSMutableDictionary* nestedProperties = properties[selectorChainsDeclaration];
-            [properties removeObjectForKey:selectorChainsDeclaration];
-
-            // Construct new selector chains by appending selector to parent selector chains
-            NSMutableArray* nestedSelectorChains = [[NSMutableArray alloc] init];
-            for(ISSSelectorChain* selectorChain in selectorChainsDeclaration.chains) {
-                for(ISSSelectorChain* parentChain in selectorChains) {
-                    if( [selectorChain isKindOfClass:ISSSelectorChain.class] ) {
-                        [nestedSelectorChains addObject:[parentChain selectorChainByAddingDescendantSelectorChain:selectorChain]];
+            // Nested property declaration (ISSSelectorChainsDeclaration):
+            if( selectorChainsDeclaration ) {
+                // Construct new selector chains by appending selector to parent selector chains
+                NSMutableArray* nestedSelectorChains = [[NSMutableArray alloc] init];
+                for(ISSSelectorChain* selectorChain in selectorChainsDeclaration.chains) {
+                    for(ISSSelectorChain* parentChain in selectorChains) {
+                        if( [selectorChain isKindOfClass:ISSSelectorChain.class] ) {
+                            [nestedSelectorChains addObject:[parentChain selectorChainByAddingDescendantSelectorChain:selectorChain]];
+                        }
                     }
                 }
-            }
 
-            [nestedDeclarations addObject:@[nestedProperties, nestedSelectorChains]];
+                [nestedDeclarations addObject:@[selectorChainsDeclaration.properties, nestedSelectorChains]];
+            }
+            // ISSPropertyDeclaration
+            else {
+                [propertyDeclarations addObject:entry];
+            }
         }
 
         // Add declaration
-        [declarations addObject:[[ISSPropertyDeclarations alloc] initWithSelectorChains:selectorChains andProperties:properties]];
+        [declarations addObject:[[ISSPropertyDeclarations alloc] initWithSelectorChains:selectorChains andProperties:propertyDeclarations]];
 
         // Process nested declarations
         for(NSArray* declarationPair in nestedDeclarations) {
@@ -953,13 +1031,9 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
         NSMutableArray* declarations = [NSMutableArray array];
 
         for(id element in result.value) {
-            if( [element isKindOfClass:[NSDictionary class]] ) {
-                NSDictionary* declaration = (NSDictionary*)element;
-
-                NSMutableDictionary* properties = declaration[@"declarations"];
-                ISSSelectorChainsDeclaration* selectorChainsDeclaration = declaration[@"selectors"];
-
-                [self processProperties:properties withSelectorChains:selectorChainsDeclaration.chains andAddToDeclarations:declarations];
+            if( [element isKindOfClass:[ISSSelectorChainsDeclaration class]] ) {
+                ISSSelectorChainsDeclaration* selectorChainsDeclaration = element;
+                [self processProperties:selectorChainsDeclaration.properties withSelectorChains:selectorChainsDeclaration.chains andAddToDeclarations:declarations];
             }
         }
 
@@ -983,7 +1057,7 @@ static NSUInteger selectorChainsDeclarationCounter = 0;
 }
 
 - (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition {
-    return [self doTransformValue:value forProperty:propertyDefinition];
+    return [self transformValueWithCaching:value forProperty:propertyDefinition];
 }
 
 @end

@@ -18,6 +18,7 @@
 #import "ISSUIElementDetails.h"
 #import "ISSPropertyDeclarations.h"
 #import "ISSSelectorChain.h"
+#import "NSMutableArray+ISSAdditions.h"
 
 
 static InterfaCSS* singleton = nil;
@@ -216,24 +217,19 @@ static InterfaCSS* singleton = nil;
     if( self.keyWindow ) [self applyStyling:self.keyWindow];
 }
 
-- (NSMutableDictionary*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails {
-    NSMutableDictionary* effectiveStyles = [NSMutableDictionary dictionary];
-
-    // Get inherited styles - disabled for now, need to be reviewed
-    //if ( view.superview ) [effectiveStyles addEntriesFromDictionary:[self effectiveStylesForView:view.superview]];
-
+- (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails {
     // Get view styles from cache
-    NSMutableDictionary* viewStyles = elementDetails.stylesCacheable ? [self.cachedStylesForViews objectForKey:elementDetails.uiElement] : nil;
+    NSMutableArray* viewStyles = elementDetails.stylesCacheable ? [self.cachedStylesForViews objectForKey:elementDetails.uiElement] : nil;
     
     if ( !viewStyles ) {
         // Otherwise - build styles
-        viewStyles = [NSMutableDictionary dictionary];
+        viewStyles = [[NSMutableArray alloc] init];
 
         for (ISSStyleSheet* styleSheet in self.styleSheets) {
             if( styleSheet.active ) {
-                NSDictionary* styleSheetStyles = [styleSheet stylesForElement:elementDetails];
+                NSArray* styleSheetStyles = [styleSheet stylesForElement:elementDetails];
                 if ( styleSheetStyles ) {
-                    [viewStyles addEntriesFromDictionary:styleSheetStyles];
+                    [viewStyles iss_addAndReplaceUniqueObjectsInArray:styleSheetStyles];
                 }
             }
         }
@@ -241,17 +237,15 @@ static InterfaCSS* singleton = nil;
         if( elementDetails.stylesCacheable ) [self.cachedStylesForViews setObject:viewStyles forKey:elementDetails.uiElement];
     }
 
-    [effectiveStyles addEntriesFromDictionary:viewStyles];
-    return effectiveStyles;
+    return viewStyles;
 }
 
 - (void) styleUIElement:(ISSUIElementDetails*)elementDetails {
-    NSMutableDictionary* styles = [self effectiveStylesForUIElement:elementDetails];
-    
-    for (ISSPropertyDeclaration* propertyDeclaration in styles.allKeys) {
-        id value = styles[propertyDeclaration];
-        if ( value ) {
-            [propertyDeclaration setValue:value onTarget:elementDetails.uiElement];
+    NSArray* styles = [self effectiveStylesForUIElement:elementDetails];
+
+    for (ISSPropertyDeclaration* propertyDeclaration in styles) {
+        if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
+            ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
         }
     }
 }

@@ -26,7 +26,7 @@
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations;
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable;
 
-- (NSDictionary*) stylesForElement:(ISSUIElementDetails*)elementDetails;
+- (NSArray*) stylesForElement:(ISSUIElementDetails*)elementDetails;
 
 - (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails;
 
