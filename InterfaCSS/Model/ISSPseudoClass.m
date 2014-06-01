@@ -190,7 +190,8 @@ static NSDictionary* stringToPseudoClassType;
 }
 
 - (BOOL) isEqual:(id)object {
-    if ( [object isKindOfClass:ISSPseudoClass.class] ) {
+    if( object == self ) return YES;
+    else if ( [object isKindOfClass:ISSPseudoClass.class] ) {
         ISSPseudoClass* other = (ISSPseudoClass*)object;
         return _pseudoClassType == other->_pseudoClassType && _a == other->_a && _b == other->_b;
     } else return NO;

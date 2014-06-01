@@ -172,10 +172,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 
 - (CGRect) applyInsetsToParentRect:(CGRect)parentRect {
     if( !UIEdgeInsetsEqualToEdgeInsets(_insets, UIEdgeInsetsZero) ) {
-        parentRect.origin.x = _insets.left;
-        parentRect.origin.y = _insets.top;
-        parentRect.size.width -= _insets.left + _insets.right;
-        parentRect.size.height -= _insets.top + _insets.bottom;
+        return UIEdgeInsetsInsetRect(parentRect, _insets);
     }
     return parentRect;
 }
@@ -194,7 +191,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 
 - (CGRect) rectForView:(UIView*)view {
     if( _type == ISSRectValueTypeStandard ) {
-        return self.rect;
+        return _rect;
     } else if( _type == ISSRectValueTypeParentInsets ) {
         return [self applyInsetsToParentRect:[self.class parentBoundsForView:view]];
     } else if( _type == ISSRectValueTypeParentRelative ) {

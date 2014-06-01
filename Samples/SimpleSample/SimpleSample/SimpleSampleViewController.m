@@ -84,7 +84,6 @@
 #endif
     
     [self.view applyStylingISS];
-    NSLog(@"Frame: %@", NSStringFromCGRect(self.view.frame));
 }
 
 - (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {

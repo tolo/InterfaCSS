@@ -57,11 +57,11 @@
     if( !window ) window = [UIApplication sharedApplication].keyWindow;
     if( window ) bounds = window.bounds;
     else bounds = [UIScreen mainScreen].bounds;
-    return CGPointMake(CGRectGetWidth(bounds)/2, CGRectGetHeight(bounds)/2);
+    return CGPointMake(CGRectGetWidth(bounds)/2.0f, CGRectGetHeight(bounds)/2.0f);
 }
 
 + (CGPoint) superViewCenterForView:(UIView*)view {
-    if( view.superview ) return CGPointMake(CGRectGetWidth(view.superview.bounds)/2, CGRectGetHeight(view.superview.bounds)/2);
+    if( view.superview ) return CGPointMake(CGRectGetWidth(view.superview.bounds)/2.0f, CGRectGetHeight(view.superview.bounds)/2.0f);
     else return [self windowCenterForView:view];
 }
 

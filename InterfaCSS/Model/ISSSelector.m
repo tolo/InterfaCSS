@@ -98,7 +98,8 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if ( [object isKindOfClass:ISSSelector.class] ) {
+    if( object == self ) return YES;
+    else if ( [object isKindOfClass:ISSSelector.class] ) {
         ISSSelector* other = (ISSSelector*)object;
         return _wildcardType == other->_wildcardType && self.type == other.type &&
             [NSString iss_string:self.styleClass isEqualToString:other.styleClass] &&
@@ -107,7 +108,7 @@
 }
 
 - (NSUInteger) hash {
-    return 31*31 * [self.type hash] + 31*[self.styleClass hash] + [self.pseudoClass hash] + (_wildcardType ? 1 : 0);
+    return 31u*31u * [self.type hash] + 31*[self.styleClass hash] + [self.pseudoClass hash] + (_wildcardType ? 1 : 0);
 }
 
 @end

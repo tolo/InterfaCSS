@@ -159,7 +159,8 @@
 }
 
 - (BOOL) isEqual:(id)object {
-    if( [object isKindOfClass:ISSSelectorChain.class] ) {
+    if( object == self ) return YES;
+    else if( [object isKindOfClass:ISSSelectorChain.class] ) {
         if (self.selectorComponents == [object selectorComponents]) return YES;
         else [self.selectorComponents isEqualToArray:[object selectorComponents]];
     }

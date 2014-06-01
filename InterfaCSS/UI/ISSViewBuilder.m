@@ -22,9 +22,7 @@
 
 + (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock andPropertyOwner:(id)propertyOwner {
     if( styleClassName ) {
-        static NSCharacterSet* characterSet = nil;
-        if( !characterSet ) characterSet = [NSCharacterSet characterSetWithCharactersInString:@" ,"];
-        NSArray* styles = [styleClassName iss_trimmedSplitWithSet:characterSet];
+        NSArray* styles = [styleClassName iss_splitOnSpaceOrComma];
         for(NSString* style in styles) [theView addStyleClassISS:style];
     }
     
