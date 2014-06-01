@@ -9,8 +9,8 @@
 
 @interface UIView (InterfaCSS)
 
-@property (nonatomic, strong, getter=getStyleClassISS, setter=setStyleClassISS:) NSString* styleClassISS;
-@property (nonatomic, strong, getter=getStyleClassesISS, setter=setStyleClassesISS:) NSSet* styleClassesISS;
+@property (nonatomic, strong) NSString* styleClassISS;
+@property (nonatomic, strong) NSSet* styleClassesISS;
 
 - (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
 - (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated;
@@ -29,32 +29,5 @@
 - (void) applyStylingISS;
 - (void) applyStylingISS:(BOOL)invalidateStyles;
 - (void) applyStylingWithAnimationISS;
-
-
-/*
-
-@property (nonatomic, strong, getter=getStyleClassISS, setter=setStyleClassISS:) NSString* styleClassISS;
-@property (nonatomic, strong, getter=getStyleClassesISS, setter=setStyleClassesISS:) NSSet* styleClassesISS;
-
-- (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
-- (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated;
-
-- (BOOL) hasStyleClassISS:(NSString*)styleClass;
-
-- (void) addStyleClassISS:(NSString*)styleClass;
-- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
-
-- (void) removeStyleClassISS:(NSString*)styleClass;
-- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
-
-- (void) scheduleApplyStylingISS;
-- (void) scheduleApplyStylingISS:(BOOL)animated;
-
-- (void) applyStylingISS;
-- (void) applyStylingISS:(BOOL)invalidateStyles;
-- (void) applyStylingWithAnimationISS;
-
-*/
-
 
 @end

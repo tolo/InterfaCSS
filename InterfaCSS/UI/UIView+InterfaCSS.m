@@ -10,19 +10,21 @@
 #import "UIView+InterfaCSS.h"
 
 #import "InterfaCSS.h"
+#import "NSString+ISSStringAdditions.h"
 
 
 @implementation UIView (InterfaCSS)
 
-- (NSString*) getStyleClassISS {
+- (NSString*) styleClassISS {
     return [self.styleClassesISS anyObject];
 }
 
 - (void) setStyleClassISS:(NSString*)styleClass {
-    [self setStyleClassesISS:[NSSet setWithObject:styleClass] animated:NO];
+    NSArray* styles = [styleClass iss_splitOnSpaceOrComma];
+    [self setStyleClassesISS:[NSSet setWithArray:styles] animated:NO];
 }
 
-- (NSSet*) getStyleClassesISS {
+- (NSSet*) styleClassesISS {
     return [[InterfaCSS interfaCSS] styleClassesForUIElement:self];
 }
 

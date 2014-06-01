@@ -51,6 +51,20 @@
     return vals;
 }
 
+- (NSArray*) iss_splitOnSpaceOrComma {
+    static NSCharacterSet* characterSet = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        characterSet = [NSCharacterSet characterSetWithCharactersInString:@" ,"];
+    });
+    NSArray* elements = [self componentsSeparatedByCharactersInSet:characterSet];
+    NSMutableArray* result = [[NSMutableArray alloc] init];
+    for (NSString* element in elements) {
+        if( [element iss_hasData] ) [result addObject:element];
+    }
+    return result;
+}
+
 - (NSString*) iss_stringBySeparatingCamelCaseComponentsWithDash {
     NSMutableString* result = [NSMutableString stringWithString:self];
     NSCharacterSet* uppercaseLetterCharacterSet = [NSCharacterSet uppercaseLetterCharacterSet];

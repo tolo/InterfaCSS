@@ -18,6 +18,7 @@
 - (NSString*) iss_trimQuotes;
 - (NSArray*) iss_trimmedSplit:(NSString*)sep;
 - (NSArray*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet;
+- (NSArray*) iss_splitOnSpaceOrComma;
 
 - (NSString*) iss_stringBySeparatingCamelCaseComponentsWithDash;
 
