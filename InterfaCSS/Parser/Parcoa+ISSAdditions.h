@@ -27,13 +27,15 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount;
 
-+ (ParcoaParser*) iss_anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount;
++ (ParcoaParser*) iss_anythingButWhiteSpaceAndExtendedControlChars:(NSUInteger)minCount;
 
 + (NSCharacterSet*) iss_validIdentifierCharsSet;
 
 + (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount;
 
 + (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser;
+
++ (ParcoaParser*) iss_safeArray:(ParcoaParser*)parser;
 
 + (ParcoaResult*) iss_partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i;
 

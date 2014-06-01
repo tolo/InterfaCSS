@@ -89,14 +89,14 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
-+ (ParcoaParser*) iss_anythingButWhiteSpaceAndControlChars:(NSUInteger)minCount {
++ (ParcoaParser*) iss_anythingButWhiteSpaceAndExtendedControlChars:(NSUInteger)minCount {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@",:;{}()"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
 + (NSCharacterSet*) iss_validIdentifierCharsSet {
-    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-"];
+    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-_"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
     return characterSet;
 }
@@ -108,13 +108,27 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 
 + (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser {
     return [parser transform:^id(id value) {
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        NSMutableDictionary* dict = [NSMutableDictionary dictionary];
         [value enumerateObjectsUsingBlock:^(NSArray *obj, NSUInteger idx, BOOL *stop) {
             if( [obj isKindOfClass:NSArray.class] && [obj count] > 1 && obj[0] && obj[1] ) {
                 dict[obj[0]] = obj[1];
             }
         }];
         return dict;
+    } name:@"safeDictionary"];
+}
+
++ (ParcoaParser*) iss_safeArray:(ParcoaParser*)parser {
+    return [parser transform:^id(id value) {
+        NSMutableArray* array = [[NSMutableArray alloc] init];
+        if( [value isKindOfClass:NSArray.class] ) {
+            for(id element in value) {
+                if( element != NSNull.null ) {
+                    [array addObject:element];
+                }
+            }
+        }
+        return array;
     } name:@"safeDictionary"];
 }
 
