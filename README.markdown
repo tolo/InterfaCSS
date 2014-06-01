@@ -66,7 +66,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 ###Setup automatic css reload during development
 
-To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. This is how you do it (preferably):
+To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. This is how you do it (in your app delegate for instance):
 
 ```objective-c
 #if DEBUG == 1
