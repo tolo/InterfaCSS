@@ -1,6 +1,18 @@
 #Changes
 
 
+##Version 0.9.2 (yet to be released)
+
+### New features & changes
+* The order of property declarations is now maintained when parsing a stylesheet file.
+* Property values are now lazily transformed from strings to actual values.
+
+### Bug fixes
+* Fixed issue with underscore not being allowed as a character in identifiers in stylesheets.
+* Fixes problem with color and image values not being parsed correctly in some instances.
+
+
+
 ##Version 0.9.1
 
 ### Bug fixes
