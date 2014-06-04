@@ -1,25 +1,59 @@
-InterfaCSS
-==========
-> The simple, powerful and reusable way of giving your iOS application style, using CSS.
-
-InterfaCSS emerged out of frustration with the shortcomings of the available Interface Building tools, one of the most important being the constant need to repeat yourself when it comes to styling of user interface elements. There had to be a better way.
-
-And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting finally is here to make your iOS-user-interface-coding-life a little bit easier. So go ahead, create yourself some fantastic [styles](#StylesheetFormat) and some amazing [layouts](#Layout), and you'll never look back!
+<img src="https://raw.githubusercontent.com/tolo/InterfaCSS/master/Resources/InterfaCSS-title-logo.png" alt="InterfaCSS" title="InterfaCSS" width="432">
 
 
-What InterfaCSS does
---------------------
+Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way you could style your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like on the web?
 
-* Lets you style UI elements in a simple and reusable fashion, using a [syntax](#StylesheetFormat) that is based on CSS, and augmented with some Sass/Less-like features.
-* Enables you to build an application without using nib/xib files and without writing lots of tedious UI setup code.
-* Lets you control almost every aspect your UI elements, such as fonts, colors, images, transform, insets, offsets, position, size and much, much more.
-* Provides an easy way to setup you view hierarchy though a view builder class (`ISSViewBuilder`) or through the use of a view definition file ([XML](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference)).
-* Enables you to load an auto-refreshable stylesheet from a URL, which will speed up and simplify UI development considerably.
 
-InterfaCSS is also:
 
-* Completely free of dodgy Objective-C runtime manipulations (such as method swizzling and whatnot), something that may or may not make you sleep better at night.
-* Using a CSS parser built upon the amazing parser combinator framework [Parcoa](https://github.com/brotchie/Parcoa).
+## Welcome to InterfaCSS
+
+
+
+### Simple yet powerful styling
+InterfaCSS uses an easy to understand styling [syntax](#StylesheetFormat) that is based on *CSS*, and augmented with some *Sass/Less-*like features, such as *nested declarations* and *constants*. Property names are what you expect them to be - i.e. the same as in UIKit, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much more.
+
+
+
+### InterfaCSS can get you [DRY](http://en.wikipedia.org/wiki/Don't_repeat_yourself)
+We all hate to duplicate code, so why should styling be any different? Sure, `UIAppearance` can help you in a *(very)* limited way, but would you still want to write (and read) things like this:
+
+```objective-c
+[[UIButton appearanceWhenContainedIn:UITableViewCell.class, nil] setTitleColor:
+    [UIColor colorWithRed:255 green:109 blue:16 alpha:1] forState:UIControlStateSelected];
+```
+
+when you instead can write it like this:
+
+```css
+UITableViewCell UIButton {
+    titleColor(selected): #ff6d10;
+}
+```
+
+And what if you actually want to have more than *one* type of button in your table view cells?
+
+```css
+UITableViewCell .mySpecialButton {
+    titleColor(selected): red;
+}
+```
+
+
+
+### Consice and clean setup of view hierarchy
+Using a [view builder](#Layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
+
+
+
+### *Hot deployment* of your stylesheets
+Load an auto-refreshable stylesheet from a (file/web) URL, and watch how the UI updates itself before your very eyes, without having to wait for those frustrating `compile`/`deploy`/`launch`/`returnToWhereYouWere`-cycles.
+
+
+### InterfaCSS is also ...
+
+* Completely free of dodgy Objective-C runtime manipulations (such as method swizzling and whatnot), something that may or may not make you sleep better at night.  
+
+* Using a CSS parser based upon the amazing parser combinator framework [Parcoa](https://github.com/brotchie/Parcoa).
 
 
 
@@ -48,19 +82,24 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 * Set up your view hierarchy and set some initial styles classes on your views. This you can do in a few different ways:
     * By using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hiearchy, like this: `self.view = [ISSViewBuilder rootViewWithStyle:@"myFancyStyleClass" ....`
+
     * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this:
     `self.view = ` `[ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
+
     * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance:
         * `self.view.styleClassISS = @"groovyStyle";`
-        * `[self.view addStyleClassISS:@"groovyStyle"];`
+        * `[self.view addStyleClassISS:@"anEvenMoreGroovyStyle"];`
+
     * Or if you still feel the need to use Interface Builder to setup your views, you can still specify one or more style classes for each UI element in the *Identity Inspector* under *User Defined Runtime Attributes* - just set the **Key Path** to `styleClassISS`, the **Type** to `String` and the **Value** to whatever style class(es) you want to use (multiple style classes are separated by a space).
 
 * Update styles as you go
     * At any time you can add or remove style classes using the methods provided in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
+
     * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStylingISS` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
 
 * If you get stuck and starting feel the urge to break something, consider doing this first:
     * Try using `-[InterfaCSS logMatchingStyleDeclarationsForUIElement:]` to log the active style declarations for your view, and see if they are whay you expect them to be.
+
     * Enable more verbose logging by invoking `[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];` defined in [`NSObject+ISSLogSupport.h`](InterfaCSS/Util/NSObject+ISSLogSupport.h)
 
 
@@ -71,9 +110,11 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
 ```objective-c
 #if DEBUG == 1
     /* For local (simulator) use, you can for instance load the actual css file used in your project as an auto-refreshable stylesheet: */
-    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:[NSURL URLWithString:@"file://Users/username/myCoolXcodeProject/myDazzlingStyles.css"]];
+    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
+        [NSURL URLWithString:@"file://Users/username/myCoolXcodeProject/myDazzlingStyles.css"]];
     /* Or if you want to be able to run on a device, you can for instance simply upload the file to your cloud provider of choice: */
-    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:[NSURL URLWithString:@"http://www.mygroovycloudprovider.com/myDazzlingStyles.css"]];
+    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
+        [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/myDazzlingStyles.css"]];
 #endif
 ```
 
@@ -99,6 +140,7 @@ This is what InterfaCSS supports:
 * Setting nested properties on certain nested views, i.e. for instance `titleLabel.font`. These are the nested views that are supported at the moment:
 `imageView`, `contentView`, `backgroundView`, `selectedBackgroundView`, `multipleSelectionBackgroundView`, `titleLabel`, `textLabel`, `detailTextLabel`, `inputView`, `inputAccessoryView`,
 `tableHeaderView`, `tableFooterView` and `backgroundView`.
+* Support properties that are bound to a certain `UIControlState` (for instance): `titleColor(highlighted): red;`
 
 Furthermore, InterfaCSS also supports some Sass/Less-like features:
 
@@ -142,6 +184,7 @@ UILabel {
     .simpleSampleMainButton {
         bounds: size(160, 40);
         center: parent(0, 10);  // Offset from parent center
+        backgroundImage: red; // Using color as image
         titleColor(highlighted): magenta;
     }
 
