@@ -81,3 +81,12 @@
     offImage: image(image.png, 1, 2, 3, 4);
 }
 
+.colorFunctions {
+    color: lighten(#112233, 50%);
+    titleColor: darken(#112233, 50%);
+    textColor: saturate(#112233, 50%);
+    tintColor: desaturate(#112233, 50%);
+    shadowColor: fadein(#112233, 50%);
+    sectionIndexColor: fadeout(#112233, 50%);
+    separatorColor: saturate(fadeout(#112233, 50%), 50%);
+}

@@ -313,6 +313,18 @@
     XCTAssertEqualObjects(values[3], [UIColor redColor]);
 }
 
+- (void) testUIColorFunctionPropertyValues {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"textColor", @"tintColor", @"shadowColor", @"sectionIndexColor", @"separatorColor"] fromStyleClass:@"colorfunctions"];
+    UIColor* sourceColor = [UIColor iss_colorWithHexString:@"112233"];
+    XCTAssertEqualObjects(values[0], [sourceColor iss_colorByIncreasingBrightnessBy:50.0f]);
+    XCTAssertEqualObjects(values[1], [sourceColor iss_colorByIncreasingBrightnessBy:-50.0f]);
+    XCTAssertEqualObjects(values[2], [sourceColor iss_colorByIncreasingSaturationBy:50.0f]);
+    XCTAssertEqualObjects(values[3], [sourceColor iss_colorByIncreasingSaturationBy:-50.0f]);
+    XCTAssertEqualObjects(values[4], [sourceColor iss_colorByIncreasingAlphaBy:50.0f]);
+    XCTAssertEqualObjects(values[5], [sourceColor iss_colorByIncreasingAlphaBy:-50.0f]);
+    XCTAssertEqualObjects(values[6], [[sourceColor iss_colorByIncreasingAlphaBy:-50.0f] iss_colorByIncreasingSaturationBy:50.0f]);
+}
+
 - (void) testParameterizedProperty {
     ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"styleSheetPropertyValues"];
     ISSPropertyDeclaration* decl = nil;
