@@ -62,11 +62,7 @@
 
 - (void) transformValueIfNeeded {
     if( self.lazyPropertyTransformationBlock ) {
-        id propertyValue = self.lazyPropertyTransformationBlock(self);
-        if( !propertyValue ) {
-            NSLog(@"Muu");
-        }
-        self.propertyValue = propertyValue;
+        self.propertyValue = self.lazyPropertyTransformationBlock(self);
         self.lazyPropertyTransformationBlock = nil;
     }
 }
