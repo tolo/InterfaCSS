@@ -5,8 +5,18 @@
     autoresizingMask: width height;
     backgroundColor: #f0f0f0;
 
-    .mainTitleLabel, .mainSubtitleLabel {
-        textColor: magenta;
+    .mainTitleLabel {
+        textColor: #b300fd;
+    }
+    
+    .mainTitleButton {
+        frame: rect(15, 60, 120, 30);
+        backgroundImage(highlighted): #cccccc;
+        titleColor(highlighted): #b300fd;
+    }
+    
+    .mainTitleButton:landscape {
+        frame: rect(200, 30, 120, 30);
     }
     
     .prototypeExampleTable {

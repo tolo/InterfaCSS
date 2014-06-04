@@ -5,15 +5,28 @@
 @stdFont3: HelveticaNeue-CondensedBlack 18;
 @stdFont4: HelveticaNeue-CondensedBlack 16;
 @stdFont5: HelveticaNeue-CondensedBold 12;
-@stdColor1: rgb(0, 0, 255);
+@stdFont6: HelveticaNeue-Light 14;
+@stdColor1: rgb(16, 109, 255);
 
 
 /* Common stuff */
 
+UIButton {
+    backgroundImage: #e0e0e0;   // Color as background image
+    backgroundImage(highlighted): #7f7f7f;
+    borderColor: #7f7f7f;
+    borderWidth: 0.5;
+    cornerRadius: 6;
+    clipsToBounds: YES;
+    titleColor: #303030;
+    titleColor(highlighted): white;
+    titleLabel.font: @stdFont6;
+}
+
 .tabBarStyle1 UITabBarItem {
     font: HelveticaNeue-CondensedBlack 24;
     textColor: lightGray;
-    textColor(selected): magenta;
+    textColor(selected): #b300fd;
     titlePositionAdjustment: offset(0, -10);
 }
 
@@ -31,19 +44,6 @@
     textAlignment: center;
 }
 
-.mainSubtitleLabel {
-    frame: rect(15, 60, 90, 20);
-    textColor: rgb(255, 255, 255);
-    font: @stdFont1;
-    textAlignment: center;
-    anchorPoint: point(0, 0);
-    transform: rotate(5);
-}
-
-.mainSubtitleLabel:landscape { // Landscape orientation
-    anchorPoint: point(0.5, 0.5);
-    transform: rotate(180);
-}
 
 
 /* SimpleSampleViewController */
@@ -51,7 +51,11 @@
 
 .simpleSampleMainView { // Root view of SimpleSampleViewController
     autoresizingMask: width height;
-    backgroundColor: gradient(red, yellow);
+    backgroundColor: gradient(#d775ff, #e4e1e6);
+}
+
+.mainTitleButton {
+    frame: rect(15, 60, 120, 30);
 }
 
 .simpleSampleContentView {
@@ -85,8 +89,10 @@
     cornerRadius: 6;
     clipsToBounds: YES;
     titleLabel.font: @stdFont2;
-    titleColor(highlighted): magenta;
+    titleColor: white;
+    titleColor(highlighted): #b300fd;
     backgroundImage: @stdColor1;
+    backgroundImage(highlighted): #cccccc;
     title: MainButton;
     transform: identity;
 }

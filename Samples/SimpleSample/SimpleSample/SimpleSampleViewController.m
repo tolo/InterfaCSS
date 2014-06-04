@@ -21,7 +21,7 @@
 @interface SimpleSampleViewController ()
 
 @property (nonatomic, strong) UILabel* mainTitleLabel;
-@property (nonatomic, strong) UILabel* mainSubtitleLabel;
+@property (nonatomic, strong) UIButton* mainTitleButton;
 
 @property (nonatomic, strong) UILabel* contentTitleLabel;
 @property (nonatomic, strong) UILabel* contentSubtitleLabel;
@@ -50,7 +50,7 @@
     self.view = [ISSViewBuilder rootViewWithStyle:@"simpleSampleMainView" andSubViews:^{
         return @[
           self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainTitleLabel"],
-          self.mainSubtitleLabel = [ISSViewBuilder labelWithStyle:@"mainSubtitleLabel"],
+          self.mainTitleButton = [ISSViewBuilder buttonWithStyle:@"mainTitleButton"],
           [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
                 self.contentTitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentTitleLabel"],
                 self.contentSubtitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentSubtitleLabel"],
@@ -65,7 +65,7 @@
     
     self.mainTitleLabel.text = @"Simple Sample Main";
     self.mainTitleLabel.tag = 123;
-    self.mainSubtitleLabel.text = @"Sample Sub";
+    [self.mainTitleButton setTitle:@"Sample button" forState:UIControlStateNormal];
     
     self.contentTitleLabel.text = @"Content Main";
     self.contentSubtitleLabel.text = @"Content Sub";
