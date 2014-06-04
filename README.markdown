@@ -10,7 +10,7 @@ Everyone loves a beautifully designed app with a consistent UI, and getting ther
 
 
 ### Simple yet powerful styling
-InterfaCSS uses an easy to understand styling [syntax](#StylesheetFormat) that is based on *CSS*, and augmented with some *Sass/Less-*like features, such as *nested declarations* and *constants*. Property names are what you expect them to be - i.e. the same as in UIKit, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much more.
+InterfaCSS uses an easy to understand styling [syntax](#StylesheetFormat) that is based on *CSS*, and augmented with some *Sass/Less*-like features, such as *nested declarations* and *constants*. Property names are what you expect them to be - i.e. the same as in UIKit, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [**more**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
 
 
 
@@ -84,7 +84,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
     * By using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hiearchy, like this: `self.view = [ISSViewBuilder rootViewWithStyle:@"myFancyStyleClass" ....`
 
     * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this:
-    `self.view = ` `[ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
+    `self.view = `[ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
 
     * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance:
         * `self.view.styleClassISS = @"groovyStyle";`
@@ -95,7 +95,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 * Update styles as you go
     * At any time you can add or remove style classes using the methods provided in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
 
-    * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStylingISS` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
+    * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStylingISS` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h). You can also use an `ISSRootView` as the root of a view (sub) tree - this class makes sure that styling is applied whenever the view moves to a new super view, window or if the `frame` property is changed is changed (you can create one using the method `[ISSViewBuilder rootViewWithStyle:]` for instance).
 
 * If you get stuck and starting feel the urge to break something, consider doing this first:
     * Try using `-[InterfaCSS logMatchingStyleDeclarationsForUIElement:]` to log the active style declarations for your view, and see if they are whay you expect them to be.
@@ -277,7 +277,7 @@ Example of loading a view hierarchy from a view definition file in the `loadView
 
 
 ### Positioning and sizing
-Besides setting fixed values for `frame`, `bounds` and `center` properties, you also have the option of using parent (or window) relative values. These relative values are evaluated during styling of a view, which means that you may have to manually apply styling when the parent view frame changes, unless you are using using a `ISSRootView` as the root view of the a view hierarchy.
+Besides setting fixed values for `frame`, `bounds` and `center` properties, you also have the option of using parent (or window) relative values. These relative values are evaluated during styling of a view, which means that you may have to manually apply styling when the parent view frame changes, unless you are using using a `ISSRootView` as the root view of a view hierarchy.
 
 ####[Rect](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGRect) (frame / bounds)
 A relative rect value can be created in these ways:
@@ -295,7 +295,7 @@ A relative rect value can be created in these ways:
 Project status
 --------------
 
-The latest released version is currently 0.9.1 (0.9.2 is soon to be released). This basically means that most of the basic stuff is in place, and it's just that last 10% of polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.1 (0.9.2 is soon to be released). This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
