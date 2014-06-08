@@ -66,3 +66,9 @@
     alpha: 0.5;
     titleLabel.alpha: 0.25;
 }
+
+.attributedTextTest {
+    alpha: 0.5;
+    font: HelveticaNeue-Bold 10;
+    textColor: #998877;
+}

@@ -40,7 +40,6 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
-- (void) setValue:(id)value onTarget:(id)target withPrefixKeyPath:(NSString*)prefixKeyPath;
 - (void) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath;
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type;

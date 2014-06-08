@@ -61,7 +61,7 @@
 
     elementName = [elementName iss_trim];
     NSString* lcElementName = [elementName lowercaseString];
-    if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName stringByReplacingCharactersInRange:NSMakeRange(0, 2) withString:@""];
+    if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName substringFromIndex:2];
 
     NSString* styleClass = nil;
     NSString* propertyName = nil;
@@ -84,6 +84,7 @@
 
     ViewBuilderBlock viewBuilderBlock = nil;
 
+    // Containers:
     if ( [@"view" isEqualToString:lcElementName] ) {
         viewBuilderBlock = ^UIView* { return [ISSViewBuilder viewWithStyle:styleClass]; };
     } else if ( [@"collectionview" isEqualToString:lcElementName] ) {
@@ -106,6 +107,10 @@
         };
     } else if ( [@"webview" isEqualToString:lcElementName] ) {
         viewBuilderBlock = ^UIView*{ return [ISSViewBuilder webViewWithStyle:styleClass]; };
+    }
+    // Controls:
+    else if ( [lcElementName hasPrefix:@"activityindicator"] ) {
+        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder activityIndicatorViewWithStyle:styleClass]; };
     } else if ( [@"button" isEqualToString:lcElementName] ) {
         viewBuilderBlock = ^UIView*{ return [ISSViewBuilder buttonWithStyle:styleClass]; };
     } else if ( [@"label" isEqualToString:lcElementName] ) {

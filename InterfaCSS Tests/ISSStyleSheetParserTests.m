@@ -78,6 +78,10 @@
 }
 
 - (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass {
+    return [self getPropertyValuesWithNames:names fromStyleClass:styleClass getDeclarations:NO];
+}
+
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
     ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:styleClass inStyleSheet:@"styleSheetPropertyValues"];
     
     NSMutableArray* values = [NSMutableArray array];
@@ -85,9 +89,17 @@
     for(NSString* name in names) {
         id value = nil;
         for(ISSPropertyDeclaration* d in declarations.properties) {
-            if( [d.property.name isEqualToString:name] ) {
-                [d transformValueIfNeeded];
-                value = d.propertyValue;
+            NSString* propertyName = d.property.name;
+            if( d.prefix && ![d.prefix isEqualToString:@"layer"] ) {
+                propertyName = [[d.prefix stringByAppendingString:@"."] stringByAppendingString:propertyName];
+            }
+            
+            if( [propertyName iss_isEqualIgnoreCase:name] ) {
+                if( getDeclarations ) value = d;
+                else {
+                    [d transformValueIfNeeded];
+                    value = d.propertyValue;
+                }
             }
         }
         
@@ -334,6 +346,28 @@
     
     XCTAssertEqual((NSUInteger)1, decl.parameters.count, @"Expected one parameter");
     XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), decl.parameters[0], @"Expected UIControlStateSelected|UIControlStateHighlighted");
+}
+
+- (void) testPropertyPrefixes {
+    // Test layer prefix properties
+    NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" getDeclarations:YES];
+    UIView* view = [[UIView alloc] init];
+    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:view];
+    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:view];
+    XCTAssertEqual(view.layer.cornerRadius, 5.0f);
+    XCTAssertEqual(view.layer.borderWidth, 10.0f);
+    
+    
+    // Test other valid property prefixes
+    values = [self getPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
+                                                         @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
+                                                         @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
+                                                         @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes"];
+
+    XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
+    for(id value in values) {
+        XCTAssertEqualObjects(value, @(0.42f));
+    }
 }
 
 - (void) testTransformPropertyValue {

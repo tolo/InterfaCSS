@@ -280,7 +280,7 @@
         propertyNameString = [propertyNameString substringToIndex:parentRange.location];
     }
 
-    // Remove any dashes from string, before attempting to find matching ISSPropertyDeclaration
+    // Remove any dashes from string and convert to lowercase string, before attempting to find matching ISSPropertyDeclaration
     propertyNameString = [[[propertyNameString iss_trim] stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
 
     // Parse prefix

@@ -10,6 +10,7 @@
 
 #import "InterfaCSS.h"
 #import "UIView+InterfaCSS.h"
+#import "UIColor+ISSColorAdditions.h"
 
 @interface InterfaCSSTests : XCTestCase
 
@@ -128,6 +129,31 @@
 - (void) testThatPrefixedPropertyDoesntOverwrite {
     UIButton* btn = [[UIButton alloc] init];
     [self applyStyle:@"overwriteTest" onView:btn andExpectAlpha:0.5f];
+}
+
+- (void) testAttributedTextIntegrity {
+    [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes = YES;
+
+    UILabel* label = [[UILabel alloc] init];
+    UIButton* button = [[UIButton alloc] init];
+    UIFont* font = [UIFont fontWithName:@"Helvetica-Light" size:42];
+    UIColor* color = [UIColor iss_colorWithHexString:@"112233"];
+    [button setTitleColor:color forState:UIControlStateNormal];
+    label.attributedText = [[NSAttributedString alloc] initWithString:@"test" attributes:@{NSFontAttributeName: font,
+            NSForegroundColorAttributeName: color}];
+    [button setAttributedTitle:label.attributedText forState:UIControlStateNormal];
+
+    label.styleClassISS = @"attributedTextTest";
+    [label applyStylingISS];
+    button.styleClassISS = @"attributedTextTest";
+    [button applyStylingISS];
+
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqualObjects(label.font, font, @"Unexpected property value");
+    XCTAssertEqualObjects(label.textColor, color, @"Unexpected property value");
+    XCTAssertEqual(button.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqualObjects(button.titleLabel.font, font, @"Unexpected property value");
+    XCTAssertEqualObjects(button.currentTitleColor, color, @"Unexpected property value");
 }
 
 @end

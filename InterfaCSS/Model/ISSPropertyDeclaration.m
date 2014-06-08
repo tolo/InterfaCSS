@@ -73,11 +73,8 @@
     [self transformValueIfNeeded];
     if( !self.propertyValue ) return NO;
 
-    if ( self.parameters.count ) {
-        [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
-    } else {
-        [self.property setValue:self.propertyValue onTarget:target withPrefixKeyPath:self.prefix];
-    }
+    [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
+
     return YES;
 }
 
@@ -88,7 +85,9 @@
     if( self.parameters.count ) {
         NSString* paramDesc = [[[self.parameters description] stringByReplacingOccurrencesOfString:@" " withString:@""] stringByReplacingOccurrencesOfString:@"\n" withString:@""];
         return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@ %@]", self.property.displayDescription, paramDesc];
-    } else return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@]", self.property.displayDescription];
+    }
+    else if( self.unrecognizedName ) return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@]", self.unrecognizedName];
+    else return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@]", self.property.displayDescription];
 }
 
 - (BOOL) isEqual:(id)object {

@@ -21,6 +21,23 @@
     transform: rotate(10) scale(20,30) translate(40,50);
 }
 
+.prefixes {
+    cornerRadius: 5;
+    layer.borderWidth: 10;
+    imageView.alpha: 0.42;
+    contentView.alpha: 0.42;
+    backgroundView.alpha: 0.42;
+    selectedBackgroundView.alpha: 0.42;
+    multipleSelectionBackgroundView.alpha: 0.42;
+    titleLabel.alpha: 0.42;
+    textLabel.alpha: 0.42;
+    detailTextLabel.alpha: 0.42;
+    inputView.alpha: 0.42;
+    inputAccessoryView.alpha: 0.42;
+    tableHeaderView.alpha: 0.42;
+    tableFooterView.alpha: 0.42;
+    backgroundView.alpha: 0.42;
+}
 
 .point1 {
     center: parent(50, -50);

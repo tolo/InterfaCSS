@@ -16,11 +16,22 @@
 @class ISSPropertyDefinition;
 
 /** 
- * The is the main class of InterfaCSS
+ * The heart, core and essence of InterfaCSS. Handles loading of stylesheets and keeps track of all style information.
  */
 @interface InterfaCSS : NSObject
 
-#pragma mark - static methods
+
+#pragma mark - Behavioural properties
+
+/**
+ * Setting this flag to `YES` prevents "overwriting" of font and text color in attributed text of labels (and buttons) when styles are applied.
+ * Default value is `NO`
+ */
+@property (nonatomic) BOOL preventOverwriteOfAttributedTextAttributes;
+
+
+
+#pragma mark - Static methods
 
 /** 
  * Gets the shared InterfaCSS instance.
@@ -33,7 +44,7 @@
 + (void) clearResetAndUnload;
 
 
-#pragma mark - properties
+#pragma mark - Properties
 
 @property (nonatomic, readonly, strong) NSMutableArray* styleSheets;
 @property (nonatomic, strong) id<ISSStyleSheetParser> parser;
@@ -85,7 +96,7 @@
 - (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass;
 
 /**
- * Sets the style classes for the specific UI object.
+ * Sets the style classes for the specific UI object, replacing any previous style classes.
  */
 - (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement;
 
@@ -135,12 +146,12 @@
 #pragma mark - Prototypes
 
 /**
- * Registers a prototype.
+ * Registers a prototype defined in a view definition file.
  */
 - (void) registerPrototype:(ISSViewPrototype*)prototype;
 
 /**
- * Creates a view from a prototype.
+ * Creates a view from a prototype defined in a view definition file.
  */
 - (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName;
 

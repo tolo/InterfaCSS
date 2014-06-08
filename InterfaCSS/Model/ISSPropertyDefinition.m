@@ -16,6 +16,7 @@
 #import "ISSPointValue.h"
 #import "ISSLazyValue.h"
 #import "NSDictionary+ISSDictionaryAdditions.h"
+#import "InterfaCSS.h"
 
 
 @protocol NSValueTransformer
@@ -31,13 +32,15 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 
 
 #define S(selName) NSStringFromSelector(@selector(selName))
+#define SLC(selName) [S(selName) lowercaseString]
+
 
 static NSDictionary* classesToTypeNames;
 static NSDictionary* typeNamesToClasses;
 
 static NSDictionary* classProperties;
 static NSSet* allProperties;
-static NSSet* validPrefixKeyPaths;
+static NSDictionary* validPrefixKeyPaths; // Lower case key path to actual key path
 
 
 
@@ -100,7 +103,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 }
 
 
-@implementation ISSPropertyDefinition
+@implementation ISSPropertyDefinition {
+    BOOL _prePrefixed;
+}
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type {
     return [self initWithName:ISSAnonymousPropertyDefinitionName aliases:@[] type:type];
@@ -132,6 +137,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
         _propertySetterBlock = setterBlock;
         _parameterEnumValues = [parameterEnumValues iss_dictionaryWithLowerCaseKeys];
+
+        _prePrefixed = [_name rangeOfString:@"."].location != NSNotFound; // Check if property name contains a "key path prefix"
     }
     return self;
 }
@@ -142,15 +149,19 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 - (id) targetObjectForObject:(id)obj andPrefixKeyPath:(NSString*)prefixKeyPath {
     if( prefixKeyPath ) {
+        if( _prePrefixed && ([_name rangeOfString:prefixKeyPath options:NSCaseInsensitiveSearch].location == 0) ) {
+            // Use prefix for "prePrefixed" property, only if different than prefix found in _name...
+            return obj;
+        }
+
         // First, check if prefix key path is a valid selector
         if( [obj respondsToSelector:NSSelectorFromString(prefixKeyPath)] ) {
             return [obj valueForKeyPath:prefixKeyPath];
         } else {
             // Then attempt to match prefix key path against known prefix key paths, and make sure correct name is used
-            for(NSString* validPrefix in validPrefixKeyPaths) {
-                if( [validPrefix iss_isEqualIgnoreCase:prefixKeyPath] && [obj respondsToSelector:NSSelectorFromString(validPrefix)] ) {
-                    return [obj valueForKeyPath:validPrefix];
-                }
+            NSString* validPrefix = validPrefixKeyPaths[[prefixKeyPath lowercaseString]];
+            if( validPrefix && [obj respondsToSelector:NSSelectorFromString(validPrefix)] ) {
+                return [obj valueForKeyPath:validPrefix];
             }
 
             ISSLogDebug(@"Unable to find prefix key path '%@' in %@", prefixKeyPath, obj);
@@ -161,18 +172,12 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 - (void) setValueUsingKVC:(id)value onTarget:(id)obj withPrefixKeyPath:(NSString*)prefixKeyPath {
     @try {
-        NSString* propertyName = _name;
-        NSArray* dotSeparatedComponents = [propertyName componentsSeparatedByString:@"."];
-        if( dotSeparatedComponents.count > 1 ) { // For instance layer.cornerRadius...
-            if( ![prefixKeyPath iss_hasData] ) prefixKeyPath = dotSeparatedComponents[0];
-            propertyName = dotSeparatedComponents[1];
-        }
-
-        obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
-        
         if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
+
+        // Check if value can be transformed to NSValue (to be properly set via KVC)
         if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
-        [obj setValue:value forKeyPath:propertyName]; // Will throw exception if property doesn't exist
+
+        [obj setValue:value forKeyPath:_name]; // Will throw exception if property doesn't exist
     } @catch (NSException* e) {
         ISSLogDebug(@"Unable to set value for property %@ - %@", _name, e);
     }
@@ -181,20 +186,16 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 #pragma mark - Public interface
 
-- (void) setValue:(id)value onTarget:(id)obj withPrefixKeyPath:(NSString*)prefixKeyPath {
+- (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath {
+    obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
+    if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
     if( value && value != [NSNull null] ) {
         if( _propertySetterBlock ) {
-            [self setValue:value onTarget:obj andParameters:nil withPrefixKeyPath:prefixKeyPath];
+            _propertySetterBlock(self, obj, value, params);
         } else {
             [self setValueUsingKVC:value onTarget:obj withPrefixKeyPath:prefixKeyPath];
         }
     }
-}
-
-- (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath {
-    obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
-    if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
-    if( value && value != [NSNull null] ) _propertySetterBlock(self, obj, value, params);
 }
 
 - (BOOL) isParameterizedProperty {
@@ -334,9 +335,10 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
 + (void) initialize {
-    validPrefixKeyPaths = [NSSet setWithArray:@[S(imageView), S(contentView), S(backgroundView), S(selectedBackgroundView),
-                S(multipleSelectionBackgroundView), S(titleLabel), S(textLabel), S(detailTextLabel), S(inputView), S(inputAccessoryView),
-                S(tableHeaderView), S(tableFooterView), S(backgroundView)]];
+    validPrefixKeyPaths = @{ SLC(layer) : S(layer), SLC(imageView) : S(imageView), SLC(contentView) : S(contentView), SLC(backgroundView) : S(backgroundView),
+            SLC(selectedBackgroundView) : S(selectedBackgroundView), SLC(multipleSelectionBackgroundView) : S(multipleSelectionBackgroundView), SLC(titleLabel) : S(titleLabel),
+            SLC(textLabel) : S(textLabel), SLC(detailTextLabel) : S(detailTextLabel), SLC(inputView) : S(inputView), SLC(inputAccessoryView) : S(inputAccessoryView),
+            SLC(tableHeaderView) : S(tableHeaderView), SLC(tableFooterView) : S(tableFooterView), SLC(backgroundView) : S(backgroundView)};
 
     NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"normalHighlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
             @"highlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
@@ -411,17 +413,48 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     });
 
     ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-        if( [viewObject respondsToSelector:@selector(setFont:)] ) {
-            [viewObject setFont:value];
-        } else {
+        if( [viewObject isKindOfClass:UIButton.class] ) {
+            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [[viewObject currentAttributedTitle].string iss_hasData] ) {
+                ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
+            } else {
+                [viewObject titleLabel].font = value;
+            }
+        }
+        else if( [viewObject respondsToSelector:@selector(setFont:)] ) {
+            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
+                    && [[viewObject attributedText].string iss_hasData] ) {
+                ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
+            } else {
+                [viewObject setFont:value];
+            }
+        }
+        else {
             setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
         }
     });
 
-    ISSPropertyDefinition* textColor = pp(S(textColor), controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-        if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
-            [viewObject setTextColor:value];
+    PropertySetterBlock uiButtonTitleColorBlock = ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+        if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] && [[viewObject currentAttributedTitle].string iss_hasData] ) {
+            ISSLogTrace(@"NOT setting titleColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
         } else {
+            UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
+            if ( [viewObject respondsToSelector:@selector(setTitleColor:forState:)] ) [viewObject setTitleColor:value forState:state];
+        }
+    };
+    ISSPropertyDefinition* textColor = pp(S(textColor), controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+        if( [viewObject isKindOfClass:UIButton.class] ) {
+            // Let textColor be titleColor for UIButton...
+            uiButtonTitleColorBlock(p, viewObject, value, parameters);
+        }
+        else if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
+            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
+                                && [[viewObject attributedText].string iss_hasData] ) {
+                ISSLogTrace(@"NOT setting textColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
+            } else {
+                [viewObject setTextColor:value];
+            }
+        }
+        else {
             setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextColor);
         }
     });
