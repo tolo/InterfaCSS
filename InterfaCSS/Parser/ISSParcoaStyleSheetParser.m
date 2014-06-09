@@ -252,7 +252,7 @@
         }
     } name:@"imageCatchAllParser"];
 
-    return [Parcoa choice:@[colorFunctionAsImage, imageAsColor, catchAll]];
+    return [Parcoa choice:@[imageParser, colorFunctionAsImage, imageAsColor, catchAll]];
 }
 
 - (ParcoaParser*) colorParser:(BOOL)cgColor colorValueParsers:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {
@@ -693,9 +693,6 @@
 
 
     // UIImage (2)
-    //ParcoaParser* basicColorParser = [Parcoa choice:uiColorValueParsers];
-//    NSArray* imageCatchAllParsers = [self imageCatchAllParser:uiColorValueParsers];
-//    ParcoaParser* imageParsers = [Parcoa choice:[@[imageParser] arrayByAddingObjectsFromArray:imageCatchAllParsers]];
     ParcoaParser* imageParsers = [self imageParsers:imageParser colorValueParsers:uiColorValueParsers];
     typeToParser[@(ISSPropertyTypeImage)] = imageParsers;
 

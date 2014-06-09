@@ -444,8 +444,14 @@
 
 - (void) testImagePropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage", @"shadowImage", @"progressImage", @"trackImage", @"highlightedImage", @"onImage", @"offImage"] fromStyleClass:@"image1"];
+    
+    UIImage* img = [(id)parser imageNamed:@"image.png"];
+    UIColor* imgColor = [self colorOfFirstPixel:img];
+    
     for (id value in values) {
         XCTAssertTrue([value isKindOfClass:UIImage.class], @"Expected image");
+        UIColor* actual = [self colorOfFirstPixel:value];
+        XCTAssertEqualObjects(imgColor, actual, @"Unexpected color value for image");
     }
 }
 
