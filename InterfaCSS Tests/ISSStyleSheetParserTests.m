@@ -82,7 +82,7 @@
 }
 
 - (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
-    ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:styleClass inStyleSheet:@"styleSheetPropertyValues"];
+    ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
     
     NSMutableArray* values = [NSMutableArray array];
     
@@ -111,6 +111,38 @@
 
 - (id) getSimplePropertyValueWithName:(NSString*)name {
     return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple"] firstObject];
+}
+
+- (UIColor*) colorOfFirstPixel:(UIImage*)image {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    unsigned char* pixelData = (unsigned char*)calloc(4, sizeof(unsigned char));
+    CGContextRef context = CGBitmapContextCreate(pixelData, 1, 1, 8, 4, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image.CGImage);
+    CGContextRelease(context);
+    
+    NSInteger r = pixelData[0];
+    NSInteger g = pixelData[1];
+    NSInteger b = pixelData[2];
+    NSInteger a = pixelData[3];
+  
+    free(pixelData);
+    
+    return [UIColor colorWithRed:r/255.0f green:g/255.0f blue:b/255.0f alpha:a/255.0f];
+    
+}
+
+- (BOOL) compareColorWithTolerance:(UIColor*)color1 color2:(UIColor*)color2 {
+    NSArray* col1Components = [color1 iss_rgbaComponents];
+    NSArray* col2Components = [color2 iss_rgbaComponents];
+    for(NSUInteger i=0; i<4; i++) {
+        CGFloat diff = [col1Components[i] floatValue] - [col2Components[i] floatValue];
+        if( diff > (1.0f/255.0f) ) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 
@@ -415,6 +447,19 @@
     for (id value in values) {
         XCTAssertTrue([value isKindOfClass:UIImage.class], @"Expected image");
     }
+}
+
+- (void) testImageFromColorFunctionPropertyValue {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage"] fromStyleClass:@"imageColorFunctions"];
+
+    UIColor* sourceColor = [UIColor iss_colorWithHexString:@"112233"];
+    
+    UIColor* actual = [self colorOfFirstPixel:values[0]];
+    UIColor* expected = [sourceColor iss_colorByIncreasingBrightnessBy:50.0f];
+    XCTAssertTrue([self compareColorWithTolerance:actual color2:expected], @"Unexpected color value for image");
+    actual = [self colorOfFirstPixel:values[1]];
+    expected = [[sourceColor iss_colorByIncreasingAlphaBy:-50.0f] iss_colorByIncreasingSaturationBy:50.0f];
+    XCTAssertTrue([self compareColorWithTolerance:actual color2:expected], @"Unexpected color value for image");
 }
 
 @end

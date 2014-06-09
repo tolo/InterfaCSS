@@ -107,3 +107,8 @@
     sectionIndexColor: fadeout(#112233, 50%);
     separatorColor: saturate(fadeout(#112233, 50%), 50%);
 }
+
+.imageColorFunctions {
+    image: lighten(#112233, 50%);
+    backgroundImage: saturate(fadeout(#112233, 50%), 50%);
+}
