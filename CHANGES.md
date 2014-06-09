@@ -6,6 +6,7 @@
 ### New features & changes
 * The order of property declarations is now maintained when parsing a stylesheet file.
 * Property values are now lazily transformed from strings to actual values.
+* Added flag preventOverwriteOfAttributedTextAttributes to make it possible to prevent "overwriting" of font and text color in attributed text of labels (and buttons).
 
 ### Bug fixes
 * Fixed issue with underscore not being allowed as a character in identifiers in stylesheets.
