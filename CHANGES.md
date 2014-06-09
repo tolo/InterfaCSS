@@ -1,11 +1,11 @@
 #Changes
 
 
-##Version 0.9.2 (yet to be released)
+##Version 0.9.2
 
 ### New features & changes
 * The order of property declarations is now maintained when parsing a stylesheet file.
-* Property values are now lazily transformed from strings to actual values.
+* Property values are now lazily transformed from strings to actual values, to speed up loading of stylesheet.
 * Added flag preventOverwriteOfAttributedTextAttributes to make it possible to prevent "overwriting" of font and text color in attributed text of labels (and buttons).
 
 ### Bug fixes
