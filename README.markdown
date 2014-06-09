@@ -78,13 +78,13 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 ###Setup InterfaCSS in your app
 
-* Load a stylesheet, like this: `[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your app delegate, when your app is first launched.
+* Load a stylesheet, like this: `[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your app delegate, when your app is first launched, but if you have a lot of stylesheets it's better to defer loading of the stylesheets to when you actually need them (`loadView` of a particular view controller might be a better place in this case).
 
 * Set up your view hierarchy and set some initial styles classes on your views. This you can do in a few different ways:
     * By using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hiearchy, like this: `self.view = [ISSViewBuilder rootViewWithStyle:@"myFancyStyleClass" ....`
 
     * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this:
-    `self.view = `[ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
+    `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
 
     * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance:
         * `self.view.styleClassISS = @"groovyStyle";`
@@ -149,7 +149,7 @@ Furthermore, InterfaCSS also supports some Sass/Less-like features:
 * Color functions.
 
 
-For a complete reference to the supported properties etc, see [**here**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
+For a complete reference to the supported properties etc, see the [**Stylesheet Property Reference**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
 
 Below is an example of how a stylesheet file for InterfaCSS could look like:
 
@@ -262,8 +262,13 @@ self.view = [ISSBuildRoot:@"mainView" beginSubViews
 endSubViews];
 ```
 
+The pattern of the shorthand is basically this: `[ISSBuildXXX:...` = `[ISSViewBuilder XXXWithStyle:...`, and you can create all the views supported by ISSViewBuilder using this shorthand (that is: `ISSBuildRoot`, `ISSBuildView`, `ISSBuildCollectionView`, `ISSBuildImageView`, `ISSBuildScrollView`, `ISSBuildTableView`, `ISSBuildWebView`, `ISSBuildActivityIndicator`, `ISSBuildButton`, `ISSBuildLabel`, `ISSBuildProgressView`, `ISSBuildSlider`, `ISSBuildStepper`, `ISSBuildSwitch`, `ISSBuildTextField`, `ISSBuildTextView`, `ISSBuildTableViewCell`).
+
+Furthermore, you can also use the `beginSubViews` and `endSubViews` macros to make adding of subviews cleaner, as shown above.
+
+
 #### Using a view definition file
-Another way of creating a view hiearchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute ("fileOwner" is first attempted, then superview).
+Another way of creating a view hierarchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute (`fileOwner` is first attempted, then superview).
 
 Using a view definition file, you also have the option of creating prototype views (use the `prototype` attribute), which can be useful for table view cells for instance.
 
