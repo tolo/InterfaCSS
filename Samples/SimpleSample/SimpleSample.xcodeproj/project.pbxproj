@@ -14,6 +14,7 @@
 		275E02C418F329AC00FF1491 /* prototypeExample.css in Resources */ = {isa = PBXBuildFile; fileRef = 275E02C318F329AC00FF1491 /* prototypeExample.css */; };
 		2785E24318A7E49D001D1104 /* PrototypeExampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2785E24218A7E49D001D1104 /* PrototypeExampleViewController.m */; };
 		2785E24918A82DF1001D1104 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2785E24818A82DF1001D1104 /* Default-568h@2x.png */; };
+		27C1F16C19451C0000BAFCC7 /* constants.css in Resources */ = {isa = PBXBuildFile; fileRef = 27C1F16B19451C0000BAFCC7 /* constants.css */; };
 		27F1BB7818A2D50E00022036 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27F1BB7718A2D50E00022036 /* Foundation.framework */; };
 		27F1BB7A18A2D50E00022036 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27F1BB7918A2D50E00022036 /* CoreGraphics.framework */; };
 		27F1BB7C18A2D50E00022036 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27F1BB7B18A2D50E00022036 /* UIKit.framework */; };
@@ -31,6 +32,7 @@
 		2785E24118A7E49D001D1104 /* PrototypeExampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrototypeExampleViewController.h; sourceTree = "<group>"; };
 		2785E24218A7E49D001D1104 /* PrototypeExampleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrototypeExampleViewController.m; sourceTree = "<group>"; };
 		2785E24818A82DF1001D1104 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		27C1F16B19451C0000BAFCC7 /* constants.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = constants.css; sourceTree = "<group>"; };
 		27F1BB7418A2D50E00022036 /* SimpleSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27F1BB7718A2D50E00022036 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		27F1BB7918A2D50E00022036 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -100,6 +102,7 @@
 				2785E24218A7E49D001D1104 /* PrototypeExampleViewController.m */,
 				27F1BB8618A2D50E00022036 /* AppDelegate.h */,
 				27F1BB8718A2D50E00022036 /* AppDelegate.m */,
+				27C1F16B19451C0000BAFCC7 /* constants.css */,
 				2706724718A4C3CF000DD1FF /* main.css */,
 				275E02C318F329AC00FF1491 /* prototypeExample.css */,
 				2706724418A3ED4E000DD1FF /* views.xml */,
@@ -175,6 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2706724918A4C3CF000DD1FF /* main.css in Resources */,
+				27C1F16C19451C0000BAFCC7 /* constants.css in Resources */,
 				2706724518A3ED4E000DD1FF /* views.xml in Resources */,
 				27F1BB8218A2D50E00022036 /* InfoPlist.strings in Resources */,
 				2785E24918A82DF1001D1104 /* Default-568h@2x.png in Resources */,

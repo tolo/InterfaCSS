@@ -11,7 +11,7 @@
     
     .mainTitleButton {
         frame: rect(15, 60, 120, 30);
-        backgroundImage(highlighted): #cccccc;
+        backgroundImage(highlighted): #f0f0f0;
         titleColor(highlighted): #b300fd;
     }
     
@@ -28,12 +28,12 @@
 
         .cellBackgroundView {
             frame: parent;
-            backgroundColor: gradient(white, #f0f0f0);
+            backgroundColor: #fcfcfc;
         }
         
         .cellBackgroundViewSelected {
             frame: parent;
-            backgroundColor: gradient(#f0f0ff, #dcdcff);
+            backgroundColor: fadeout(desaturate(#b300fd, 80%), 50%);
         }
 
         .prototypeExampleCellLabel1, .prototypeExampleCellLabel2, .prototypeExampleCellLabel3 {
@@ -42,12 +42,13 @@
         
         .prototypeExampleCellLabel1 {
             frame: rect(5, 2, 120, 21);
-            font: @stdFont4;
+            font: @stdTitleLabel;
+            textColor: @stdTitleColor;
         }
 
         .prototypeExampleCellLabel2 {
             frame: rect(5, 21, 120, 21);
-            font: @stdFont5;
+            font: @stdSubTitleLabel;
         }
 
         .prototypeExampleCellLabel3 {

@@ -56,7 +56,10 @@
                 self.contentSubtitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentSubtitleLabel"],
                 // You can also add and setup an already existing view object using the view builder:
                 [ISSViewBuilder setupView:[[UIView alloc] init] withStyleClass:@"simpleSampleButtonContainer" andSubViews:^{
-                    return @[ self.mainButton = [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton"] ];
+                    return @[
+                             [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton1"],
+                             self.mainButton = [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton2"],
+                             [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton3"]];
                 }] ];
           }] ];
     }];

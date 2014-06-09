@@ -22,6 +22,7 @@
     // If you really want to get the log messages flowing, uncomment below:
     //[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];
     
+    [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"constants.css"];
     [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"main.css"];
     
     // When developing your app, consider using an auto refreshable stylesheet that is loaded from a web server (or perhaps a cloud service like Dropbox,
@@ -34,7 +35,7 @@
     
     SimpleSampleViewController* viewController = [[SimpleSampleViewController alloc] init];
     PrototypeExampleViewController* prototypeExampleViewController = [[PrototypeExampleViewController alloc] init];
-
+    
     UITabBarController* tabBarController = [[UITabBarController alloc] init];
     tabBarController.tabBar.translucent = NO;
     tabBarController.tabBar.styleClassISS = @"tabBarStyle1";

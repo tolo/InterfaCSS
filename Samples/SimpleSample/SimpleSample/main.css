@@ -1,15 +1,6 @@
 
-/* Variables: */
-@stdFont1: HelveticaNeue-Medium 14;
-@stdFont2: HelveticaNeue-CondensedBold 14;
-@stdFont3: HelveticaNeue-CondensedBlack 18;
-@stdFont4: HelveticaNeue-CondensedBlack 16;
-@stdFont5: HelveticaNeue-CondensedBold 12;
-@stdFont6: HelveticaNeue-Light 14;
-@stdColor1: rgb(16, 109, 255);
 
-
-/* Common stuff */
+/* "Reset" default styles */
 
 UIButton {
     backgroundImage: #e0e0e0;   // Color as background image
@@ -20,11 +11,15 @@ UIButton {
     clipsToBounds: YES;
     titleColor: #303030;
     titleColor(highlighted): white;
-    titleLabel.font: @stdFont6;
+    font: @stdButtonFont;
 }
 
+
+
+/* Common stuff */
+
 .tabBarStyle1 UITabBarItem {
-    font: HelveticaNeue-CondensedBlack 24;
+    font: Avenir-Light 20;
     textColor: lightGray;
     textColor(selected): #b300fd;
     titlePositionAdjustment: offset(0, -10);
@@ -33,7 +28,7 @@ UIButton {
 .mainTitleLabel {
     frame: rect(15, 30, 160, 30);
     textColor: rgb(255, 255, 255);
-    font: @stdFont3;
+    font: @stdHeadingLabel;
     alpha: 1;
     backgroundColor: clear;
     cornerRadius: 5;
@@ -51,12 +46,20 @@ UIButton {
 
 .simpleSampleMainView { // Root view of SimpleSampleViewController
     autoresizingMask: width height;
-    backgroundColor: gradient(#d775ff, #e4e1e6);
+    backgroundColor: gradient(#e7abff, #e4e1e6);
+}
+
+.simpleSampleMainView .mainTitleLabel {
+    shadowColor: fadeout(black, 50%);
+    shadowOffset: offset(1,1);
 }
 
 .mainTitleButton {
     frame: rect(15, 60, 120, 30);
 }
+
+
+// Content view and labels:
 
 .simpleSampleContentView {
     bounds: size(200, 230);
@@ -69,35 +72,48 @@ UIButton {
 .simpleSampleContentTitleLabel {
     frame: rect(20, 10, 160, 30);
     textColor: rgb(255, 255, 255);
-    font: smaller(@stdFont1, 2);
+    font: smaller(@stdTitleLabel, 2);
 }
 
 .simpleSampleContentSubtitleLabel {
     frame: rect(20, 40, 160, 20);
-    textColor: rgb(196, 196, 196);
-    font: smaller(@stdFont1, 4);
+    textColor: rgb(228, 228, 228);
+    font: smaller(@stdSubTitleLabel, 3);
 }
+
+
+// Content buttons:
 
 .simpleSampleButtonContainer {
     frame: rect(10, 80, 180, 140);
     backgroundColor: #88cc44;
 }
 
-.simpleSampleMainButton {
-    bounds: size(160, 40);
+.simpleSampleButtonContainer UIButton {
+    backgroundImage: fadeout(white, 33%);
+}
+
+.simpleSampleMainButton1 {
+    frame: size(160, 30).top(10).left(10);
+    title: Top Button;
+    font: AvenirNextCondensed-UltraLight 22;
+}
+
+.simpleSampleMainButton2 {
+    bounds: size(160, 30);
     center: parent(0, 0);
-    cornerRadius: 6;
-    clipsToBounds: YES;
-    titleLabel.font: @stdFont2;
-    titleColor: white;
     titleColor(highlighted): #b300fd;
-    backgroundImage: @stdColor1;
-    backgroundImage(highlighted): #cccccc;
+    backgroundImage(highlighted): #d0d0d0;
     title: MainButton;
     transform: identity;
 }
 
-button.touched {
-    transform: rotate(180);
+.simpleSampleMainButton3 {
+    frame: size(160, 30).top(100).left(10);
+    title: Bottom Button;
+    font: HelveticaNeue-CondensedBold 14;
 }
 
+uibutton.touched {
+    transform: rotate(180);
+}
