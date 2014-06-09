@@ -21,7 +21,7 @@
 * Fixed problem with wildcard selectors not being recognized properly.
 * Fixed ordering issue with nested declarations in stylesheets.
 * Fixed problem with parsing font sizes with only one digit.
-* Fixed issue with quoted string propery values containing control characters.
+* Fixed issue with quoted string property values containing control characters.
 * Fixed broken cancellation of delayed calls to `applyStyling:` and `applyStylingWithAnimation:`.
 * Prevented possibility of recursive invocations to applyStyling for the same view from occuring.
 * Added missing builder method for `UIActivityIndicatorView` to `ISSViewBuilder`.
