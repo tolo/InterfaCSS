@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 0.9.3
+
+### Bug fixes
+* Fixed issue with image parsing using the `image("xxx")` format.
+
+
+
 ##Version 0.9.2
 
 ### New features & changes
@@ -45,7 +52,6 @@
 * Added suffix/prefix to all category methods (methods `UIView+InterfaCSS.h` now all have a "ISS" suffix).
 * Added new boolean attribute `add` to elements in view definition file, to enable/disable adding as subview to parent (default YES).
 * Added support for logging active styles for a view (`-[InterfaCSS logMatchingStyleDeclarationsForUIElement:]`).
-
 
 ### Bug fixes
 
