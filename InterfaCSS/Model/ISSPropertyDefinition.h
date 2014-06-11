@@ -24,6 +24,10 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
     ISSPropertyTypeEnumType,
 };
 
+/**
+ * Represents the definition of a property that can be declared in a stylesheet. This class is also the repository for all available property definitions
+ * supported by InterfaCSS.
+ */
 @interface ISSPropertyDefinition : NSObject
 
 @property (nonatomic, readonly) NSString* name;

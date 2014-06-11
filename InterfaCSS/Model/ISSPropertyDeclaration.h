@@ -11,6 +11,9 @@
 
 @class ISSPropertyDefinition;
 
+/**
+ * Represents the declaration of a property in a stylesheet, along with the declared value.
+ */
 @interface ISSPropertyDeclaration : NSObject<NSCopying>
 
 @property (nonatomic, readonly) NSString* prefix;

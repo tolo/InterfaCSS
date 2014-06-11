@@ -12,12 +12,24 @@
 @class ISSStyleSheet;
 @class ISSPropertyDefinition;
 
+/**
+ * Protocol for stylesheet parser implementations.
+ */
 @protocol ISSStyleSheetParser <NSObject>
 
+/**
+ * Parses the specified stylesheet data into an array of `ISSPropertyDeclarations` objects.
+ */
 - (NSMutableArray*) parse:(NSString*)styleSheetData;
 
+/**
+ * Transforms the specified value, using the specified propertyType.
+ */
 - (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType;
 
+/**
+ * Transforms the specified value, using the specified propertyDefinition.
+ */
 - (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
 
 @end

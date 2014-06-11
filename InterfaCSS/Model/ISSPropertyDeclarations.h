@@ -9,6 +9,9 @@
 
 @class ISSUIElementDetails;
 
+/**
+ * Represents a declaration block (or rule set) in a stylesheet.
+ */
 @interface ISSPropertyDeclarations : NSObject
 
 @property (nonatomic, readonly) NSArray* selectorChains;
