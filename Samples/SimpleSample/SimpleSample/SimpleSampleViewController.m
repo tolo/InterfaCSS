@@ -15,7 +15,6 @@
 #import <InterfaCSS.h>
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
-#import <InterfaCSS/ISSViewHierarchyParser.h>
 
 
 @interface SimpleSampleViewController ()
@@ -72,6 +71,15 @@
     
     self.contentTitleLabel.text = @"Content Main";
     self.contentSubtitleLabel.text = @"Content Sub";
+    
+    // Setup notification blocks to get notified when styles are applied to mainButton
+    self.mainButton.willApplyStylingBlockISS = ^(NSArray* styles) {
+        NSLog(@"Will apply styles to mainButton - %d properties", styles.count);
+        return styles;
+    };
+    self.mainButton.didApplyStylingBlockISS = ^(NSArray* styles) {
+        NSLog(@"Did apply styles to mainButton - %d properties", styles.count);
+    };
 }
 
 - (NSUInteger) supportedInterfaceOrientations {
