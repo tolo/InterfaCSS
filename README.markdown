@@ -300,22 +300,37 @@ A relative rect value can be created in these ways:
 * `parent(xOffset, yOffset)` - the center point in the superview, offset with the specifed offsets.
 
 
-Project status
---------------
+Project background and status
+-----------------------------
 
-The latest released version is currently 0.9.1 (0.9.2 is soon to be released). This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+### Background
+
+InterfaCSS emerged out of frustration with the shortcomings of the available Interface Building tools, one of the most important being the constant need to repeat yourself when it comes to styling of user interface elements. There had to be a better way.
+
+And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting in dark corners of various applications, finally has made a public appearance. During it's evolution into an open source project, other similar projects have popped up, although InterfaCSS still differes from most of them:
+
+* Property names are what you expect them to be and the list of supported properties is extensive
+* Powerful CSS support (selector chains, selector combinators, pseudo classes, nested declarations)
+* You're not only getting help with styling, but with layout as well
+
+
+### Status
+
+The latest released version is currently 0.9.3. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
 * Finalize basic feature set and public API.
 * Better unit test coverage.
-* Better documentation
-* Parser performance enhancements (some work has already been done here, but more can be done)
+* Better documentation.
+* Parser performance enhancements (some work has already been done here, but more can be done).
 
 And of couse - all feedback is most welcome!
 
 
-þetta er ágætis byrjun.
+
+*"þetta er ágætis byrjun."*
+
 
 
 License
