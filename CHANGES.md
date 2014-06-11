@@ -1,6 +1,14 @@
 #Changes
 
 
+##Version 0.9.4
+
+### New features & changes
+* Added support to UIView+InterfaCSS for getting notified when styles will be and have been applied for a view, via blocks (willApplyStylingBlockISS & didApplyStylingBlockISS).
+* Added flag useLenientSelectorParsing to class IntefaCSS, to allow for more lenient parsing of style class names (i.e. allow missing dot).
+* When autoresizingMask is set, the frame property will also be set to the superview bound or the screen bound if empty.
+
+
 ##Version 0.9.3
 
 ### Bug fixes
