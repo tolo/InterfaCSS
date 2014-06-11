@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'InterfaCSS'
-  s.version      = '0.9.3'
+  s.version      = '0.9.4'
   s.summary      = 'A fabulous CSS based styling and layout framework for iOS applications.'
   s.homepage     = 'https://github.com/tolo/InterfaCSS'
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
@@ -11,6 +11,7 @@ Pod::Spec.new do |s|
   }
   s.platform     = :ios, '6.0'
   s.source_files = 'InterfaCSS/**/*.{h,m}'
+  s.public_header_files = "InterfaCSS/InterfaCSS.h", "InterfaCSS/UI/*.h", "InterfaCSS/Model/ISSPropertyDefinition.h", "InterfaCSS/Model/ISSPropertyDeclaration.h", "InterfaCSS/Model/ISSStyleSheet.h", "InterfaCSS/Util/NSObject+ISSLogSupport.h"
   s.requires_arc = true
   s.frameworks   = ['UIKit', 'CoreGraphics', 'QuartzCore']
   s.dependency 'Parcoa', '~> 0.0.1'
