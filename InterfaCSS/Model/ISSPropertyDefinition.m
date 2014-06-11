@@ -84,6 +84,10 @@ static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
 }
 
+static ISSPropertyDefinition* peos(NSString* name, NSDictionary* enumValues, PropertySetterBlock setterBlock) {
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:setterBlock parameterEnumValues:nil];
+}
+
 static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSPropertyType type, PropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
                                       enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
@@ -498,10 +502,20 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSSet* viewProperties = [NSSet setWithArray:@[
             p(S(alpha), ISSPropertyTypeNumber),
             p(S(autoresizesSubviews), ISSPropertyTypeBool),
-            peo(S(autoresizingMask), @{ @"none" : @(UIViewAutoresizingNone), @"width" : @(UIViewAutoresizingFlexibleWidth), @"height" : @(UIViewAutoresizingFlexibleHeight),
+            peos(S(autoresizingMask), @{ @"none" : @(UIViewAutoresizingNone), @"width" : @(UIViewAutoresizingFlexibleWidth), @"height" : @(UIViewAutoresizingFlexibleHeight),
                                     @"bottom" : @(UIViewAutoresizingFlexibleBottomMargin), @"top" : @(UIViewAutoresizingFlexibleTopMargin),
-                                    @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"right" : @(UIViewAutoresizingFlexibleRightMargin)}
-            ),
+                                    @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"right" : @(UIViewAutoresizingFlexibleRightMargin)} ,
+                    ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+                if( [viewObject isKindOfClass:UIView.class] ) {
+                    UIView* v = viewObject;
+                    // If frame is not set - set it to parent or screen bounds before setting the autoresizing mask
+                    if( CGRectIsEmpty(v.frame) ) {
+                        if( v.superview ) v.frame = v.superview.bounds;
+                        else v.frame = [UIScreen mainScreen].bounds;
+                    }
+                    v.autoresizingMask = (UIViewAutoresizing)[value unsignedIntegerValue];
+                }
+            }),
             p(S(backgroundColor), ISSPropertyTypeColor),
             ps(S(bounds), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
                 if( [viewObject isKindOfClass:UIView.class] ) {
