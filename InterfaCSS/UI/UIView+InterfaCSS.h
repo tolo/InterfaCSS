@@ -8,6 +8,8 @@
 //
 
 
+#import "InterfaCSS.h"
+
 /**
  * UIView category that adds convenience methods for managing the style classes of a UI element.
  */
@@ -22,6 +24,16 @@
  * Represents the style class for the this view.
  */
 @property (nonatomic, strong) NSSet* styleClassesISS;
+
+/**
+ * Callback block for getting notified when styles will be applied to this view. Makes it possible to prevent some properties from being applied
+ */
+@property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlockISS;
+
+/**
+ * Callback block for getting notified when styles have been applied to this view. Makes it possible to for instance adjust property values or update dependent properties.
+ */
+@property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlockISS;
 
 
 /**

@@ -15,20 +15,15 @@
 @class ISSUIElementDetails;
 @class ISSPropertyDefinition;
 
+
+typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
+typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
+
+
 /** 
  * The heart, core and essence of InterfaCSS. Handles loading of stylesheets and keeps track of all style information.
  */
 @interface InterfaCSS : NSObject
-
-
-#pragma mark - Behavioural properties
-
-/**
- * Setting this flag to `YES` prevents "overwriting" of font and text color in attributed text of labels (and buttons) when styles are applied.
- * Default value is `NO`
- */
-@property (nonatomic) BOOL preventOverwriteOfAttributedTextAttributes;
-
 
 
 #pragma mark - Static methods
@@ -44,9 +39,31 @@
 + (void) clearResetAndUnload;
 
 
+
+#pragma mark - Behavioural properties
+
+/**
+ * Setting this flag to `YES` prevents "overwriting" of font and text color in attributed text of labels (and buttons) when styles are applied.
+ * Default value is `NO`
+ */
+@property (nonatomic) BOOL preventOverwriteOfAttributedTextAttributes;
+
+/**
+ * If this flag is set to `YES`, any type selector that don't match a valid UIKit type will instead be used as a style class selector. Default is `NO`.
+ */
+@property (nonatomic) BOOL useLenientSelectorParsing;
+
+
 #pragma mark - Properties
 
+/**
+ * All currently active stylesheets (`ISSStyleSheet`).
+ */
 @property (nonatomic, readonly, strong) NSMutableArray* styleSheets;
+
+/**
+ * The current stylesheet parser.
+ */
 @property (nonatomic, strong) id<ISSStyleSheetParser> parser;
 
 

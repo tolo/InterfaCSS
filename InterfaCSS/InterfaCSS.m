@@ -84,12 +84,12 @@ static InterfaCSS* singleton = nil;
 
 - (id) initInternal {
     if( (self = [super init]) ) {
-        self.styleSheets = [[NSMutableArray alloc] init];
-        self.styleSheetsVariables = [[NSMutableDictionary alloc] init];
+        _styleSheets = [[NSMutableArray alloc] init];
+        _styleSheetsVariables = [[NSMutableDictionary alloc] init];
 
-        self.trackedViews = [NSMapTable weakToStrongObjectsMapTable];
-        self.cachedStylesForViews = [NSMapTable weakToStrongObjectsMapTable];
-        self.prototypes = [[NSMutableDictionary alloc] init];
+        _trackedViews = [NSMapTable weakToStrongObjectsMapTable];
+        _cachedStylesForViews = [NSMapTable weakToStrongObjectsMapTable];
+        _prototypes = [[NSMutableDictionary alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
@@ -243,11 +243,15 @@ static InterfaCSS* singleton = nil;
 - (void) styleUIElement:(ISSUIElementDetails*)elementDetails {
     NSArray* styles = [self effectiveStylesForUIElement:elementDetails];
 
+    if( elementDetails.willApplyStylingBlock ) styles = elementDetails.willApplyStylingBlock(styles);
+
     for (ISSPropertyDeclaration* propertyDeclaration in styles) {
         if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
             ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
         }
     }
+
+    if( elementDetails.didApplyStylingBlock ) elementDetails.didApplyStylingBlock(styles);
 }
 
 

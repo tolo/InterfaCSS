@@ -11,9 +11,12 @@
 
 #import "InterfaCSS.h"
 #import "NSString+ISSStringAdditions.h"
+#import "ISSUIElementDetails.h"
 
 
 @implementation UIView (InterfaCSS)
+
+#pragma mark - Properties
 
 - (NSString*) styleClassISS {
     return [self.styleClassesISS anyObject];
@@ -31,6 +34,25 @@
 - (void) setStyleClassesISS:(NSSet*)classes {
     [self setStyleClassesISS:classes animated:NO];
 }
+
+- (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockISS {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].willApplyStylingBlock;
+}
+
+- (void) setWillApplyStylingBlockISS:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].willApplyStylingBlock = willApplyStylingBlock;
+}
+
+- (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockISS {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].didApplyStylingBlock;
+}
+
+- (void) setDidApplyStylingBlockISS:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].didApplyStylingBlock = didApplyStylingBlock;
+}
+
+
+#pragma mark - Methods
 
 - (void) scheduleApplyStylingISS {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO];
