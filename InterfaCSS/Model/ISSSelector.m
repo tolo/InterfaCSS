@@ -47,8 +47,13 @@
 
     if( typeClass || wildcardType || styleClass ) {
         return [[self alloc] initWithType:typeClass wildcardType:wildcardType class:styleClass pseudoClass:pseudoClass];
-    } else if( [type iss_hasData] && !typeClass && !wildcardType ) {
-        ISSLogWarning(@"Unrecognized type: %@", type);
+    } else if( [type iss_hasData] ) {
+        if( [InterfaCSS interfaCSS].useLenientSelectorParsing ) {
+            ISSLogWarning(@"Unrecognized type: %@ - using type as style class instead", type);
+            return [[self alloc] initWithType:nil wildcardType:NO class:type pseudoClass:pseudoClass];
+        } else {
+            ISSLogWarning(@"Unrecognized type: %@", type);
+        }
     }  else {
         ISSLogWarning(@"Invalid selector - type and style class missing!");
     }
