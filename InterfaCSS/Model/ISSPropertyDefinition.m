@@ -702,9 +702,12 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pe(S(baselineAdjustment), @{@"none" : @(UIBaselineAdjustmentNone), @"alignBaselines" : @(UIBaselineAdjustmentAlignBaselines),
                     @"alignCenters" : @(UIBaselineAdjustmentAlignCenters)}
             ),
-            pe(S(lineBreakMode), @{@"wordWrap" : @(NSLineBreakByWordWrapping), @"charWrap" : @(NSLineBreakByCharWrapping),
-                    @"clip" : @(NSLineBreakByClipping), @"truncateHead" : @(NSLineBreakByTruncatingHead), @"truncateTail" : @(NSLineBreakByTruncatingTail),
-                    @"truncateMiddle" : @(NSLineBreakByTruncatingMiddle)}
+            pe(S(lineBreakMode), @{@"wordWrap" : @(NSLineBreakByWordWrapping), @"wordWrapping" : @(NSLineBreakByWordWrapping),
+                    @"charWrap" : @(NSLineBreakByCharWrapping), @"charWrapping" : @(NSLineBreakByCharWrapping),
+                    @"clip" : @(NSLineBreakByClipping), @"clipping" : @(NSLineBreakByClipping),
+                    @"truncateHead" : @(NSLineBreakByTruncatingHead), @"truncatingHead" : @(NSLineBreakByTruncatingHead),
+                    @"truncateTail" : @(NSLineBreakByTruncatingTail), @"truncatingTail" : @(NSLineBreakByTruncatingTail),
+                    @"truncateMiddle" : @(NSLineBreakByTruncatingMiddle), @"truncatingMiddle" : @(NSLineBreakByTruncatingMiddle)}
             ),
             p(S(numberOfLines), ISSPropertyTypeNumber),
             p(S(preferredMaxLayoutWidth), ISSPropertyTypeNumber),

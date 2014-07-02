@@ -120,5 +120,6 @@
 
 .fullEnumNames {
     autoresizingMask: UIViewAutoresizingFlexibleWidth;
+    lineBreakMode: NSLineBreakByWordWrapping;
     titleColor(UIControlStateSelected): red;
 }

@@ -487,11 +487,14 @@
 }
 
 - (void) testFullEnumNames {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"titleColor"] fromStyleClass:@"fullEnumNames" getDeclarations:YES];
-    XCTAssertEqual(values.count, 2u, @"Unexpected value count");
+    NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"lineBreakMode", @"titleColor"] fromStyleClass:@"fullEnumNames" getDeclarations:YES];
+    XCTAssertEqual(values.count, 3u, @"Unexpected value count");
+
     [values[0] transformValueIfNeeded];
     XCTAssertEqualObjects([values[0] propertyValue], @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
-    XCTAssertEqualObjects([values[1] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
+    [values[1] transformValueIfNeeded];
+    XCTAssertEqualObjects([values[1] propertyValue], @(NSLineBreakByWordWrapping), @"Unexpected propety value");
+    XCTAssertEqualObjects([values[2] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
 }
 
 @end
