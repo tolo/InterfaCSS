@@ -22,6 +22,9 @@ typedef NS_OPTIONS(NSUInteger, ISSParentRelative) {
 
 
 CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
+CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
+
+#define ISS_SCALE [UIScreen mainScreen].scale
 
 
 @implementation ISSRectValue {
@@ -55,7 +58,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 
 + (ISSRectValue*) parentRelativeRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight {
     ISSRectValue* rectValue = [[self alloc] initWithType:ISSRectValueTypeParentRelative rect:CGRectMake(0, 0, size.width, size.height)
-                               insets:UIEdgeInsetsMake(CGFLOAT_MIN, CGFLOAT_MIN, CGFLOAT_MIN, CGFLOAT_MIN)];
+                               insets:UIEdgeInsetsMake(ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue)];
     if( relativeWidth || size.width == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeWidth;
     if( relativeHeight || size.height == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeHeight;
     return rectValue;
@@ -128,46 +131,43 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 
 
 - (CGFloat) relativeValue:(CGFloat)value parentValue:(CGFloat)parentValue relativeMaskValue:(ISSParentRelative)relativeMaskValue {
-    if( _parentRelativeMask & relativeMaskValue ) return parentValue * value / 100.0f;
+    if( _parentRelativeMask & relativeMaskValue ) return floorf(ISS_SCALE * parentValue * value / 100.0f) / ISS_SCALE;
     else return value;
 }
 
 - (CGRect) applySizeAndInsetsToParentRect:(CGRect)parentRect {
-    CGRect result = parentRect;
+    CGFloat width, height;
 
-    if( self.autoWidth ) result.size.width = parentRect.size.width;
-    else result.size.width = [self relativeValue:_rect.size.width parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeWidth];
-    if( self.autoHeight ) result.size.height = parentRect.size.height;
-    else result.size.height = [self relativeValue:_rect.size.height parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeHeight];
+    if( self.autoWidth ) width = parentRect.size.width;
+    else width = [self relativeValue:_rect.size.width parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeWidth];
+    if( self.autoHeight ) height = parentRect.size.height;
+    else height = [self relativeValue:_rect.size.height parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeHeight];
 
+    CGRect resultingRect = CGRectMake(0, 0, width, height);
+    UIEdgeInsets actualInsets = UIEdgeInsetsZero;
 
-    if( _insets.left != CGFLOAT_MIN ) {
-        result.origin.x = [self relativeValue:_insets.left parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeLeft];
-        if( self.autoWidth ) result.size.width -= result.origin.x; // Reduce width with inset amount when auto width is used
+    if( _insets.left != ISSRectValueNoValue ) {
+        CGFloat leftInset = [self relativeValue:_insets.left parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeLeft];
+        if( self.autoWidth ) actualInsets.left = leftInset;
+        else resultingRect.origin.x = leftInset;
     }
-    if( _insets.right != CGFLOAT_MIN ) {
-        CGFloat value = [self relativeValue:_insets.right parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeRight];
-        result.origin.x = parentRect.size.width - result.size.width - value;
-        if( self.autoWidth ) {
-            result.origin.x += value; // When auto width is used, right inset should not affect left/x value
-            result.size.width -= value; // Reduce width with inset amount when auto width is used
-        }
+    if( _insets.right != ISSRectValueNoValue ) {
+        CGFloat rightInset = [self relativeValue:_insets.right parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeRight];
+        if( self.autoWidth ) actualInsets.right = rightInset;
+        else resultingRect.origin.x += (parentRect.size.width - width - rightInset);
     }
-
-    if( _insets.top != CGFLOAT_MIN ) {
-        result.origin.y = [self relativeValue:_insets.top parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeTop];
-        if( self.autoHeight ) result.size.height -= result.origin.y; // Reduce height with inset amount when auto width is used
+    if( _insets.top != ISSRectValueNoValue ) {
+        CGFloat topInset = [self relativeValue:_insets.top parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeTop];
+        if( self.autoHeight ) actualInsets.top = topInset;
+        else resultingRect.origin.y = topInset;
     }
-    if( _insets.bottom != CGFLOAT_MIN ) {
-        CGFloat value = [self relativeValue:_insets.bottom parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeBottom];
-        result.origin.y = parentRect.size.height - result.size.height - value;
-        if( self.autoHeight ) {
-            result.origin.y += value; // When auto width is used, right inset should not affect top/y value
-            result.size.height -= value; // Reduce height with inset amount when auto width is used
-        }
+    if( _insets.bottom != ISSRectValueNoValue ) {
+        CGFloat bottomInset = [self relativeValue:_insets.bottom parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeBottom];
+        if( self.autoHeight ) actualInsets.bottom = bottomInset;
+        else resultingRect.origin.y += (parentRect.size.height - height - bottomInset);;
     }
 
-    return result;
+    return UIEdgeInsetsInsetRect(resultingRect, actualInsets);
 }
 
 - (CGRect) applyInsetsToParentRect:(CGRect)parentRect {
