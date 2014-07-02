@@ -17,6 +17,7 @@
 #import "ISSLazyValue.h"
 #import "NSDictionary+ISSDictionaryAdditions.h"
 #import "InterfaCSS.h"
+#import "NSAttributedString+ISSAdditions.h"
 
 
 @protocol NSValueTransformer
@@ -418,7 +419,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject isKindOfClass:UIButton.class] ) {
-            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [[viewObject currentAttributedTitle].string iss_hasData] ) {
+            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {
                 [viewObject titleLabel].font = value;
@@ -426,7 +427,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
         else if( [viewObject respondsToSelector:@selector(setFont:)] ) {
             if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
-                    && [[viewObject attributedText].string iss_hasData] ) {
+                    && [[viewObject attributedText] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {
                 [viewObject setFont:value];
@@ -438,7 +439,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     });
 
     PropertySetterBlock uiButtonTitleColorBlock = ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
-        if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] && [[viewObject currentAttributedTitle].string iss_hasData] ) {
+        if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] &&
+                [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
             ISSLogTrace(@"NOT setting titleColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
         } else {
             UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
@@ -452,7 +454,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
         else if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
             if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
-                                && [[viewObject attributedText].string iss_hasData] ) {
+                                && [[viewObject attributedText] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting textColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {
                 [viewObject setTextColor:value];

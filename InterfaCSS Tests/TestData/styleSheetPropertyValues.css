@@ -68,6 +68,11 @@
     bounds: left(50%).right(5);
 }
 
+.rect5 { // Automatic sizes with parent relative insets/positioning
+    frame: size(auto, auto).insets(10%, 20%, 30%, 40%);
+    bounds: size(auto, auto).top(10%).left(20%).bottom(30%).right(40%);
+}
+
 
 @font1: HelveticaNeue-Medium 14;
 .font1 {
@@ -111,4 +116,9 @@
 .imageColorFunctions {
     image: lighten(#112233, 50%);
     backgroundImage: saturate(fadeout(#112233, 50%), 50%);
+}
+
+.fullEnumNames {
+    autoresizingMask: UIViewAutoresizingFlexibleWidth;
+    titleColor(UIControlStateSelected): red;
 }

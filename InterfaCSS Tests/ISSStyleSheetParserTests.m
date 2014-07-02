@@ -349,6 +349,24 @@
     XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(100, 0, 95, 200)), @"Expected CGRect value of '{100, 0, 95, 200}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
 }
 
+- (void) testAutoRelativeRectPropertyValues2 {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect5"];
+    
+    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
+    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
+    [parent addSubview:view];
+    
+    id value = [values firstObject];
+    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
+    CGRect rect = [rectValue rectForView:view];
+    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(40, 20, 80, 120)), @"Expected CGRect value of '{40, 20, 80, 120}' for property frame, got: %@(%@)", NSStringFromCGRect(rect), value);
+    
+    value = [values lastObject];
+    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
+    rect = [rectValue rectForView:view];
+    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(40, 20, 80, 120)), @"Expected CGRect value of '{40, 20, 80, 120}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
+}
+
 - (void) testUIColorPropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"simple"];
     XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:128 G:128 B:128]);
@@ -466,6 +484,14 @@
     actual = [self colorOfFirstPixel:values[1]];
     expected = [[sourceColor iss_colorByIncreasingAlphaBy:-50.0f] iss_colorByIncreasingSaturationBy:50.0f];
     XCTAssertTrue([self compareColorWithTolerance:actual color2:expected], @"Unexpected color value for image");
+}
+
+- (void) testFullEnumNames {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"titleColor"] fromStyleClass:@"fullEnumNames" getDeclarations:YES];
+    XCTAssertEqual(values.count, 2u, @"Unexpected value count");
+    [values[0] transformValueIfNeeded];
+    XCTAssertEqualObjects([values[0] propertyValue], @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
+    XCTAssertEqualObjects([values[1] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
 }
 
 @end

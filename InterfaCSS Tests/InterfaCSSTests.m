@@ -135,23 +135,34 @@
     [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes = YES;
 
     UILabel* label = [[UILabel alloc] init];
+    UILabel* label2 = [[UILabel alloc] init];
     UIButton* button = [[UIButton alloc] init];
+    
+    UIFont* cssFont = [UIFont fontWithName:@"HelveticaNeue-Bold" size:10];
     UIFont* font = [UIFont fontWithName:@"Helvetica-Light" size:42];
     UIColor* color = [UIColor iss_colorWithHexString:@"112233"];
-    [button setTitleColor:color forState:UIControlStateNormal];
+    
+    // String without attributes should be unaffected by preventOverwriteOfAttributedTextAttributes flag
+    label2.attributedText = [[NSAttributedString alloc] initWithString:@"test2" attributes:@{}];
+    
     label.attributedText = [[NSAttributedString alloc] initWithString:@"test" attributes:@{NSFontAttributeName: font,
             NSForegroundColorAttributeName: color}];
+
+    [button setTitleColor:color forState:UIControlStateNormal];
     [button setAttributedTitle:label.attributedText forState:UIControlStateNormal];
 
     label.styleClassISS = @"attributedTextTest";
     [label applyStylingISS];
+    label2.styleClassISS = @"attributedTextTest";
+    [label2 applyStylingISS];
     button.styleClassISS = @"attributedTextTest";
     [button applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
     XCTAssertEqualObjects(label.font, font, @"Unexpected property value");
     XCTAssertEqualObjects(label.textColor, color, @"Unexpected property value");
-    XCTAssertEqual(button.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqualObjects(label2.font, cssFont, @"Unexpected property value");
+    XCTAssertEqual(button.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
     XCTAssertEqualObjects(button.titleLabel.font, font, @"Unexpected property value");
     XCTAssertEqualObjects(button.currentTitleColor, color, @"Unexpected property value");
 }
