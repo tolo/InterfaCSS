@@ -141,8 +141,7 @@ static NSDictionary* stringToPseudoClassType;
         case ISSPseudoClassTypeLastOfType: {
             NSInteger position, count;
             [elementDetails typeQualifiedPositionInParent:&position count:&count];
-            if( _pseudoClassType == ISSPseudoClassTypeNthOfType || _pseudoClassType == ISSPseudoClassTypeFirstOfType ) return [self matchesIndex:position count:count reverse:NO];
-            else return [self matchesIndex:position count:count reverse:YES];
+            return [self matchesIndex:position count:count reverse:(_pseudoClassType == ISSPseudoClassTypeNthLastOfType || _pseudoClassType == ISSPseudoClassTypeLastOfType)];
         }
         case ISSPseudoClassTypeOnlyOfType: {
             NSInteger position, count;

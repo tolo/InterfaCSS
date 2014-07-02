@@ -172,7 +172,7 @@
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @".class1",
                                                                             @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
-                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)",
+                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx uilabel:lastoftype",
                                                                             @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
     
     for (ISSPropertyDeclarations* d in result) {
@@ -184,7 +184,7 @@
         
         ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
         [decl transformValueIfNeeded];
-        if( decl && [decl.propertyValue isEqual:@(1)] ) {
+        if( decl && [decl.propertyValue isEqual:@(0.666f)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
                 [expectedSelectors removeObject:selectorDescription];
             } else {

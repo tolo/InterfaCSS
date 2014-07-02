@@ -1,5 +1,5 @@
 /* Variables: */
-@variable: 1;
+@variable: 0.666;
 
 // Type selector
 uilabel {
@@ -8,61 +8,72 @@ uilabel {
 
 // Type+class selector
 uilabel.class1 {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 // Class selector
 .class1 {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 // Descendant selector chain
 uiview .class1 .class2 {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 // Child/sibling selector chain
 uiview > .class1 + .class2 ~ .class3 {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 // Multiple selector (chains)
 uilabel, uilabel.class1, .class1, uiview .class1 .class2 {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 // Nested declarations
 uiview {
-    alpha: 1;
+    alpha: 0.666;
     .classN1 {
-        alpha: 1;
+        alpha: 0.666;
         .classN2 {
-            alpha: 1;
+            alpha: 0.666;
         }
     }
 }
 
 // Pseudo classes
 uiview:onlychild {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 uiview:nthchild(2n+1) {
-    alpha: 1;
+    alpha: 0.666;
 }
 
+uiview uilabel:first-of-type {
+    alpha: 0.666;
+}
+
+uiview.classx {
+    uilabel:last-of-type {
+        alpha: 0.666;
+    }
+}
+
+// Wildcard selectors
 * uiview {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 * uiview * {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 uiview * {
-    alpha: 1;
+    alpha: 0.666;
 }
 
 uiview * uiview {
-    alpha: 1;
+    alpha: 0.666;
 }

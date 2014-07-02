@@ -136,16 +136,97 @@
     [self doTestSibling:NO];
 }
 
-- (void) testFirstChild {
-    UILabel* label = [[UILabel alloc] init];
-    [rootView addSubview:label];
-    [label addStyleClassISS:@"childClass"];
+- (void) assertDescendantPseudo:(UILabel*)label pseudoClassType:(ISSPseudoClassType)pseudoClassType a:(NSInteger)a b:(NSInteger)b message:(NSString*)message {
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
-    
-    ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:0 b:1 type:ISSPseudoClassTypeNthChild];
-    
+    ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:a b:b type:pseudoClassType];
+
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:pseudo];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails], @"Descendant first child selector chain must match!");
+    XCTAssertTrue([descendantChain matchesElement:labelDetails], @"%@", message);
+}
+
+- (void) doTestNthChild:(BOOL)ofType {
+    ISSPseudoClassType pseudoClassType = ofType ? ISSPseudoClassTypeNthOfType : ISSPseudoClassTypeNthChild;
+
+    NSMutableArray* labels = [NSMutableArray array];
+    for(NSUInteger i=0; i<5; i++) {
+        labels[i] = [[UILabel alloc] init];
+        [rootView addSubview:labels[i]];
+        [labels[i] addStyleClassISS:@"childClass"];
+
+        if( ofType ) {
+            [rootView addSubview:[[UIButton alloc] init]];
+            if( i == 0 ) {
+                // Test only of type
+                [self assertDescendantPseudo:labels[0] pseudoClassType:ISSPseudoClassTypeOnlyOfType a:0 b:1 message:@"Descendant only of type pseudo selector chain must match!"];
+            }
+        }
+        else if( i == 0 ) {
+            // Test only child
+            [self assertDescendantPseudo:labels[0] pseudoClassType:ISSPseudoClassTypeOnlyChild a:0 b:1 message:@"Descendant only child pseudo selector chain must match!"];
+        }
+    }
+
+    // First child - same logic applies for ISSPseudoClassTypeNthChild/ISSPseudoClassTypeFirstChild and ISSPseudoClassTypeFirstOfType/ISSPseudoClassTypeNthOfType
+    [self assertDescendantPseudo:labels[0] pseudoClassType:pseudoClassType a:0 b:1 message:@"Descendant first child pseudo selector chain must match!"];
+
+    // 5th child
+    [self assertDescendantPseudo:labels[4] pseudoClassType:pseudoClassType a:0 b:5 message:@"Descendant nth child (5) pseudo selector chain must match!"];
+
+    // Odd child
+    [self assertDescendantPseudo:labels[0] pseudoClassType:pseudoClassType a:2 b:1 message:@"Descendant odd child (first) pseudo selector chain must match!"];
+    [self assertDescendantPseudo:labels[2] pseudoClassType:pseudoClassType a:2 b:1 message:@"Descendant odd child (third) pseudo selector chain must match!"];
+
+    // Even child
+    [self assertDescendantPseudo:labels[1] pseudoClassType:pseudoClassType a:2 b:0 message:@"Descendant even child (second) pseudo selector chain must match!"];
+    [self assertDescendantPseudo:labels[3] pseudoClassType:pseudoClassType a:2 b:0 message:@"Descendant even child (fourth) pseudo selector chain must match!"];
+}
+
+- (void) testNthChild {
+    [self doTestNthChild:NO];
+}
+
+- (void) testNthChildOfType {
+    [self doTestNthChild:YES];
+}
+
+- (void) doTestNthLastChild:(BOOL)ofType {
+    ISSPseudoClassType pseudoClassType = ofType ? ISSPseudoClassTypeNthLastOfType : ISSPseudoClassTypeNthLastChild;
+
+    NSMutableArray* labels = [NSMutableArray array];
+    for(NSUInteger i=0; i<5; i++) {
+        labels[i] = [[UILabel alloc] init];
+        [rootView addSubview:labels[i]];
+        [labels[i] addStyleClassISS:@"childClass"];
+        if( ofType ) [rootView addSubview:[[UIButton alloc] init]];
+    }
+
+    // Last child
+    [self assertDescendantPseudo:labels[4] pseudoClassType:pseudoClassType a:0 b:1 message:@"Descendant last child pseudo selector chain must match!"];
+
+    // 5th last child
+    [self assertDescendantPseudo:labels[0] pseudoClassType:pseudoClassType a:0 b:5 message:@"Descendant nth last child (5) pseudo selector chain must match!"];
+}
+
+- (void) testNthLastChild {
+    [self doTestNthLastChild:NO];
+}
+
+- (void) testNthLastChildOfType {
+    [self doTestNthLastChild:YES];
+}
+
+- (void) testEmpty {
+    ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:rootView];
+    ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
+
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:@"parentClass" pseudoClass:pseudo];
+
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector]];
+
+    XCTAssertTrue([chain matchesElement:viewDetails], @"Empty structural pseudo class selector must match empty root view!");
+
+    [rootView addSubview:[[UIButton alloc] init]];
+    XCTAssertTrue(![chain matchesElement:viewDetails], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
 }
 
 - (void) testWildcardSelectorFirst {
