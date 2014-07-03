@@ -1,12 +1,25 @@
 #Changes
 
 
+##Version 0.9.5
+
+### New features & changes
+* Full UIKit enum names (i.e. `UIViewAutoresizingFlexibleWidth`) are now supported alongside short versions (i.e. `width`).
+* Added possibility to disable/enable styling for a UI element, using the methods `disableStylingISS` and `enableStylingISS` in `UIView+InterfaCSS`.
+
+### Bug fixes
+* Fixed issue with preventOverwriteOfAttributedTextAttributes flag not checking the presence of attributed text correctly.
+* Updated supported enum values for `lineBreakMode` to be more in line with `NSLineBreakMode` enum type (i.e. added `wordWrapping`, `charWrapping`, `clipping`, `truncatingHead`, `truncatingTail`, `truncatingMiddle`).
+
+
+
 ##Version 0.9.4
 
 ### New features & changes
-* Added support to UIView+InterfaCSS for getting notified when styles will be and have been applied for a view, via blocks (willApplyStylingBlockISS & didApplyStylingBlockISS).
-* Added flag useLenientSelectorParsing to class IntefaCSS, to allow for more lenient parsing of style class names (i.e. allow missing dot).
+* Added support to `UIView+InterfaCSS for getting notified when styles will be and have been applied for a view, via blocks (`willApplyStylingBlockISS` & `didApplyStylingBlockISS).
+* Added flag useLenientSelectorParsing to class InterfaCSS, to allow for more lenient parsing of style class names (i.e. allow missing dot).
 * When autoresizingMask is set, the frame property will also be set to the superview bound or the screen bound if empty.
+
 
 
 ##Version 0.9.3
