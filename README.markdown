@@ -105,6 +105,12 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
     * Enable more verbose logging by invoking `[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];` defined in [`NSObject+ISSLogSupport.h`](InterfaCSS/Util/NSObject+ISSLogSupport.h)
 
+* If you need more control over how/when styling is applied, have a look at these properties and methods in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h):
+    * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31)
+    * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36)
+    * [`disableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L110)
+    * [`enableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L115)
+
 
 ###Setup automatic css reload during development
 
@@ -316,7 +322,7 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.3. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.5. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
@@ -325,7 +331,7 @@ This is what must happen before version 1.0:
 * Better documentation.
 * Parser performance enhancements (some work has already been done here, but more can be done).
 
-And of couse - all feedback is most welcome!
+And of course - all feedback is most welcome!
 
 
 
