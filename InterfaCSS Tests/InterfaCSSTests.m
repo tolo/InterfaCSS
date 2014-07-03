@@ -167,4 +167,32 @@
     XCTAssertEqualObjects(button.currentTitleColor, color, @"Unexpected property value");
 }
 
+- (void) testDisableStyling {
+    UIView* root = [[UIView alloc] init];
+    root.styleClassISS = @"disabledStylingTest";
+    UILabel* label = [[UILabel alloc] init];
+    [root addSubview:label];
+
+    // Call applyStylingISS and verify that values have been read from CSS
+    [root applyStylingISS];
+    XCTAssertEqual(root.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+
+    // Disable styling and change alpha values
+    [root disableStylingISS];
+    root.alpha = 0.666f;
+    label.alpha = 0.666f;
+
+    // Call applyStylingISS and verify that values didn't change
+    [root applyStylingISS];
+    XCTAssertEqual(root.alpha, 0.666f, @"Unexpected property value");
+    XCTAssertEqual(label.alpha, 0.666f, @"Unexpected property value");
+
+    // Re-enable styling and verify that values revert back to those in CSS
+    [root enableStylingISS];
+    [root applyStylingISS];
+    XCTAssertEqual(root.alpha, 0.5f, @"Unexpected property value");
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+}
+
 @end

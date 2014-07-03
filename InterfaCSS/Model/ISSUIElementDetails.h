@@ -27,6 +27,8 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 @property (nonatomic, strong) NSSet* styleClasses;
 @property (nonatomic) BOOL stylesCacheable;
 
+@property (nonatomic) BOOL stylingDisabled;
+
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlock;
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlock;
 

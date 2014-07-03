@@ -100,4 +100,18 @@
  */
 - (void) applyStylingWithAnimationISS;
 
+/**
+ * Disables styling of this view, i.e. InterfaCSS will stop applying styling information to this view and it's children, but any styles that
+ * have already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS, and then take control
+ * of the styling manually, without the risk of InterfaCSS overwriting any modified properties.
+ *
+ * Call `enabledStylingISS` to re-enable styling.
+ */
+- (void) disableStylingISS;
+
+/**
+ * Re-enables styling of this view.
+ */
+- (void) enableStylingISS;
+
 @end

@@ -111,4 +111,12 @@
     [self applyStylingWithAnimationISS:NO];
 }
 
+- (void) disableStylingISS {
+    [[InterfaCSS interfaCSS] setStylingEnabled:NO forUIElement:self];
+}
+
+- (void) enableStylingISS {
+    [[InterfaCSS interfaCSS] setStylingEnabled:YES forUIElement:self];
+}
+
 @end

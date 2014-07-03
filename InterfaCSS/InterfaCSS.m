@@ -331,7 +331,13 @@ static InterfaCSS* singleton = nil;
             [self clearCachedStylesForUIElement:view];
             uiElementDetails.parentView = view.superview;
         }
-        
+
+        // If styling is disabled for element - abort styling of whole sub tre
+        if( uiElementDetails.stylingDisabled ) {
+            ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
+            return;
+        }
+
         [self styleUIElement:uiElementDetails];
 
         if( includeSubViews ) {
@@ -374,6 +380,12 @@ static InterfaCSS* singleton = nil;
     [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionLayoutSubviews animations:^() {
         [self applyStyling:uiElement includeSubViews:includeSubViews];
     } completion:nil];
+}
+
+- (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    uiElementDetails.stylingDisabled = !enabled;
+    if( enabled ) [self scheduleApplyStyling:uiElement animated:NO];
 }
 
 

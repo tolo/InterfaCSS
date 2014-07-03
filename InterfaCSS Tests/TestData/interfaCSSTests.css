@@ -72,3 +72,11 @@
     font: HelveticaNeue-Bold 10;
     textColor: #998877;
 }
+
+UIView.disabledStylingTest {
+    alpha: 0.5;
+
+    UILabel {
+        alpha: 0.5;
+    }
+}

@@ -99,6 +99,13 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
+/**
+ * Disables or re-enables styling of this view. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to this view and it's children,
+ * but any styles that have already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS,
+ * and then take control of the styling manually, without the risk of InterfaCSS overwriting any modified properties.
+ */
+- (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement;
+
 
 #pragma mark - Style classes
 
