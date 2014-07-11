@@ -1,6 +1,17 @@
 #Changes
 
 
+##Version 0.9.6
+
+### New features & changes
+* Updated caching of styles to be more performant.
+* Styles are now only applied to a UI element if not already applied, or if there has been a change in stylesheets or style classes etc.
+* Slight change in meaning of parameter in method `applyStylingISS:` in `UIView+InterfaCSS` from "clear cached styles" to "force styles to always be applied".
+* Added method `clearCachedStylesISS` to `UIView+InterfaCSS` (to compensate for above change).
+* Added BOOL return type to add/remove style class methods in `UIView+InterfaCSS`, to indicate success.
+
+
+
 ##Version 0.9.5
 
 ### New features & changes
@@ -16,7 +27,7 @@
 ##Version 0.9.4
 
 ### New features & changes
-* Added support to `UIView+InterfaCSS for getting notified when styles will be and have been applied for a view, via blocks (`willApplyStylingBlockISS` & `didApplyStylingBlockISS).
+* Added support to `UIView+InterfaCSS` for getting notified when styles will be and have been applied for a view, via blocks (`willApplyStylingBlockISS` & `didApplyStylingBlockISS).
 * Added flag useLenientSelectorParsing to class InterfaCSS, to allow for more lenient parsing of style class names (i.e. allow missing dot).
 * When autoresizingMask is set, the frame property will also be set to the superview bound or the screen bound if empty.
 
