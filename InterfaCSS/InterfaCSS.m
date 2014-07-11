@@ -330,7 +330,7 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) clearAllCachedStyles {
-    ISSLogDebug(@"Clearing all cached styles");
+    ISSLogTrace(@"Clearing all cached styles");
     [self.cachedStyleDeclarationsForViews removeAllObjects];
     for(ISSUIElementDetails* details in [self.trackedViews objectEnumerator]) {
         [details resetCachedData];

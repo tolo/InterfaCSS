@@ -131,15 +131,15 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
         [self.class buildElementStyleIdentityPath:identityPath element:self];
         path = [identityPath copy];
         if( self.parentView && self.parentView.window ) {
-            self.elementStyleIdentity = path;
+            _elementStyleIdentity = path;
         }
     }
     return path;
 }
 
 - (NSMutableDictionary*) additionalDetails {
-    if( !self.additionalDetails ) self.additionalDetails = [[NSMutableDictionary alloc] init];
-    return self.additionalDetails;
+    if( !_additionalDetails ) _additionalDetails = [[NSMutableDictionary alloc] init];
+    return _additionalDetails;
 }
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count {
