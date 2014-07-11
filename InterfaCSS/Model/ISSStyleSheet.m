@@ -40,7 +40,7 @@
     ISSLogTrace(@"Getting styles for %@:", elementDetails.uiElement);
 
     for(ISSPropertyDeclarations* declarations in _declarations) {
-        if ( [declarations matchesElement:elementDetails] ) {
+        if ( [declarations matchesElement:elementDetails ignoringPseudoClasses:NO] ) {
             ISSLogTrace(@"Matching declarations: %@", declarations);
             [styles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
         }
@@ -49,10 +49,13 @@
     return styles;
 }
 
-- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails {
+- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+    ISSLogTrace(@"Getting matching declarations for %@:", elementDetails.uiElement);
+
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
     for(ISSPropertyDeclarations* declarations in _declarations) {
-        if ( [declarations matchesElement:elementDetails] ) {
+        if ( [declarations matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) {
+            ISSLogTrace(@"Matching declarations: %@", declarations);
             [matchingDeclarations addObject:declarations];
         }
     }

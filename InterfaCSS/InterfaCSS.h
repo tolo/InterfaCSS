@@ -13,7 +13,6 @@
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
 @class ISSUIElementDetails;
-@class ISSPropertyDefinition;
 
 
 typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
@@ -75,9 +74,14 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) clearCachedStylesForUIElement:(id)uiElement;
 
 /**
- * Schedules styling of the specified UI object, i.e.
+ * Schedules styling of the specified UI object.
  */
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated;
+
+/**
+ * Schedules styling of the specified UI object.
+ */
+- (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force;
 
 /**
  * Applies styling of the specified UI object.
@@ -90,6 +94,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
 /**
+ * Applies styling of the specified UI object.
+ */
+- (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force;
+
+/**
  * Applies styling of the specified UI object in an animation block.
  */
 - (void) applyStylingWithAnimation:(id)uiElement;
@@ -98,6 +107,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  * Applies styling of the specified UI object in an animation block.
  */
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews;
+
+/**
+ * Applies styling of the specified UI object in an animation block.
+ */
+- (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force;
 
 /**
  * Disables or re-enables styling of this view. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to this view and it's children,

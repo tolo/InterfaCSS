@@ -68,10 +68,12 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
  
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails], @"Descendant selector chain must match!");
+    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must match!");
     
     ISSSelectorChain* childChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorChild childPseudoClass:nil];
-    XCTAssertFalse([childChain matchesElement:labelDetails], @"Child selector chain must NOT match!");
+    XCTAssertFalse([childChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Child selector chain must NOT match!");
+    
+    XCTAssertFalse(childChain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) testInvalidDescendant {
@@ -85,7 +87,7 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertFalse([descendantChain matchesElement:labelDetails], @"Descendant selector chain must NOT match label with other parent!");
+    XCTAssertFalse([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must NOT match label with other parent!");
 }
 
 - (void) testChildAndDescendant {
@@ -95,10 +97,12 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails], @"Descendant selector chain must match!");
+    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must match!");
     
     ISSSelectorChain* childChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorChild childPseudoClass:nil];
-    XCTAssertTrue([childChain matchesElement:labelDetails], @"Child selector chain must match!");
+    XCTAssertTrue([childChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Child selector chain must match!");
+    
+    XCTAssertFalse(childChain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) doTestSibling:(BOOL)adjacent {
@@ -121,11 +125,13 @@
     ISSSelector* labelSelector = [ISSSelector selectorWithType:@"uilabel" class:@"labelClass" pseudoClass:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[buttonSelector, @(ISSSelectorCombinatorAdjacentSibling), labelSelector]];
     
-    if( adjacent ) XCTAssertTrue([chain matchesElement:labelDetails], @"Adjacent sibling selector chain must match!");
-    else XCTAssertFalse([chain matchesElement:labelDetails], @"Adjacent sibling selector chain must NOT match!");
+    if( adjacent ) XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Adjacent sibling selector chain must match!");
+    else XCTAssertFalse([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Adjacent sibling selector chain must NOT match!");
     
     chain = [ISSSelectorChain selectorChainWithComponents:@[buttonSelector, @(ISSSelectorCombinatorGeneralSibling), labelSelector]];
-    XCTAssertTrue([chain matchesElement:labelDetails], @"General sibling selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"General sibling selector chain must match!");
+    
+    XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) testAdjacentSibling {
@@ -141,7 +147,8 @@
     ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:a b:b type:pseudoClassType];
 
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:pseudo];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails], @"%@", message);
+    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"%@", message);
+    XCTAssertTrue(descendantChain.hasPseudoClassSelector, @"Expected selector chain to report having pseudo class");
 }
 
 - (void) doTestNthChild:(BOOL)ofType {
@@ -223,10 +230,12 @@
 
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector]];
 
-    XCTAssertTrue([chain matchesElement:viewDetails], @"Empty structural pseudo class selector must match empty root view!");
+    XCTAssertTrue([chain matchesElement:viewDetails ignoringPseudoClasses:NO], @"Empty structural pseudo class selector must match empty root view!");
 
     [rootView addSubview:[[UIButton alloc] init]];
-    XCTAssertTrue(![chain matchesElement:viewDetails], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
+    XCTAssertTrue(![chain matchesElement:viewDetails ignoringPseudoClasses:NO], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
+    
+    XCTAssertTrue(chain.hasPseudoClassSelector, @"Expected selector chain to report having pseudo class");
 }
 
 - (void) testWildcardSelectorFirst {
@@ -239,7 +248,9 @@
     [label addStyleClassISS:@"childClass"];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    
+    XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) testWildcardSelectorMiddle {
@@ -254,7 +265,9 @@
     [label addStyleClassISS:@"childClass"];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    
+    XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) testWildcardSelectorLast {
@@ -266,7 +279,9 @@
     [rootView addSubview:label];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    
+    XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 - (void) testWildcardSelectorFirstAndLast {
@@ -279,7 +294,9 @@
     [rootView addSubview:label];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    
+    XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
 
 @end

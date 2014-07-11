@@ -64,7 +64,7 @@
     return [[self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType class:self.styleClass pseudoClass:self.pseudoClass];
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     // TYPE
     BOOL match = !self.type || _wildcardType;
     if( !match ) {
@@ -77,7 +77,7 @@
     }
 
     // PSEUDO CLASS
-    if( match && self.pseudoClass ) {
+    if( !ignorePseudoClasses && match && self.pseudoClass ) {
         match = [self.pseudoClass matchesElement:elementDetails];
     }
 

@@ -22,11 +22,14 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 @property (nonatomic, weak, readonly) id uiElement;
 @property (nonatomic, weak, readonly) UIView* view;
 @property (nonatomic, weak) UIView* parentView;
+@property (nonatomic, readonly) BOOL addedToViewHierarchy;
+
+@property (nonatomic, strong, readonly) NSString* elementStyleIdentity;
 
 @property (nonatomic, weak) Class canonicalType;
 @property (nonatomic, strong) NSSet* styleClasses;
-@property (nonatomic) BOOL stylesCacheable;
 
+@property (nonatomic) BOOL stylingApplied;
 @property (nonatomic) BOOL stylingDisabled;
 
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlock;
@@ -34,7 +37,12 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 
 @property (nonatomic, strong, readonly) NSMutableDictionary* additionalDetails;
 
+
 - (id) initWithUIElement:(id)uiElement;
+
+- (void) resetCachedData;
+
+- (void) setCustomElementStyleIdentity:(NSString*)identityPath;
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count;
 

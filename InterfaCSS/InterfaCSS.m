@@ -38,8 +38,8 @@ static InterfaCSS* singleton = nil;
 
 @property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
 
-@property (nonatomic, strong) NSMapTable* cachedStylesForViews; // UIView (weak reference) -> NSDictionary
-@property (nonatomic, strong) NSMapTable* trackedViews; // UIView (weak reference) -> ViewProperties
+@property (nonatomic, strong) NSMapTable* cachedStyleDeclarationsForViews; // UIView (weak reference) -> NSMutableArray
+@property (nonatomic, strong) NSMapTable* trackedViews; // UIView (weak reference) -> ISSUIElementDetails
 
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
 
@@ -72,7 +72,7 @@ static InterfaCSS* singleton = nil;
     [singleton.styleSheets removeAllObjects];
     [singleton.styleSheetsVariables removeAllObjects];
     [singleton.trackedViews removeAllObjects];
-    [singleton.cachedStylesForViews removeAllObjects];
+    [singleton.cachedStyleDeclarationsForViews removeAllObjects];
     [singleton.prototypes removeAllObjects];
 
     [singleton disableAutoRefreshTimer];
@@ -88,7 +88,7 @@ static InterfaCSS* singleton = nil;
         _styleSheetsVariables = [[NSMutableDictionary alloc] init];
 
         _trackedViews = [NSMapTable weakToStrongObjectsMapTable];
-        _cachedStylesForViews = [NSMapTable weakToStrongObjectsMapTable];
+        _cachedStyleDeclarationsForViews = [NSMapTable weakToStrongObjectsMapTable];
         _prototypes = [[NSMutableDictionary alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
@@ -108,7 +108,7 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) memoryWarning:(NSNotification*)notification {
-    [self.cachedStylesForViews removeAllObjects];
+    [self.cachedStyleDeclarationsForViews removeAllObjects];
 }
 
 
@@ -213,45 +213,88 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) refreshStyling {
-    [self.cachedStylesForViews removeAllObjects];
+    [self clearAllCachedStyles];
     if( self.keyWindow ) [self applyStyling:self.keyWindow];
 }
 
-- (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails {
-    // Get view styles from cache
-    NSMutableArray* viewStyles = elementDetails.stylesCacheable ? [self.cachedStylesForViews objectForKey:elementDetails.uiElement] : nil;
+- (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails force:(BOOL)force {
+    // Get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
+    // This makes it possible to reuse identical style information in sibling elements for instance.
+    NSMutableArray* cachedDeclarations = [self.cachedStyleDeclarationsForViews objectForKey:elementDetails.elementStyleIdentity];
     
-    if ( !viewStyles ) {
+    if ( !cachedDeclarations ) {
+        ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentity);
+
+        elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been clear, to make sure element is re-styled
+
         // Otherwise - build styles
-        viewStyles = [[NSMutableArray alloc] init];
+        cachedDeclarations = [[NSMutableArray alloc] init];
 
         for (ISSStyleSheet* styleSheet in self.styleSheets) {
             if( styleSheet.active ) {
-                NSArray* styleSheetStyles = [styleSheet stylesForElement:elementDetails];
-                if ( styleSheetStyles ) {
-                    [viewStyles iss_addAndReplaceUniqueObjectsInArray:styleSheetStyles];
+                // Find all matching (or potentially matching) style declarations
+                NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:YES];
+                if ( styleSheetDeclarations ) {
+                    [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
                 }
             }
         }
 
-        if( elementDetails.stylesCacheable ) [self.cachedStylesForViews setObject:viewStyles forKey:elementDetails.uiElement];
-    }
-
-    return viewStyles;
-}
-
-- (void) styleUIElement:(ISSUIElementDetails*)elementDetails {
-    NSArray* styles = [self effectiveStylesForUIElement:elementDetails];
-
-    if( elementDetails.willApplyStylingBlock ) styles = elementDetails.willApplyStylingBlock(styles);
-
-    for (ISSPropertyDeclaration* propertyDeclaration in styles) {
-        if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
-            ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
+        // Only add declarations to cache if element is fully added to the view hierarchy
+        if( elementDetails.addedToViewHierarchy ) {
+            [self.cachedStyleDeclarationsForViews setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentity];
+        } else {
+            ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentity);
         }
     }
 
-    if( elementDetails.didApplyStylingBlock ) elementDetails.didApplyStylingBlock(styles);
+    if( !force && elementDetails.stylingApplied ) {
+        ISSLogTrace(@"Styles aleady applied for '%@'", elementDetails.elementStyleIdentity);
+        return nil; // Current styling information has already been applied
+    } else {
+        ISSLogTrace(@"Processing style declarations for '%@'", elementDetails.elementStyleIdentity);
+
+        // Process declarations to see which styles currently match
+        BOOL hasPseudoClass = NO;
+        NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
+        for (ISSPropertyDeclarations* declarations in cachedDeclarations) {
+            // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
+            if ( !declarations.containsPseudoClassSelector || [declarations matchesElement:elementDetails ignoringPseudoClasses:NO] ) {
+                [viewStyles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
+            }
+
+            hasPseudoClass = hasPseudoClass || declarations.containsPseudoClassSelector;
+        }
+
+        // Set 'stylingApplied' flag only if there are no pseudo classes in declarations, in which case declarations need to be evaluated every time
+        if( !hasPseudoClass && elementDetails.addedToViewHierarchy ) {
+            elementDetails.stylingApplied = YES;
+        } else {
+            ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentity);
+        }
+
+        return viewStyles;
+    }
+}
+
+- (void) styleUIElement:(ISSUIElementDetails*)elementDetails force:(BOOL)force {
+    NSArray* styles = [self effectiveStylesForUIElement:elementDetails force:force];
+
+    if( styles ) { // If 'styles' is nil, current styling information has already been applied
+        if ( elementDetails.willApplyStylingBlock ) {
+            styles = elementDetails.willApplyStylingBlock(styles);
+        }
+
+        for (ISSPropertyDeclaration* propertyDeclaration in styles) {
+            if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
+                ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
+            }
+        }
+
+        if ( elementDetails.didApplyStylingBlock ) {
+            elementDetails.didApplyStylingBlock(styles);
+        }
+    }
 }
 
 
@@ -259,18 +302,26 @@ static InterfaCSS* singleton = nil;
 
 #pragma mark - Styling
 
-- (ISSUIElementDetails*) detailsForUIElement:(id)uiElement {
+- (ISSUIElementDetails*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
     ISSUIElementDetails* details = [self.trackedViews objectForKey:uiElement];
-    if( !details ) {
+    if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
         [self.trackedViews setObject:details forKey:uiElement];
     }
     return details;
 }
 
+- (ISSUIElementDetails*) detailsForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement create:YES];
+}
+
 - (void) clearCachedStylesForUIElement:(id)uiElement {
-    [self.cachedStylesForViews removeObjectForKey:uiElement];
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
+    if( uiElementDetails ) ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
+
+    [self.cachedStyleDeclarationsForViews removeObjectForKey:uiElementDetails.elementStyleIdentity];
+    [uiElementDetails resetCachedData];
 
     UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
     for(UIView* subView in view.subviews) {
@@ -278,11 +329,30 @@ static InterfaCSS* singleton = nil;
     }
 }
 
+- (void) clearAllCachedStyles {
+    ISSLogDebug(@"Clearing all cached styles");
+    [self.cachedStyleDeclarationsForViews removeAllObjects];
+    for(ISSUIElementDetails* details in [self.trackedViews objectEnumerator]) {
+        [details resetCachedData];
+    }
+}
+
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated {
+    [self scheduleApplyStyling:uiElement animated:animated force:NO];
+}
+
+- (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
+    if( uiElementDetails && uiElementDetails.stylingDisabled ) return;
+
     if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
-        [self applyStyling:uiElement];
+        [self applyStyling:uiElement includeSubViews:YES force:YES];
+    } else if( animated && force ) {
+        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimationAndForce:) withObject:uiElement afterDelay:0];
     } else if( animated ) {
         [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
+    } else if( force ) {
+        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithForce:) withObject:uiElement afterDelay:0];
     } else {
         [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
     }
@@ -293,18 +363,26 @@ static InterfaCSS* singleton = nil;
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithAnimation:) object:uiElement];
 }
 
+- (void) applyStylingWithForce:(id)uiElement {
+    [self applyStyling:uiElement includeSubViews:YES force:YES];
+}
+
 - (void) applyStyling:(id)uiElement {
     [self applyStyling:uiElement includeSubViews:YES];
 }
 
-// Main styling method
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    [self applyStyling:uiElement includeSubViews:includeSubViews force:NO];
+}
+
+// Main styling method
+- (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
 
     if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
         @try {
             uiElementDetails.beingStyled = YES;
-            [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews];
+            [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews force:force];
         }
         @finally {
             uiElementDetails.beingStyled = NO;
@@ -315,7 +393,7 @@ static InterfaCSS* singleton = nil;
 }
 
 // Internal styling method - should only be called by -[applyStyling:includeSubViews:].
-- (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews {
+- (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     UIView* view = uiElementDetails.view;
     BOOL styleAppliedToView = NO;
     if( !self.keyWindow && includeSubViews ) {
@@ -338,7 +416,7 @@ static InterfaCSS* singleton = nil;
             return;
         }
 
-        [self styleUIElement:uiElementDetails];
+        [self styleUIElement:uiElementDetails force:force];
 
         if( includeSubViews ) {
             NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
@@ -358,15 +436,21 @@ static InterfaCSS* singleton = nil;
             }
             
             for(id subView in subviews) {
+                ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
+
                 // If subview isn't view (i.e. UIToolbarItem for instance) - set parent view as super view in ViewProperties
-                if( ![subView isKindOfClass:UIView.class] && parentView ) {
-                    ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
+                if( parentView && ![subView isKindOfClass:UIView.class] ) {
                     if( !subViewDetails.parentView ) subViewDetails.parentView = parentView;
                 }
-                [self applyStyling:subView];
+
+                [self applyStyling:subView includeSubViews:YES force:force];
             }
         }
     }
+}
+
+- (void) applyStylingWithAnimationAndForce:(id)uiElement {
+    [self applyStylingWithAnimation:uiElement includeSubViews:YES force:YES];
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement {
@@ -374,11 +458,15 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    [self applyStylingWithAnimation:uiElement includeSubViews:includeSubViews force:NO];
+}
+
+- (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     // Cancel scheduled styling calls for uiElement
     [self cancelScheduledApplyStyling:uiElement];
 
     [UIView animateWithDuration:0.33 delay:0 options:UIViewAnimationOptionBeginFromCurrentState|UIViewAnimationOptionLayoutSubviews animations:^() {
-        [self applyStyling:uiElement includeSubViews:includeSubViews];
+        [self applyStyling:uiElement includeSubViews:includeSubViews force:force];
     } completion:nil];
 }
 
@@ -396,12 +484,13 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     if( styleClasses.count ) {
         NSMutableSet* lcStyleClasses = [[NSMutableSet alloc] init];
         for(NSString* styleClass in styleClasses) [lcStyleClasses addObject:[styleClass lowercaseString]];
-        [self detailsForUIElement:uiElement].styleClasses = lcStyleClasses;
+        uiElementDetails.styleClasses = lcStyleClasses;
     } else {
-        [self detailsForUIElement:uiElement].styleClasses = nil;
+        uiElementDetails.styleClasses = nil;
     }
 
     [self clearCachedStylesForUIElement:uiElement];
@@ -434,6 +523,7 @@ static InterfaCSS* singleton = nil;
         }];
         uiElementDetails.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
     }
+
     [self clearCachedStylesForUIElement:uiElement];
 }
 
@@ -470,14 +560,14 @@ static InterfaCSS* singleton = nil;
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
     [self.styleSheets removeObject:styleSheet];
-    [self.cachedStylesForViews removeAllObjects];
     if( refreshStyling ) [self refreshStyling];
+    else [self clearAllCachedStyles];
 }
 
 - (void) unloadAllStyleSheets:(BOOL)refreshStyling {
     [self.styleSheets removeAllObjects];
-    [self.cachedStylesForViews removeAllObjects];
     if( refreshStyling ) [self refreshStyling];
+    else [self clearAllCachedStyles];
 }
 
 
@@ -513,7 +603,7 @@ static InterfaCSS* singleton = nil;
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;
     for (ISSStyleSheet* styleSheet in self.styleSheets) {
-        NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails] mutableCopy];
+        NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:NO] mutableCopy];
         if( matchingDeclarations.count ) {
             [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {
                 NSMutableArray* chainsCopy = [((ISSPropertyDeclarations*)declarationObj).selectorChains mutableCopy];

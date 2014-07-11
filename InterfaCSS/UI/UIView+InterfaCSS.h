@@ -35,6 +35,13 @@
  */
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlockISS;
 
+/**
+ * A custom styling identity that overrides the default mechanism for assigning styling identities to elements. The styling identity is effectively the cache key for the
+ * styling information associated with a UI element, and setting this to a custom value makes it possible to (further) increase performance by sharing cached styles with
+ * UI elements located in different places in the view hierarchy for instance.
+ */
+@property (nonatomic, strong) NSString* customStylingIdentityISS;
+
 
 /**
  * Sets the style class for the this view, replacing any previous style classes.
@@ -86,14 +93,15 @@
 
 
 /**
- * Applies styling to this view.
+ * Applies styling to this view, if not already applied.
  */
 - (void) applyStylingISS;
 
 /**
- * Applies styling to this view, with optional clearing of cached styling information first.
+ * Applies styling to this view. If `force` is `YES`, styling will always be applied (i.e. properties will be set), otherwise styling will only
+ * be applied if not already applied.
  */
-- (void) applyStylingISS:(BOOL)invalidateStyles;
+- (void) applyStylingISS:(BOOL)force;
 
 /**
  * Applies styling to this view within an animation block.
@@ -113,5 +121,10 @@
  * Re-enables styling of this view.
  */
 - (void) enableStylingISS;
+
+/**
+ * Clears all cached styling information associated with this view and all its subviews.
+ */
+- (void) clearCachedStylesISS;
 
 @end

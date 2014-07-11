@@ -27,6 +27,6 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 
 + (instancetype) selectorWithType:(NSString*)type class:(NSString*)styleClass pseudoClass:(ISSPseudoClass*)pseudoClass;
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
 
 @end

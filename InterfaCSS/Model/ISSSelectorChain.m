@@ -17,55 +17,61 @@
 
 #pragma mark - Utility methods
 
-+ (ISSUIElementDetails*) findMatchingDescendantSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
++ (ISSUIElementDetails*) findMatchingDescendantSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector
+                                        ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     if( !parentDetails ) return nil;
-    else if( [selector matchesElement:parentDetails] ) return parentDetails;
-    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentView] forSelector:selector];
+    else if( [selector matchesElement:parentDetails ignoringPseudoClasses:ignorePseudoClasses] ) return parentDetails;
+    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentView]
+                                               forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
 }
 
-+ (ISSUIElementDetails*) findMatchingChildSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
-    if( parentDetails && [selector matchesElement:parentDetails] ) return parentDetails;
++ (ISSUIElementDetails*) findMatchingChildSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector
+                                   ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+    if( parentDetails && [selector matchesElement:parentDetails ignoringPseudoClasses:ignorePseudoClasses] ) return parentDetails;
     else return nil;
 }
 
-+ (ISSUIElementDetails*) findMatchingAdjacentSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
++ (ISSUIElementDetails*) findMatchingAdjacentSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails
+                                           forSelector:(ISSSelector*)selector ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     NSArray* subviews = parentDetails.view.subviews;
     NSInteger index = [subviews indexOfObject:elementDetails.uiElement];
     if( index != NSNotFound && (index-1) >= 0 ) {
         UIView* sibling = [subviews objectAtIndex:(NSUInteger)(index-1)];
         ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
-        if( [selector matchesElement:siblingDetails] ) return siblingDetails;
+        if( [selector matchesElement:siblingDetails ignoringPseudoClasses:ignorePseudoClasses] ) return siblingDetails;
     }
     return nil;
 }
 
-+ (ISSUIElementDetails*) findMatchingGeneralSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector {
++ (ISSUIElementDetails*) findMatchingGeneralSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails
+                                          forSelector:(ISSSelector*)selector ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     for(UIView* sibling in parentDetails.view.subviews) {
         ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
-        if( sibling != elementDetails.uiElement && [selector matchesElement:siblingDetails] ) return siblingDetails;
+        if( sibling != elementDetails.uiElement && [selector matchesElement:siblingDetails ignoringPseudoClasses:ignorePseudoClasses] ) return siblingDetails;
     }
     return nil;
 }
 
-+ (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails withSelector:(ISSSelector*)selector andCombinator:(ISSSelectorCombinator)combinator {
++ (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails withSelector:(ISSSelector*)selector andCombinator:(ISSSelectorCombinator)combinator
+                ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     ISSUIElementDetails* nextUIElementDetails = nil;
     ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:elementDetails.parentView];
     parentDetails = [parentDetails copy]; // Use copy of parent to make sure any modification to stylesCacheable flag does not affect original object
     switch (combinator) {
         case ISSSelectorCombinatorDescendant: {
-            nextUIElementDetails = [self findMatchingDescendantSelectorParent:parentDetails forSelector:selector];
+            nextUIElementDetails = [self findMatchingDescendantSelectorParent:parentDetails forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
             break;
         }
         case ISSSelectorCombinatorChild: {
-            nextUIElementDetails = [self findMatchingChildSelectorParent:parentDetails forSelector:selector];
+            nextUIElementDetails = [self findMatchingChildSelectorParent:parentDetails forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
             break;
         }
         case ISSSelectorCombinatorAdjacentSibling: {
-            nextUIElementDetails = [self findMatchingAdjacentSiblingTo:elementDetails inParent:parentDetails forSelector:selector];
+            nextUIElementDetails = [self findMatchingAdjacentSiblingTo:elementDetails inParent:parentDetails forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
             break;
         }
         case ISSSelectorCombinatorGeneralSibling: {
-            nextUIElementDetails = [self findMatchingGeneralSiblingTo:elementDetails inParent:parentDetails forSelector:selector];
+            nextUIElementDetails = [self findMatchingGeneralSiblingTo:elementDetails inParent:parentDetails forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
             break;
         }
     }
@@ -75,9 +81,10 @@
 
 #pragma mark - SelectorChain interface
 
-- (id) initWithComponents:(NSArray*)selectorComponents {
+- (id) initWithComponents:(NSArray*)selectorComponents hasPseudoClassSelector:(BOOL)hasPseudoClassSelector { // Private initializer
     if( self = [super init] ) {
         _selectorComponents = selectorComponents;
+        _hasPseudoClassSelector = hasPseudoClassSelector;
     }
     return self;
 }
@@ -85,28 +92,31 @@
 + (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents {
     // Validate selector components
     if( selectorComponents.count % 2 == 1 ) { // Selector chain must always contain odd number of components
+        BOOL hasPseudoClassSelector = NO;
         for(NSUInteger i=0; i<selectorComponents.count; i++) {
             if( i%2 == 0 && ![selectorComponents[i] isKindOfClass:ISSSelector.class] ) return nil;
             else if( i%2 == 1 && ![selectorComponents[i] isKindOfClass:NSNumber.class] ) return nil;
+
+            if( (i%2 == 0) && !hasPseudoClassSelector ) hasPseudoClassSelector = ((ISSSelector*)selectorComponents[i]).pseudoClass != nil;
         }
-        return [[self alloc] initWithComponents:selectorComponents];
+        return [[self alloc] initWithComponents:selectorComponents hasPseudoClassSelector:hasPseudoClassSelector];
     }
     return nil;
 }
 
 - (id) copyWithZone:(NSZone*)zone {
-    return [[ISSSelectorChain allocWithZone:zone] initWithComponents:self.selectorComponents];
+    return [[ISSSelectorChain allocWithZone:zone] initWithComponents:self.selectorComponents hasPseudoClassSelector:_hasPseudoClassSelector];
 }
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector {
     NSArray* newComponents = [self.selectorComponents arrayByAddingObjectsFromArray:@[@(ISSSelectorCombinatorDescendant), selector]];
-    return [[ISSSelectorChain alloc] initWithComponents:newComponents];
+    return [[ISSSelectorChain alloc] initWithComponents:newComponents hasPseudoClassSelector:_hasPseudoClassSelector || (selector.pseudoClass != nil)];
 }
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain {
     NSArray* newComponents = [self.selectorComponents arrayByAddingObject:@(ISSSelectorCombinatorDescendant)];
     newComponents = [newComponents arrayByAddingObjectsFromArray:selectorChain.selectorComponents];
-    return [[ISSSelectorChain alloc] initWithComponents:newComponents];
+    return [[ISSSelectorChain alloc] initWithComponents:newComponents hasPseudoClassSelector:_hasPseudoClassSelector || selectorChain.hasPseudoClassSelector];
 }
 
 - (NSString*) displayDescription {
@@ -133,17 +143,15 @@
     return str;
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     ISSSelector* lastSelector = [_selectorComponents lastObject];
-    if( [lastSelector matchesElement:elementDetails] ) { // Match last selector...
+    if( [lastSelector matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) { // Match last selector...
         NSUInteger remainingCount = _selectorComponents.count - 1;
         ISSUIElementDetails* nextUIElementDetails = elementDetails;
         for(NSUInteger i=remainingCount; i>1 && nextUIElementDetails; i-=2) { // ...then rest of selector chain
             ISSSelectorCombinator combinator = (ISSSelectorCombinator)[_selectorComponents[i - 1] integerValue];
             ISSSelector* selector = _selectorComponents[i-2];
-            nextUIElementDetails = [ISSSelectorChain matchElement:elementDetails withSelector:selector andCombinator:combinator];
-            // If parent element styles are not cacheable - disable caching for styles of current element:
-            if( nextUIElementDetails && !nextUIElementDetails.stylesCacheable ) elementDetails.stylesCacheable = NO;
+            nextUIElementDetails = [ISSSelectorChain matchElement:elementDetails withSelector:selector andCombinator:combinator ignoringPseudoClasses:ignorePseudoClasses];
         }
         return nextUIElementDetails != nil;
     } else {

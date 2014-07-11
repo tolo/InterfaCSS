@@ -56,11 +56,13 @@
 
 - (void) didMoveToSuperview {
     [super didMoveToSuperview];
+    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
     [self scheduleApplyStylingISS];
 }
 
 - (void) didMoveToWindow {
     [super didMoveToWindow];
+    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
     [self scheduleApplyStylingISS];
 }
 

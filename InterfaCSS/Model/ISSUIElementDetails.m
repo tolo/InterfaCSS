@@ -11,9 +11,17 @@
 
 const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 
-@implementation ISSUIElementDetails {
-    NSMutableDictionary* _additionalDetails;
-}
+
+@interface ISSUIElementDetails ()
+
+@property (nonatomic, strong, readwrite) NSString* elementStyleIdentity;
+@property (nonatomic, strong) NSString* canonicalTypeAndClasses;
+@property (nonatomic, strong) NSMutableDictionary* additionalDetails;
+@property (nonatomic) BOOL usingCustomElementStyleIdentity;
+
+@end
+
+@implementation ISSUIElementDetails
 
 #pragma mark - Lifecycle
 
@@ -23,10 +31,12 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
         _uiElement = uiElement;
         if( [uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)uiElement;
-            self.parentView = view.superview;
+            _parentView = view.superview;
         }
-        self.canonicalType = [ISSPropertyDefinition canonicalTypeClassForViewClass:[self.uiElement class]];
-        self.stylesCacheable = YES;
+
+        _canonicalType = [ISSPropertyDefinition canonicalTypeClassForViewClass:[self.uiElement class]];
+
+        [self updateElementStyleIdentity];
     }
     return self;
 }
@@ -37,9 +47,22 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     ISSUIElementDetails* copy = [[self.class allocWithZone:zone] init];
     copy->_uiElement = self->_uiElement;
     copy.parentView = self.parentView;
+
     copy.canonicalType = self.canonicalType;
     copy.styleClasses = self.styleClasses;
-    copy.stylesCacheable = self.stylesCacheable;
+
+    copy.canonicalTypeAndClasses = self.canonicalTypeAndClasses;
+    //copy.elementStyleIdentity = self.elementStyleIdentity; // Computed, need not be copied
+    copy.usingCustomElementStyleIdentity = self.usingCustomElementStyleIdentity;
+
+    copy.stylingApplied = self.stylingApplied;
+    copy.stylingDisabled = self.stylingDisabled;
+
+    copy.willApplyStylingBlock = self.willApplyStylingBlock;
+    copy.didApplyStylingBlock = self.didApplyStylingBlock;
+
+    copy->_additionalDetails = self->_additionalDetails;
+
     return copy;
 }
 
@@ -52,15 +75,71 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     else return [self findParent:parentView.superview ofClass:class];
 }
 
+- (void) updateElementStyleIdentity {
+    if( self.styleClasses ) {
+        NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
+            return [obj1 compare:obj2];
+        }];
+        NSMutableString* str = [NSMutableString stringWithString:NSStringFromClass(self.canonicalType)];
+        [str appendString:@"["];
+        [str appendString:[styleClasses componentsJoinedByString:@","]];
+        [str appendString:@"]"];
+        self.canonicalTypeAndClasses = [str copy];
+    } else {
+        self.canonicalTypeAndClasses = NSStringFromClass(self.canonicalType);
+    }
+
+    self.elementStyleIdentity = nil;
+}
+
++ (void) buildElementStyleIdentityPath:(NSMutableString*)identityPath element:(ISSUIElementDetails*)element {
+    if( element.parentView ) [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentView]];
+    if( identityPath.length ) [identityPath appendString:@" "];
+    [identityPath appendString:element.canonicalTypeAndClasses];
+}
+
+
 #pragma mark - Public interface
+
+- (BOOL) addedToViewHierarchy {
+    return self.parentView.window || (self.parentView.class == UIWindow.class) || (self.view.class == UIWindow.class);
+}
+
+- (void) resetCachedData {
+    if( !self.usingCustomElementStyleIdentity ) self.elementStyleIdentity = nil;
+    self.stylingApplied = NO;
+}
 
 - (UIView*) view {
     return [self.uiElement isKindOfClass:UIView.class] ? self.uiElement : nil;
 }
 
+- (void) setStyleClasses:(NSSet*)styleClasses {
+    _styleClasses = styleClasses;
+    [self updateElementStyleIdentity];
+}
+
+- (void) setCustomElementStyleIdentity:(NSString*)identityPath {
+    self.usingCustomElementStyleIdentity = identityPath != nil;
+    self.elementStyleIdentity = identityPath;
+}
+
+- (NSString*) elementStyleIdentity {
+    NSString* path = _elementStyleIdentity;
+    if( !path ) {
+        NSMutableString* identityPath = [NSMutableString string];
+        [self.class buildElementStyleIdentityPath:identityPath element:self];
+        path = [identityPath copy];
+        if( self.parentView && self.parentView.window ) {
+            self.elementStyleIdentity = path;
+        }
+    }
+    return path;
+}
+
 - (NSMutableDictionary*) additionalDetails {
-    if( !_additionalDetails ) _additionalDetails = [[NSMutableDictionary alloc] init];
-    return _additionalDetails;
+    if( !self.additionalDetails ) self.additionalDetails = [[NSMutableDictionary alloc] init];
+    return self.additionalDetails;
 }
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count {

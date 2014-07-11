@@ -21,13 +21,19 @@
     if( self = [super init] ) {
         _selectorChains = selectorChains;
         _properties = properties;
+        for(ISSSelectorChain* chain in selectorChains) {
+            if( chain.hasPseudoClassSelector ) {
+                _containsPseudoClassSelector = YES;
+                break;
+            }
+        }
     }
     return self;
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     for(ISSSelectorChain* selectorChain in _selectorChains) {
-        if ( [selectorChain matchesElement:elementDetails] )  return YES;
+        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] )  return YES;
     }
     return NO;
 }

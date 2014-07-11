@@ -51,6 +51,14 @@
     [[InterfaCSS interfaCSS] detailsForUIElement:self].didApplyStylingBlock = didApplyStylingBlock;
 }
 
+- (void) setCustomStylingIdentityISS:(NSString*)customStylingIdentityISS {
+    [[[InterfaCSS interfaCSS] detailsForUIElement:self] setCustomElementStyleIdentity:customStylingIdentityISS];
+}
+
+- (NSString*) customStylingIdentityISS {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementStyleIdentity;
+}
+
 
 #pragma mark - Methods
 
@@ -68,7 +76,7 @@
 }
 
 - (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
-    [self setStyleClassesISS:[NSSet setWithObject:styleClass]];
+    [self setStyleClassesISS:[NSSet setWithObject:styleClass] animated:animated];
 }
 
 - (BOOL) hasStyleClassISS:(NSString*)styleClass {
@@ -93,9 +101,8 @@
     [self scheduleApplyStylingISS:animated];
 }
 
-- (void) applyStylingISS:(BOOL)invalidateStyles {
-    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
-    [[InterfaCSS interfaCSS] applyStyling:self];
+- (void) applyStylingISS:(BOOL)force {
+    [[InterfaCSS interfaCSS] applyStyling:self includeSubViews:YES force:force];
 }
 
 - (void) applyStylingISS {
@@ -117,6 +124,10 @@
 
 - (void) enableStylingISS {
     [[InterfaCSS interfaCSS] setStylingEnabled:YES forUIElement:self];
+}
+
+- (void) clearCachedStylesISS {
+    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
 }
 
 @end

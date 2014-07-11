@@ -102,8 +102,6 @@ static NSDictionary* stringToPseudoClassType;
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
-    elementDetails.stylesCacheable = NO; // If there is a possibility that an item can match a pseudo class - disable caching of styles
-
     id uiElement = elementDetails.uiElement;
     switch( _pseudoClassType ) {
         case ISSPseudoClassTypeInterfaceOrientationLandscape: return UIInterfaceOrientationIsLandscape([self currentInterfaceOrientationForDevice]);

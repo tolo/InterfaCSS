@@ -28,7 +28,7 @@
 
 - (NSArray*) stylesForElement:(ISSUIElementDetails*)elementDetails;
 
-- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails;
+- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
 
 - (void) refresh:(void (^)(void))completionHandler parse:(id<ISSStyleSheetParser>)styleSheetParser;
 

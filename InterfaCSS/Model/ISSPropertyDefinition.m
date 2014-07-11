@@ -25,7 +25,6 @@
 @end
 
 
-typedef void (^EnumValuesBlock)(ISSPropertyDefinition*);
 typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
 
 
@@ -175,7 +174,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return obj;
 }
 
-- (void) setValueUsingKVC:(id)value onTarget:(id)obj withPrefixKeyPath:(NSString*)prefixKeyPath {
+- (void) setValueUsingKVC:(id)value onTarget:(id)obj {
     @try {
         if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
 
@@ -198,7 +197,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         if( _propertySetterBlock ) {
             _propertySetterBlock(self, obj, value, params);
         } else {
-            [self setValueUsingKVC:value onTarget:obj withPrefixKeyPath:prefixKeyPath];
+            [self setValueUsingKVC:value onTarget:obj];
         }
     }
 }

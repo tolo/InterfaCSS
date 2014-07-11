@@ -42,7 +42,7 @@
     XCTAssertEqual(label.alpha, 0.25f, @"Unexpected property value");
     
     label.enabled = NO;
-    [label applyStylingISS];
+    [label applyStylingISS]; // Styling should not be cached
     
     XCTAssertEqual(label.alpha, 0.75f, @"Expected change in property value after state change");
 }
@@ -63,7 +63,7 @@
     XCTAssertEqual(label.alpha, 0.33f, @"Unexpected property value");
     
     control.enabled = NO;
-    [label applyStylingISS];
+    [label applyStylingISS]; // Styling should not be cached
     
     XCTAssertEqual(label.alpha, 0.66f, @"Expected change in property value after state change");
 }
