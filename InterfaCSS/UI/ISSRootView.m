@@ -49,9 +49,10 @@
 }
 
 - (void) setFrame:(CGRect)frame {
+    BOOL force = !CGRectEqualToRect(self.frame, frame);
     [super setFrame:frame];
     _wrappedRootView.frame = self.bounds;
-    [self scheduleApplyStylingISS];
+    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO force:force];
 }
 
 - (void) didMoveToSuperview {
