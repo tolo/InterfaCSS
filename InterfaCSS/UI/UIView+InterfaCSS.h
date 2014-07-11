@@ -62,23 +62,23 @@
 /**
  * Adds a new styles class to this view, if not already present. Triggers an asynchronous re-styling of this view.
  */
-- (void) addStyleClassISS:(NSString*)styleClass;
+- (BOOL) addStyleClassISS:(NSString*)styleClass;
 
 /**
  * Adds a new styles class to this view, if not already present. Triggers an asynchronous re-styling of this view, within an animation block.
  */
-- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+- (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
 
 
 /**
  * Removes the specified style class from this view. Triggers an asynchronous re-styling of this view.
  */
-- (void) removeStyleClassISS:(NSString*)styleClass;
+- (BOOL) removeStyleClassISS:(NSString*)styleClass;
 
 /**
  * Removes the specified style class from this view. Triggers an asynchronous re-styling of this view, within an animation block.
  */
-- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+- (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
 
 
 /**

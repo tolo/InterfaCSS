@@ -82,22 +82,30 @@
     return [[InterfaCSS interfaCSS] uiElement:self hasStyleClass:styleClass];
 }
 
-- (void) addStyleClassISS:(NSString*)styleClass {
-    [self addStyleClassISS:styleClass animated:NO];
+- (BOOL) addStyleClassISS:(NSString*)styleClass {
+    return [self addStyleClassISS:styleClass animated:NO];
 }
 
-- (void) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIElement:self];
-    [self scheduleApplyStylingISS:animated];
+- (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    if( ![self hasStyleClassISS:styleClass] ) {
+        [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIElement:self];
+        [self scheduleApplyStylingISS:animated];
+        return YES;
+    }
+    return NO;
 }
 
-- (void) removeStyleClassISS:(NSString*)styleClass {
-    [self removeStyleClassISS:styleClass animated:NO];
+- (BOOL) removeStyleClassISS:(NSString*)styleClass {
+    return [self removeStyleClassISS:styleClass animated:NO];
 }
 
-- (void) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIElement:self];
-    [self scheduleApplyStylingISS:animated];
+- (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    if( [self hasStyleClassISS:styleClass] ) {
+        [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIElement:self];
+        [self scheduleApplyStylingISS:animated];
+        return YES;
+    }
+    return NO;
 }
 
 - (void) applyStylingISS:(BOOL)force {
