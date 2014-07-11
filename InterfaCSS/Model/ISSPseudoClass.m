@@ -111,14 +111,10 @@ static NSDictionary* stringToPseudoClassType;
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationPortrait;
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationPortraitUpsideDown;
         case ISSPseudoClassTypeStateEnabled: {
-            if( [uiElement respondsToSelector:@selector(isEnabled)] ) {
-                return [uiElement isEnabled];
-            } else return NO;
+            return [uiElement respondsToSelector:@selector(isEnabled)] && [uiElement isEnabled];
         }
         case ISSPseudoClassTypeStateDisabled: {
-            if( [uiElement respondsToSelector:@selector(isEnabled)] ) {
-                return ![uiElement isEnabled];
-            } else return NO;
+            return [uiElement respondsToSelector:@selector(isEnabled)] && ![uiElement isEnabled];
         }
         case ISSPseudoClassTypeNthChild:
         case ISSPseudoClassTypeFirstChild: {

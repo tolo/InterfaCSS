@@ -9,7 +9,6 @@
 
 #import "UIView+InterfaCSS.h"
 
-#import "InterfaCSS.h"
 #import "NSString+ISSStringAdditions.h"
 #import "ISSUIElementDetails.h"
 

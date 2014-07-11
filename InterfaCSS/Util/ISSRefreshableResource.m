@@ -33,9 +33,9 @@
             NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
             if( 200 == httpURLResponse.statusCode ) {
                 NSString* updatedETag = httpURLResponse.allHeaderFields[@"ETag"];
-                BOOL eTagModified = _eTag ? ![updatedETag isEqualToString:updatedETag] : NO;
+                BOOL eTagModified = _eTag != nil && ![_eTag isEqualToString:updatedETag];
                 NSDate* updatedLastModified = [self parseLastModifiedFromResponse:httpURLResponse];
-                BOOL lastModifiedModified = _lastModified ? ![_lastModified isEqualToDate:updatedLastModified] : NO;
+                BOOL lastModifiedModified = _lastModified != nil && ![_lastModified isEqualToDate:updatedLastModified];
                 if( eTagModified || lastModifiedModified ) { // In case server didn't honor etag/last modified
                     ISSLogDebug(@"Remote stylesheet modified - executing get request");
                     [self performGetRequest:request completionHandler:completionHandler];

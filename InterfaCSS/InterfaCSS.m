@@ -598,7 +598,7 @@ static InterfaCSS* singleton = nil;
 
 - (void) logMatchingStyleDeclarationsForUIElement:(id)uiElement {
     ISSUIElementDetails* elementDetails = [self detailsForUIElement:uiElement];
-    NSString* objectIdentity = [NSString stringWithFormat:@"<%@: %p>", [uiElement class], uiElement];
+    NSString* objectIdentity = [NSString stringWithFormat:@"<%@: %p>", [uiElement class], (__bridge void*)uiElement];
 
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;

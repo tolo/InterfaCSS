@@ -458,8 +458,8 @@
         ISSPropertyDeclaration* decl = [self parsePropertyDeclaration:propertyPair[0]];
         if( decl ) {
             // Perform lazy transformation of property value
-            decl.lazyPropertyTransformationBlock = ^id(ISSPropertyDeclaration* decl) {
-                return [self transformValueWithCaching:propertyValue forProperty:decl.property];
+            decl.lazyPropertyTransformationBlock = ^id(ISSPropertyDeclaration* blockDecl) {
+                return [self transformValueWithCaching:propertyValue forProperty:blockDecl.property];
             };
             decl.propertyValue = propertyValue; // Raw value
             return decl;
@@ -549,10 +549,10 @@
         if( c.count == 2 ) {
             BOOL autoWidth = [@"auto" iss_isEqualIgnoreCase:c[0]] || [@"*" isEqualToString:c[0]];
             CGFloat width = autoWidth ? ISSRectValueAuto : [c[0] floatValue];
-            BOOL relativeWidth = autoWidth ? YES : [blockSelf isRelativeValue:c[0]];
+            BOOL relativeWidth = autoWidth || [blockSelf isRelativeValue:c[0]];
             BOOL autoHeight = [@"auto" iss_isEqualIgnoreCase:c[1]] || [@"*" isEqualToString:c[1]];
             CGFloat height = autoHeight ? ISSRectValueAuto : [c[1] floatValue];
-            BOOL relativeHeight = autoHeight ? YES : [blockSelf isRelativeValue:c[1]];
+            BOOL relativeHeight = autoHeight || [blockSelf isRelativeValue:c[1]];
             return [ISSRectValue parentRelativeRectWithSize:CGSizeMake(width, height) relativeWidth:relativeWidth relativeHeight:relativeHeight];
         } else {
             return [ISSRectValue zeroRect];

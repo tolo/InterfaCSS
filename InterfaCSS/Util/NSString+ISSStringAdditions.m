@@ -15,8 +15,7 @@
 @implementation NSString (ISSStringAdditions)
 
 + (BOOL) iss_string:(NSString*)string1 isEqualToString:(NSString*)string2 {
-    if (string1 == string2) return YES;
-    else return [string1 isEqualToString:string2];
+    return string1 == string2 || [string1 isEqualToString:string2];
 }
 
 - (BOOL) iss_isEmpty {

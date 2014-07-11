@@ -11,7 +11,6 @@
 
 #import "ISSPropertyDefinition.h"
 #import "NSString+ISSStringAdditions.h"
-#import "ISSLazyValue.h"
 #import "NSObject+ISSLogSupport.h"
 
 @implementation ISSPropertyDeclaration

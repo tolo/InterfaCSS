@@ -19,11 +19,11 @@ static inline CGFloat adjustWithAbsoluteAmount(CGFloat value, CGFloat adjustAmou
 @implementation UIColor (ISSColorAdditions)
 
 + (UIColor*) iss_colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b {
-    return [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1];
+    return [UIColor colorWithRed:r/255.0f green:g/255.0f blue:b/255.0f alpha:1];
 }
 
 + (UIColor*) iss_colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b A:(float)a {
-    return [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a];
+    return [UIColor colorWithRed:r/255.0f green:g/255.0f blue:b/255.0f alpha:a];
 }
 
 + (UIColor*) iss_colorWithHexString:(NSString*)hex {

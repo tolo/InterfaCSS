@@ -20,7 +20,9 @@
 
 #pragma mark - View setup
 
-+ (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock andPropertyOwner:(id)propertyOwner {
+// + (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock andPropertyOwner:(id)propertyOwner {
+
++ (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock {
     if( styleClassName ) {
         NSArray* styles = [styleClassName iss_splitOnSpaceOrComma];
         for(NSString* style in styles) [theView addStyleClassISS:style];
@@ -33,12 +35,8 @@
     return theView;
 }
 
-+ (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock {
-    return [self setupView:theView withStyleClass:styleClassName andSubViews:subViewBlock andPropertyOwner:nil];
-}
-
 + (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName {
-    return [self setupView:theView withStyleClass:styleClassName andSubViews:nil andPropertyOwner:nil];
+    return [self setupView:theView withStyleClass:styleClassName andSubViews:nil];
 }
 
 

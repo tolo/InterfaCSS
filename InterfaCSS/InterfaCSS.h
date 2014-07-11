@@ -207,7 +207,7 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType;
 
 /**
- * Returns the value of the stylesheet variable with the specified name, transformed useing the specified property definition.
+ * Returns the value of the stylesheet variable with the specified name, transformed using the specified property definition.
  */
 - (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
 
