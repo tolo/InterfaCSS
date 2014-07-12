@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 0.9.7
+
+### Bug fixes
+* Fixed crash caused by bad handling of `UINavigationItem`.
+
+
+
 ##Version 0.9.6
 
 ### New features & changes
