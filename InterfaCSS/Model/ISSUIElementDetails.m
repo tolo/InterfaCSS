@@ -35,6 +35,7 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
         }
 
         _canonicalType = [ISSPropertyDefinition canonicalTypeClassForViewClass:[self.uiElement class]];
+        if( !_canonicalType ) _canonicalType = [uiElement class];
 
         [self updateElementStyleIdentity];
     }

@@ -304,6 +304,7 @@ static InterfaCSS* singleton = nil;
 
 - (ISSUIElementDetails*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
+
     ISSUIElementDetails* details = [self.trackedViews objectForKey:uiElement];
     if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
@@ -342,6 +343,8 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
+    if( !uiElement ) return;
+
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
     if( uiElementDetails && uiElementDetails.stylingDisabled ) return;
 
@@ -377,6 +380,8 @@ static InterfaCSS* singleton = nil;
 
 // Main styling method
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
+    if( !uiElement ) return;
+
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
 
     if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
@@ -428,7 +433,20 @@ static InterfaCSS* singleton = nil;
             } else if( [view isKindOfClass:UINavigationBar.class] ) {
                 UINavigationBar* navigationBar = (UINavigationBar*)view;
                 parentView = navigationBar;
-                if( navigationBar.items ) subviews = [subviews arrayByAddingObjectsFromArray:navigationBar.items];
+
+                NSMutableArray* additionalSubViews = [NSMutableArray array];
+                for(id item in navigationBar.items) {
+                    if( [item isKindOfClass:UINavigationItem.class] ) {
+                        UINavigationItem* navigationItem = (UINavigationItem*)item;
+                        if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
+                        if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
+                        if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
+                        if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];
+                    } else {
+                        [additionalSubViews addObject:item];
+                    }
+                }
+                subviews = [subviews arrayByAddingObjectsFromArray:additionalSubViews];
             } else if( [view isKindOfClass:UITabBar.class] ) {
                 UITabBar* tabBar = (UITabBar*)view;
                 parentView = tabBar;
