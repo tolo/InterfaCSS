@@ -116,6 +116,12 @@
     [self applyStylingISS:NO];
 }
 
+- (void) applyStylingOnceISS {
+    [self enableStylingISS];
+    [self applyStylingISS];
+    [self disableStylingISS];
+}
+
 - (void) applyStylingWithAnimationISS:(BOOL)invalidateStyles {
     if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
     [[InterfaCSS interfaCSS] applyStylingWithAnimation:self];

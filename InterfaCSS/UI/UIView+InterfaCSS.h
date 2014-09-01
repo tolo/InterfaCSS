@@ -98,6 +98,11 @@
 - (void) applyStylingISS;
 
 /**
+ * Applies styling once to this view and then disables further styling. Call `enabledStylingISS` to re-enable styling.
+ */
+- (void) applyStylingOnceISS;
+
+/**
  * Applies styling to this view. If `force` is `YES`, styling will always be applied (i.e. properties will be set), otherwise styling will only
  * be applied if not already applied.
  */
