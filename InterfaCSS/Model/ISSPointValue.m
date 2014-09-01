@@ -45,6 +45,12 @@
     return self;
 }
 
++ (CGPoint) anchorAdjustedCenterPoint:(CGPoint)point forView:(UIView*)view {
+    CGPoint anchor = view.layer.anchorPoint;
+    CGPoint delta = CGPointMake((anchor.x - 0.5f) * view.bounds.size.width, (anchor.x - 0.5f) * view.bounds.size.height);
+    return CGPointMake(point.x + delta.x, point.y + delta.y);
+}
+
 + (CGPoint) sourcePoint:(CGPoint)sourcePoint adjustedBy:(CGPoint)point {
     sourcePoint.x += point.x;
     sourcePoint.y += point.y;
@@ -57,11 +63,11 @@
     if( !window ) window = [UIApplication sharedApplication].keyWindow;
     if( window ) bounds = window.bounds;
     else bounds = [UIScreen mainScreen].bounds;
-    return CGPointMake(CGRectGetWidth(bounds)/2.0f, CGRectGetHeight(bounds)/2.0f);
+    return [self anchorAdjustedCenterPoint:CGPointMake(CGRectGetWidth(bounds)/2.0f, CGRectGetHeight(bounds)/2.0f) forView:view];
 }
 
 + (CGPoint) superViewCenterForView:(UIView*)view {
-    if( view.superview ) return CGPointMake(CGRectGetWidth(view.superview.bounds)/2.0f, CGRectGetHeight(view.superview.bounds)/2.0f);
+    if( view.superview ) return [self anchorAdjustedCenterPoint:CGPointMake(CGRectGetWidth(view.superview.bounds)/2.0f, CGRectGetHeight(view.superview.bounds)/2.0f) forView:view];
     else return [self windowCenterForView:view];
 }
 

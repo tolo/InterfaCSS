@@ -72,6 +72,11 @@ static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISSPropertyTy
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type];
 }
 
+static ISSPropertyDefinition* pas(NSString* name, NSArray* aliases, ISSPropertyType type, PropertySetterBlock setterBlock) {
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
+                                          enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
+}
+
 static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
 }
@@ -433,7 +438,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             }
         }
         else {
-            setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
+            setTitleTextAttributes(viewObject, value, parameters, NSFontAttributeName);
         }
     });
 
@@ -460,7 +465,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             }
         }
         else {
-            setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextColor);
+            setTitleTextAttributes(viewObject, value, parameters, NSForegroundColorAttributeName);
         }
     });
 
@@ -527,11 +532,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ps(S(center), ISSPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
                 if( [viewObject isKindOfClass:UIView.class] ) {
                     UIView* v = viewObject;
-                    // Handle case when attempting to set frame on transformed view
+                    // Handle case when attempting to set center point on transformed view
+                    CATransform3D t3d = v.layer.transform;
                     CGAffineTransform t = v.transform;
                     v.transform = CGAffineTransformIdentity;
+                    v.layer.transform = CATransform3DIdentity;
                     v.center = [value pointForView:v];
                     v.transform = t;
+                    v.layer.transform = t3d;
                 }
             }),
             p(S(clearsContextBeforeDrawing), ISSPropertyTypeBool),
@@ -543,18 +551,30 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ),
             p(S(contentScaleFactor), ISSPropertyTypeNumber),
             p(@"exclusiveTouch", ISSPropertyTypeBool),
-            ps(S(frame), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+            ps(S(frame), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSRectValue
                 if( [viewObject isKindOfClass:UIView.class] ) {
                     UIView* v = viewObject;
                     // Handle case when attempting to set frame on transformed view
+                    CATransform3D t3d = v.layer.transform;
                     CGAffineTransform t = v.transform;
                     v.transform = CGAffineTransformIdentity;
+                    v.layer.transform = CATransform3DIdentity;
                     v.frame = [value rectForView:v];
                     v.transform = t;
+                    v.layer.transform = t3d;
                 }
             }),
             p(@"hidden", ISSPropertyTypeBool),
-            pa(@"layer.anchorPoint", @[@"anchorPoint"], ISSPropertyTypePoint),
+            pas(@"layer.anchorPoint", @[@"anchorPoint"], ISSPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSPointValue
+                if( [viewObject isKindOfClass:UIView.class] ) {
+                    UIView* v = viewObject;
+                    // Make sure original position is maintained when adjusting anchorPoint
+                    CGPoint initialOrigin = v.frame.origin;
+                    v.layer.anchorPoint = [value point];
+                    CGPoint delta = CGPointMake(v.frame.origin.x - initialOrigin.x, v.frame.origin.y - initialOrigin.y);
+                    v.center = CGPointMake (v.center.x - delta.x, v.center.y - delta.y);
+                }
+            }),
             pa(@"layer.cornerRadius", @[@"cornerradius"], ISSPropertyTypeNumber),
             pa(@"layer.borderColor", @[@"bordercolor"], ISSPropertyTypeCGColor),
             pa(@"layer.borderWidth", @[@"borderwidth"], ISSPropertyTypeNumber),
