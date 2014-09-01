@@ -67,6 +67,12 @@ UIButton {
     backgroundColor: desaturate(fadeout(@stdColor1, 50%), 30%);
     layer.cornerRadius: 10;
     clipsToBounds: YES;
+    anchorPoint: point(0, 0);
+    transform: rotate(-25);
+}
+
+.simpleSampleContentViewAtRest {
+    transform: identity;
 }
 
 .simpleSampleContentTitleLabel {

@@ -25,6 +25,8 @@
 @property (nonatomic, strong) UILabel* contentTitleLabel;
 @property (nonatomic, strong) UILabel* contentSubtitleLabel;
 
+@property (nonatomic, strong) UIView* simpleSampleContentView;
+@property (nonatomic, strong) UIButton* mainButtonTop;
 @property (nonatomic, strong) UIButton* mainButton;
 
 @end
@@ -50,13 +52,13 @@
         return @[
           self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainTitleLabel"],
           self.mainTitleButton = [ISSViewBuilder buttonWithStyle:@"mainTitleButton"],
-          [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
+          self.simpleSampleContentView = [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
                 self.contentTitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentTitleLabel"],
                 self.contentSubtitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentSubtitleLabel"],
                 // You can also add and setup an already existing view object using the view builder:
                 [ISSViewBuilder setupView:[[UIView alloc] init] withStyleClass:@"simpleSampleButtonContainer" andSubViews:^{
                     return @[
-                             [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton1"],
+                             self.mainButtonTop = [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton1"],
                              self.mainButton = [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton2"],
                              [ISSViewBuilder buttonWithStyle:@"simpleSampleMainButton3"]];
                 }] ];
@@ -74,12 +76,17 @@
     
     // Setup notification blocks to get notified when styles are applied to mainButton
     self.mainButton.willApplyStylingBlockISS = ^(NSArray* styles) {
-        NSLog(@"Will apply styles to mainButton - %d properties", styles.count);
+        // Use this block to for instance override which style properties are allowed to be set at the moment.
+        NSLog(@"Will apply styles to mainButton - %lu properties", (unsigned long)styles.count);
         return styles;
     };
     self.mainButton.didApplyStylingBlockISS = ^(NSArray* styles) {
-        NSLog(@"Did apply styles to mainButton - %d properties", styles.count);
+        // In this block it's possible to for instance update any derived styling properties, or override values set during styling.
+        NSLog(@"Did apply styles to mainButton - %lu properties", (unsigned long)styles.count);
     };
+    
+    // Apply styling only once as startup to mainButtonTop, then disable automatic re-styling, to make it possible do adjust styling manually in code.
+    [self.mainButtonTop applyStylingOnceISS];
 }
 
 - (NSUInteger) supportedInterfaceOrientations {
@@ -95,6 +102,25 @@
 #endif
     
     [self.view applyStylingISS];
+    
+    [self performSelector:@selector(animateSimpleSampleContentView) withObject:nil afterDelay:.0f];
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
+    [self.simpleSampleContentView removeStyleClassISS:@"simpleSampleContentViewAtRest"];
+}
+
+- (void) animateSimpleSampleContentView {
+    [UIView animateWithDuration:1.0f delay:.0f usingSpringWithDamping:0.25 initialSpringVelocity:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        [self.simpleSampleContentView addStyleClassISS:@"simpleSampleContentViewAtRest"];
+        [self.simpleSampleContentView applyStylingISS];
+    } completion:nil];
+}
+
+- (void) willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    [self.view applyStylingOnceISS]; // Re-apply styling when interface orientation changes
 }
 
 - (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
@@ -112,6 +138,11 @@
 - (void) touchedButton:(id)btn event:(UIEvent*)event {
     UITouch* touch = [event.allTouches anyObject];
     if( touch.phase == UITouchPhaseBegan ) {
+        NSString* title;
+        if( [self.mainButtonTop.currentTitle hasPrefix:@"T"] ) title = [self.mainButtonTop.currentTitle lowercaseString];
+        else title = [self.mainButtonTop.currentTitle uppercaseString];
+        [self.mainButtonTop setTitle:title forState:UIControlStateNormal];
+        
         [self.mainButton addStyleClassISS:@"touched" animated:YES];
     } else if( touch.phase == UITouchPhaseEnded || touch.phase == UITouchPhaseCancelled ) {
         [self.mainButton removeStyleClassISS:@"touched" animated:YES];
