@@ -402,8 +402,8 @@ static InterfaCSS* singleton = nil;
     UIView* view = uiElementDetails.view;
     BOOL styleAppliedToView = NO;
     if( !self.keyWindow && includeSubViews ) {
-        BOOL keyWindowInitialized = [self initViewHierarchy];
-        styleAppliedToView = keyWindowInitialized && view.window == self.keyWindow; // Make sure style is applied to view if not in view hierarchy
+        [self initViewHierarchy];
+        styleAppliedToView = uiElementDetails.stylingApplied; // If styling was applied by initViewHierarchy, we don't need to do it again
     }
     if( !styleAppliedToView ) {
         ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
