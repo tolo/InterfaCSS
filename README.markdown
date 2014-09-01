@@ -298,7 +298,7 @@ A relative rect value can be created in these ways:
 
 * `parent` - the bounds of the superview
 * `parent(xInset, yInset)` - the bounds of the superview, with the specified insets applied (using `CGRectInset`)
-* `size(width, height)` - sets the size using absolute point values or parent relative values. Relative values can either be percentage values like `50%` or the keyword `auto`. The auto keyword is only useful if insets are specified along with the size, for instance: `size(50%, auto).left(5%).right(50)`. When auto is used, InterfaCSS makes sure that the sum of width/height and insets always adds up to the width/height of the parent.
+* `size(width, height)` - sets the size using absolute point values or parent relative values. Relative values can either be percentage values like `50%` or the keyword `auto`. The auto keyword is only useful if insets are specified along with the size, for instance: `size(auto, 50%).left(5%).right(50)`. When auto is used, InterfaCSS makes sure that the sum of width/height and insets always adds up to the width/height of the parent.
 
 
 ####[Point](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGPoint) (center):
@@ -322,7 +322,7 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.5. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.8. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
