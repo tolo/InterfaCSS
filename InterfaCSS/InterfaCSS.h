@@ -29,8 +29,15 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 
 /** 
  * Gets the shared InterfaCSS instance.
+ *
+ * @deprecated use `[InterfaCSS sharedInstance]`.
  */
 + (InterfaCSS*) interfaCSS;
+
+/**
+ * Gets the shared InterfaCSS instance.
+ */
++ (InterfaCSS*) sharedInstance;
 
 /**
  * Clears and resets all loaded stylesheets, registered style class names and caches.

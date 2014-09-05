@@ -64,6 +64,10 @@ static InterfaCSS* singleton = nil;
 }
 
 + (InterfaCSS*) interfaCSS {
+    return [self sharedInstance];
+}
+
++ (InterfaCSS*) sharedInstance {
     return singleton;
 }
 
