@@ -344,6 +344,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 
 + (void) initialize {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
     validPrefixKeyPaths = @{ SLC(layer) : S(layer), SLC(imageView) : S(imageView), SLC(contentView) : S(contentView), SLC(backgroundView) : S(backgroundView),
             SLC(selectedBackgroundView) : S(selectedBackgroundView), SLC(multipleSelectionBackgroundView) : S(multipleSelectionBackgroundView), SLC(titleLabel) : S(titleLabel),
             SLC(textLabel) : S(textLabel), SLC(detailTextLabel) : S(detailTextLabel), SLC(inputView) : S(inputView), SLC(inputAccessoryView) : S(inputAccessoryView),
@@ -1118,6 +1121,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     _typeNamesToClasses[@"uiwindow"] = UIWindow.class;
     classesToTypeNames = [NSDictionary dictionaryWithDictionary:_classesToNames];
     typeNamesToClasses = [NSDictionary dictionaryWithDictionary:_typeNamesToClasses];
+
+#pragma GCC diagnostic pop
 }
 
 

@@ -95,7 +95,10 @@ static NSDictionary* stringToPseudoClassType;
             default: return UIInterfaceOrientationPortrait;
         }
     } else if( [UIApplication sharedApplication].keyWindow.rootViewController )  { // Fallback to last interface orientation if face up/down
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         return [UIApplication sharedApplication].keyWindow.rootViewController.interfaceOrientation;
+#pragma GCC diagnostic pop
     } else {
         return UIInterfaceOrientationPortrait;
     }
