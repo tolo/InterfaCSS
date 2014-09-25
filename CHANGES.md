@@ -1,6 +1,21 @@
 #Changes
 
 
+##Version 0.9.9
+
+### New features & changes
+* Swift compatibility fix - added `sharedInstance` class method as a replacement for the `interfaCSS` method.
+* Updated InterfaCSS.h to include import statements of the core headers of the InterfaCSS API, to make creating a Swift bridging header simpler.
+* Added support for unicode escape sequences (\u0123 and \U00012345) in strings in stylesheets.
+
+
+##Version 0.9.8
+
+### New features & changes
+* Improved handling of transform and anchor point.
+* Added support for applying styling only once (applyStylingOnceISS).
+
+
 ##Version 0.9.7
 
 ### Bug fixes
