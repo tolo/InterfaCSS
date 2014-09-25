@@ -101,4 +101,81 @@
     return [ISSDateUtils parseHttpDate:self];
 }
 
+
+#pragma mark - Unicode support
+
+- (NSString*) iss_stringByReplacingUnicodeSequences {
+    NSUInteger location = 0;
+
+    NSString* result = self;
+    while( location < result.length ) {
+        // Scan for \u or \U
+        NSRange uRange = [result rangeOfString:@"\\u" options:NSCaseInsensitiveSearch range:NSMakeRange(location, self.length - location)];
+        if( uRange.location != NSNotFound ) {
+            // Set expected length to 4 for \u and 8 for \U
+            if( [result characterAtIndex:uRange.location+1] == 'u' ) {
+                uRange.length += 4;
+            } else {
+                uRange.length += 8;
+            }
+
+            // Attempt parsing of unicode char
+            if( (uRange.location + uRange.length) <= result.length ) {
+                NSString* unicodeCharString = [self iss_unicodeCharacterStringFromSequenceStringInRange:NSMakeRange(uRange.location, uRange.length)];
+                if( unicodeCharString ) {
+                    result = [result stringByReplacingCharactersInRange:uRange withString:unicodeCharString];
+                    location = uRange.location + uRange.length;
+                } else {
+                    location += 2;
+                }
+            } else {
+                location = result.length;
+            }
+        } else {
+            location = result.length;
+        }
+    }
+
+    return result;
+}
+
+- (NSString*) iss_unicodeCharacterStringFromSequenceStringInRange:(NSRange)range {
+    return [[self substringWithRange:range] iss_unicodeCharacterStringFromSequenceString];
+}
+
+- (NSString*) iss_unicodeCharacterStringFromSequenceString {
+    UTF32Char unicodeChar = [self iss_unicodeCharacterFromSequenceString];
+    if( unicodeChar == UINT32_MAX ) return nil;
+    else return [NSString iss_stringFromUTF32Char:unicodeChar];
+}
+
+- (UTF32Char) iss_unicodeCharacterFromSequenceString {
+    // Remove prefix
+    NSString* hexString = self;
+    while( [hexString hasPrefix:@"\\"] ) hexString = [hexString substringFromIndex:1];
+    if( [hexString hasPrefix:@"U"] || [hexString hasPrefix:@"u"] ) hexString = [hexString substringFromIndex:1];
+
+    // Scan UTF32Char
+    UTF32Char unicodeChar = 0;
+    NSScanner* scanner = [NSScanner scannerWithString:hexString];
+    if( [scanner scanHexInt:(unsigned int *)&unicodeChar] ) {
+        return unicodeChar;
+    } else {
+        return UINT32_MAX;
+    }
+}
+
++ (NSString*) iss_stringFromUTF32Char:(UTF32Char)unicodeChar {
+    if ( (unicodeChar & 0xFFFF0000) != 0 ) {
+        unicodeChar -= 0x10000;
+        unichar highSurrogate = (unichar)(unicodeChar >> 10); // use top ten bits
+        highSurrogate += 0xD800;
+        unichar lowSurrogate = (unichar)(unicodeChar & 0x3FF); // use low ten bits
+        lowSurrogate += 0xDC00;
+        return [NSString stringWithCharacters:(unichar[]){highSurrogate, lowSurrogate} length:2];
+    } else {
+        return [NSString stringWithCharacters:(unichar[]){(unichar)unicodeChar} length:1];
+    }
+}
+
 @end

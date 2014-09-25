@@ -375,6 +375,8 @@
                 variableValue = [[InterfaCSS interfaCSS] valueOfStyleSheetVariableWithName:variableName];
             }
             if( variableValue ) {
+                variableValue = [variableValue iss_trimQuotes];
+
                 // Replace variable occurrence in propertyValue string with variableValue string
                 propertyValue = [propertyValue stringByReplacingCharactersInRange:NSMakeRange(atRange.location, variableNameRange.length+1)
                                                                        withString:variableValue];
@@ -410,7 +412,7 @@
         }
     }
     else if( p.type == ISSPropertyTypeString ) {
-        return propertyValue;
+        return [propertyValue iss_stringByReplacingUnicodeSequences];
     }
     // Other properties
     else {

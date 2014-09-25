@@ -28,4 +28,10 @@
 
 - (NSDate*) iss_parseHttpDate;
 
+
+- (NSString*) iss_stringByReplacingUnicodeSequences;
+- (NSString*) iss_unicodeCharacterStringFromSequenceString;
+- (UTF32Char) iss_unicodeCharacterFromSequenceString;
++ (NSString*) iss_stringFromUTF32Char:(UTF32Char)unicodeChar;
+
 @end
