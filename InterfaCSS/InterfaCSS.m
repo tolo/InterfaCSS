@@ -563,11 +563,22 @@ static InterfaCSS* singleton = nil;
 #pragma mark - Stylesheets
 
 - (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName {
-    return [self loadStyleSheetFromFileURL:[[NSBundle mainBundle] URLForResource:styleSheetFileName withExtension:nil]];
+    NSURL* url = [[NSBundle mainBundle] URLForResource:styleSheetFileName withExtension:nil];
+    if( url ) {
+        return [self loadStyleSheetFromFileURL:url];
+    } else {
+        ISSLogWarning(@"Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName);
+        return nil;
+    }
 }
 
 - (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath {
-    return [self loadStyleSheetFromFileURL:[NSURL fileURLWithPath:styleSheetFilePath]];
+    if( [[NSFileManager defaultManager] fileExistsAtPath:styleSheetFilePath] ) {
+        return [self loadStyleSheetFromFileURL:[NSURL fileURLWithPath:styleSheetFilePath]];
+    } else {
+        ISSLogWarning(@"Unable to load stylesheet '%@' - file not found!", styleSheetFilePath);
+        return nil;
+    }
 }
 
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetURL {
