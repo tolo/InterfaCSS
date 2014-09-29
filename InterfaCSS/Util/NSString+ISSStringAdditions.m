@@ -110,7 +110,7 @@
     NSString* result = self;
     while( location < result.length ) {
         // Scan for \u or \U
-        NSRange uRange = [result rangeOfString:@"\\u" options:NSCaseInsensitiveSearch range:NSMakeRange(location, self.length - location)];
+        NSRange uRange = [result rangeOfString:@"\\u" options:NSCaseInsensitiveSearch range:NSMakeRange(location, result.length - location)];
         if( uRange.location != NSNotFound ) {
             // Set expected length to 4 for \u and 8 for \U
             if( [result characterAtIndex:uRange.location+1] == 'u' ) {
