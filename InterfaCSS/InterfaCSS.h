@@ -65,6 +65,16 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 @property (nonatomic) BOOL useLenientSelectorParsing;
 
+/**
+ * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds.
+ */
+@property (nonatomic) NSTimeInterval stylesheetAutoRefreshInterval;
+
+/**
+ * Flag indicating if refreshable stylesheets always should be processed after "normal" stylesheets, and thereby always being able to override those. Default is `YES`.
+ */
+@property (nonatomic) NSTimeInterval processRefreshableStylesheetsLast;
+
 
 #pragma mark - Properties
 

@@ -11,11 +11,13 @@
 #import "NSString+ISSStringAdditions.h"
 #import "NSObject+ISSLogSupport.h"
 #import "ISSDateUtils.h"
+#import "InterfaCSS.h"
 
 
 @implementation ISSRefreshableResource {
     NSDate* _lastModified;
     NSString* _eTag;
+    NSTimeInterval lastErrorTime;
 }
 
 - (NSDate*) parseLastModifiedFromResponse:(NSHTTPURLResponse*)response {
@@ -24,11 +26,24 @@
     return updatedLastModified;
 }
 
+- (BOOL) hasErrorOccurred {
+    return lastErrorTime != 0;
+}
+
+- (void) resetErrorOccurred {
+    lastErrorTime = 0;
+}
+
+- (void) errorOccurred {
+    lastErrorTime = [NSDate timeIntervalSinceReferenceDate];
+}
+
 - (void) performHeadRequest:(NSMutableURLRequest*)request completionHandler:(void (^)(NSString*))completionHandler {
     [request setHTTPMethod:@"HEAD"];
 
     [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
                            completionHandler:^(NSURLResponse* response, NSData* data, NSError* error) {
+        BOOL signalErrorOccurred = NO;
         if ( error == nil ) {
             NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
             if( 200 == httpURLResponse.statusCode ) {
@@ -45,11 +60,18 @@
             } else if( 304 == httpURLResponse.statusCode ) {
                 ISSLogTrace(@"Remote stylesheet not modified");
             } else {
-                ISSLogDebug(@"Unable to verify if remote stylesheet is modified - got HTTP response code %d", httpURLResponse.statusCode);
+                if( self.hasErrorOccurred ) ISSLogTrace(@"Unable to verify if remote stylesheet is modified - got HTTP response code %d", httpURLResponse.statusCode);
+                else ISSLogDebug(@"Unable to verify if remote stylesheet is modified - got HTTP response code %d", httpURLResponse.statusCode);
+                signalErrorOccurred = YES;
             }
         } else {
-            ISSLogDebug(@"Error verifying if remote stylesheet is modified - %@", error);
+            if( self.hasErrorOccurred ) ISSLogTrace(@"Error verifying if remote stylesheet is modified - %@", error);
+            else ISSLogDebug(@"Error verifying if remote stylesheet is modified - %@", error);
+            signalErrorOccurred = YES;
         }
+
+        if( signalErrorOccurred ) [self errorOccurred];
+        else [self resetErrorOccurred];
     }];
 }
 
@@ -58,6 +80,7 @@
 
     [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
        completionHandler:^(NSURLResponse* response, NSData* data, NSError* error) {
+           BOOL signalErrorOccurred = NO;
            if ( error == nil ) {
                NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
                if( 200 == httpURLResponse.statusCode ) {
@@ -81,15 +104,27 @@
                } else if( 304 == httpURLResponse.statusCode ) {
                    ISSLogTrace(@"Remote stylesheet not modified");
                } else {
-                   ISSLogDebug(@"Unable to download remote stylesheet - got HTTP response code %d", httpURLResponse.statusCode);
+                   if( self.hasErrorOccurred ) ISSLogTrace(@"Unable to download remote stylesheet - got HTTP response code %d", httpURLResponse.statusCode);
+                   else ISSLogDebug(@"Unable to download remote stylesheet - got HTTP response code %d", httpURLResponse.statusCode);
+                   signalErrorOccurred = YES;
                }
            } else {
-               ISSLogDebug(@"Error downloading stylesheet - %@", error);
+               if( self.hasErrorOccurred ) ISSLogTrace(@"Error downloading stylesheet - %@", error);
+               else ISSLogDebug(@"Error downloading stylesheet - %@", error);
+               signalErrorOccurred = YES;
            }
+
+           if( signalErrorOccurred ) [self errorOccurred];
+           else [self resetErrorOccurred];
        }];
 }
 
 - (void) refresh:(NSURL*)url completionHandler:(void (^)(NSString*))completionHandler {
+    if( self.hasErrorOccurred ) {
+        NSTimeInterval refreshIntervalDuringError = [InterfaCSS interfaCSS].stylesheetAutoRefreshInterval * 3;
+        if( ([NSDate timeIntervalSinceReferenceDate] - lastErrorTime) < refreshIntervalDuringError ) return;
+    }
+
     if( url.isFileURL ) {
         NSFileManager* fm = [NSFileManager defaultManager];
         NSDictionary* attrs = [fm attributesOfItemAtPath:url.path error:nil];

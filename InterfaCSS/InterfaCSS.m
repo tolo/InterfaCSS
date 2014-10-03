@@ -33,6 +33,7 @@ static InterfaCSS* singleton = nil;
 @interface InterfaCSS ()
 
 @property (nonatomic, strong) NSMutableArray* styleSheets;
+@property (nonatomic, readonly) NSArray* effectiveStylesheets;
 
 @property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
 
@@ -86,6 +87,9 @@ static InterfaCSS* singleton = nil;
 
 - (id) initInternal {
     if( (self = [super init]) ) {
+        _stylesheetAutoRefreshInterval = 5.0;
+        _processRefreshableStylesheetsLast = YES;
+
         _styleSheets = [[NSMutableArray alloc] init];
         _styleSheetsVariables = [[NSMutableDictionary alloc] init];
 
@@ -138,7 +142,7 @@ static InterfaCSS* singleton = nil;
 
 - (void) enableAutoRefreshTimer {
     if( !_timer ) {
-        _timer = [NSTimer scheduledTimerWithTimeInterval:5 target:self selector:@selector(autoRefreshTimerTick) userInfo:nil repeats:YES];
+        _timer = [NSTimer scheduledTimerWithTimeInterval:self.stylesheetAutoRefreshInterval target:self selector:@selector(autoRefreshTimerTick) userInfo:nil repeats:YES];
     }
 }
 
@@ -232,13 +236,11 @@ static InterfaCSS* singleton = nil;
         // Otherwise - build styles
         cachedDeclarations = [[NSMutableArray alloc] init];
 
-        for (ISSStyleSheet* styleSheet in self.styleSheets) {
-            if( styleSheet.active ) {
-                // Find all matching (or potentially matching) style declarations
-                NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:YES];
-                if ( styleSheetDeclarations ) {
-                    [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
-                }
+        for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
+            // Find all matching (or potentially matching) style declarations
+            NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:YES];
+            if ( styleSheetDeclarations ) {
+                [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
             }
         }
 
@@ -601,6 +603,27 @@ static InterfaCSS* singleton = nil;
     else [self clearAllCachedStyles];
 }
 
+- (NSArray*) effectiveStylesheets {
+    NSMutableArray* effective = [NSMutableArray array];
+    NSMutableArray* refreshable = [NSMutableArray array];
+
+    for(ISSStyleSheet* styleSheet in self.styleSheets) {
+        if( styleSheet.active ) {
+            if( styleSheet.refreshable && self.processRefreshableStylesheetsLast ) {
+                [refreshable addObject:styleSheet];
+            } else {
+                [effective addObject:styleSheet];
+            }
+        }
+    }
+
+    if( self.processRefreshableStylesheetsLast ) {
+        [effective addObjectsFromArray:refreshable];
+    }
+
+    return effective;
+}
+
 
 #pragma mark - Variables
 
@@ -633,7 +656,7 @@ static InterfaCSS* singleton = nil;
 
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;
-    for (ISSStyleSheet* styleSheet in self.styleSheets) {
+    for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
         NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:NO] mutableCopy];
         if( matchingDeclarations.count ) {
             [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {
