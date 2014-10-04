@@ -459,11 +459,14 @@ static InterfaCSS* singleton = nil;
         if( includeSubViews ) {
             NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
             UIView* parentView = nil;
+            // Special case: UIToolbar - add toolbar items to "subview" list
             if( [view isKindOfClass:UIToolbar.class] ) {
                 UIToolbar* toolbar = (UIToolbar*)view;
                 parentView = toolbar;
                 if( toolbar.items ) subviews = [subviews arrayByAddingObjectsFromArray:toolbar.items];
-            } else if( [view isKindOfClass:UINavigationBar.class] ) {
+            }
+            // Special case: UINavigationBar - add nav bar items to "subview" list
+            else if( [view isKindOfClass:UINavigationBar.class] ) {
                 UINavigationBar* navigationBar = (UINavigationBar*)view;
                 parentView = navigationBar;
 
@@ -480,12 +483,15 @@ static InterfaCSS* singleton = nil;
                     }
                 }
                 subviews = [subviews arrayByAddingObjectsFromArray:additionalSubViews];
-            } else if( [view isKindOfClass:UITabBar.class] ) {
+            }
+            // Special case: UITabBar - add tab bar items to "subview" list
+            else if( [view isKindOfClass:UITabBar.class] ) {
                 UITabBar* tabBar = (UITabBar*)view;
                 parentView = tabBar;
                 if( tabBar.items ) subviews = [subviews arrayByAddingObjectsFromArray:tabBar.items];
             }
-            
+
+            // Process subviews
             for(id subView in subviews) {
                 ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
 
