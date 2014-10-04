@@ -1,6 +1,18 @@
 #Changes
 
 
+##Version 0.9.10
+
+### New features & changes
+* Added support for processing refreshable stylesheets after normal stylesheets (`processRefreshableStylesheetsLast`) 
+* Added support for setting interval at which refreshable stylesheets are refreshed (`stylesheetAutoRefreshInterval`) 
+* Updated error handing for loading of refreshable stylesheets.
+* Added support for registering custom stylesheet properties, by exposing an instance of `ISSPropertyRegistry` through the property `propertyRegistry` in `InterfaCSS`.  
+
+### Bug fixes
+* Fixed bug in replacement of unicode escape sequences (`[NSString iss_stringByReplacingUnicodeSequences]`).
+ 
+
 ##Version 0.9.9
 
 ### New features & changes

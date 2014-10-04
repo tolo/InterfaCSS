@@ -69,13 +69,13 @@
     BOOL add = YES;
     for (NSString* key in attributeDict.allKeys) {
         if ( [[key lowercaseString] hasPrefix:@"class"] ) {
-            styleClass = [attributeDict objectForKey:key];
+            styleClass = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"prototype"] ) {
-            prototypeName = [attributeDict objectForKey:key];
+            prototypeName = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"property"] ) {
-            propertyName = [attributeDict objectForKey:key];
+            propertyName = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
-            add = [[attributeDict objectForKey:key] boolValue];
+            add = [attributeDict[key] boolValue];
         }
     }
 

@@ -16,7 +16,7 @@
 @implementation ISSLazyValue
 
 + (instancetype) lazyValueWithBlock:(ISSLazyValueBlock)block {
-    return [[[self class] alloc] initWithLazyEvaluationBlock:block];
+    return [[(id)self.class alloc] initWithLazyEvaluationBlock:block];
 }
 
 - (instancetype) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block {

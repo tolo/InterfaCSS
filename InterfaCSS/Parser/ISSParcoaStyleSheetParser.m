@@ -25,6 +25,7 @@
 #import "ISSLazyValue.h"
 #import "ISSPseudoClass.h"
 #import "InterfaCSS.h"
+#import "ISSPropertyRegistry.h"
 
 
 // Selector chains declaration wrapper class, to keep track of property ordering and of nested declarations
@@ -485,7 +486,8 @@
     typeToParser = [[NSMutableDictionary alloc] init];
 
     // Build dictionary of all known property names mapped to ISSPropertyDefinitions
-    NSSet* allProperties = [ISSPropertyDefinition propertyDefinitions];
+    ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+    NSSet* allProperties = [registry propertyDefinitions];
     for(ISSPropertyDefinition* p in allProperties) {
         for(NSString* alias in p.allNames) {
             propertyNameToProperty[[alias lowercaseString]] = p;
@@ -495,14 +497,14 @@
 
     // BOOL
     ParcoaParser* boolValueParser = [identifier transform:^id(id value) {
-        return [NSNumber numberWithBool:[value boolValue]];
+        return @([value boolValue]);
     } name:@"bool"];
     typeToParser[@(ISSPropertyTypeBool)] = boolValueParser;
 
 
     // Number
     ParcoaParser* numberValueParser = [number transform:^id(id value) {
-        return [NSNumber numberWithFloat:[value floatValue]];
+        return @([value floatValue]);
     } name:@"number"];
     typeToParser[@(ISSPropertyTypeNumber)] = numberValueParser;
 

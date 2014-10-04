@@ -23,6 +23,7 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
 @class ISSUIElementDetails;
+@class ISSPropertyRegistry;
 
 
 /** 
@@ -77,6 +78,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 
 
 #pragma mark - Properties
+
+/**
+ * The property registry keeps track on all properties that can be set through stylesheets.
+ */
+@property (nonatomic, readonly, strong) ISSPropertyRegistry* propertyRegistry;
 
 /**
  * All currently active stylesheets (`ISSStyleSheet`).

@@ -14,6 +14,7 @@
 #import "NSObject+ISSLogSupport.h"
 #import "ISSPseudoClass.h"
 #import "ISSUIElementDetails.h"
+#import "ISSPropertyRegistry.h"
 
 @implementation ISSSelector {
     BOOL _wildcardType;
@@ -41,7 +42,8 @@
         else {
             type = [type lowercaseString];
             if( ![type hasPrefix:@"ui"] ) type = [@"ui" stringByAppendingString:type];
-            typeClass = [ISSPropertyDefinition canonicalTypeClassForType:type];
+            ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+            typeClass = [registry canonicalTypeClassForType:type];
         }
     }
 
@@ -61,7 +63,7 @@
 }
 
 - (instancetype) copyWithZone:(NSZone*)zone {
-    return [[self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType class:self.styleClass pseudoClass:self.pseudoClass];
+    return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType class:self.styleClass pseudoClass:self.pseudoClass];
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
@@ -86,7 +88,8 @@
 
 - (NSString*) displayDescription {
     NSString* pseudoClassSuffix = @"";
-    NSString* typeString = _type ? [ISSPropertyDefinition canonicalTypeForViewClass:_type] : nil;
+    ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+    NSString* typeString = _type ? [registry canonicalTypeForViewClass:_type] : nil;
     if( !_type && _wildcardType ) typeString = @"*";
     
     if( self.pseudoClass ) pseudoClassSuffix = [NSString stringWithFormat:@":%@", self.pseudoClass.displayDescription];

@@ -36,7 +36,7 @@
     NSArray* subviews = parentDetails.view.subviews;
     NSInteger index = [subviews indexOfObject:elementDetails.uiElement];
     if( index != NSNotFound && (index-1) >= 0 ) {
-        UIView* sibling = [subviews objectAtIndex:(NSUInteger)(index-1)];
+        UIView* sibling = subviews[(NSUInteger) (index - 1)];
         ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
         if( [selector matchesElement:siblingDetails ignoringPseudoClasses:ignorePseudoClasses] ) return siblingDetails;
     }

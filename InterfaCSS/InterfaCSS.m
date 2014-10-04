@@ -17,6 +17,7 @@
 #import "ISSPropertyDeclarations.h"
 #import "ISSSelectorChain.h"
 #import "NSMutableArray+ISSAdditions.h"
+#import "ISSPropertyRegistry.h"
 
 
 static InterfaCSS* singleton = nil;
@@ -37,8 +38,10 @@ static InterfaCSS* singleton = nil;
 
 @property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
 
-@property (nonatomic, strong) NSMapTable* cachedStyleDeclarationsForViews; // UIView (weak reference) -> NSMutableArray
-@property (nonatomic, strong) NSMapTable* trackedViews; // UIView (weak reference) -> ISSUIElementDetails
+@property (nonatomic, strong) NSMapTable* trackedElements; // Pointer address (NSValue) -> UI element (weak ref)
+@property (nonatomic, strong) NSMutableDictionary* detailsForElements; // Pointer address (NSValue) -> ISSUIElementDetails
+
+@property (nonatomic, strong) NSMapTable* cachedStyleDeclarationsForElements; // Canonical element styling identity (NSString) -> NSMutableArray
 
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
 
@@ -74,8 +77,8 @@ static InterfaCSS* singleton = nil;
     singleton.parser = nil;
     [singleton.styleSheets removeAllObjects];
     [singleton.styleSheetsVariables removeAllObjects];
-    [singleton.trackedViews removeAllObjects];
-    [singleton.cachedStyleDeclarationsForViews removeAllObjects];
+    [singleton.detailsForElements removeAllObjects];
+    [singleton.cachedStyleDeclarationsForElements removeAllObjects];
     [singleton.prototypes removeAllObjects];
 
     [singleton disableAutoRefreshTimer];
@@ -90,11 +93,14 @@ static InterfaCSS* singleton = nil;
         _stylesheetAutoRefreshInterval = 5.0;
         _processRefreshableStylesheetsLast = YES;
 
+        _propertyRegistry = [[ISSPropertyRegistry alloc] init];
+
         _styleSheets = [[NSMutableArray alloc] init];
         _styleSheetsVariables = [[NSMutableDictionary alloc] init];
 
-        _trackedViews = [NSMapTable weakToStrongObjectsMapTable];
-        _cachedStyleDeclarationsForViews = [NSMapTable weakToStrongObjectsMapTable];
+        _trackedElements = [NSMapTable strongToWeakObjectsMapTable];
+        _detailsForElements = [NSMutableDictionary dictionary];
+        _cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
         _prototypes = [[NSMutableDictionary alloc] init];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
@@ -114,7 +120,26 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) memoryWarning:(NSNotification*)notification {
-    [self.cachedStyleDeclarationsForViews removeAllObjects];
+    [self.cachedStyleDeclarationsForElements removeAllObjects];
+}
+
+- (void) cleanUpTrackedElements {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:nil];
+
+    NSMutableSet* stillValid = [NSMutableSet set];
+
+    for(NSString* key in self.trackedElements.keyEnumerator) {
+        if( [self.trackedElements objectForKey:key] ) [stillValid addObject:key];
+    }
+
+    if( stillValid.count == self.detailsForElements.count ) return;
+
+    for(NSString* key in self.detailsForElements.allKeys) {
+        if( ![stillValid containsObject:key] ) {
+            ISSLogTrace(@"Removing detailsForElements - %@", self.detailsForElements[key]);
+            [self.detailsForElements removeObjectForKey:key];
+        }
+    }
 }
 
 
@@ -226,7 +251,7 @@ static InterfaCSS* singleton = nil;
 - (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails force:(BOOL)force {
     // Get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
     // This makes it possible to reuse identical style information in sibling elements for instance.
-    NSMutableArray* cachedDeclarations = [self.cachedStyleDeclarationsForViews objectForKey:elementDetails.elementStyleIdentity];
+    NSMutableArray* cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentity];
     
     if ( !cachedDeclarations ) {
         ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentity);
@@ -246,7 +271,7 @@ static InterfaCSS* singleton = nil;
 
         // Only add declarations to cache if element is fully added to the view hierarchy
         if( elementDetails.addedToViewHierarchy ) {
-            [self.cachedStyleDeclarationsForViews setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentity];
+            [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentity];
         } else {
             ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentity);
         }
@@ -302,18 +327,22 @@ static InterfaCSS* singleton = nil;
 }
 
 
-#pragma mark - Public interface
-
 #pragma mark - Styling
 
 - (ISSUIElementDetails*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
 
-    ISSUIElementDetails* details = [self.trackedViews objectForKey:uiElement];
+    NSValue* key = [NSValue valueWithPointer:(__bridge void*)uiElement];
+    ISSUIElementDetails* details = self.detailsForElements[key];
     if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
-        [self.trackedViews setObject:details forKey:uiElement];
+        self.detailsForElements[key] = details;
+        [self.trackedElements setObject:uiElement forKey:key];
     }
+
+    // Clean up
+    [self performSelector:@selector(cleanUpTrackedElements) withObject:nil afterDelay:0];
+
     return details;
 }
 
@@ -325,7 +354,7 @@ static InterfaCSS* singleton = nil;
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
     if( uiElementDetails ) ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
 
-    [self.cachedStyleDeclarationsForViews removeObjectForKey:uiElementDetails.elementStyleIdentity];
+    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
     [uiElementDetails resetCachedData];
 
     UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
@@ -336,8 +365,8 @@ static InterfaCSS* singleton = nil;
 
 - (void) clearAllCachedStyles {
     ISSLogTrace(@"Clearing all cached styles");
-    [self.cachedStyleDeclarationsForViews removeAllObjects];
-    for(ISSUIElementDetails* details in [self.trackedViews objectEnumerator]) {
+    [self.cachedStyleDeclarationsForElements removeAllObjects];
+    for(ISSUIElementDetails* details in [self.detailsForElements objectEnumerator]) {
         [details resetCachedData];
     }
 }
@@ -628,23 +657,23 @@ static InterfaCSS* singleton = nil;
 #pragma mark - Variables
 
 - (NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName {
-    return [self.styleSheetsVariables objectForKey:variableName];
+    return self.styleSheetsVariables[variableName];
 }
 
 - (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType {
-    NSString* value = [self.styleSheetsVariables objectForKey:variableName];
+    NSString* value = self.styleSheetsVariables[variableName];
     if( value ) return [self.parser transformValue:value asPropertyType:propertyType];
     else return nil;
 }
 
 - (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition {
-    NSString* value = [self.styleSheetsVariables objectForKey:variableName];
+    NSString* value = self.styleSheetsVariables[variableName];
     if( value ) return [self.parser transformValue:value forPropertyDefinition:propertyDefinition];
     else return nil;
 }
 
 - (void) setValue:(NSString*)value forStyleSheetVariableWithName:(NSString*)variableName {
-    return [self.styleSheetsVariables setObject:value forKey:variableName];
+    self.styleSheetsVariables[variableName] = value;
 }
 
 

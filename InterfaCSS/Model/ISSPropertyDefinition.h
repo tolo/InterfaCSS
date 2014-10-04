@@ -35,6 +35,7 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 @property (nonatomic, readonly) NSArray* allNames;
 
 @property (nonatomic, readonly) ISSPropertyType type;
+@property (nonatomic, readonly) NSString* typeDescription;
 @property (nonatomic, readonly) NSString* uniqueTypeDescription;
 @property (nonatomic, readonly) NSDictionary* parameterEnumValues;
 @property (nonatomic, readonly) NSDictionary* enumValues;
@@ -47,17 +48,5 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 - (void) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath;
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type;
-
-+ (NSSet*) propertyDefinitions;
-+ (NSSet*) propertyDefinitionsForType:(ISSPropertyType)propertyType;
-+ (NSSet*) propertyDefinitionsForViewClass:(Class)viewClass;
-
-+ (NSString*) canonicalTypeForViewClass:(Class)viewClass;
-+ (Class) canonicalTypeClassForViewClass:(Class)viewClass;
-+ (Class) canonicalTypeClassForType:(NSString*)type;
-
-#if DEBUG == 1
-+ (NSString*) propertyDescriptionsForMarkdown;
-#endif
 
 @end

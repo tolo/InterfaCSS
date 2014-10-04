@@ -46,9 +46,9 @@
 
 - (id) copyWithZone:(NSZone*)zone {
     ISSPropertyDeclaration* decl;
-    if( _unrecognizedName ) decl = [[self.class allocWithZone:zone] initWithUnrecognizedProperty:_unrecognizedName];
+    if( _unrecognizedName ) decl = [[(id)self.class allocWithZone:zone] initWithUnrecognizedProperty:_unrecognizedName];
     else {
-        decl = [[self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters prefix:self.prefix];
+        decl = [[(id)self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters prefix:self.prefix];
         decl.propertyValue = self.propertyValue;
         decl.lazyPropertyTransformationBlock = self.lazyPropertyTransformationBlock;
     }

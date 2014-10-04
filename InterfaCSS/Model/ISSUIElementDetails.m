@@ -9,6 +9,8 @@
 
 #import "ISSUIElementDetails.h"
 
+#import "ISSPropertyRegistry.h"
+
 const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 
 
@@ -34,7 +36,8 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
             _parentView = view.superview;
         }
 
-        _canonicalType = [ISSPropertyDefinition canonicalTypeClassForViewClass:[self.uiElement class]];
+        ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+        _canonicalType = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
         if( !_canonicalType ) _canonicalType = [uiElement class];
 
         [self updateElementStyleIdentity];
@@ -45,7 +48,7 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 #pragma mark - NSCopying
 
 - (id) copyWithZone:(NSZone*)zone {
-    ISSUIElementDetails* copy = [[self.class allocWithZone:zone] init];
+    ISSUIElementDetails* copy = [[(id)self.class allocWithZone:zone] init];
     copy->_uiElement = self->_uiElement;
     copy.parentView = self.parentView;
 
@@ -179,7 +182,8 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
         }
     }
     else if( self.parentView ) {
-        Class uiKitClass = [ISSPropertyDefinition canonicalTypeClassForViewClass:[self.uiElement class]];
+        ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+        Class uiKitClass = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
         for(UIView* v in self.parentView.subviews) {
             if( [v.class isSubclassOfClass:uiKitClass] ) {
                 if( v == self.uiElement ) *position = *count;
