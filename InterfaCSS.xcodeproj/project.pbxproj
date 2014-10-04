@@ -56,17 +56,14 @@
 		CC3C89FB978EC04E5A439018 /* ISSPropertyRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C88928B0760180BFAB41B /* ISSPropertyRegistry.h */; };
 		CC3C8B4BBAEA07A6DFF3A07A /* NSAttributedString+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8133205B709D492A7ED4 /* NSAttributedString+ISSAdditions.h */; };
 		CC3C8BB140D67BE4C31BE8C3 /* ISSPointValue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8414CB6B1F70FF8436C3 /* ISSPointValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CC3C8BB5468B0BB5D21C44F9 /* NSMutableArray+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */; };
 		CC3C8C474C666BF1E07B9724 /* ISSPseudoClass.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C852BA2C3628A978579CB /* ISSPseudoClass.h */; };
 		CC3C8D1DD943E2B523AEF037 /* ISSRectValue.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8034BF39A0926CD62891 /* ISSRectValue.m */; };
-		CC3C8D3FE1EBCAF94E69341A /* NSAttributedString+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */; };
 		CC3C8D80EBF0833FA1C6510B /* ISSLazyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C85028E68343AE0CAE9D4 /* ISSLazyValue.h */; };
 		CC3C8DDB0631BA9C70A66260 /* NSMutableArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */; };
 		CC3C8E0E5C8D5C97C3A91E54 /* ISSUIElementDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C83FFBC650611AEFB8E9A /* ISSUIElementDetails.m */; };
 		CC3C8E5148DB4893FDAF0AFE /* ISSPropertyDeclaration.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C81A3D5E7700AF520BADE /* ISSPropertyDeclaration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C8E68A7432B8B248D1750 /* styleSheetWithBadData.css in Resources */ = {isa = PBXBuildFile; fileRef = CC3C8682A0ABFB4C0090E2E9 /* styleSheetWithBadData.css */; };
 		CC3C8F2CD68F21A7F94FAB06 /* UITableView+InterfaCSS.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8523278DCFDF3EBE076A /* UITableView+InterfaCSS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CC3C8F4BFF24A2E5BBE1C8F9 /* ISSPropertyRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C82B417030D3C0260D40E /* ISSPropertyRegistry.m */; };
 		CC3C8FB344DE3874099F99EE /* NSDictionary+ISSDictionaryAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */; };
 		F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
 		F65D52E014F7B12A0034E496 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
@@ -485,7 +482,7 @@
 		F6F5FC0E14F5683B008E647E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 				ORGANIZATIONNAME = "Leafnode AB";
 				TargetAttributes = {
 					2785E25B18A8DCBB001D1104 = {
@@ -569,9 +566,6 @@
 				CC3C87E80DDADF224FD175AF /* ISSStyleSheetParserTests.m in Sources */,
 				CC3C87D079604D61DDBCDB3F /* ISSSelectorTests.m in Sources */,
 				27CD793718E9FD7E002FC343 /* InterfaCSSTests.m in Sources */,
-				CC3C8BB5468B0BB5D21C44F9 /* NSMutableArray+ISSAdditions.m in Sources */,
-				CC3C8D3FE1EBCAF94E69341A /* NSAttributedString+ISSAdditions.m in Sources */,
-				CC3C8F4BFF24A2E5BBE1C8F9 /* ISSPropertyRegistry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -692,8 +686,10 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -729,8 +725,10 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
