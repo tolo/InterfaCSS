@@ -5,7 +5,3 @@ xcodeproj 'InterfaCSS'
 target :'InterfaCSS' do
 pod 'Parcoa', '~> 0.0.1'
 end
-
-target :'InterfaCSS Tests' do
-pod 'Parcoa', '~> 0.0.1'
-end
