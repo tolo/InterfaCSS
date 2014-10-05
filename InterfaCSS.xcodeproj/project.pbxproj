@@ -25,7 +25,6 @@
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
 		2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */; };
-		2A5589913A3C4745B622F6AC /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 186DC3674630469E9A578BF5 /* libPods.a */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
 		CC3C7E95D72191A7534CDDE8 /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C80C28116F9DA3FFC45F0 /* ISSViewPrototype.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -213,7 +212,6 @@
 				F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */,
 				F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */,
 				F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */,
-				2A5589913A3C4745B622F6AC /* libPods.a in Frameworks */,
 				2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -728,7 +726,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "$(inherited)";
@@ -760,7 +758,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
 				SDKROOT = iphoneos;
