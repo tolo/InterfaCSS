@@ -24,7 +24,9 @@
 		27DDFCAF18B0CC3C00C4A6A1 /* libInterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1714F5683B008E647E /* libInterfaCSS.a */; };
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
+		2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */; };
 		2A5589913A3C4745B622F6AC /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 186DC3674630469E9A578BF5 /* libPods.a */; };
+		7803CA9970A67BDD7F0B9C23 /* libPods-InterfaCSS Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
 		CC3C7E95D72191A7534CDDE8 /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C80C28116F9DA3FFC45F0 /* ISSViewPrototype.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -100,8 +102,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.release.xcconfig"; sourceTree = "<group>"; };
+		0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		186DC3674630469E9A578BF5 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		218B97896B4C494CAAE00EF3 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		27530C36182AF066000FED8A /* ISSPropertyDeclarations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclarations.h; sourceTree = "<group>"; };
 		27530C37182AF066000FED8A /* ISSPropertyDeclarations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclarations.m; sourceTree = "<group>"; };
 		2785E25C18A8DCBB001D1104 /* InterfaCSS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InterfaCSS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +125,10 @@
 		27D8145217FB5A7D00E365B1 /* UIColor+ISSColorAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+ISSColorAdditions.m"; sourceTree = "<group>"; };
 		27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetPropertyValues.css; sourceTree = "<group>"; };
 		27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
+		30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
+		BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.debug.xcconfig"; sourceTree = "<group>"; };
 		CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDateUtils.m; sourceTree = "<group>"; };
 		CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDateUtils.h; sourceTree = "<group>"; };
 		CC3C8034BF39A0926CD62891 /* ISSRectValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRectValue.m; sourceTree = "<group>"; };
@@ -196,6 +203,7 @@
 				2785E25E18A8DCBB001D1104 /* XCTest.framework in Frameworks */,
 				2785E26018A8DCBB001D1104 /* UIKit.framework in Frameworks */,
 				2785E25F18A8DCBB001D1104 /* Foundation.framework in Frameworks */,
+				7803CA9970A67BDD7F0B9C23 /* libPods-InterfaCSS Tests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,6 +216,7 @@
 				F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */,
 				F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */,
 				2A5589913A3C4745B622F6AC /* libPods.a in Frameworks */,
+				2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +256,17 @@
 				CC3C8682A0ABFB4C0090E2E9 /* styleSheetWithBadData.css */,
 			);
 			path = TestData;
+			sourceTree = "<group>";
+		};
+		CE3DE08EA031BFA6C00343AC /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */,
+				09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */,
+				6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */,
+				B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 		F6EBACFB1768B0AA0053DAFA /* Model */ = {
@@ -346,7 +366,7 @@
 				2785E26118A8DCBB001D1104 /* InterfaCSS Tests */,
 				F6F5FC1914F5683B008E647E /* Frameworks */,
 				F6F5FC1814F5683B008E647E /* Products */,
-				218B97896B4C494CAAE00EF3 /* Pods.xcconfig */,
+				CE3DE08EA031BFA6C00343AC /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -368,6 +388,8 @@
 				F6F5FC1A14F5683B008E647E /* Foundation.framework */,
 				186DC3674630469E9A578BF5 /* libPods.a */,
 				2785E25D18A8DCBB001D1104 /* XCTest.framework */,
+				0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */,
+				30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -443,9 +465,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2785E26E18A8DCBB001D1104 /* Build configuration list for PBXNativeTarget "InterfaCSS Tests" */;
 			buildPhases = (
+				E4A6D2CA701F541762C38D9C /* Check Pods Manifest.lock */,
 				2785E25818A8DCBB001D1104 /* Sources */,
 				2785E25918A8DCBB001D1104 /* Frameworks */,
 				2785E25A18A8DCBB001D1104 /* Resources */,
+				55D99460311B48095C447791 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -500,6 +524,8 @@
 			mainGroup = F6F5FC0C14F5683B008E647E;
 			productRefGroup = F6F5FC1814F5683B008E647E /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+			);
 			projectRoot = "";
 			targets = (
 				F6F5FC1614F5683B008E647E /* InterfaCSS */,
@@ -541,6 +567,21 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		55D99460311B48095C447791 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		C109C8B4084F4494B2465B76 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -553,7 +594,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E4A6D2CA701F541762C38D9C /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -629,6 +685,7 @@
 /* Begin XCBuildConfiguration section */
 		2785E26C18A8DCBB001D1104 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -653,6 +710,7 @@
 		};
 		2785E26D18A8DCBB001D1104 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -712,6 +770,7 @@
 					"-all_load",
 				);
 				SDKROOT = iphoneos;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -744,12 +803,13 @@
 				);
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Release;
 		};
 		F6F5FC2514F5683B008E647E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 218B97896B4C494CAAE00EF3 /* Pods.xcconfig */;
+			baseConfigurationReference = BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DSTROOT = /tmp/InterfaCSS.dst;
@@ -767,7 +827,7 @@
 		};
 		F6F5FC2614F5683B008E647E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 218B97896B4C494CAAE00EF3 /* Pods.xcconfig */;
+			baseConfigurationReference = 09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DSTROOT = /tmp/InterfaCSS.dst;
