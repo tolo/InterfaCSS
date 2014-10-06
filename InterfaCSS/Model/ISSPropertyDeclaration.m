@@ -13,6 +13,10 @@
 #import "NSString+ISSStringAdditions.h"
 #import "NSObject+ISSLogSupport.h"
 
+
+NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
+
+
 @implementation ISSPropertyDeclaration
 
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property prefix:(NSString*)prefix {
@@ -67,10 +71,21 @@
 }
 
 - (BOOL) applyPropertyValueOnTarget:(id)target {
-    if( !self.property ) return NO;
+    if( !self.property ) {
+        ISSLogWarning(@"Cannot apply property value - unknown property!");
+        return NO;
+    }
+
+    if( self.propertyValue == ISSPropertyDefinitionUseCurrentValue ) {
+        ISSLogTrace(@"Property value not changed - using existing value");
+        return YES;
+    }
 
     [self transformValueIfNeeded];
-    if( !self.propertyValue ) return NO;
+    if( !self.propertyValue ) {
+        ISSLogWarning(@"Cannot apply property value - empty property value after transform!");
+        return NO;
+    }
 
     [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
 

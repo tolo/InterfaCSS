@@ -195,4 +195,21 @@
     XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
 }
 
+- (void) testCascadingStylePropertyOverrideWithDefault {
+    UILabel* label = [[UILabel alloc] init];
+    label.styleClassISS = @"cascadingStylePropertyOverrideWithDefault1";
+    label.alpha = 1;
+
+    [label applyStylingISS];
+
+    XCTAssertEqual(label.alpha, 0.666f, @"Unexpected property value");
+
+    label.alpha = 0.5;
+    [label addStyleClassISS:@"cascadingStylePropertyOverrideWithDefault2"];
+
+    [label applyStylingISS];
+
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+}
+
 @end

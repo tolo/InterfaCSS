@@ -11,6 +11,9 @@
 
 @class ISSPropertyDefinition;
 
+extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
+
+
 /**
  * Represents the declaration of a property in a stylesheet, along with the declared value.
  */

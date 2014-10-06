@@ -460,11 +460,19 @@
         // Parse property declaration
         ISSPropertyDeclaration* decl = [self parsePropertyDeclaration:propertyPair[0]];
         if( decl ) {
+            // Check if
+            BOOL useCurrentValue = [[propertyValue iss_trim] iss_isEqualIgnoreCase:@"current"];
+
             // Perform lazy transformation of property value
-            decl.lazyPropertyTransformationBlock = ^id(ISSPropertyDeclaration* blockDecl) {
-                return [self transformValueWithCaching:propertyValue forProperty:blockDecl.property];
-            };
-            decl.propertyValue = propertyValue; // Raw value
+            if( useCurrentValue ) {
+                decl.propertyValue = ISSPropertyDefinitionUseCurrentValue;
+            } else {
+                decl.lazyPropertyTransformationBlock = ^id(ISSPropertyDeclaration* blockDecl) {
+                    return [self transformValueWithCaching:propertyValue forProperty:blockDecl.property];
+                };
+                decl.propertyValue = propertyValue; // Raw value
+            }
+
             return decl;
         }
     }

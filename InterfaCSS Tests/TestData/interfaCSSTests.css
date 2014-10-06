@@ -80,3 +80,11 @@ UIView.disabledStylingTest {
         alpha: 0.5;
     }
 }
+
+.cascadingStylePropertyOverrideWithDefault1 {
+    alpha: 0.666;
+}
+
+.cascadingStylePropertyOverrideWithDefault2 {
+    alpha: current;
+}
