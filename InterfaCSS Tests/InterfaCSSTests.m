@@ -212,4 +212,21 @@
     XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
 }
 
+- (void) testDisableStylingOfProperty {
+    UILabel* label = [[UILabel alloc] init];
+    label.styleClassISS = @"testDisableProperty";
+    label.alpha = 1;
+
+    [label applyStylingISS];
+
+    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+
+    label.alpha = 1;
+    [label disableStylingForPropertyISS:@"alpha"];
+
+    [label applyStylingISS];
+
+    XCTAssertEqual(label.alpha, 1.0f, @"Unexpected property value");
+}
+
 @end

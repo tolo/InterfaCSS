@@ -132,4 +132,19 @@
  */
 - (void) clearCachedStylesISS;
 
+
+/**
+ * Disables styling of a property in this view, i.e. InterfaCSS will stop applying styling information to the property, but any value that has
+ * already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS, and then take control of the
+ * styling manually, without the risk of InterfaCSS overwriting property values.
+ *
+ * Call `enableStylingForPropertyISS:` to re-enable styling.
+ */
+- (void) disableStylingForPropertyISS:(NSString*)propertyName;
+
+/**
+ * Re-enables styling of a property.
+ */
+- (void) enableStylingForPropertyISS:(NSString*)propertyName;
+
 @end

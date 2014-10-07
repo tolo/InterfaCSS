@@ -315,7 +315,10 @@ static InterfaCSS* singleton = nil;
         }
 
         for (ISSPropertyDeclaration* propertyDeclaration in styles) {
-            if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
+            if( [elementDetails.disabledProperties containsObject:propertyDeclaration.property] ) {
+                ISSLogTrace(@"Skipping setting of %@ - property disabled on %@", propertyDeclaration, elementDetails.uiElement);
+            }
+            else if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails.uiElement] ) {
                 ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
             }
         }
@@ -531,6 +534,13 @@ static InterfaCSS* singleton = nil;
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     uiElementDetails.stylingDisabled = !enabled;
     if( enabled ) [self scheduleApplyStyling:uiElement animated:NO];
+}
+
+- (void) setStylingEnabled:(BOOL)enabled forProperty:(NSString*)propertyName inUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    ISSPropertyDefinition* property = [self.propertyRegistry propertyDefinitionForProperty:propertyName inClass:[uiElement class]];
+    if( enabled ) [uiElementDetails removeDisabledProperty:property];
+    else [uiElementDetails addDisabledProperty:property];
 }
 
 

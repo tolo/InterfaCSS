@@ -88,3 +88,7 @@ UIView.disabledStylingTest {
 .cascadingStylePropertyOverrideWithDefault2 {
     alpha: current;
 }
+
+.testDisableProperty {
+    alpha: 0.5;
+}

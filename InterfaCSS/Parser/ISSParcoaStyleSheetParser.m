@@ -497,8 +497,8 @@
     ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
     NSSet* allProperties = [registry propertyDefinitions];
     for(ISSPropertyDefinition* p in allProperties) {
-        for(NSString* alias in p.allNames) {
-            propertyNameToProperty[[alias lowercaseString]] = p;
+        for(NSString* lowerCaseAlias in p.allNames) {
+            propertyNameToProperty[lowerCaseAlias] = p;
         }
     }
 

@@ -35,6 +35,8 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlock;
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlock;
 
+@property (nonatomic, strong, readonly) NSSet* disabledProperties;
+
 @property (nonatomic, strong, readonly) NSMutableDictionary* additionalDetails;
 
 
@@ -45,5 +47,9 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 - (void) setCustomElementStyleIdentity:(NSString*)identityPath;
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count;
+
+- (void) addDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
+- (void) removeDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
+- (void) clearDisabledProperties;
 
 @end

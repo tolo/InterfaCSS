@@ -32,7 +32,7 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 
 @property (nonatomic, readonly) NSString* name;
 @property (nonatomic, readonly) BOOL anonymous;
-@property (nonatomic, readonly) NSArray* allNames;
+@property (nonatomic, readonly) NSSet* allNames; // lowercase names/aliases
 
 @property (nonatomic, readonly) ISSPropertyType type;
 @property (nonatomic, readonly) NSString* typeDescription;

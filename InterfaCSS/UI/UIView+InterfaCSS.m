@@ -11,6 +11,7 @@
 
 #import "NSString+ISSStringAdditions.h"
 #import "ISSUIElementDetails.h"
+#import "ISSPropertyRegistry.h"
 
 
 @implementation UIView (InterfaCSS)
@@ -141,6 +142,14 @@
 
 - (void) clearCachedStylesISS {
     [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
+}
+
+- (void) disableStylingForPropertyISS:(NSString*)propertyName {
+    [[InterfaCSS interfaCSS] setStylingEnabled:NO forProperty:propertyName inUIElement:self];
+}
+
+- (void) enableStylingForPropertyISS:(NSString*)propertyName {
+    [[InterfaCSS interfaCSS] setStylingEnabled:YES forProperty:propertyName inUIElement:self];
 }
 
 @end

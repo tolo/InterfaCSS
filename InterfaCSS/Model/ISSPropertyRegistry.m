@@ -111,6 +111,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return viewClassProperties;
 }
 
+- (ISSPropertyDefinition*) propertyDefinitionForProperty:(NSString*)propertyName inClass:(Class)viewClass {
+    NSSet* properties = [self propertyDefinitionsForViewClass:viewClass];
+    for(ISSPropertyDefinition* property in properties) {
+        if( [property.allNames containsObject:[propertyName lowercaseString]] ) return property;
+    }
+    return nil;
+}
+
 - (NSString*) canonicalTypeForViewClass:(Class)viewClass {
     NSString* type = self.classesToTypeNames[viewClass];
     if( type ) return type;

@@ -66,6 +66,9 @@
     }];
     
     [self.mainButton addTarget:self action:@selector(touchedButton:event:) forControlEvents:UIControlEventAllTouchEvents];
+
+    // NOTE: Uncomment below to disable styling of cornerRadius
+    //[self.mainButton disableStylingForPropertyISS:@"cornerRadius"];
     
     self.mainTitleLabel.text = @"Simple Sample Main";
     self.mainTitleLabel.tag = 123;

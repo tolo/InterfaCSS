@@ -18,6 +18,7 @@
 
 - (NSSet*) propertyDefinitionsForType:(ISSPropertyType)propertyType;
 - (NSSet*) propertyDefinitionsForViewClass:(Class)viewClass;
+- (ISSPropertyDefinition*) propertyDefinitionForProperty:(NSString*)propertyName inClass:(Class)viewClass;
 
 - (NSString*) canonicalTypeForViewClass:(Class)viewClass;
 - (Class) canonicalTypeClassForViewClass:(Class)viewClass;

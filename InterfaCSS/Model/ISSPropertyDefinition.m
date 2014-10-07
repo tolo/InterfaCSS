@@ -52,8 +52,10 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
     if (self = [super init]) {
         _name = name;
 
-        _allNames = @[name];
-        if( aliases ) _allNames = [_allNames arrayByAddingObjectsFromArray:aliases];
+        _allNames = [NSSet setWithObject:[name lowercaseString]];
+        for(NSString* alias in aliases) {
+            _allNames = [_allNames setByAddingObject:[alias lowercaseString]];
+        }
 
         _type = type;
         _enumValues = [enumValues iss_dictionaryWithLowerCaseKeys];

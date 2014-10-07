@@ -193,4 +193,21 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     }
 }
 
+- (void) addDisabledProperty:(ISSPropertyDefinition*)disabledProperty {
+    if( !disabledProperty ) return;
+    if( !_disabledProperties ) _disabledProperties = [NSSet setWithObject:disabledProperty];
+    else _disabledProperties = [_disabledProperties setByAddingObject:disabledProperty];
+}
+
+- (void) removeDisabledProperty:(ISSPropertyDefinition*)disabledProperty {
+    if( !disabledProperty || !_disabledProperties ) return;
+    NSMutableSet* disabledProperties = [NSMutableSet setWithSet:_disabledProperties];
+    [disabledProperties removeObject:disabledProperty];
+    _disabledProperties = [disabledProperties copy];
+}
+
+- (void) clearDisabledProperties {
+    _disabledProperties = nil;
+}
+
 @end
