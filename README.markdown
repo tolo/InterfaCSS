@@ -84,16 +84,17 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 * Load a stylesheet, like this: `[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your app delegate, when your app is first launched, but if you have a lot of stylesheets it's better to defer loading of the stylesheets to when you actually need them (`loadView` of a particular view controller might be a better place in this case).
 
 * Set up your view hierarchy and set some initial styles classes on your views. This you can do in a few different ways:
-    * By using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hiearchy, like this: `self.view = [ISSViewBuilder rootViewWithStyle:@"myFancyStyleClass" ....`
 
-    * By using a view definition file, you set the style classes of the elements in the definiton file and load it like this:
-    `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
-
-    * Create your view hierarchy manually/using a .nib and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance:
+    * Create your view hierarchy manually or using a nib/storyboard, and then apply styles using the methods defined in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for instance:
         * `self.view.styleClassISS = @"groovyStyle";`
         * `[self.view addStyleClassISS:@"anEvenMoreGroovyStyle"];`
 
-    * Or if you still feel the need to use Interface Builder to setup your views, you can still specify one or more style classes for each UI element in the *Identity Inspector* under *User Defined Runtime Attributes* - just set the **Key Path** to `styleClassISS`, the **Type** to `String` and the **Value** to whatever style class(es) you want to use (multiple style classes are separated by a space).
+    * Use [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hierarchy in a concise fashion, like this: `self.view = [ISSViewBuilder labelWithStyle:@"myFancyStyleClass" ....`
+
+    * If you feel more at home in Interface Builder, you can specify one or more style classes for each UI element in the *Identity Inspector* under *User Defined Runtime Attributes* - just set the **Key Path** to `styleClassISS`, the **Type** to `String` and the **Value** to whatever style class(es) you want to use (multiple style classes are separated by a space).
+    
+    * Using a [view definition file](#ViewDefinitionFile), you can set the style classes of the elements in the definition file and load it like this:
+        `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
 
 * Update styles as you go
     * At any time you can add or remove style classes using the methods provided in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
@@ -105,16 +106,10 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
     * Enable more verbose logging by invoking `[NSObject iss_setLogLevel:ISS_LOG_LEVEL_TRACE];` defined in [`NSObject+ISSLogSupport.h`](InterfaCSS/Util/NSObject+ISSLogSupport.h)
 
-* If you need more control over how/when styling is applied, have a look at these properties and methods in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h):
-    * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31)
-    * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36)
-    * [`disableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L110)
-    * [`enableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L115)
-
 
 ###Setup automatic css reload during development
 
-To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. This is how you do it (in your app delegate for instance):
+To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. Checkout the snippet below for an example on how you add refreshable stylesheets (in your app delegate for instance). Also, checkout the properties `stylesheetAutoRefreshInterval` and `processRefreshableStylesheetsLast` in `InterfaCSS`, for more control over how refreshable stylesheets are managed. 
 
 ```objective-c
 #if DEBUG == 1
@@ -126,6 +121,21 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
         [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/myDazzlingStyles.css"]];
 #endif
 ```
+
+
+
+### Beyond the basics
+
+If you need more control over how/when styling is applied, have a look at these properties and methods in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h):
+
+ * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31) - specify a block to be run before styling. 
+ * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36) - specify a block to be run after styling.
+ * [`disableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L123) - disable styling entirely of view.
+ * [`enableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L128) - re-enable styling of view.
+ * [`applyStylingOnceISS`](InterfaCSS/UI/UIView+InterfaCSS.h#103) - apply styling only once for the view (then disable styling).
+ * [`disableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L143) - disable styling of a specific property in a view.
+ * [`enableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L148) - re-enable styling of property.
+
 
 
 <a name="StylesheetFormat">Stylesheet format</a>
@@ -150,6 +160,7 @@ This is what InterfaCSS supports:
 `imageView`, `contentView`, `backgroundView`, `selectedBackgroundView`, `multipleSelectionBackgroundView`, `titleLabel`, `textLabel`, `detailTextLabel`, `inputView`, `inputAccessoryView`,
 `tableHeaderView`, `tableFooterView` and `backgroundView`.
 * Support properties that are bound to a certain `UIControlState` (for instance): `titleColor(highlighted): red;`
+* Support for locking a property to its current value (through the `current` keyword / value). 
 
 Furthermore, InterfaCSS also supports some Sass/Less-like features:
 
@@ -231,13 +242,13 @@ UILabel {
 ------
 In the layout department, InterfaCSS can help you in these ways:
 
-* Make it easier to create the view hierarcy through the use of the builder methods defined in [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) or by using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference).
+* Make it easier to create the view hierarchy through the use of the builder methods defined in [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) or by using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference).
 * Make positioning and sizing of views easier, by making it possible to use parent relative values when setting frame, bounds and center properties in the stylesheet.
 
-### Create the view hierarcy
+### Create the view hierarchy
 
 #### Using ISSViewBuilder view builder methods
-ISSViewBuilder lets you programmatically create a view heirarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma).
+ISSViewBuilder lets you programmatically create a view hierarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma).
 
 Example of using ISSViewBuilder in the `loadView method of a view controller:
 
@@ -276,7 +287,7 @@ The pattern of the shorthand is basically this: `[ISSBuildXXX:...` = `[ISSViewBu
 Furthermore, you can also use the `beginSubViews` and `endSubViews` macros to make adding of subviews cleaner, as shown above.
 
 
-#### Using a view definition file
+#### <a name="ViewDefinitionFile">Using a view definition file</a>
 Another way of creating a view hierarchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute (`fileOwner` is first attempted, then superview).
 
 Using a view definition file, you also have the option of creating prototype views (use the `prototype` attribute), which can be useful for table view cells for instance.
@@ -313,7 +324,7 @@ Project background and status
 
 InterfaCSS emerged out of frustration with the shortcomings of the available Interface Building tools, one of the most important being the constant need to repeat yourself when it comes to styling of user interface elements. There had to be a better way.
 
-And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting in dark corners of various applications, finally has made a public appearance. During it's evolution into an open source project, other similar projects have popped up, although InterfaCSS still differes from most of them:
+And out of that notion sprung the foundation of InterfaCSS, which after a spending a longish time fermenting in dark corners of various applications, finally has made a public appearance. During it's evolution into an open source project, other similar projects have popped up, although InterfaCSS still differs from most of them:
 
 * Property names are what you expect them to be and the list of supported properties is extensive
 * Powerful CSS support (selector chains, selector combinators, pseudo classes, nested declarations)
@@ -322,7 +333,7 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.8. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.10. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
