@@ -9,8 +9,17 @@
 #import <XCTest/XCTest.h>
 
 #import "InterfaCSS.h"
+#import "ISSUIElementDetails.h"
 #import "UIView+InterfaCSS.h"
 #import "UIColor+ISSColorAdditions.h"
+
+@interface ISSUIElementDetails ()
+
+@property (nonatomic) BOOL usingCustomElementStyleIdentity;
+@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
+
+@end
+
 
 @interface InterfaCSSTests : XCTestCase
 
@@ -227,6 +236,66 @@
     [label applyStylingISS];
 
     XCTAssertEqual(label.alpha, 1.0f, @"Unexpected property value");
+}
+
+- (void) testElementStyleCaching {
+    UIView* view = [[UIView alloc] init];
+    UILabel* label = [[UILabel alloc] init];
+    [view addSubview:label];
+    
+    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    XCTAssertFalse(details.stylesCacheable, @"Expected styles to be NOT cacheable");
+    XCTAssertFalse(details.elementStyleIdentityResolved, @"Expected style identity to be NOT resolved");
+    
+    UIWindow* window = [[UIWindow alloc] init];
+    [window addSubview:view];
+    
+    details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
+}
+
+- (void) testElementStyleCachingUsingCustomStylingIdentity {
+    UIView* view = [[UIView alloc] init];
+    view.customStylingIdentityISS = @"custom";
+    
+    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:view];
+    XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
+    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+}
+
+- (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperView {
+    UIView* view = [[UIView alloc] init];
+    view.customStylingIdentityISS = @"custom";
+    UILabel* label = [[UILabel alloc] init];
+    [view addSubview:label];
+    
+    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    [details elementStyleIdentity]; // Make sure styling identity is built
+    XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
+    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+}
+
+- (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperViewSetLater {
+    UIView* view = [[UIView alloc] init];
+    UILabel* label = [[UILabel alloc] init];
+    [view addSubview:label];
+    
+    UIWindow* window = [[UIWindow alloc] init];
+    [window addSubview:view];
+    
+    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    [details elementStyleIdentity]; // Make sure styling identity is built
+    XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
+    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+    
+    view.customStylingIdentityISS = @"custom";
+    
+    details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    
+    XCTAssertTrue([details.elementStyleIdentity hasPrefix:@"custom"], @"Expected styles identity to begin with custom style identity of parent");
+
+    XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
+    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
 }
 
 @end

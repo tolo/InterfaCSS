@@ -120,7 +120,7 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) memoryWarning:(NSNotification*)notification {
-    [self.cachedStyleDeclarationsForElements removeAllObjects];
+    [self clearAllCachedStyles];
 }
 
 - (void) cleanUpTrackedElements {
@@ -138,6 +138,7 @@ static InterfaCSS* singleton = nil;
         if( ![stillValid containsObject:key] ) {
             ISSLogTrace(@"Removing detailsForElements - %@", self.detailsForElements[key]);
             [self.detailsForElements removeObjectForKey:key];
+            [self.trackedElements removeObjectForKey:key];
         }
     }
 }
@@ -249,9 +250,15 @@ static InterfaCSS* singleton = nil;
 }
 
 - (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails force:(BOOL)force {
-    // Get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
+    // First - get cached declarations stored using weak reference on ISSUIElementDetails object
+    NSMutableArray* cachedDeclarations = elementDetails.cachedDeclarations;
+
+    // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
     // This makes it possible to reuse identical style information in sibling elements for instance.
-    NSMutableArray* cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentity];
+    if( !cachedDeclarations ) {
+        cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentity];
+        elementDetails.cachedDeclarations = cachedDeclarations;
+    }
     
     if ( !cachedDeclarations ) {
         ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentity);
@@ -269,12 +276,15 @@ static InterfaCSS* singleton = nil;
             }
         }
 
-        // Only add declarations to cache if element is fully added to the view hierarchy
-        if( elementDetails.addedToViewHierarchy ) {
+        // Only add declarations to cache if styles are cacheable for element (i.e. added to the view hierarchy or using custom styling identity)
+        if( elementDetails.stylesCacheable ) {
             [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentity];
+            elementDetails.cachedDeclarations = cachedDeclarations;
         } else {
             ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentity);
         }
+    } else {
+        ISSLogTrace(@"Cached declarations exists for '%@'", elementDetails.elementStyleIdentity);
     }
 
     if( !force && elementDetails.stylingApplied ) {
@@ -296,7 +306,7 @@ static InterfaCSS* singleton = nil;
         }
 
         // Set 'stylingApplied' flag only if there are no pseudo classes in declarations, in which case declarations need to be evaluated every time
-        if( !hasPseudoClass && elementDetails.addedToViewHierarchy ) {
+        if( !hasPseudoClass && elementDetails.stylesCacheable ) {
             elementDetails.stylingApplied = YES;
         } else {
             ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentity);
@@ -337,6 +347,7 @@ static InterfaCSS* singleton = nil;
 
     NSValue* key = [NSValue valueWithPointer:(__bridge void*)uiElement];
     ISSUIElementDetails* details = self.detailsForElements[key];
+    if( !details.uiElement ) details = nil; // UIElement has been dealloced and address reused - make sure we don't reuse this invalid ISSUIElementDetails object
     if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
         self.detailsForElements[key] = details;
@@ -530,19 +541,6 @@ static InterfaCSS* singleton = nil;
     } completion:nil];
 }
 
-- (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
-    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    uiElementDetails.stylingDisabled = !enabled;
-    if( enabled ) [self scheduleApplyStyling:uiElement animated:NO];
-}
-
-- (void) setStylingEnabled:(BOOL)enabled forProperty:(NSString*)propertyName inUIElement:(id)uiElement {
-    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    ISSPropertyDefinition* property = [self.propertyRegistry propertyDefinitionForProperty:propertyName inClass:[uiElement class]];
-    if( enabled ) [uiElementDetails removeDisabledProperty:property];
-    else [uiElementDetails addDisabledProperty:property];
-}
-
 
 #pragma mark - Style classes
 
@@ -592,6 +590,57 @@ static InterfaCSS* singleton = nil;
     }
 
     [self clearCachedStylesForUIElement:uiElement];
+}
+
+
+#pragma mark - Additional styling control
+
+- (void) setWillApplyStylingBlock:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock forUIElement:(id)uiElement {
+    [self detailsForUIElement:uiElement].willApplyStylingBlock = willApplyStylingBlock;
+}
+
+- (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement].willApplyStylingBlock;
+}
+
+- (void) setDidApplyStylingBlock:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock forUIElement:(id)uiElement {
+    [self detailsForUIElement:uiElement].didApplyStylingBlock = didApplyStylingBlock;
+}
+
+- (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement].didApplyStylingBlock;
+}
+
+- (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement {
+    [self clearCachedStylesForUIElement:uiElement];
+    [[self detailsForUIElement:uiElement] setCustomElementStyleIdentity:customStylingIdentity];
+}
+
+- (NSString*) customStylingIdentityForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement].elementStyleIdentity;
+}
+
+- (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    uiElementDetails.stylingDisabled = !enabled;
+    if( enabled ) [self scheduleApplyStyling:uiElement animated:NO];
+}
+
+- (BOOL) isStylingEnabledForUIElement:(id)uiElement {
+    return ![self detailsForUIElement:uiElement].stylingDisabled;
+}
+
+- (void) setStylingEnabled:(BOOL)enabled forProperty:(NSString*)propertyName inUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    ISSPropertyDefinition* property = [self.propertyRegistry propertyDefinitionForProperty:propertyName inClass:[uiElement class]];
+    if( enabled ) [uiElementDetails removeDisabledProperty:property];
+    else [uiElementDetails addDisabledProperty:property];
+}
+
+- (BOOL) isStylingEnabledForProperty:(NSString*)propertyName inUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    ISSPropertyDefinition* property = [self.propertyRegistry propertyDefinitionForProperty:propertyName inClass:[uiElement class]];
+    return ![uiElementDetails hasDisabledProperty:property];
 }
 
 

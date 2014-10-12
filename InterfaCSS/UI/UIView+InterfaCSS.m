@@ -10,7 +10,6 @@
 #import "UIView+InterfaCSS.h"
 
 #import "NSString+ISSStringAdditions.h"
-#import "ISSUIElementDetails.h"
 #import "ISSPropertyRegistry.h"
 
 
@@ -36,27 +35,27 @@
 }
 
 - (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockISS {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].willApplyStylingBlock;
+    return [[InterfaCSS interfaCSS] willApplyStylingBlockForUIElement:self];
 }
 
 - (void) setWillApplyStylingBlockISS:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].willApplyStylingBlock = willApplyStylingBlock;
+    [[InterfaCSS interfaCSS] setWillApplyStylingBlock:willApplyStylingBlock forUIElement:self];
 }
 
 - (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockISS {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].didApplyStylingBlock;
+    return [[InterfaCSS interfaCSS] didApplyStylingBlockForUIElement:self];
 }
 
 - (void) setDidApplyStylingBlockISS:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].didApplyStylingBlock = didApplyStylingBlock;
+    [[InterfaCSS interfaCSS] setDidApplyStylingBlock:didApplyStylingBlock forUIElement:self];
 }
 
-- (void) setCustomStylingIdentityISS:(NSString*)customStylingIdentityISS {
-    [[[InterfaCSS interfaCSS] detailsForUIElement:self] setCustomElementStyleIdentity:customStylingIdentityISS];
+- (void) setCustomStylingIdentityISS:(NSString*)customStylingIdentity {
+    [[InterfaCSS interfaCSS] setCustomStylingIdentity:customStylingIdentity forUIElement:self];
 }
 
 - (NSString*) customStylingIdentityISS {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementStyleIdentity;
+    return [[InterfaCSS interfaCSS] customStylingIdentityForUIElement:self];
 }
 
 

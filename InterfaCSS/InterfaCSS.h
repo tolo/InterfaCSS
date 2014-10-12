@@ -142,12 +142,78 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force;
 
+
+#pragma mark - Style classes
+
+/**
+ * Gets the current style classes for the specifiied UI element.
+ */
+- (NSSet*) styleClassesForUIElement:(id)uiElement;
+
+/**
+ * Checks if the specified class is set on the specifiied UI element.
+ */
+- (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass;
+
+/**
+ * Sets the style classes for the specifiied UI element, replacing any previous style classes.
+ */
+- (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement;
+
+/**
+ * Adds a style class to the specifiied UI element.
+ */
+- (void) addStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
+
+/**
+ * Removes a style class from the specifiied UI element.
+ */
+- (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
+
+
+#pragma mark - Additional styling control
+
+/**
+ * Sets a callback block for getting notified when styles will be applied to the specified UI element. Makes it possible to prevent some properties from being applied, by returning a different
+ * list of properties than the list passed as a parameter to the block.
+ */
+- (void) setWillApplyStylingBlock:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock forUIElement:(id)uiElement;
+
+/** Gets the current callback block for getting notified when styles will be applied to the specified UI element.*/
+- (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockForUIElement:(id)uiElement;
+
+/**
+ * Sets a callback block for getting notified when styles have been applied to the specified UI element. Makes it possible to for instance adjust property values or update dependent properties.
+ */
+- (void) setDidApplyStylingBlock:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock forUIElement:(id)uiElement;
+
+/** Gets the current callback block for getting notified when styles have been applied to the specified UI element.*/
+- (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockForUIElement:(id)uiElement;
+
+/**
+ * Sets a custom styling identity that overrides the default mechanism for assigning styling identities to elements (which essentially involves building a full view
+ * hierarchy "path" of an element, such as "UIWindow UIView UIView[class]"). The styling identity is effectively the cache key for the styling information
+ * associated with a UI element, and setting this to a custom value makes it possible to (further) increase performance by sharing cached styles with
+ * UI elements located in different places in the view hierarchy for instance. Examples of places where setting this property can be useful is for instance
+ * the root view of a view controller, a custom UI component or other views that can be styles regardless of the ancestor view hierarchy.
+ *
+ * NOTE: When using a custom styling identity for a view, avoid using style declarations that depends on the view hierarchy above that view (i.e. use of chained
+ * or nested selectors that ).
+ */
+- (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement;
+
+/** Gets the custom styling identity. */
+- (NSString*) customStylingIdentityForUIElement:(id)uiElement;
+
 /**
  * Disables or re-enables styling of the specified UI element. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to the element and it's children,
  * but any styles that have already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS,
  * and then take control of the styling manually, without the risk of InterfaCSS overwriting any modified properties.
  */
 - (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement;
+
+/** Returns `YES` if styling is enabled for the specified UI element. */
+- (BOOL) isStylingEnabledForUIElement:(id)uiElement;
 
 /**
  * Disables or re-enables styling of a specific property in the specified UI element. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to the
@@ -156,33 +222,8 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 - (void) setStylingEnabled:(BOOL)enabled forProperty:(NSString*)propertyName inUIElement:(id)uiElement;
 
-
-#pragma mark - Style classes
-
-/**
- * Gets the current style classes for the specific UI object.
- */
-- (NSSet*) styleClassesForUIElement:(id)uiElement;
-
-/**
- *
- */
-- (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass;
-
-/**
- * Sets the style classes for the specific UI object, replacing any previous style classes.
- */
-- (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement;
-
-/**
- * Adds a style class to the specific UI object.
- */
-- (void) addStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
-
-/**
- * Removes a style class from the specific UI object.
- */
-- (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
+/** Returns `YES` if styling is enabled for a specific property in the specified UI element. */
+- (BOOL) isStylingEnabledForProperty:(NSString*)propertyName inUIElement:(id)uiElement;
 
 
 #pragma mark - Stylesheets

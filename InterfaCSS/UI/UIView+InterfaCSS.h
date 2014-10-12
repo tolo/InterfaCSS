@@ -26,7 +26,8 @@
 @property (nonatomic, strong) NSSet* styleClassesISS;
 
 /**
- * Callback block for getting notified when styles will be applied to this view. Makes it possible to prevent some properties from being applied
+ * Callback block for getting notified when styles will be applied to this view. Makes it possible to prevent some properties from being applied, by returning a different 
+ * list of properties than the list passed as a parameter to the block.
  */
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlockISS;
 
@@ -36,9 +37,14 @@
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlockISS;
 
 /**
- * A custom styling identity that overrides the default mechanism for assigning styling identities to elements. The styling identity is effectively the cache key for the
- * styling information associated with a UI element, and setting this to a custom value makes it possible to (further) increase performance by sharing cached styles with
- * UI elements located in different places in the view hierarchy for instance.
+ * A custom styling identity that overrides the default mechanism for assigning styling identities to elements (which essentially involves building a full view
+ * hierarchy "path" of an element, such as "UIWindow UIView UIView[class]"). The styling identity is effectively the cache key for the styling information
+ * associated with a UI element, and setting this to a custom value makes it possible to (further) increase performance by sharing cached styles with
+ * UI elements located in different places in the view hierarchy for instance. Examples of places where setting this property can be useful is for instance
+ * the root view of a view controller, a custom UI component or other views that can be styles regardless of the ancestor view hierarchy.
+ *
+ * NOTE: When using a custom styling identity for a view, avoid using style declarations that depends on the view hierarchy above that view (i.e. use of chained
+ * or nested selectors that ).
  */
 @property (nonatomic, strong) NSString* customStylingIdentityISS;
 

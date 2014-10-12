@@ -20,6 +20,7 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 @property (nonatomic, strong) NSString* canonicalTypeAndClasses;
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
 @property (nonatomic) BOOL usingCustomElementStyleIdentity;
+@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
 
 @end
 
@@ -56,8 +57,11 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     copy.styleClasses = self.styleClasses;
 
     copy.canonicalTypeAndClasses = self.canonicalTypeAndClasses;
-    //copy.elementStyleIdentity = self.elementStyleIdentity; // Computed, need not be copied
+    copy.elementStyleIdentity = self.elementStyleIdentity;
     copy.usingCustomElementStyleIdentity = self.usingCustomElementStyleIdentity;
+    copy.ancestorUsesCustomElementStyleIdentity = self.ancestorUsesCustomElementStyleIdentity;
+
+    copy.cachedDeclarations = self.cachedDeclarations;
 
     copy.stylingApplied = self.stylingApplied;
     copy.stylingDisabled = self.stylingDisabled;
@@ -80,6 +84,8 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 }
 
 - (void) updateElementStyleIdentity {
+    if( self.usingCustomElementStyleIdentity ) return;
+
     if( self.styleClasses ) {
         NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
             return [obj1 compare:obj2];
@@ -96,10 +102,16 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     self.elementStyleIdentity = nil;
 }
 
-+ (void) buildElementStyleIdentityPath:(NSMutableString*)identityPath element:(ISSUIElementDetails*)element {
-    if( element.parentView ) [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentView]];
++ (void) buildElementStyleIdentityPath:(NSMutableString*)identityPath element:(ISSUIElementDetails*)element ancestorUsesCustomElementStyleIdentity:(BOOL*)ancestorUsesCustomElementStyleIdentity {
+    if( element.parentView && !element.usingCustomElementStyleIdentity ) [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentView] ancestorUsesCustomElementStyleIdentity:ancestorUsesCustomElementStyleIdentity];
     if( identityPath.length ) [identityPath appendString:@" "];
-    [identityPath appendString:element.canonicalTypeAndClasses];
+
+    if( element.usingCustomElementStyleIdentity ) {
+        [identityPath appendString:element.elementStyleIdentity];
+        *ancestorUsesCustomElementStyleIdentity = YES;
+    } else {
+        [identityPath appendString:element.canonicalTypeAndClasses];
+    }
 }
 
 
@@ -109,9 +121,15 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     return self.parentView.window || (self.parentView.class == UIWindow.class) || (self.view.class == UIWindow.class);
 }
 
+- (BOOL) stylesCacheable {
+    return self.usingCustomElementStyleIdentity || self.ancestorUsesCustomElementStyleIdentity || self.addedToViewHierarchy;
+}
+
 - (void) resetCachedData {
     if( !self.usingCustomElementStyleIdentity ) self.elementStyleIdentity = nil;
     self.stylingApplied = NO;
+    self.ancestorUsesCustomElementStyleIdentity = NO;
+    self.cachedDeclarations = nil;
 }
 
 - (UIView*) view {
@@ -125,20 +143,27 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 
 - (void) setCustomElementStyleIdentity:(NSString*)identityPath {
     self.usingCustomElementStyleIdentity = identityPath != nil;
-    self.elementStyleIdentity = identityPath;
+    _elementStyleIdentity = identityPath;
+    [self updateElementStyleIdentity];
 }
 
 - (NSString*) elementStyleIdentity {
     NSString* path = _elementStyleIdentity;
     if( !path ) {
         NSMutableString* identityPath = [NSMutableString string];
-        [self.class buildElementStyleIdentityPath:identityPath element:self];
+        BOOL ancestorUsesCustomElementStyleIdentity = NO;
+        [self.class buildElementStyleIdentityPath:identityPath element:self ancestorUsesCustomElementStyleIdentity:&ancestorUsesCustomElementStyleIdentity];
+        self.ancestorUsesCustomElementStyleIdentity = ancestorUsesCustomElementStyleIdentity;
         path = [identityPath copy];
-        if( self.parentView && self.parentView.window ) {
+        if( self.parentView && (ancestorUsesCustomElementStyleIdentity || self.parentView.window) ) {
             _elementStyleIdentity = path;
         }
     }
     return path;
+}
+
+- (BOOL) elementStyleIdentityResolved {
+    return _elementStyleIdentity != nil;
 }
 
 - (NSMutableDictionary*) additionalDetails {
@@ -204,6 +229,10 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     NSMutableSet* disabledProperties = [NSMutableSet setWithSet:_disabledProperties];
     [disabledProperties removeObject:disabledProperty];
     _disabledProperties = [disabledProperties copy];
+}
+
+- (BOOL) hasDisabledProperty:(ISSPropertyDefinition*)disabledProperty {
+    return [_disabledProperties containsObject:disabledProperty];
 }
 
 - (void) clearDisabledProperties {

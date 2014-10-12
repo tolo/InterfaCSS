@@ -22,9 +22,13 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 @property (nonatomic, weak, readonly) id uiElement;
 @property (nonatomic, weak, readonly) UIView* view;
 @property (nonatomic, weak) UIView* parentView;
+
 @property (nonatomic, readonly) BOOL addedToViewHierarchy;
+@property (nonatomic, readonly) BOOL stylesCacheable;
 
 @property (nonatomic, strong, readonly) NSString* elementStyleIdentity;
+@property (nonatomic, readonly) BOOL elementStyleIdentityResolved;
+@property (nonatomic, weak) NSMutableArray* cachedDeclarations; // Optimization for quick access to cached declarations
 
 @property (nonatomic, weak) Class canonicalType;
 @property (nonatomic, strong) NSSet* styleClasses;
@@ -50,6 +54,7 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 
 - (void) addDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
 - (void) removeDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
+- (BOOL) hasDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
 - (void) clearDisabledProperties;
 
 @end
