@@ -96,7 +96,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
     * Using a [view definition file](#ViewDefinitionFile), you can set the style classes of the elements in the definition file and load it like this:
         `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
 
-* Update styles as you go
+* Update styles as you go:
     * At any time you can add or remove style classes using the methods provided in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h).
 
     * Whenever the styles of a view are changed, InterfaCSS will re-apply styles automatically. However in other cases, for instance if a view is thrown around in the view hierarchy (i.e. moved to a new super view), you will have to manually tell InterfaCSS to re-apply styles. You can do this by invoking the method `applyStylingISS` in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h). You can also use an `ISSRootView` as the root of a view (sub) tree - this class makes sure that styling is applied whenever the view moves to a new super view, window or if the `frame` property is changed is changed (you can create one using the method `[ISSViewBuilder rootViewWithStyle:]` for instance).
@@ -129,12 +129,13 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
 If you need more control over how/when styling is applied, have a look at these properties and methods in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h):
 
  * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31) - specify a block to be run before styling. 
- * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36) - specify a block to be run after styling.
+ * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36) - specify a block to be run after styling. 
  * [`disableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L123) - disable styling entirely of view.
  * [`enableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L128) - re-enable styling of view.
- * [`applyStylingOnceISS`](InterfaCSS/UI/UIView+InterfaCSS.h#103) - apply styling only once for the view (then disable styling).
+ * [`applyStylingOnceISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L103) - apply styling only once for the view (then disable styling).
  * [`disableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L143) - disable styling of a specific property in a view.
  * [`enableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L148) - re-enable styling of property.
+ * [`customStylingIdentityISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L143) - specify a custom styling identity to increase performance.
 
 
 
