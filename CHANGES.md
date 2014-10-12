@@ -1,6 +1,12 @@
 #Changes
 
 
+##Version 0.9.11
+
+### Bug fixes
+* Fixed caching issues, partially related to custom styling identities.
+
+
 ##Version 0.9.10
 
 ### New features & changes
