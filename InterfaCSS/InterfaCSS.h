@@ -113,6 +113,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force;
 
 /**
+ * Cancel previously scheduled styling of the specified UI object.
+ */
+- (void) cancelScheduledApplyStyling:(id)uiElement;
+
+/**
  * Applies styling of the specified UI object.
  */
 - (void) applyStyling:(id)uiElement;

@@ -65,6 +65,10 @@
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO];
 }
 
+- (void) cancelScheduledApplyStylingISS {
+    [[InterfaCSS interfaCSS] cancelScheduledApplyStyling:self];
+}
+
 - (void) scheduleApplyStylingISS:(BOOL)animated {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:animated];
 }
@@ -83,13 +87,21 @@
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass {
-    return [self addStyleClassISS:styleClass animated:NO];
+    return [self addStyleClassISS:styleClass animated:NO scheduleStyling:YES];
+}
+
+- (BOOL) addStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling {
+    return [self addStyleClassISS:styleClass animated:NO scheduleStyling:scheduleStyling];
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    return [self addStyleClassISS:styleClass animated:animated scheduleStyling:YES];
+}
+
+- (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( ![self hasStyleClassISS:styleClass] ) {
         [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIElement:self];
-        [self scheduleApplyStylingISS:animated];
+        if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
         return YES;
     }
     return NO;

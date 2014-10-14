@@ -71,9 +71,19 @@
 - (BOOL) addStyleClassISS:(NSString*)styleClass;
 
 /**
- * Adds a new styles class to this view, if not already present. Triggers an asynchronous re-styling of this view, within an animation block.
+ * Adds a new styles class to this view, if not already present. If `scheduleStyling` is `YES`, asynchronous re-styling of this view is triggered.
+ */
+- (BOOL) addStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling;
+
+/**
+ * Adds a new styles class to this view, if not already present. Triggers an asynchronous re-styling of this view, optionally within an animation block.
  */
 - (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+
+/**
+ * Adds a new styles class to this view, if not already present. If `scheduleStyling` is `YES`, asynchronous re-styling of this view is triggered, optionally within an animation block.
+ */
+- (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling;
 
 
 /**
@@ -91,6 +101,11 @@
  * Schedules an asynchronous re-styling of this view.
  */
 - (void) scheduleApplyStylingISS;
+
+/**
+ * Cancel previously scheduled styling of this view.
+ */
+- (void) cancelScheduledApplyStylingISS;
 
 /**
  * Schedules an asynchronous re-styling of this view. The re-styling will be performed within an animation block.
