@@ -19,8 +19,6 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentity;
 @property (nonatomic, strong) NSString* canonicalTypeAndClasses;
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
-@property (nonatomic) BOOL usingCustomElementStyleIdentity;
-@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
 
 @end
 

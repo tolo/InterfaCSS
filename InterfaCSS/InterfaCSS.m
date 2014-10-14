@@ -54,6 +54,7 @@ static InterfaCSS* singleton = nil;
 
 @implementation InterfaCSS {
     BOOL deviceIsRotating;
+    BOOL cleanUpTrackedElementsScheduled;
 }
 
 
@@ -121,9 +122,11 @@ static InterfaCSS* singleton = nil;
 
 - (void) memoryWarning:(NSNotification*)notification {
     [self clearAllCachedStyles];
+    [self cleanUpTrackedElements];
 }
 
 - (void) cleanUpTrackedElements {
+    cleanUpTrackedElementsScheduled = NO;
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:nil];
 
     NSMutableSet* stillValid = [NSMutableSet set];
@@ -140,6 +143,13 @@ static InterfaCSS* singleton = nil;
             [self.detailsForElements removeObjectForKey:key];
             [self.trackedElements removeObjectForKey:key];
         }
+    }
+}
+
+- (void) scheduleCleanUpTrackedElements {
+    if( !cleanUpTrackedElementsScheduled ) {
+        cleanUpTrackedElementsScheduled = YES;
+        [self performSelector:@selector(cleanUpTrackedElements) withObject:nil afterDelay:1];
     }
 }
 
@@ -355,7 +365,7 @@ static InterfaCSS* singleton = nil;
     }
 
     // Clean up
-    [self performSelector:@selector(cleanUpTrackedElements) withObject:nil afterDelay:0];
+    [self scheduleCleanUpTrackedElements];
 
     return details;
 }
@@ -366,10 +376,12 @@ static InterfaCSS* singleton = nil;
 
 - (void) clearCachedStylesForUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    if( uiElementDetails ) ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
+    if( uiElementDetails ) {
+        ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
 
-    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
-    [uiElementDetails resetCachedData];
+        [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
+        [uiElementDetails resetCachedData];
+    }
 
     UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
     for(UIView* subView in view.subviews) {
@@ -455,8 +467,8 @@ static InterfaCSS* singleton = nil;
     if( !styleAppliedToView ) {
         ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
 
-        // Reset cached styles if superview has changed
-        if( view && view.superview != uiElementDetails.parentView ) {
+        // Reset cached styles if superview has changed (but not if using custom styling identity)
+        if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
             ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
             [self clearCachedStylesForUIElement:view];
             uiElementDetails.parentView = view.superview;

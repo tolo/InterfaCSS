@@ -29,6 +29,8 @@ extern const NSString* ISSTableViewCellIndexPathKey;
 @property (nonatomic, strong, readonly) NSString* elementStyleIdentity;
 @property (nonatomic, readonly) BOOL elementStyleIdentityResolved;
 @property (nonatomic, weak) NSMutableArray* cachedDeclarations; // Optimization for quick access to cached declarations
+@property (nonatomic) BOOL usingCustomElementStyleIdentity;
+@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
 
 @property (nonatomic, weak) Class canonicalType;
 @property (nonatomic, strong) NSSet* styleClasses;
