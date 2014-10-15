@@ -70,7 +70,7 @@
     // NOTE: Uncomment below to disable styling of cornerRadius
     //[self.mainButton disableStylingForPropertyISS:@"cornerRadius"];
     
-    self.mainTitleLabel.text = @"Simple Sample Main";
+    //self.mainTitleLabel.text = @"Simple Sample Main";
     self.mainTitleLabel.tag = 123;
     [self.mainTitleButton setTitle:@"Sample button" forState:UIControlStateNormal];
     

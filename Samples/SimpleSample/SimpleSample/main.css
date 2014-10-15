@@ -32,6 +32,7 @@ UIButton {
     alpha: 1;
     backgroundColor: clear;
     cornerRadius: 5;
+    attributedText: "Simple" (foregroundColor: lightGray), " Sample " (foregroundColor: #3f3f3f), "Main" (foregroundColor: #cccccc);
 }
 
 .mainTitleLabel:landscape { // Landscape orientation
