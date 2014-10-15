@@ -139,7 +139,7 @@ If you need more control over how/when styling is applied, have a look at these 
 
 
 
-<a name="StylesheetFormat" href="">Stylesheet format</a>
+<a name="StylesheetFormat" href="#StylesheetFormat">Stylesheet format</a>
 ------------------------------------------------
 
 InterfaCSS does not try to impose some artificial mapping layer between the stylesheet format and iOS - the names of stylesheet properties are the same as the actual UI object properties they set (except that case is not important and you may insert dashes anywhere you fancy). That being said, there are some areas in which InterfaCSS tries to make life easier, but more on that below.
@@ -239,7 +239,7 @@ UILabel {
 }
 ```
 
-<a name="Layout" href="">Layout</a>
+<a name="Layout" href="#Layout">Layout</a>
 ------
 In the layout department, InterfaCSS can help you in these ways:
 
@@ -288,7 +288,7 @@ The pattern of the shorthand is basically this: `[ISSBuildXXX:...` = `[ISSViewBu
 Furthermore, you can also use the `beginSubViews` and `endSubViews` macros to make adding of subviews cleaner, as shown above.
 
 
-#### <a name="ViewDefinitionFile" href="">Using a view definition file</a>
+#### <a name="ViewDefinitionFile" href="#ViewDefinitionFile">Using a view definition file</a>
 Another way of creating a view hierarchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute (`fileOwner` is first attempted, then superview).
 
 Using a view definition file, you also have the option of creating prototype views (use the `prototype` attribute), which can be useful for table view cells for instance.
