@@ -431,6 +431,43 @@
     XCTAssertTrue(CGAffineTransformEqualToTransform(transform, expected), @"Unexpected transform value");
 }
 
+- (void) testAttributedStringPropertyValue {
+    id value = [self getSimplePropertyValueWithName:@"attributedText"];
+    
+    NSDictionary* attrs1 = [value attributesAtIndex:0 effectiveRange:nil];
+    NSDictionary* attrs2 = @{
+                             NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:12],
+                             NSBackgroundColorAttributeName: [UIColor blueColor],
+                             NSForegroundColorAttributeName: [UIColor redColor],
+                             NSBaselineOffsetAttributeName: @(10),
+                             NSStrokeColorAttributeName: [UIColor yellowColor],
+                             NSStrokeWidthAttributeName: @(1.0)
+                             };
+    
+    XCTAssertEqualObjects([value string], @"text");
+    XCTAssertEqualObjects(attrs1, attrs2);
+}
+
+- (void) testAttributedStringPropertyValueConsistingOfMultipleStrings {
+    id value = [self getSimplePropertyValueWithName:@"attributedTitle"];
+    
+    NSDictionary* attrs1 = [value attributesAtIndex:0 effectiveRange:nil];
+    NSDictionary* attrs1e = @{
+                             NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:14],
+                             NSForegroundColorAttributeName: [UIColor iss_colorWithHexString:@"ffffff"],
+                             };
+    
+    NSDictionary* attrs2 = [value attributesAtIndex:6 effectiveRange:nil];
+    NSDictionary* attrs2e = @{
+                             NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:15],
+                             NSForegroundColorAttributeName: [UIColor iss_colorWithHexString:@"000000"],
+                             };
+    
+    XCTAssertEqualObjects([value string], @"title1title2");
+    XCTAssertEqualObjects(attrs1, attrs1e);
+    XCTAssertEqualObjects(attrs2, attrs2e);
+}
+
 - (void) testEnumPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"contentMode"];
     XCTAssertEqual(UIViewContentModeBottomRight, [value integerValue], @"Unexpected contentMode value");

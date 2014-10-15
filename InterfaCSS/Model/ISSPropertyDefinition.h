@@ -9,6 +9,7 @@
 
 typedef NS_ENUM(NSInteger, ISSPropertyType) {
     ISSPropertyTypeString,
+    ISSPropertyTypeAttributedString,
     ISSPropertyTypeBool,
     ISSPropertyTypeNumber,
     ISSPropertyTypeOffset,

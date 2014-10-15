@@ -8,6 +8,7 @@
 //
 
 #import "Parcoa+ISSAdditions.h"
+#import "NSString+ISSStringAdditions.h"
 
 #define SKIP_SPACE_AND_NEWLINES while( i < input.length && [[self iss_whitespaceAndNewLineSet] characterIsMember:[input characterAtIndex:i]] ) i++
 
@@ -42,6 +43,40 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return [self iss_quickUnichar:c skipSpace:NO];
 }
 
++ (ParcoaParser*) iss_anythingButUnichar:(unichar)c escapesEnabled:(BOOL)escapes {
+    return [ParcoaParser parserWithBlock:^ParcoaResult*(NSString* input) {
+        NSUInteger i = 0;
+
+        BOOL isBackslash = NO;
+        while ( i < input.length ) {
+            if( [input characterAtIndex:i] == c && !isBackslash ) {
+                break;
+            }
+            else {
+                if ( escapes && [input characterAtIndex:i] == '\\' ) {
+                    if ( isBackslash ) {
+                        input = [input stringByReplacingCharactersInRange:NSMakeRange(i, 1) withString:@""];
+                        isBackslash = NO;
+                    } else {
+                        isBackslash = YES;
+                    }
+                }
+
+                i++;
+            }
+        }
+
+        NSString* value = input;
+        NSString* residual = @"";
+        if( i < input.length ) {
+            value = [input substringToIndex:i];
+            residual = [input substringFromIndex:i];
+        }
+
+        return [ParcoaResult ok:value residual:residual expected:@"Character not matching predicate"];
+    } name:@"satisfy" summary:@"anythingButUnichar"];
+}
+
 + (ParcoaParser*) iss_stringIgnoringCase:(NSString*)string {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         if ( [[input lowercaseString] hasPrefix:string]) {
@@ -61,7 +96,9 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
         if( i != NSNotFound ) {
             value = [input substringToIndex:i];
             residual = [input substringFromIndex:i];
-        } else i = input.length;
+        } else {
+            i = input.length;
+        }
 
         if( i >= minCount ) {
             return [ParcoaResult ok:value residual:residual expected:@"Character not matching predicate"];
@@ -74,18 +111,23 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 + (ParcoaParser*) iss_takeUntilInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount {
     return [self iss_takeUntil:^NSUInteger(NSString* input) {
         return [input rangeOfCharacterFromSet:characterSet].location;
-    }                 minCount:minCount];
+    } minCount:minCount];
 }
 
 + (ParcoaParser*) iss_takeUntilChar:(unichar)character {
     NSString* characterString = [NSString stringWithFormat:@"%C", character];
     return [self iss_takeUntil:^NSUInteger(NSString* input) {
         return [input rangeOfString:characterString].location;
-    }                 minCount:0];
+    } minCount:0];
 }
 
 + (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@":;{}"];
+    return [self iss_takeUntilInSet:characterSet minCount:minCount];
+}
+
++ (ParcoaParser*) iss_anythingButBasicControlCharsExceptColon:(NSUInteger)minCount {
+    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@";{}"];
     return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
@@ -132,8 +174,8 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     } name:@"safeDictionary"];
 }
 
-+ (ParcoaResult*) iss_partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i {
-    NSRange prefixRange = [input rangeOfString:prefix options:NSCaseInsensitiveSearch range:NSMakeRange(i, input.length-i)];
++ (ParcoaResult*) iss_partialParameterStringWithPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i {
+    NSRange prefixRange = prefix ? [input rangeOfString:prefix options:NSCaseInsensitiveSearch range:NSMakeRange(i, input.length-i)] : NSMakeRange(i, 0);
     if( prefixRange.location == i ) {
         i += prefix.length;
         SKIP_SPACE_AND_NEWLINES; // Skip space
@@ -141,7 +183,8 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
             NSUInteger paramBeginIndex = ++i;
             i = [input rangeOfString:@")" options:0 range:NSMakeRange(i, input.length-i)].location;
             if( i != NSNotFound ) {
-                NSString* value = [input substringWithRange:NSMakeRange(paramBeginIndex, i-paramBeginIndex)];
+                NSString* valueString = [input substringWithRange:NSMakeRange(paramBeginIndex, i-paramBeginIndex)];
+                NSArray* value = [valueString iss_trimmedSplit:@","];
                 i++;
                 NSString* residual = [input substringFromIndex:i];
                 return [ParcoaResult ok:value residual:residual expected:[ParcoaExpectation unsatisfiable]];
@@ -157,7 +200,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
         SKIP_SPACE_AND_NEWLINES; // Skip space
 
         for(NSString* prefix in prefixes) {
-            ParcoaResult* result = [self iss_partialParserForPrefix:prefix input:input startIndex:i];
+            ParcoaResult* result = [self iss_partialParameterStringWithPrefix:prefix input:input startIndex:i];
             if( result ) return result;
         }
         return [ParcoaResult failWithRemaining:input expected:@"Line matching parameter string"];
@@ -169,10 +212,14 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
         NSUInteger i = 0;
         SKIP_SPACE_AND_NEWLINES; // Skip space
 
-        ParcoaResult* result = [self iss_partialParserForPrefix:prefix input:input startIndex:i];
+        ParcoaResult* result = [self iss_partialParameterStringWithPrefix:prefix input:input startIndex:i];
         if( result ) return result;
         else return [ParcoaResult failWithRemaining:input expected:@"Line matching parameter string"];
-    } name:@"parameterStringWithPrefix" summary:prefix];
+    } name:@"parameterStringWithPrefix" summary:prefix ?: @"<no prefix>"];
+}
+
++ (ParcoaParser*) iss_parameterString {
+    return [self iss_parameterStringWithPrefix:nil];
 }
 
 + (ParcoaParser*) iss_twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right {

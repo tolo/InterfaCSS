@@ -15,6 +15,8 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_quickUnichar:(unichar)c skipSpace:(BOOL)skipSpace;
 
++ (ParcoaParser*) iss_anythingButUnichar:(unichar)c escapesEnabled:(BOOL)escapes;
+
 + (ParcoaParser*) iss_quickUnichar:(unichar)c;
 
 + (ParcoaParser*) iss_stringIgnoringCase:(NSString*)string;
@@ -27,6 +29,8 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount;
 
++ (ParcoaParser*) iss_anythingButBasicControlCharsExceptColon:(NSUInteger)minCount;
+
 + (ParcoaParser*) iss_anythingButWhiteSpaceAndExtendedControlChars:(NSUInteger)minCount;
 
 + (NSCharacterSet*) iss_validIdentifierCharsSet;
@@ -37,11 +41,11 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_safeArray:(ParcoaParser*)parser;
 
-+ (ParcoaResult*) iss_partialParserForPrefix:(NSString*)prefix input:(NSString*)input startIndex:(NSUInteger)i;
-
 + (ParcoaParser*) iss_parameterStringWithPrefixes:(NSArray*)prefixes;
 
 + (ParcoaParser*) iss_parameterStringWithPrefix:(NSString*)prefix;
+
++ (ParcoaParser*) iss_parameterString;
 
 + (ParcoaParser*) iss_twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right;
 

@@ -13,13 +13,6 @@
 #import "UIView+InterfaCSS.h"
 #import "UIColor+ISSColorAdditions.h"
 
-@interface ISSUIElementDetails ()
-
-@property (nonatomic) BOOL usingCustomElementStyleIdentity;
-@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
-
-@end
-
 
 @interface InterfaCSSTests : XCTestCase
 

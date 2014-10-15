@@ -85,6 +85,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 @property (nonatomic, strong, readwrite) NSSet* propertyDefinitions;
 @property (nonatomic, strong, readwrite) NSDictionary* validPrefixKeyPaths;
+@property (nonatomic, strong, readwrite) NSDictionary* typePropertyDefinitions;
 
 @property (nonatomic, strong) NSDictionary* classesToTypeNames;
 @property (nonatomic, strong) NSDictionary* typeNamesToClasses;
@@ -117,6 +118,10 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         if( [property.allNames containsObject:[propertyName lowercaseString]] ) return property;
     }
     return nil;
+}
+
+- (NSSet*) typePropertyDefinitions:(ISSPropertyType)propertyType {
+    return self.typePropertyDefinitions[@(propertyType)];
 }
 
 - (NSString*) canonicalTypeForViewClass:(Class)viewClass {
@@ -279,12 +284,25 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     ISSPropertyDefinition* title = pp(S(title), controlStateParametersValues, ISSPropertyTypeString, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-        if( [viewObject respondsToSelector:@selector(setBackgroundImage:forState:)] ) {
+        if( [viewObject respondsToSelector:@selector(setTitle:forState:)] ) {
             [viewObject setTitle:value forState:state];
         } else if( [viewObject respondsToSelector:@selector(setTitle:)] ) {
             [viewObject setTitle:value];
         }
     });
+
+    ISSPropertyDefinition* attributedTitle = pp(S(attributedTitle), controlStateParametersValues, ISSPropertyTypeAttributedString, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+        UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
+        if( [viewObject respondsToSelector:@selector(setAttributedTitle:forState:)] ) {
+            [viewObject setTitle:value forState:state];
+        } else if( [viewObject respondsToSelector:@selector(setAttributedTitle:)] ) {
+            [viewObject setTitle:value];
+        }
+    });
+
+    ISSPropertyDefinition* text = p(S(text), ISSPropertyTypeString);
+
+    ISSPropertyDefinition* attributedText = p(S(attributedText), ISSPropertyTypeAttributedString);
 
     ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject isKindOfClass:UIButton.class] ) {
@@ -556,6 +574,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(imageEdgeInsets), ISSPropertyTypeEdgeInsets),
             p(S(reversesTitleShadowWhenHighlighted), ISSPropertyTypeBool),
             title,
+            attributedTitle,
             pp(@"titleColor", controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setTitleColor:forState:)] ) [viewObject setTitleColor:value forState:state];
@@ -598,7 +617,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             shadowOffset,
             p(S(highlightedTextColor), ISSPropertyTypeColor),
             shadowColor,
-            p(S(text), ISSPropertyTypeString)
+            text,
+            attributedText
     ]];
     labelProperties = [labelProperties setByAddingObjectsFromSet:textProperties];
     labelProperties = [labelProperties setByAddingObjectsFromSet:resizableTextProperties];
@@ -636,7 +656,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(@"secureTextEntry", ISSPropertyTypeBool),
             p(S(clearsOnInsertion), ISSPropertyTypeBool),
             p(S(placeholder), ISSPropertyTypeString),
-            p(S(text), ISSPropertyTypeString)
+            text,
+            attributedText
         ]];
     textInputProperties = [textInputProperties setByAddingObjectsFromSet:minimalTextInputProperties];
     allProperties = [allProperties setByAddingObjectsFromSet:textInputProperties];
@@ -989,6 +1010,60 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     typeNamesToClasses[@"uiwindow"] = UIWindow.class;
     self.classesToTypeNames = [NSDictionary dictionaryWithDictionary:classesToNames];
     self.typeNamesToClasses = [NSDictionary dictionaryWithDictionary:typeNamesToClasses];
+
+
+    // Type properties
+    NSSet* attributedStringProperties = [NSSet setWithArray:@[
+        ps(@"font", ISSPropertyTypeFont, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSFontAttributeName] = value;
+        }),
+        ps(@"backgroundColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSBackgroundColorAttributeName] = value;
+        }),
+        pas(@"foregroundColor", @[@"color"], ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSForegroundColorAttributeName] = value;
+        }),
+        ps(@"ligature", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSLigatureAttributeName] = value;
+        }),
+        ps(@"kern", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSKernAttributeName] = value;
+        }),
+        ps(@"strikethroughStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSStrikethroughStyleAttributeName] = value;
+        }),
+        ps(@"underlineStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSUnderlineStyleAttributeName] = value;
+        }),
+        ps(@"strokeColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSStrokeColorAttributeName] = value;
+        }),
+        ps(@"strokeWidth", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSStrokeWidthAttributeName] = value;
+        }),
+        // TODO: NSShadowAttributeName
+        // TODO: NSTextEffectAttributeName
+        ps(@"baselineOffset", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSBaselineOffsetAttributeName] = value;
+        }),
+        ps(@"underlineColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSUnderlineColorAttributeName] = value;
+        }),
+        ps(@"strikethroughColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSStrikethroughColorAttributeName] = value;
+        }),
+        ps(@"obliqueness", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSObliquenessAttributeName] = value;
+        }),
+        ps(@"expansion", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+            if( value ) attributes[NSExpansionAttributeName] = value;
+        })
+        // TODO: NSWritingDirectionAttributeName
+    ]];
+
+    self.typePropertyDefinitions = @{
+        @(ISSPropertyTypeAttributedString) : attributedStringProperties
+    };
 
 #pragma GCC diagnostic pop
 }
