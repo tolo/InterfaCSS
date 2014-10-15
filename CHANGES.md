@@ -1,6 +1,17 @@
 #Changes
 
 
+##Version 0.9.12
+
+### New features & changes
+* Added support for attributed string properties (`attributedText` in `UILabel`, `UITextField` and `UITextView`, and `attributedTitle` in `UIButton`).
+* Added support for opting out of scheduled styling when adding style classes.
+
+### Bug fixes
+* Fixed problem with using multiple constants within the same property value.
+* Reduction of excessive cleanup of caches.
+
+
 ##Version 0.9.11
 
 ### Bug fixes
