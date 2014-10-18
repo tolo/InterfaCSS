@@ -438,7 +438,7 @@
     NSDictionary* attrs2 = @{
                              NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:12],
                              NSBackgroundColorAttributeName: [UIColor blueColor],
-                             NSForegroundColorAttributeName: [UIColor redColor],
+                             NSForegroundColorAttributeName: [UIColor colorWithRed:0 green:0 blue:0 alpha:1],
                              NSBaselineOffsetAttributeName: @(10),
                              NSStrokeColorAttributeName: [UIColor yellowColor],
                              NSStrokeWidthAttributeName: @(1.0)

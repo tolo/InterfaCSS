@@ -180,14 +180,49 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
         i += prefix.length;
         SKIP_SPACE_AND_NEWLINES; // Skip space
         if( i < input.length && [input characterAtIndex:i] == '(' ) {
-            NSUInteger paramBeginIndex = ++i;
-            i = [input rangeOfString:@")" options:0 range:NSMakeRange(i, input.length-i)].location;
-            if( i != NSNotFound ) {
-                NSString* valueString = [input substringWithRange:NSMakeRange(paramBeginIndex, i-paramBeginIndex)];
-                NSArray* value = [valueString iss_trimmedSplit:@","];
-                i++;
-                NSString* residual = [input substringFromIndex:i];
-                return [ParcoaResult ok:value residual:residual expected:[ParcoaExpectation unsatisfiable]];
+            i++;
+            NSInteger nestingLevel = 0;
+            NSMutableArray* parameters = [NSMutableArray array];
+            NSUInteger currentParameterIndex = i;
+
+            while ( i < input.length ) {
+                NSRange residualRange = NSMakeRange(i, input.length-i);
+                NSInteger nextCommaLocation = [input rangeOfString:@"," options:0 range:residualRange].location;
+                NSInteger nestedParamStringLocation = [input rangeOfString:@"(" options:0 range:residualRange].location;
+                i = [input rangeOfString:@")" options:0 range:residualRange].location;
+
+                // Comma separator found on top level - add parameter to array
+                if( nestingLevel == 0 && nextCommaLocation != NSNotFound && nextCommaLocation < i && nextCommaLocation < nestedParamStringLocation ) {
+                    NSString* parameterString = [input substringWithRange:NSMakeRange(currentParameterIndex, (NSUInteger)nextCommaLocation - currentParameterIndex)];
+                    parameterString = [parameterString iss_trim];
+                    [parameters addObject:parameterString];
+                    currentParameterIndex = (NSUInteger)nextCommaLocation + 1;
+                    i = currentParameterIndex;
+                }
+                // Nested parameter string begin marker '(' found
+                else if( nestedParamStringLocation != NSNotFound && nestedParamStringLocation < i ) {
+                    nestingLevel++;
+                    i = (NSUInteger)nestedParamStringLocation + 1;
+                }
+                // Parameter string end marker ')' (potentially) found
+                else {
+                    if ( i != NSNotFound && nestingLevel == 0 ) {
+                        // Add last parameter
+                        NSString* parameterString = [input substringWithRange:NSMakeRange(currentParameterIndex, (NSUInteger)i - currentParameterIndex)];
+                        parameterString = [parameterString iss_trim];
+                        [parameters addObject:parameterString];
+                        i++;
+                        NSString* residual = [input substringFromIndex:i];
+                        return [ParcoaResult ok:parameters residual:residual expected:[ParcoaExpectation unsatisfiable]];
+                    }
+                    else if ( i != NSNotFound ) {
+                        nestingLevel--;
+                        i++;
+                    }
+                    else {
+                        break;
+                    }
+                }
             }
         }
     }

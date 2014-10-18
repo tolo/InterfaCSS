@@ -1,8 +1,8 @@
 
-@attr1: HelveticaNeue-Medium 14;
-@attr2: #ffffff;
-@attr3: HelveticaNeue-Medium 15;
-@attr4: #000000;
+@attrFont1: HelveticaNeue-Medium 14;
+@attrColor1: lighten(#ffffff, 0%);
+@attrFont2: HelveticaNeue-Medium 15;
+@attrColor2: rgb(0,0,0);
 
 .simple {
     alpha: 1;
@@ -24,8 +24,8 @@
     textColor: rgba(64, 64, 64, 0.5);
     shadowColor: red;
     transform: rotate(10) scale(20,30) translate(40,50);
-    attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: blue, color: red, baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);
-    attributedTitle: "title1" (font: @attr1, foregroundColor: @attr2), "title2" (font: @attr3, foregroundColor: @attr4);
+    attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: rgb(0,0,255), color: darken(#000000, 0%), baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);
+    attributedTitle: "title1" (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2);
 }
 
 .prefixes {
@@ -111,13 +111,13 @@
 }
 
 .colorFunctions {
-    color: lighten(#112233, 50%);
+    color: lighten(rgb(17, 34, 51), 50%);
     titleColor: darken(#112233, 50%);
-    textColor: saturate(#112233, 50%);
+    textColor: saturate(rgb(17, 34, 51), 50%);
     tintColor: desaturate(#112233, 50%);
-    shadowColor: fadein(#112233, 50%);
+    shadowColor: fadein(rgb(17, 34, 51), 50%);
     sectionIndexColor: fadeout(#112233, 50%);
-    separatorColor: saturate(fadeout(#112233, 50%), 50%);
+    separatorColor: saturate(fadeout(rgb(17, 34, 51), 50%), 50%);
 }
 
 .imageColorFunctions {
