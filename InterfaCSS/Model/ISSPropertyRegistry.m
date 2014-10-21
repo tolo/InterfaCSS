@@ -294,9 +294,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ISSPropertyDefinition* attributedTitle = pp(S(attributedTitle), controlStateParametersValues, ISSPropertyTypeAttributedString, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setAttributedTitle:forState:)] ) {
-            [viewObject setTitle:value forState:state];
+            [viewObject setAttributedTitle:value forState:state];
         } else if( [viewObject respondsToSelector:@selector(setAttributedTitle:)] ) {
-            [viewObject setTitle:value];
+            [viewObject setAttributedTitle:value];
         }
     });
 
