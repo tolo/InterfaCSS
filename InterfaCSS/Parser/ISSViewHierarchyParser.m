@@ -40,18 +40,22 @@
     return viewParser->rootView;
 }
 
-+ (void) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner {
++ (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner {
     SEL selector = NSSelectorFromString(propertyName);
+
     if( [fileOwner respondsToSelector:selector] ) {
         [fileOwner setValue:value forKey:propertyName];
+        return YES;
     } else if( [parent respondsToSelector:selector] ) {
         [parent setValue:value forKey:propertyName];
+        return YES;
     } else {
-        if( fileOwner && parent ) ISSLogWarning(@"Property '%@' not found in file owner or parent view!", propertyName);
-        else if( fileOwner ) ISSLogWarning(@"Property '%@' not found in file owner!", propertyName);
-        else if( parent ) ISSLogWarning(@"Property '%@' not found in parent view!", propertyName);
+        if ( fileOwner && parent ) ISSLogWarning(@"Property '%@' not found in file owner or parent view!", propertyName);
+        else if ( fileOwner ) ISSLogWarning(@"Property '%@' not found in file owner!", propertyName);
+        else if ( parent ) ISSLogWarning(@"Property '%@' not found in parent view!", propertyName);
         else ISSLogWarning(@"Unable to set property '%@' - no file owner or parent view available!", propertyName);
     }
+    return NO;
 }
 
 #pragma mark - NSXMLParserDelegate

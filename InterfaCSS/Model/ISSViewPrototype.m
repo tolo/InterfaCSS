@@ -10,6 +10,7 @@
 #import "ISSViewPrototype.h"
 #import "ISSViewHierarchyParser.h"
 #import "NSString+ISSStringAdditions.h"
+#import "NSObject+ISSLogSupport.h"
 
 
 @implementation ISSViewPrototype
@@ -25,12 +26,30 @@
 }
 
 - (UIView*) createViewObjectFromPrototype:(id)parentObject {
+    if( parentObject ) return [self createViewObjectFromPrototypeWithViewStack:@[parentObject]];
+    else return [self createViewObjectFromPrototypeWithViewStack:@[]];
+}
+
+- (UIView*) createViewObjectFromPrototypeWithViewStack:(NSArray*)viewStack {
     UIView* view = _viewBuilderBlock();
-    if( [_propertyName iss_hasData] ) [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil];
+    if( !view ) {
+        ISSLogWarning(@"View builder block returned nil view");
+        return nil;
+    }
+
+    if( [_propertyName iss_hasData] ) {
+        for(UIView* parentObject in viewStack.reverseObjectEnumerator) {
+            if( [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil] ) {
+                break;
+            }
+        }
+    }
+
+    viewStack = [viewStack arrayByAddingObject:view];
 
     for (ISSViewPrototype* subviewPrototype in self.subviewPrototypes) {
-        UIView* subview = [subviewPrototype createViewObjectFromPrototype:view];
-        if( subviewPrototype.addAsSubView ) [view addSubview:subview];
+        UIView* subview = [subviewPrototype createViewObjectFromPrototypeWithViewStack:viewStack];
+        if( subview && subviewPrototype.addAsSubView ) [view addSubview:subview];
     }
     return view;
 }

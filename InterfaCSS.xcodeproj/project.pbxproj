@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		270AD5EE19F79E1F004A649B /* viewDefinitionTest.xml in Resources */ = {isa = PBXBuildFile; fileRef = 270AD5ED19F79E1F004A649B /* viewDefinitionTest.xml */; };
 		27530C38182AF066000FED8A /* ISSPropertyDeclarations.h in Headers */ = {isa = PBXBuildFile; fileRef = 27530C36182AF066000FED8A /* ISSPropertyDeclarations.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27530C39182AF066000FED8A /* ISSPropertyDeclarations.m in Sources */ = {isa = PBXBuildFile; fileRef = 27530C37182AF066000FED8A /* ISSPropertyDeclarations.m */; };
 		2785E25E18A8DCBB001D1104 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2785E25D18A8DCBB001D1104 /* XCTest.framework */; };
@@ -31,6 +32,7 @@
 		CC3C80D846FE359ECDFC1F39 /* ISSUIElementDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8D883AC61B4BA8763604 /* ISSUIElementDetails.h */; };
 		CC3C810682FFE4A76574711B /* ISSPropertyRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C82B417030D3C0260D40E /* ISSPropertyRegistry.m */; };
 		CC3C81248BA91E147E8A0ACC /* Parcoa+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C87B7069CA9BDCD00825F /* Parcoa+ISSAdditions.h */; };
+		CC3C81614BE09A047EFEB70D /* ISSRuntimeIntrospectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */; };
 		CC3C818095B53A512E176587 /* ISSPropertyDefinition+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8092A63334B4B978B42B /* ISSPropertyDefinition+Private.h */; };
 		CC3C82264586100F4F287DC8 /* ISSPropertyDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8CC1BB8A2B2FAF7113DA /* ISSPropertyDefinition.m */; };
 		CC3C830B6FC858F906CC2223 /* NSDictionary+ISSDictionaryAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C86B36E1E4AE2D2E09402 /* NSDictionary+ISSDictionaryAdditions.m */; };
@@ -39,6 +41,7 @@
 		CC3C83E061A6A4C52423A019 /* NSAttributedString+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */; };
 		CC3C8431439EDAA62153B34E /* ISSViewHierarchyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8583C197EBF3BDED28B9 /* ISSViewHierarchyParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C8488DE29A52C150AC041 /* ISSPropertyDeclaration.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8E2EB46CD784DA9DD788 /* ISSPropertyDeclaration.m */; };
+		CC3C84F638DA363880488FC4 /* ISSRuntimeIntrospectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */; };
 		CC3C8509010DCF469A59BB3E /* ISSPropertyDefinition.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8729300E05129A885066 /* ISSPropertyDefinition.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C86F76E4550E615FE1D55 /* ISSRectValue.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C866B238BD25DA0B89228 /* ISSRectValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C870ECBA03D92CEA40F9A /* ISSRefreshableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8F35FA06B51A007B098C /* ISSRefreshableResource.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -103,6 +106,7 @@
 		09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.release.xcconfig"; sourceTree = "<group>"; };
 		0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		186DC3674630469E9A578BF5 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		270AD5ED19F79E1F004A649B /* viewDefinitionTest.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = viewDefinitionTest.xml; sourceTree = "<group>"; };
 		27530C36182AF066000FED8A /* ISSPropertyDeclarations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclarations.h; sourceTree = "<group>"; };
 		27530C37182AF066000FED8A /* ISSPropertyDeclarations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclarations.m; sourceTree = "<group>"; };
 		2785E25C18A8DCBB001D1104 /* InterfaCSS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InterfaCSS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -135,6 +139,7 @@
 		CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSViewPrototype.h; sourceTree = "<group>"; };
 		CC3C81A3D5E7700AF520BADE /* ISSPropertyDeclaration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclaration.h; sourceTree = "<group>"; };
 		CC3C82B417030D3C0260D40E /* ISSPropertyRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyRegistry.m; sourceTree = "<group>"; };
+		CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRuntimeIntrospectionUtils.m; sourceTree = "<group>"; };
 		CC3C83FFBC650611AEFB8E9A /* ISSUIElementDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSUIElementDetails.m; sourceTree = "<group>"; };
 		CC3C8414CB6B1F70FF8436C3 /* ISSPointValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPointValue.h; sourceTree = "<group>"; };
 		CC3C85028E68343AE0CAE9D4 /* ISSLazyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSLazyValue.h; sourceTree = "<group>"; };
@@ -154,6 +159,7 @@
 		CC3C885371209FA20B21C18F /* UITableView+InterfaCSS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITableView+InterfaCSS.m"; sourceTree = "<group>"; };
 		CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+ISSAdditions.h"; sourceTree = "<group>"; };
 		CC3C88928B0760180BFAB41B /* ISSPropertyRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyRegistry.h; sourceTree = "<group>"; };
+		CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRuntimeIntrospectionUtils.h; sourceTree = "<group>"; };
 		CC3C88B72A3EBA684963C228 /* ISSViewHierarchyParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSViewHierarchyParser.m; sourceTree = "<group>"; };
 		CC3C898C3A710A285F391B62 /* ISSRootView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRootView.h; sourceTree = "<group>"; };
 		CC3C89C2AED22DBD8DA09ADC /* ISSRootView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRootView.m; sourceTree = "<group>"; };
@@ -244,6 +250,7 @@
 		CC3C86B66A544B93E59CE72B /* TestData */ = {
 			isa = PBXGroup;
 			children = (
+				270AD5ED19F79E1F004A649B /* viewDefinitionTest.xml */,
 				27C6468418C339EC0017BFA4 /* image.png */,
 				27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */,
 				27CD793818E9FF24002FC343 /* interfaCSSTests.css */,
@@ -347,6 +354,8 @@
 				CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */,
 				CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */,
 				CC3C8133205B709D492A7ED4 /* NSAttributedString+ISSAdditions.h */,
+				CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */,
+				CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -451,6 +460,7 @@
 				CC3C8B4BBAEA07A6DFF3A07A /* NSAttributedString+ISSAdditions.h in Headers */,
 				CC3C89FB978EC04E5A439018 /* ISSPropertyRegistry.h in Headers */,
 				CC3C818095B53A512E176587 /* ISSPropertyDefinition+Private.h in Headers */,
+				CC3C81614BE09A047EFEB70D /* ISSRuntimeIntrospectionUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,6 +542,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2785E26618A8DCBB001D1104 /* InfoPlist.strings in Resources */,
+				270AD5EE19F79E1F004A649B /* viewDefinitionTest.xml in Resources */,
 				27CD793918E9FF24002FC343 /* interfaCSSTests.css in Resources */,
 				27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */,
 				27CD793B18EA0429002FC343 /* interfaCSSTests-variables.css in Resources */,
@@ -620,6 +631,7 @@
 				CC3C88BAA21A54EC9853129F /* NSMutableArray+ISSAdditions.m in Sources */,
 				CC3C83E061A6A4C52423A019 /* NSAttributedString+ISSAdditions.m in Sources */,
 				CC3C810682FFE4A76574711B /* ISSPropertyRegistry.m in Sources */,
+				CC3C84F638DA363880488FC4 /* ISSRuntimeIntrospectionUtils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

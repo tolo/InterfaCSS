@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<view class="rootClass">
+    <label property="label1" class="label1"/>
+    <button property="button1" class="button1"/>
+    
+    <CustomView1 prototype="prototype1" class="prototype1">
+        <label property="label2" class="label2"/>
+        
+        <CustomView2 class="nestedView2" property="customView2">
+            <label property="label3" class="label3"/>
+        
+            <view class="nestedView3" property="customView3">
+                <label property="label4" class="label4"/>
+                <label property="label5" class="label5"/>
+            </view>
+            
+        </CustomView2>
+        
+    </CustomView1>
+    
+</view>

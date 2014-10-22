@@ -14,19 +14,46 @@
 #import "UIColor+ISSColorAdditions.h"
 
 
+@interface TestFileOwner : NSObject
+@property (nonatomic, strong) UILabel* label1;
+@property (nonatomic, strong) UIButton* button1;
+@end
+
+@implementation TestFileOwner
+@end
+
+
+@interface CustomView2 : UIView
+@property (nonatomic, strong) UILabel* label3;
+@property (nonatomic, strong) UILabel* label4;
+@property (nonatomic, strong) UIView* customView3;
+@end
+@implementation CustomView2
+@end
+
+@interface CustomView1 : UIView
+@property (nonatomic, strong) UILabel* label2;
+@property (nonatomic, strong) UILabel* label5;
+@property (nonatomic, strong) CustomView2* customView2;
+@end
+@implementation CustomView1
+@end
+
+
+
 @interface InterfaCSSTests : XCTestCase
 
 @end
 
 @implementation InterfaCSSTests
 
-- (void)setUp {
+- (void) setUp {
     [super setUp];
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"interfaCSSTests" ofType:@"css"];
     [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path];
 }
 
-- (void)tearDown {
+- (void) tearDown {
     [super tearDown];
     [InterfaCSS clearResetAndUnload];
 }
@@ -289,6 +316,40 @@
 
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
     XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+}
+
+- (void) testLoadViewDefinitionFile {
+    TestFileOwner* fileOwner = [[TestFileOwner alloc] init];
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"viewDefinitionTest" ofType:@"xml"];
+    UIView* v = [ISSViewBuilder loadViewHierarchyFromFile:path fileOwner:fileOwner];
+    
+    XCTAssertNotNil(v);
+    XCTAssertNotNil(fileOwner.label1);
+    XCTAssertNotNil(fileOwner.button1);
+}
+
+- (void) testLoadViewDefinitionFileWithPrototypes {
+    TestFileOwner* fileOwner = [[TestFileOwner alloc] init];
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"viewDefinitionTest" ofType:@"xml"];
+    [ISSViewBuilder loadViewHierarchyFromFile:path fileOwner:fileOwner];
+    
+    id p = [[InterfaCSS interfaCSS] viewFromPrototypeWithName:@"prototype1"];
+    
+    XCTAssertNotNil(p);
+    XCTAssertTrue([p isKindOfClass:CustomView1.class]);
+    
+    CustomView1* customView1 = p;
+    // Test elements defined on topmost view
+    XCTAssertNotNil(customView1.label2);
+    XCTAssertNotNil(customView1.customView2);
+
+    // Test elements defined on nested view and set in same view
+    XCTAssertNotNil(customView1.customView2.label3);
+    XCTAssertNotNil(customView1.customView2.customView3);
+
+    // Test elements defined on nested view but set in topmost view
+    XCTAssertNotNil(customView1.customView2.label4);
+    XCTAssertNotNil(customView1.label5);
 }
 
 @end
