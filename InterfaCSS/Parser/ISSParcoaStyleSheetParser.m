@@ -9,7 +9,6 @@
 
 #import "ISSParcoaStyleSheetParser.h"
 
-#import <objc/runtime.h>
 #import "Parcoa.h"
 
 #import "Parcoa+ISSAdditions.h"
@@ -26,6 +25,7 @@
 #import "ISSPseudoClass.h"
 #import "InterfaCSS.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 // Selector chains declaration wrapper class, to keep track of property ordering and of nested declarations
@@ -178,14 +178,9 @@
     NSString* colorString = [[value iss_trimQuotes] lowercaseString];
     if( ![colorString hasSuffix:@"color"] ) colorString = [colorString stringByAppendingString:@"color"];
 
-    unsigned int c = 0;
-    Method* methods = class_copyMethodList(object_getClass([UIColor class]), &c);
-    for(int i=0; i<c; i++) {
-        NSString* selectorName = [[NSString alloc] initWithCString:sel_getName(method_getName(methods[i])) encoding:NSUTF8StringEncoding];
-        if( [colorString iss_isEqualIgnoreCase:selectorName] ) {
-            color = [UIColor performSelector:NSSelectorFromString(selectorName)];
-            break;
-        }
+    SEL colorSelector = [ISSRuntimeIntrospectionUtils findSelectorWithCaseInsensitiveName:colorString inClass:UIColor.class];
+    if( colorSelector ) {
+        color = [UIColor performSelector:colorSelector];
     }
 
     if( cgColor ) return (id)color.CGColor;
