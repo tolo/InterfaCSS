@@ -458,6 +458,12 @@ static InterfaCSS* singleton = nil;
 
 // Internal styling method - should only be called by -[applyStyling:includeSubViews:].
 - (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
+    // If styling is disabled for element - abort styling of whole sub tre
+    if( uiElementDetails.stylingDisabled ) {
+        ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
+        return;
+    }
+
     UIView* view = uiElementDetails.view;
     BOOL styleAppliedToView = NO;
     if( !self.keyWindow && includeSubViews ) {
@@ -472,12 +478,6 @@ static InterfaCSS* singleton = nil;
             ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
             [self clearCachedStylesForUIElement:view];
             uiElementDetails.parentView = view.superview;
-        }
-
-        // If styling is disabled for element - abort styling of whole sub tre
-        if( uiElementDetails.stylingDisabled ) {
-            ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
-            return;
         }
 
         [self styleUIElement:uiElementDetails force:force];
