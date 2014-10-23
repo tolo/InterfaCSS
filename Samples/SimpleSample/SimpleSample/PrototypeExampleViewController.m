@@ -13,7 +13,7 @@
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UITableView+InterfaCSS.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
-
+#import <InterfaCSS/ISSViewHierarchyParser.h>
 
 @interface PrototypeExampleCell : UITableViewCell
 @property (nonatomic, strong) UILabel* label1;
@@ -26,10 +26,12 @@
 
 
 
-@interface PrototypeExampleViewController ()
+@interface PrototypeExampleViewController () <ISSViewHierarchyFileOwner>
 
-@property (nonatomic, strong) UILabel* mainTitleLabel;
-@property (nonatomic, strong) UIButton* mainTitleButton;
+@property (nonatomic, weak) UILabel* mainTitleLabel;
+@property (nonatomic, weak) UIButton* mainTitleButton;
+
+@property (nonatomic, strong) NSMapTable *propertyTable;
 
 @end
 
@@ -42,6 +44,8 @@
     self = [super init];
     if (self) {
         self.title = @"Prototype";
+        
+        self.propertyTable = [NSMapTable strongToWeakObjectsMapTable];
         
         items = @[
                     @[@"ágætis byrjun", @"ágætis byrjun", @"1999"],
@@ -107,5 +111,14 @@
     UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     [cell.selectedBackgroundView applyStylingWithAnimationISS];
 }
+
+#pragma mark ISSViewHierarchyFileOwner
+
+- (void)viewHierarchyParserWillSetValue:(UIView *)view forKey:(NSString *)propertyName
+{
+    // keep record on all properties, even if there is no-ivar associated with it
+    [self.propertyTable setObject:view forKey:propertyName];
+}
+
 
 @end

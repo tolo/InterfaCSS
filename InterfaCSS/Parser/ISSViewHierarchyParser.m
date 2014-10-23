@@ -41,6 +41,11 @@
 }
 
 + (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner {
+    
+    if ([fileOwner respondsToSelector:@selector(viewHierarchyParserWillSetValue:forKey:)]) {
+        [fileOwner viewHierarchyParserWillSetValue:value forKey:propertyName];
+    }
+
     SEL selector = NSSelectorFromString(propertyName);
 
     if( [fileOwner respondsToSelector:selector] ) {
