@@ -24,12 +24,24 @@
     return prototypeDefinition;
 }
 
+- (UIView*) createViewObjectFromPrototype:(id)parentObject rootObject:(id)rootObject{
+    UIView* view = _viewBuilderBlock();
+    if( [_propertyName iss_hasData] ) [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:rootObject orFileOwner:nil];
+    
+    for (ISSViewPrototype* subviewPrototype in self.subviewPrototypes) {
+        UIView* subview = [subviewPrototype createViewObjectFromPrototype:view rootObject:rootObject];
+        if( subviewPrototype.addAsSubView ) [view addSubview:subview];
+    }
+    return view;
+}
+
+
 - (UIView*) createViewObjectFromPrototype:(id)parentObject {
     UIView* view = _viewBuilderBlock();
     if( [_propertyName iss_hasData] ) [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil];
 
     for (ISSViewPrototype* subviewPrototype in self.subviewPrototypes) {
-        UIView* subview = [subviewPrototype createViewObjectFromPrototype:view];
+        UIView* subview = [subviewPrototype createViewObjectFromPrototype:view rootObject:view];
         if( subviewPrototype.addAsSubView ) [view addSubview:subview];
     }
     return view;
