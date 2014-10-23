@@ -196,6 +196,38 @@
     XCTAssertEqualObjects(button.currentTitleColor, color, @"Unexpected property value");
 }
 
+- (void) testUILabelAttributedTextSupport {
+    UILabel* label = [[UILabel alloc] init];
+    label.styleClassISS = @"labelAttributedTextTest";
+    [label applyStylingISS];
+
+    NSDictionary* attrs1 = [label.attributedText attributesAtIndex:0 effectiveRange:nil];
+    NSDictionary* attrs2 = @{NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:12], NSForegroundColorAttributeName: [UIColor blueColor]};
+
+    XCTAssertEqualObjects(label.attributedText.string, @"text");
+    XCTAssertEqualObjects(attrs1, attrs2);
+}
+
+- (void) testUIButtonAttributedTitleSupport {
+    UIButton* button = [[UIButton alloc] init];
+    button.styleClassISS = @"buttonAttributedTitleTest";
+    [button applyStylingISS];
+
+    NSAttributedString* attributedString = [button attributedTitleForState:UIControlStateNormal];
+    NSDictionary* attrs1 = [attributedString attributesAtIndex:0 effectiveRange:nil];
+    NSDictionary* attrs2 = @{NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:12], NSForegroundColorAttributeName: [UIColor blueColor]};
+    
+    XCTAssertEqualObjects(attributedString.string, @"text");
+    XCTAssertEqualObjects(attrs1, attrs2);
+
+    attributedString = [button attributedTitleForState:UIControlStateHighlighted];
+    attrs1 = [attributedString attributesAtIndex:0 effectiveRange:nil];
+    attrs2 = @{NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:12], NSForegroundColorAttributeName: [UIColor redColor]};
+
+    XCTAssertEqualObjects(attributedString.string, @"text");
+    XCTAssertEqualObjects(attrs1, attrs2);
+}
+
 - (void) testDisableStyling {
     UIView* root = [[UIView alloc] init];
     root.styleClassISS = @"disabledStylingTest";

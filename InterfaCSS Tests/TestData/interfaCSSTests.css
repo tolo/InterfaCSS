@@ -92,3 +92,12 @@ UIView.disabledStylingTest {
 .testDisableProperty {
     alpha: 0.5;
 }
+
+.labelAttributedTextTest {
+    attributedText: "text" (font: HelveticaNeue-Medium 12, color: blue);
+}
+
+.buttonAttributedTitleTest {
+    attributedTitle: "text" (font: HelveticaNeue-Medium 12, color: blue);
+    attributedTitle(highlighted): "text" (font: HelveticaNeue-Medium 12, color: red);
+}
