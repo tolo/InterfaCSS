@@ -10,6 +10,8 @@
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
 * Reduction of excessive cleanup of caches.
+* Added fix for issue with view definition file prototypes (#5) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
+* Merged fix for use of incorrect setters for property `attributedTitle` (#4), added by @tbrannam.
 
 
 ##Version 0.9.11
