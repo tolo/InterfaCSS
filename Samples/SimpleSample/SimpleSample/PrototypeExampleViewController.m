@@ -15,21 +15,51 @@
 #import <InterfaCSS/UIView+InterfaCSS.h>
 #import <InterfaCSS/ISSViewHierarchyParser.h>
 
-@interface PrototypeExampleCell : UITableViewCell
+@interface PrototypeExampleCell : UITableViewCell<ISSViewHierarchyFileOwner>
 @property (nonatomic, strong) UILabel* label1;
 @property (nonatomic, strong) UILabel* label2;
 @property (nonatomic, strong) UILabel* label3;
+@property (nonatomic, strong) NSMapTable *propertyTable;
 @end
 
+
 @implementation PrototypeExampleCell
+
+- (void)viewHierarchyParserWillSetValue:(UIView *)view forKey:(NSString *)propertyName
+{
+    // keep record on all properties, even if there is no-ivar associated with it
+    [self.propertyTable setObject:view forKey:propertyName];
+}
+
+- (NSMapTable *)propertyTable
+{
+    if (_propertyTable == nil) {
+        _propertyTable = [NSMapTable strongToWeakObjectsMapTable];
+    }
+    return _propertyTable;
+}
+
+- (id)valueForUndefinedKey:(NSString *)key
+{
+    id value = [self.propertyTable objectForKey:key];
+    if (value == nil) {
+        value = [super valueForUndefinedKey:key];
+    }
+    return value;
+}
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key{
+    [self.propertyTable setObject:value forKey:key];
+}
+
 @end
 
 
 
 @interface PrototypeExampleViewController () <ISSViewHierarchyFileOwner>
 
-@property (nonatomic, weak) UILabel* mainTitleLabel;
-@property (nonatomic, weak) UIButton* mainTitleButton;
+@property (nonatomic, strong) UILabel* mainTitleLabel;
+@property (nonatomic, strong) UIButton* mainTitleButton;
 
 @property (nonatomic, strong) NSMapTable *propertyTable;
 
@@ -48,22 +78,22 @@
         self.propertyTable = [NSMapTable strongToWeakObjectsMapTable];
         
         items = @[
-                    @[@"ágætis byrjun", @"ágætis byrjun", @"1999"],
-                    @[@"flugufrelsarinn", @"ágætis byrjun", @"1999"],
-                    @[@"olsen olsen", @"ágætis byrjun", @"1999"],
-                    @[@"starálfur", @"ágætis byrjun", @"1999"],
-                    @[@"svefn-g-englar", @"ágætis byrjun", @"1999"],
-                    @[@"popplagið", @"()", @"2002"],
-                    @[@"samskeyti", @"()", @"2002"],
-                    @[@"vaka", @"()", @"2002"],
-                    @[@"glósóli", @"takk", @"2005"],
-                    @[@"hoppípolla", @"takk", @"2005"],
-                    @[@"ára bátur", @"með suð í eyrum við spilum endalaust", @"2008"],
-                    @[@"fljótavík", @"með suð í eyrum við spilum endalaust", @"2008"],
-                    @[@"ekki múkk", @"Valtari", @"2012"],
-                    @[@"varúð", @"Valtari", @"2012"],
-                    @[@"hrafntinna", @"Kveikur", @"2013"],
-                    @[@"ísjaki", @"Kveikur", @"2013"],
+                  @{@"title":@"ágætis byrjun", @"subtitle": @"ágætis byrjun", @"year": @"1999"},
+                    @{@"title":@"flugufrelsarinn", @"subtitle":@"ágætis byrjun", @"year":@"1999"},
+                    @{@"title":@"olsen olsen", @"subtitle":@"ágætis byrjun", @"year":@"1999"},
+                    @{@"title":@"starálfur", @"subtitle":@"ágætis byrjun", @"year":@"1999"},
+                    @{@"title":@"svefn-g-englar", @"subtitle":@"ágætis byrjun", @"year":@"1999"},
+                    @{@"title":@"popplagið", @"subtitle":@"", @"year":@"2002"},
+                    @{@"title":@"samskeyti", @"subtitle":@"", @"year":@"2002"},
+                    @{@"title":@"vaka", @"subtitle":@"", @"year":@"2002"},
+                    @{@"title":@"glósóli", @"subtitle":@"takk", @"year":@"2005"},
+                    @{@"title":@"hoppípolla", @"subtitle":@"takk", @"year":@"2005"},
+                    @{@"title":@"ára bátur", @"subtitle":@"með suð í eyrum við spilum endalaust", @"year":@"2008"},
+                    @{@"title":@"fljótavík", @"subtitle":@"með suð í eyrum við spilum endalaust", @"year":@"2008"},
+                    @{@"title":@"ekki múkk", @"subtitle":@"Valtari", @"year":@"2012"},
+                    @{@"title":@"varúð", @"subtitle":@"Valtari", @"year":@"2012"},
+                    @{@"title":@"hrafntinna", @"subtitle":@"Kveikur", @"year":@"2013"},
+                    @{@"title":@"ísjaki", @"subtitle":@"Kveikur", @"year":@"2013"},
                 ];
     }
     return self;
@@ -93,12 +123,13 @@
 }
 
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    PrototypeExampleCell* cell = [tableView dequeueReusablePrototypeCellWithIdentifierISS:@"prototypeExampleCell" forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusablePrototypeCellWithIdentifierISS:@"prototypeExampleCell" forIndexPath:indexPath];
     
-    NSArray* item = items[indexPath.row];
-    cell.label1.text = item[0];
-    cell.label2.text = item[1];
-    cell.label3.text = item[2];
+    NSDictionary* item = items[indexPath.row];
+
+    for (NSString *key in item.keyEnumerator) {
+        [[cell valueForKey:key] setText:item[key]];
+    }
     
     return cell;
 }

@@ -46,6 +46,10 @@
         [fileOwner viewHierarchyParserWillSetValue:value forKey:propertyName];
     }
 
+    if ([parent respondsToSelector:@selector(viewHierarchyParserWillSetValue:forKey:)]) {
+        [parent viewHierarchyParserWillSetValue:value forKey:propertyName];
+    }
+
     SEL selector = NSSelectorFromString(propertyName);
 
     if( [fileOwner respondsToSelector:selector] ) {
