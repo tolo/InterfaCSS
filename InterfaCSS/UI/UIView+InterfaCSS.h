@@ -92,9 +92,19 @@
 - (BOOL) removeStyleClassISS:(NSString*)styleClass;
 
 /**
+ * Removes the specified style class from this view. If `scheduleStyling` is `YES`, asynchronous re-styling of this view is triggered.
+ */
+- (BOOL) removeStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling;
+
+/**
  * Removes the specified style class from this view. Triggers an asynchronous re-styling of this view, within an animation block.
  */
 - (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated;
+
+/**
+ * Removes the specified style class from this view. If `scheduleStyling` is `YES`, asynchronous re-styling of this view is triggered, optionally within an animation block.
+ */
+- (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling;
 
 
 /**

@@ -108,13 +108,21 @@
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass {
-    return [self removeStyleClassISS:styleClass animated:NO];
+    return [self removeStyleClassISS:styleClass animated:NO scheduleStyling:YES];
+}
+
+- (BOOL) removeStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling {
+    return [self removeStyleClassISS:styleClass animated:NO scheduleStyling:scheduleStyling];
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
+    return [self removeStyleClassISS:styleClass animated:animated scheduleStyling:YES];
+}
+
+- (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( [self hasStyleClassISS:styleClass] ) {
         [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIElement:self];
-        [self scheduleApplyStylingISS:animated];
+        if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
         return YES;
     }
     return NO;
