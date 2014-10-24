@@ -384,4 +384,22 @@
     XCTAssertNotNil(customView1.label5);
 }
 
+- (void) testShadowProperties {
+    UIView* v = [[UIView alloc] init];
+    v.styleClassISS = @"shadowTest1";
+    [v applyStylingISS];
+
+    XCTAssertEqualObjects((id)v.layer.shadowColor, (id)[UIColor redColor].CGColor);
+    XCTAssertTrue(CGSizeEqualToSize(v.layer.shadowOffset, CGSizeMake(1,2)));
+    XCTAssertEqual(v.layer.shadowOpacity, 0.5);
+    XCTAssertEqual(v.layer.shadowRadius, 10);
+    
+    UILabel* l = [[UILabel alloc] init];
+    l.styleClassISS = @"shadowTest2";
+    [l applyStylingISS];
+    
+    XCTAssertEqualObjects(l.shadowColor, [UIColor redColor]);
+    XCTAssertTrue(CGSizeEqualToSize(l.shadowOffset, CGSizeMake(1,2)));
+}
+
 @end

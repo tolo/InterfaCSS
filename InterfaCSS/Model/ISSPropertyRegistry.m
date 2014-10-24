@@ -63,6 +63,11 @@ static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSP
                                       enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
 }
 
+static ISSPropertyDefinition* pap(NSString* name, NSArray* aliases, NSDictionary* paramValues, ISSPropertyType type, PropertySetterBlock setterBlock) {
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
+                                      enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
+}
+
 static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters, NSString* attrName) {
     UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
     NSMutableDictionary* attrs = nil;
@@ -352,17 +357,21 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    ISSPropertyDefinition* shadowColor = pp(S(shadowColor), controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* shadowColor = pap(@"layer.shadowColor", @[@"shadowcolor"], controlStateParametersValues, ISSPropertyTypeColor, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setShadowColor:)] ) {
-            [viewObject setShadowColor:value];
+            [viewObject setShadowColor:value]; // UILabel
+        } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowColor:)] ) {
+            [[viewObject layer] setShadowColor:[value CGColor]]; // UIView
         } else {
             setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
         }
     });
 
-    ISSPropertyDefinition* shadowOffset = pp(S(shadowOffset), controlStateParametersValues, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertyDefinition* shadowOffset = pap(@"layer.shadowOffset", @[@"shadowoffset"], controlStateParametersValues, ISSPropertyTypeSize, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject respondsToSelector:@selector(setShadowOffset:)] ) {
             [viewObject setShadowOffset:[value CGSizeValue]];
+        } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowOffset:)] ) {
+            [[viewObject layer] setShadowOffset:[value CGSizeValue]];
         } else {
             setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
         }
@@ -463,10 +472,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pa(@"layer.borderWidth", @[@"borderwidth"], ISSPropertyTypeNumber),
             p(@"multipleTouchEnabled", ISSPropertyTypeBool),
             p(@"opaque", ISSPropertyTypeBool),
+            shadowOffset,
+            shadowColor,
+            pa(@"layer.shadowOpacity", @[@"shadowopacity"], ISSPropertyTypeNumber),
+            pa(@"layer.shadowRadius", @[@"shadowradius"], ISSPropertyTypeNumber),
             p(S(tintColor), ISSPropertyTypeColor),
             pe(S(tintAdjustmentMode), @{@"automatic" : @(UIViewTintAdjustmentModeAutomatic), @"normal" : @(UIViewTintAdjustmentModeNormal), @"dimmed" : @(UIViewTintAdjustmentModeDimmed)}),
             p(S(transform), ISSPropertyTypeTransform),
-            p(@"userInteractionEnabled", ISSPropertyTypeBool),
+            p(@"userInteractionEnabled", ISSPropertyTypeBool)
     ]];
     NSSet* allProperties = viewProperties;
 
@@ -614,9 +627,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ),
             p(S(numberOfLines), ISSPropertyTypeNumber),
             p(S(preferredMaxLayoutWidth), ISSPropertyTypeNumber),
-            shadowOffset,
             p(S(highlightedTextColor), ISSPropertyTypeColor),
-            shadowColor,
             text,
             attributedText
     ]];

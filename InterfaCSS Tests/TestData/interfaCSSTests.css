@@ -101,3 +101,15 @@ UIView.disabledStylingTest {
     attributedTitle: "text" (font: HelveticaNeue-Medium 12, color: blue);
     attributedTitle(highlighted): "text" (font: HelveticaNeue-Medium 12, color: red);
 }
+
+.shadowTest1 {
+    layer.shadowColor: red;
+    shadowOffset: size(1,2);
+    shadowOpacity: 0.5;
+    shadowRadius: 10;
+}
+
+.shadowTest2 {
+    shadowColor: red;
+    shadowOffset: size(1,2);
+}
