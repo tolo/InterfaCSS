@@ -26,6 +26,8 @@
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
 		2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */; };
+		38F49E0419FAD90A0029EA31 /* ISSNib.h in Headers */ = {isa = PBXBuildFile; fileRef = 38F49E0219FAD90A0029EA31 /* ISSNib.h */; };
+		38F49E0519FAD90A0029EA31 /* ISSNib.m in Sources */ = {isa = PBXBuildFile; fileRef = 38F49E0319FAD90A0029EA31 /* ISSNib.m */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
 		CC3C7E95D72191A7534CDDE8 /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C80C28116F9DA3FFC45F0 /* ISSViewPrototype.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -128,6 +130,8 @@
 		27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetPropertyValues.css; sourceTree = "<group>"; };
 		27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
 		30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		38F49E0219FAD90A0029EA31 /* ISSNib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSNib.h; sourceTree = "<group>"; };
+		38F49E0319FAD90A0029EA31 /* ISSNib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSNib.m; sourceTree = "<group>"; };
 		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
 		BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.debug.xcconfig"; sourceTree = "<group>"; };
@@ -338,6 +342,8 @@
 		F6EBAD0B1768B0AA0053DAFA /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				38F49E0219FAD90A0029EA31 /* ISSNib.h */,
+				38F49E0319FAD90A0029EA31 /* ISSNib.m */,
 				CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */,
 				CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */,
 				F6EBAD0E1768B0AA0053DAFA /* NSObject+ISSLogSupport.h */,
@@ -458,6 +464,7 @@
 				CC3C80D846FE359ECDFC1F39 /* ISSUIElementDetails.h in Headers */,
 				CC3C8DDB0631BA9C70A66260 /* NSMutableArray+ISSAdditions.h in Headers */,
 				CC3C8B4BBAEA07A6DFF3A07A /* NSAttributedString+ISSAdditions.h in Headers */,
+				38F49E0419FAD90A0029EA31 /* ISSNib.h in Headers */,
 				CC3C89FB978EC04E5A439018 /* ISSPropertyRegistry.h in Headers */,
 				CC3C818095B53A512E176587 /* ISSPropertyDefinition+Private.h in Headers */,
 				CC3C81614BE09A047EFEB70D /* ISSRuntimeIntrospectionUtils.h in Headers */,
@@ -616,6 +623,7 @@
 				CC3C8488DE29A52C150AC041 /* ISSPropertyDeclaration.m in Sources */,
 				CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */,
 				CC3C82264586100F4F287DC8 /* ISSPropertyDefinition.m in Sources */,
+				38F49E0519FAD90A0029EA31 /* ISSNib.m in Sources */,
 				CC3C89C90CEF4ED24CC45C95 /* ISSViewHierarchyParser.m in Sources */,
 				CC3C89EA883A75C29C2C1BCA /* UITableView+InterfaCSS.m in Sources */,
 				CC3C879A10542E8660D29082 /* ISSRefreshableResource.m in Sources */,
