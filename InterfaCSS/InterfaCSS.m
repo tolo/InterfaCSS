@@ -25,6 +25,7 @@ static InterfaCSS* singleton = nil;
 // Private extension of ISSUIElementDetails
 @interface ISSUIElementDetailsInterfaCSS : ISSUIElementDetails
 @property (nonatomic) BOOL beingStyled;
+@property (nonatomic) BOOL stylingScheduled;
 @end
 @implementation ISSUIElementDetailsInterfaCSS
 @end
@@ -352,11 +353,11 @@ static InterfaCSS* singleton = nil;
 
 #pragma mark - Styling
 
-- (ISSUIElementDetails*) detailsForUIElement:(id)uiElement create:(BOOL)create {
+- (ISSUIElementDetailsInterfaCSS*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
 
     NSValue* key = [NSValue valueWithPointer:(__bridge void*)uiElement];
-    ISSUIElementDetails* details = self.detailsForElements[key];
+    ISSUIElementDetailsInterfaCSS* details = self.detailsForElements[key];
     if( !details.uiElement ) details = nil; // UIElement has been dealloced and address reused - make sure we don't reuse this invalid ISSUIElementDetails object
     if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
@@ -376,14 +377,18 @@ static InterfaCSS* singleton = nil;
 
 - (void) clearCachedStylesForUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    if( uiElementDetails ) {
-        ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+}
 
-        [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
-        [uiElementDetails resetCachedData];
-    }
+- (void) clearCachedStylesForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
+    if( !uiElementDetails ) return;
 
-    UIView* view = [uiElement isKindOfClass:[UIView class]] ? (UIView*)uiElement : nil;
+    ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
+
+    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
+    [uiElementDetails resetCachedData];
+
+    UIView* view = uiElementDetails.view;
     for(UIView* subView in view.subviews) {
         [self clearCachedStylesForUIElement:subView];
     }
@@ -404,25 +409,31 @@ static InterfaCSS* singleton = nil;
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
     if( !uiElement ) return;
 
-    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    if( uiElementDetails && uiElementDetails.stylingDisabled ) return;
+    ISSUIElementDetailsInterfaCSS* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
+    if( uiElementDetails.stylingDisabled || uiElementDetails.stylingScheduled ) return;
 
     if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
         [self applyStyling:uiElement includeSubViews:YES force:YES];
-    } else if( animated && force ) {
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimationAndForce:) withObject:uiElement afterDelay:0];
-    } else if( animated ) {
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
-    } else if( force ) {
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithForce:) withObject:uiElement afterDelay:0];
     } else {
-        [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
+        uiElementDetails.stylingScheduled = YES; // Flag reset in [applyStyling:includeSubViews:force:]
+
+        if ( animated && force ) {
+            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimationAndForce:) withObject:uiElement afterDelay:0];
+        } else if ( animated ) {
+            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
+        } else if ( force ) {
+            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithForce:) withObject:uiElement afterDelay:0];
+        } else {
+            [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
+        }
     }
 }
 
 - (void) cancelScheduledApplyStyling:(id)uiElement {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStyling:) object:uiElement];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithForce:) object:uiElement];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithAnimation:) object:uiElement];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(applyStylingWithAnimationAndForce:) object:uiElement];
 }
 
 - (void) applyStylingWithForce:(id)uiElement {
@@ -442,6 +453,7 @@ static InterfaCSS* singleton = nil;
     if( !uiElement ) return;
 
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
+    uiElementDetails.stylingScheduled = NO;
 
     if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
         @try {
@@ -451,7 +463,10 @@ static InterfaCSS* singleton = nil;
         @finally {
             uiElementDetails.beingStyled = NO;
             // Cancel scheduled calls after styling has been applied, to avoid "loop"
-            [self cancelScheduledApplyStyling:uiElement];
+            if( uiElementDetails.stylingScheduled ) {
+                [self cancelScheduledApplyStyling:uiElement];
+                uiElementDetails.stylingScheduled = NO;
+            }
         }
     }
 }
@@ -476,7 +491,7 @@ static InterfaCSS* singleton = nil;
         // Reset cached styles if superview has changed (but not if using custom styling identity)
         if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
             ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
-            [self clearCachedStylesForUIElement:view];
+            [self clearCachedStylesForUIElementDetails:uiElementDetails];
             uiElementDetails.parentView = view.superview;
         }
 
@@ -570,7 +585,7 @@ static InterfaCSS* singleton = nil;
         uiElementDetails.styleClasses = nil;
     }
 
-    [self clearCachedStylesForUIElement:uiElement];
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
 }
 
 - (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass {
@@ -586,7 +601,7 @@ static InterfaCSS* singleton = nil;
     if( existingClasses ) newClasses = [newClasses setByAddingObjectsFromSet:existingClasses];
     uiElementDetails.styleClasses = newClasses;
 
-    [self clearCachedStylesForUIElement:uiElement];
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
 }
 
 - (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement {
@@ -601,7 +616,7 @@ static InterfaCSS* singleton = nil;
         uiElementDetails.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
     }
 
-    [self clearCachedStylesForUIElement:uiElement];
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
 }
 
 
@@ -624,8 +639,9 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement {
-    [self clearCachedStylesForUIElement:uiElement];
-    [[self detailsForUIElement:uiElement] setCustomElementStyleIdentity:customStylingIdentity];
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [uiElementDetails setCustomElementStyleIdentity:customStylingIdentity];
 }
 
 - (NSString*) customStylingIdentityForUIElement:(id)uiElement {
