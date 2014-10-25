@@ -107,6 +107,7 @@
 		0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		186DC3674630469E9A578BF5 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		270AD5ED19F79E1F004A649B /* viewDefinitionTest.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = viewDefinitionTest.xml; sourceTree = "<group>"; };
+		271FD12019FBC2560052221D /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
 		27530C36182AF066000FED8A /* ISSPropertyDeclarations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclarations.h; sourceTree = "<group>"; };
 		27530C37182AF066000FED8A /* ISSPropertyDeclarations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclarations.m; sourceTree = "<group>"; };
 		2785E25C18A8DCBB001D1104 /* InterfaCSS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InterfaCSS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -387,6 +388,7 @@
 		F6F5FC1914F5683B008E647E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				271FD12019FBC2560052221D /* libPods-InterfaCSS.a */,
 				F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */,
 				F65D52D814F7B0F10034E496 /* UIKit.framework */,
 				F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */,
@@ -659,9 +661,7 @@
 /* Begin XCBuildConfiguration section */
 		2785E26C18A8DCBB001D1104 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -677,6 +677,10 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				INFOPLIST_FILE = "InterfaCSS Tests/InterfaCSS Tests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -684,9 +688,7 @@
 		};
 		2785E26D18A8DCBB001D1104 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -703,6 +705,10 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				INFOPLIST_FILE = "InterfaCSS Tests/InterfaCSS Tests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
