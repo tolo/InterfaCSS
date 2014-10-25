@@ -94,7 +94,7 @@
                 propertyName = [[d.prefix stringByAppendingString:@"."] stringByAppendingString:propertyName];
             }
             
-            if( [propertyName iss_isEqualIgnoreCase:name] ) {
+            if( [propertyName iss_isEqualIgnoreCase:name] || [d.property.allNames containsObject:[name lowercaseString]] ) {
                 if( getDeclarations ) value = d;
                 else {
                     [d transformValueIfNeeded];
@@ -218,9 +218,9 @@
 }
 
 - (void) testOffsetPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"shadowOffset"];
+    id value = [self getSimplePropertyValueWithName:@"searchTextPositionAdjustment"];
     UIOffset offset = [value isKindOfClass:NSValue.class] ? [value UIOffsetValue] : UIOffsetZero;
-    XCTAssertTrue(UIOffsetEqualToOffset(offset, UIOffsetMake(1, 2)), @"Expected UIOffset value of '{1, 2}' for property shadowOffset, got: %@", value);
+    XCTAssertTrue(UIOffsetEqualToOffset(offset, UIOffsetMake(1, 2)), @"Expected UIOffset value of '{1, 2}' for property searchTextPositionAdjustment, got: %@", value);
 }
 
 - (void) testSizePropertyValue {

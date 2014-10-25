@@ -12,7 +12,7 @@
     text: "Text:";
     title: Title;
     prompt: 'Prompt';
-    shadowOffset: offset(1, 2);
+    searchTextPositionAdjustment: offset(1, 2);
     contentSize: size(3, 4);
     contentInset: insets(10, 20, 30, 40);
     center: point(5, 6);
