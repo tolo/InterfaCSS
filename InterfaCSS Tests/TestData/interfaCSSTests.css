@@ -113,3 +113,15 @@ UIView.disabledStylingTest {
     shadowColor: red;
     shadowOffset: size(1,2);
 }
+
+.sizeToFitTest1 {
+    frame: sizeToFit().top(10).left(20));
+}
+
+.sizeToFitTest2 {
+    frame: sizeToFit(100%, 100%).bottom(10).right(20);
+}
+
+.sizeToFitTest3 {
+    frame: sizeToFit(5, 5);
+}

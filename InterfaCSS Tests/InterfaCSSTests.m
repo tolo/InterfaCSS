@@ -402,4 +402,41 @@
     XCTAssertTrue(CGSizeEqualToSize(l.shadowOffset, CGSizeMake(1,2)));
 }
 
+- (UILabel*) labelWithString:(NSString*)string parent:(UIView*)parent {
+    UILabel* label = [[UILabel alloc] init];
+    label.text = string;
+    [parent addSubview:label];
+    return label;
+}
+
+- (void) testSizeToFit {
+    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    NSString* string = @"þetta er ágætis byrjun.";
+    UILabel* reference = [self labelWithString:string parent:parent];
+    CGSize referenceSize = [reference sizeThatFits:parent.bounds.size];
+    
+    UILabel* l1 = [self labelWithString:string parent:parent];
+    l1.styleClassISS = @"sizeToFitTest1";
+    [l1 applyStylingISS];
+    
+    XCTAssertTrue(CGSizeEqualToSize(l1.frame.size, referenceSize));
+    XCTAssertEqual(l1.frame.origin.x, 20);
+    XCTAssertEqual(l1.frame.origin.y, 10);
+    
+    
+    UILabel* l2 = [self labelWithString:string parent:parent];
+    l2.styleClassISS = @"sizeToFitTest2";
+    [l2 applyStylingISS];
+    
+    XCTAssertTrue(CGSizeEqualToSize(l2.frame.size, referenceSize));
+    XCTAssertEqual(l2.frame.origin.x, parent.bounds.size.width - referenceSize.width - 20);
+    XCTAssertEqual(l2.frame.origin.y, parent.bounds.size.height - referenceSize.height - 10);
+    
+    UILabel* l3 = [self labelWithString:string parent:parent];
+    l3.styleClassISS = @"sizeToFitTest3";
+    [l3 applyStylingISS];
+    
+    XCTAssertTrue(CGSizeEqualToSize(l3.frame.size, CGSizeMake(5, 5)));
+}
+
 @end

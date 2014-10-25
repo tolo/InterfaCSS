@@ -14,6 +14,7 @@ typedef NS_ENUM(NSInteger, ISSRectValueType) {
     ISSRectValueTypeStandard,
     ISSRectValueTypeParentInsets,
     ISSRectValueTypeParentRelative,
+    ISSRectValueTypeParentRelativeSizeToFit,
     ISSRectValueTypeWindowInsets,
 };
 
@@ -34,6 +35,7 @@ extern CGFloat const ISSRectValueAuto;
 + (ISSRectValue*) parentInsetRectWithSize:(CGSize)size;
 + (ISSRectValue*) parentInsetRectWithInsets:(UIEdgeInsets)insets;
 + (ISSRectValue*) parentRelativeRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight;
++ (ISSRectValue*) parentRelativeSizeToFitRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight;
 
 + (ISSRectValue*) windowRect;
 + (ISSRectValue*) windowInsetRectWithSize:(CGSize)size;

@@ -26,12 +26,13 @@ UIButton {
 }
 
 .mainTitleLabel {
-    frame: rect(15, 30, 160, 30);
+    frame: sizeToFit(160, 50).left(15).top(30);
     textColor: rgb(255, 255, 255);
     font: @stdHeadingLabel;
     alpha: 1;
-    backgroundColor: clear;
+    backgroundColor: fadeout(lightGray, 50%);
     cornerRadius: 5;
+    clipsToBounds: YES;
     attributedText: "Simple" (foregroundColor: lightGray), " Sample " (foregroundColor: #3f3f3f), "Main" (foregroundColor: #cccccc);
 }
 

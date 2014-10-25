@@ -613,6 +613,20 @@
         }
     } name:@"rectSize"];
 
+    ParcoaParser* rectSizeToFitValueParser = [[Parcoa iss_parameterStringWithPrefix:@"sizeToFit"] transform:^id(NSArray* c) {
+        if( c.count == 2 ) {
+            BOOL autoWidth = [@"auto" iss_isEqualIgnoreCase:c[0]] || [@"*" isEqualToString:c[0]]; // Auto is treated as 100% for sizeToFit
+            CGFloat width = autoWidth ? 100.0f : [c[0] floatValue];
+            BOOL relativeWidth = autoWidth || [blockSelf isRelativeValue:c[0]];
+            BOOL autoHeight = [@"auto" iss_isEqualIgnoreCase:c[1]] || [@"*" isEqualToString:c[1]]; // Auto is treated as 100% for sizeToFit
+            CGFloat height = autoHeight ? 100.0f : [c[1] floatValue];
+            BOOL relativeHeight = autoHeight || [blockSelf isRelativeValue:c[1]];
+            return [ISSRectValue parentRelativeSizeToFitRectWithSize:CGSizeMake(width, height) relativeWidth:relativeWidth relativeHeight:relativeHeight];
+        } else {
+            return [ISSRectValue parentRelativeSizeToFitRectWithSize:CGSizeMake(100.0f, 100.0f) relativeWidth:YES relativeHeight:YES];
+        }
+    } name:@"rectSizeToFit"];
+
     ParcoaParser* insetParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES], anyName, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
         // Use ISSLazyValue to create a typed block container for setting the insets on the ISSRectValue (see below)
         return [ISSLazyValue lazyValueWithBlock:^id(ISSRectValue* rectValue) {
@@ -639,7 +653,7 @@
     } name:@"insets"];
 
     ParcoaParser* partSeparator = [[Parcoa choice:@[[Parcoa space], dot]] many1];
-    ParcoaParser* relativeRectParser = [[[Parcoa choice:@[rectSizeValueParser, insetParser, insetsParser]] sepBy:partSeparator] transform:^id(id value) {
+    ParcoaParser* relativeRectParser = [[[Parcoa choice:@[rectSizeValueParser, rectSizeToFitValueParser, insetParser, insetsParser]] sepBy:partSeparator] transform:^id(id value) {
         ISSRectValue* rectValue = [ISSRectValue zeroRect];
         if( [value isKindOfClass:[NSArray class]] ) {
             ISSRectValue* sizeValue = [ISSRectValue parentRelativeRectWithSize:CGSizeMake(ISSRectValueAuto, ISSRectValueAuto) relativeWidth:YES relativeHeight:YES];

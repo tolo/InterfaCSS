@@ -64,6 +64,12 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     return rectValue;
 }
 
++ (ISSRectValue*) parentRelativeSizeToFitRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight {
+    ISSRectValue* rectValue = [self parentRelativeRectWithSize:size relativeWidth:relativeWidth relativeHeight:relativeHeight];
+    rectValue->_type = ISSRectValueTypeParentRelativeSizeToFit;
+    return rectValue;
+}
+
 + (ISSRectValue*) windowRect {
     return [[self alloc] initWithType:ISSRectValueTypeWindowInsets rect:CGRectZero insets:UIEdgeInsetsZero];
 }
@@ -88,13 +94,12 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     return self;
 }
 
-
 - (BOOL) autoWidth {
-    return _rect.size.width == ISSRectValueAuto;
+    return _rect.size.width == ISSRectValueAuto && _type != ISSRectValueTypeParentRelativeSizeToFit;
 }
 
 - (BOOL) autoHeight {
-    return _rect.size.height == ISSRectValueAuto;
+    return _rect.size.height == ISSRectValueAuto && _type != ISSRectValueTypeParentRelativeSizeToFit;
 }
 
 
@@ -135,13 +140,21 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     else return value;
 }
 
-- (CGRect) applySizeAndInsetsToParentRect:(CGRect)parentRect {
+- (CGRect) applySizeAndInsetsToParentRect:(CGRect)parentRect forView:(UIView*)view {
     CGFloat width, height;
 
     if( self.autoWidth ) width = parentRect.size.width;
     else width = [self relativeValue:_rect.size.width parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeWidth];
     if( self.autoHeight ) height = parentRect.size.height;
     else height = [self relativeValue:_rect.size.height parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeHeight];
+
+    // If sizeToFit mode - get the desired size for the view, using width & height as max values
+    BOOL isSizeToFit = _type == ISSRectValueTypeParentRelativeSizeToFit;
+    if( isSizeToFit ) {
+        CGSize size = [view sizeThatFits:CGSizeMake(width, height)];
+        if( size.width < width ) width = size.width;
+        if( size.height < height ) height = size.height;
+    }
 
     CGRect resultingRect = CGRectMake(0, 0, width, height);
     UIEdgeInsets actualInsets = UIEdgeInsetsZero;
@@ -164,7 +177,7 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     if( _insets.bottom != ISSRectValueNoValue ) {
         CGFloat bottomInset = [self relativeValue:_insets.bottom parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeBottom];
         if( self.autoHeight ) actualInsets.bottom = bottomInset;
-        else resultingRect.origin.y += (parentRect.size.height - height - bottomInset);;
+        else resultingRect.origin.y += (parentRect.size.height - height - bottomInset);
     }
 
     return UIEdgeInsetsInsetRect(resultingRect, actualInsets);
@@ -194,8 +207,8 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
         return _rect;
     } else if( _type == ISSRectValueTypeParentInsets ) {
         return [self applyInsetsToParentRect:[self.class parentBoundsForView:view]];
-    } else if( _type == ISSRectValueTypeParentRelative ) {
-        return [self applySizeAndInsetsToParentRect:[self.class parentBoundsForView:view]];
+    } else if( _type == ISSRectValueTypeParentRelative || _type == ISSRectValueTypeParentRelativeSizeToFit ) {
+        return [self applySizeAndInsetsToParentRect:[self.class parentBoundsForView:view] forView:view];
     } else /*if( _type == ISSRectValueTypeWindowInsets )*/ {
         return [self applyInsetsToParentRect:[self.class windowBoundsForView:view]];
     }
