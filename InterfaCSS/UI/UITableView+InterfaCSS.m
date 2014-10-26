@@ -15,8 +15,7 @@
 @implementation UITableView (InterfaCSS)
 
 - (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
-    id cell = [self dequeueReusableCellWithIdentifier:prototypeName];
-    cell = cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+    id cell = [self dequeueReusableCellWithIdentifier:prototypeName forIndexPath:indexPath];
     ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell];
     elementDetails.additionalDetails[ISSTableViewCellIndexPathKey] = indexPath;
     return cell;
@@ -24,7 +23,9 @@
 
 - (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName {
     id cell = [self dequeueReusableHeaderFooterViewWithIdentifier:prototypeName];
-    return cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell];
+    elementDetails.additionalDetails[ISSTableViewCellIndexPathKey] = nil;
+    return cell;
 }
 
 @end

@@ -14,7 +14,7 @@
 #import "NSString+ISSStringAdditions.h"
 #import "ISSViewPrototype.h"
 #import "InterfaCSS.h"
-
+#import "ISSNib.h"
 
 @implementation ISSViewHierarchyParser {
     id fileOwner;
@@ -179,7 +179,19 @@
     }
     // Topmost prototype end tag - register prototype
     else if( currentPrototype ) {
-        [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
+        
+        if ([superViewObject isKindOfClass:[UITableView class]]) {
+            ISSNib *nib = [[ISSNib alloc] initWithPrototype:currentPrototype];
+            UITableView *tableView = (UITableView *)superViewObject;
+            [tableView registerNib:nib forCellReuseIdentifier:currentPrototype.name];
+        } else if ([superViewObject isKindOfClass:[UICollectionView class]]) {
+            ISSNib *nib = [[ISSNib alloc] initWithPrototype:currentPrototype];
+            UICollectionView *collectionView = (UICollectionView *)superViewObject;
+            [collectionView registerNib:nib forCellWithReuseIdentifier:currentPrototype.name];
+        } else {
+          [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
+        }
+        
     }
     // Child view end tag
     else if ( viewObject && superViewObject && [addViewAsSubView containsObject:viewObject] ) {
