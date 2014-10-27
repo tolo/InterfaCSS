@@ -6,9 +6,9 @@
     
     <tableview property="tableView" class="prototypeExampleTable">
         <PrototypeExampleCell prototype="prototypeExampleCell" class="prototypeExampleCell">
-            <label property="label1" class="prototypeExampleCellLabel1"/>
-            <label property="label2" class="prototypeExampleCellLabel2"/>
-            <label property="label3" class="prototypeExampleCellLabel3"/>
+            <label property="title" class="prototypeExampleCellLabel1"/>
+            <label property="subtitle" class="prototypeExampleCellLabel2"/>
+            <label property="year" class="prototypeExampleCellLabel3"/>
             
             <!-- Example of how you can directly set the backgroundView and selectedBackgroundView properties of a UITableViewCell: -->
             <view property="backgroundView" class="cellBackgroundView" add="NO"/>
