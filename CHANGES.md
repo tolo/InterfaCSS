@@ -11,7 +11,7 @@
     * Added support for registering (the iOS6 way) UITableViewCell and UICollectionViewCell classes in the parent UITableView/UICollectionView.
 * Added support for associating a view with an alias, both though`UIView+InterfaCSS` and the xml view definition file (`alias` attribute).
 * Added support for setting properties on `UICollectionViewFlowLayout`.
-
+a
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
 * Reduction of excessive cleanup of caches.
