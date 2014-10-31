@@ -30,10 +30,10 @@ UIButton {
     textColor: rgb(255, 255, 255);
     font: @stdHeadingLabel;
     alpha: 1;
-    backgroundColor: fadeout(lightGray, 50%);
+    backgroundColor: fadeout(lightGray, 75%);
     cornerRadius: 5;
     clipsToBounds: YES;
-    attributedText: "Simple" (foregroundColor: lightGray), " Sample " (foregroundColor: #3f3f3f), "Main" (foregroundColor: #cccccc);
+    attributedText: "Simple" (foregroundColor: #e1881e), " Sample " (foregroundColor: #3f3f3f), "Main" (foregroundColor: #ab45ec);
 }
 
 .mainTitleLabel:landscape { // Landscape orientation
