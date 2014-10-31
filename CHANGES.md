@@ -6,12 +6,18 @@
 ### New features & changes
 * Added support for attributed string properties (`attributedText` in `UILabel`, `UITextField` and `UITextView`, and `attributedTitle` in `UIButton`).
 * Added support for opting out of scheduled styling when adding and removing style classes (via `UIView (InterfaCSS)` category).
+* Updates to xml view definition file parsing (ISSViewHierarchyParser): 
+    * Added support for `impl` attribute for specifying a custom implementation class. 
+    * Added support for registering (the iOS6 way) UITableViewCell and UICollectionViewCell classes in the parent UITableView/UICollectionView.
+* Added support for associating a view with an alias, both though`UIView+InterfaCSS` and the xml view definition file (`alias` attribute).
+* Added support for setting properties on `UICollectionViewFlowLayout`.
 
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
 * Reduction of excessive cleanup of caches.
-* Added fix for issue with view definition file prototypes (#5) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
-* Merged fix for use of incorrect setters for property `attributedTitle` (#4), added by @tbrannam.
+* Added fix for issue with view definition file prototypes (issue #5) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
+* Merged fix for use of incorrect setters for property `attributedTitle` (issue #4), added by @tbrannam.
+* Added support for properly handling custom UITableViewCell/UICollectionViewCell subclasses in ISSViewHierarchyParser (issue #7).
 
 
 ##Version 0.9.11
