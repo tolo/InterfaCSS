@@ -7,7 +7,7 @@
     <tableView property="tableView" class="prototypeExampleTable">
         <tableViewCell prototype="prototypeExampleCell" class="prototypeExampleCell" impl="PrototypeExampleCell">
             <label property="label1" class="prototypeExampleCellLabel1"/>
-            <label property="label2" class="prototypeExampleCellLabel2"/>
+            <label alias="label2" class="prototypeExampleCellLabel2"/>
             <label property="label3" class="prototypeExampleCellLabel3"/>
             
             <!-- Example of how you can directly set the backgroundView and selectedBackgroundView properties of a UITableViewCell: -->

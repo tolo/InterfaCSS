@@ -11,6 +11,7 @@
 
 #import "NSString+ISSStringAdditions.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSUIElementDetails.h"
 
 
 @implementation UIView (InterfaCSS)
@@ -56,6 +57,14 @@
 
 - (NSString*) customStylingIdentityISS {
     return [[InterfaCSS interfaCSS] customStylingIdentityForUIElement:self];
+}
+
+- (NSString*) elementAlias {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementAlias;
+}
+
+- (void) setElementAlias:(NSString*)elementAlias {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementAlias = elementAlias;
 }
 
 
@@ -169,6 +178,10 @@
 
 - (void) enableStylingForPropertyISS:(NSString*)propertyName {
     [[InterfaCSS interfaCSS] setStylingEnabled:YES forProperty:propertyName inUIElement:self];
+}
+
+- (id) subviewWithAlias:(NSString*)alias {
+    return [[InterfaCSS interfaCSS] subviewWithAlias:alias inView:self];
 }
 
 @end

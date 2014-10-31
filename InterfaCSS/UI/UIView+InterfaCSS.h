@@ -48,6 +48,9 @@
  */
 @property (nonatomic, strong) NSString* customStylingIdentityISS;
 
+/** An optional alias for this view. May be used to find a view using the method `subviewWithAlias:`. */
+@property (nonatomic, strong) NSString* elementAlias;
+
 
 /**
  * Sets the style class for the this view, replacing any previous style classes.
@@ -177,5 +180,9 @@
  * Re-enables styling of a property.
  */
 - (void) enableStylingForPropertyISS:(NSString*)propertyName;
+
+
+/** Finds a sub view with the specified alias. */
+- (id) subviewWithAlias:(NSString*)alias;
 
 @end

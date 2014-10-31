@@ -17,7 +17,6 @@
 
 @interface PrototypeExampleCell : UITableViewCell
 @property (nonatomic, strong) UILabel* label1;
-@property (nonatomic, strong) UILabel* label2;
 @property (nonatomic, strong) UILabel* label3;
 @end
 
@@ -92,8 +91,13 @@
     PrototypeExampleCell* cell = [tableView dequeueReusablePrototypeCellWithIdentifierISS:@"prototypeExampleCell" forIndexPath:indexPath];
     
     NSArray* item = items[indexPath.row];
+    
     cell.label1.text = item[0];
-    cell.label2.text = item[1];
+
+    // Testing the use of an alias for this label
+    UILabel* label2 = [cell subviewWithAlias:@"label2"];
+    label2.text = item[1];
+    
     cell.label3.text = item[2];
     
     return cell;

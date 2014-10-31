@@ -25,6 +25,8 @@ extern const NSString* ISSPrototypeViewInitializedKey;
 @property (nonatomic, weak, readonly) UIView* view;
 @property (nonatomic, weak) UIView* parentView;
 
+@property (nonatomic, strong) NSString* elementAlias;
+
 @property (nonatomic, readonly) BOOL addedToViewHierarchy;
 @property (nonatomic, readonly) BOOL stylesCacheable;
 

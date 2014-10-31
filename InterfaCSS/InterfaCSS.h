@@ -22,7 +22,6 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
-@class ISSUIElementDetails;
 @class ISSPropertyRegistry;
 
 
@@ -229,6 +228,9 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 
 /** Returns `YES` if styling is enabled for a specific property in the specified UI element. */
 - (BOOL) isStylingEnabledForProperty:(NSString*)propertyName inUIElement:(id)uiElement;
+
+/** Finds a sub view with the specified alias. */
+- (id) subviewWithAlias:(NSString*)alias inView:(UIView*)view;
 
 
 #pragma mark - Stylesheets
