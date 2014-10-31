@@ -565,7 +565,16 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* collectionViewProperties = [NSSet setWithArray:@[
             allowsSelection,
-            allowsMultipleSelection
+            allowsMultipleSelection,
+            // UICollectionViewFlowLayout properties:
+            pea(@"collectionViewLayout.scrollDirection", @[@"scrollDirection"], @{@"vertical" : @(UICollectionViewScrollDirectionVertical), @"horizontal" : @(UICollectionViewScrollDirectionHorizontal)}),
+            pa(@"collectionViewLayout.minimumLineSpacing", @[@"minimumLineSpacing"], ISSPropertyTypeNumber),
+            pa(@"collectionViewLayout.minimumInteritemSpacing", @[@"minimumInteritemSpacing"], ISSPropertyTypeNumber),
+            pa(@"collectionViewLayout.itemSize", @[@"itemSize"], ISSPropertyTypeSize),
+            pa(@"collectionViewLayout.estimatedItemSize", @[@"estimatedItemSize"], ISSPropertyTypeSize),
+            pa(@"collectionViewLayout.sectionInset", @[@"sectionInset"], ISSPropertyTypeEdgeInsets),
+            pa(@"collectionViewLayout.headerReferenceSize", @[@"headerReferenceSize"], ISSPropertyTypeSize),
+            pa(@"collectionViewLayout.footerReferenceSize", @[@"footerReferenceSize"], ISSPropertyTypeSize)
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:collectionViewProperties];
 

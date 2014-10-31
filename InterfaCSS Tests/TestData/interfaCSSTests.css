@@ -125,3 +125,7 @@ UIView.disabledStylingTest {
 .sizeToFitTest3 {
     frame: sizeToFit(5, 5);
 }
+
+.collectionViewTest {
+    minimumLineSpacing: 42;
+}

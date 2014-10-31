@@ -439,4 +439,14 @@
     XCTAssertTrue(CGSizeEqualToSize(l3.frame.size, CGSizeMake(5, 5)));
 }
 
+- (void) testCollectionViewFlowLayoutProperties {
+    UICollectionViewFlowLayout* flow = [[UICollectionViewFlowLayout alloc] init];
+    UICollectionView* collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:flow];
+    
+    collectionView.styleClassISS = @"collectionViewTest";
+    [collectionView applyStylingISS];
+    
+    XCTAssertEqual(flow.minimumLineSpacing, 42);
+}
+
 @end
