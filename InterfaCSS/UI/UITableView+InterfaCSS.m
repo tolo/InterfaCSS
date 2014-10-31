@@ -11,20 +11,27 @@
 
 #import "InterfaCSS.h"
 #import "ISSUIElementDetails.h"
+#import "UIView+ISSPrototypeView.h"
 
 @implementation UITableView (InterfaCSS)
 
-- (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
-    id cell = [self dequeueReusableCellWithIdentifier:prototypeName];
-    cell = cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+- (id) dequeueReusableCellWithIdentifierISS:(NSString*)reuseIdentifier forIndexPath:(NSIndexPath*)indexPath {
+    id cell = [self dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
     ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell];
-    elementDetails.additionalDetails[ISSTableViewCellIndexPathKey] = indexPath;
+    elementDetails.additionalDetails[ISSIndexPathKey] = indexPath;
+    return cell;
+}
+
+- (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
+    UIView* cell = [self dequeueReusableCellWithIdentifierISS:prototypeName forIndexPath:indexPath];
+    [cell setupViewFromPrototypeISS];
     return cell;
 }
 
 - (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName {
-    id cell = [self dequeueReusableHeaderFooterViewWithIdentifier:prototypeName];
-    return cell ?: [[InterfaCSS interfaCSS] viewFromPrototypeWithName:prototypeName];
+    UIView* view = [self dequeueReusableHeaderFooterViewWithIdentifier:prototypeName];
+    [view setupViewFromPrototypeISS];
+    return view;
 }
 
 @end

@@ -9,7 +9,9 @@
 
 #import "InterfaCSS.h"
 
-extern const NSString* ISSTableViewCellIndexPathKey;
+extern const NSString* ISSIndexPathKey;
+extern const NSString* ISSPrototypeViewInitializedKey;
+
 
 // InterfaCSS class extension
 @interface InterfaCSS ()

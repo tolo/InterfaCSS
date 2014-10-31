@@ -10,9 +10,11 @@
 #import <Foundation/Foundation.h>
 
 
-typedef UIView* (^ViewBuilderBlock)();
+typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 
-
+/**
+ * Represents a registered
+ */
 @interface ISSViewPrototype : NSObject
 
 @property (nonatomic, strong, readonly) NSString* name;

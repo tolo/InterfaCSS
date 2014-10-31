@@ -675,12 +675,23 @@ static InterfaCSS* singleton = nil;
 #pragma mark - Prototypes
 
 - (void) registerPrototype:(ISSViewPrototype*)prototype {
-    if( prototype.name ) self.prototypes[prototype.name] = prototype;
-    else ISSLogWarning(@"Attempted to register prototype without name!");
+    if( self.prototypes[prototype.name] ) {
+        ISSLogWarning(@"Attempting to register a prototype with a name that already exists - previous prototype will be overwritten!");
+    }
+
+    if( prototype.name ) {
+        self.prototypes[prototype.name] = prototype;
+    } else {
+        ISSLogWarning(@"Attempted to register prototype without name!");
+    }
 }
 
 - (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName {
-    return [self.prototypes[prototypeName] createViewObjectFromPrototype:nil];
+    return [self viewFromPrototypeWithName:prototypeName parentObject:nil];
+}
+
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName parentObject:(id)parentObject {
+    return [self.prototypes[prototypeName] createViewObjectFromPrototype:parentObject];
 }
 
 

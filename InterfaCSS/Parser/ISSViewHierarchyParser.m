@@ -16,11 +16,37 @@
 #import "InterfaCSS.h"
 
 
+static NSDictionary* tagToClass;
+
 @implementation ISSViewHierarchyParser {
     id fileOwner;
     ISSRootView* rootView;
     NSMutableArray* viewStack;
     NSMutableSet* addViewAsSubView;
+}
+
++ (void) initialize {
+    tagToClass = @{
+        // Containers:
+        @"collectionview": UICollectionView.class,
+        @"imageview": UIImageView.class,
+        @"scrollview": UIScrollView.class,
+        @"tableview": UITableView.class,
+        @"view": UIView.class,
+        @"webview": UIWebView.class,
+        // Components:
+        @"activityindicator": UIActivityIndicatorView.class,
+        @"button": UIButton.class,
+        @"collectionviewcell": UICollectionViewCell.class,
+        @"label": UILabel.class,
+        @"progressview": UIProgressView.class,
+        @"slider": UISlider.class,
+        @"stepper": UIStepper.class,
+        @"switch": UISwitch.class,
+        @"textfield": UITextField.class,
+        @"textview": UITextView.class,
+        @"tableviewcell": UITableViewCell.class
+    };
 }
 
 + (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner {
@@ -40,7 +66,7 @@
     return viewParser->rootView;
 }
 
-+ (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner {
++ (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner silent:(BOOL)silent {
     SEL selector = NSSelectorFromString(propertyName);
 
     if( [fileOwner respondsToSelector:selector] ) {
@@ -49,13 +75,47 @@
     } else if( [parent respondsToSelector:selector] ) {
         [parent setValue:value forKey:propertyName];
         return YES;
-    } else {
+    } else if( !silent ) {
         if ( fileOwner && parent ) ISSLogWarning(@"Property '%@' not found in file owner or parent view!", propertyName);
         else if ( fileOwner ) ISSLogWarning(@"Property '%@' not found in file owner!", propertyName);
         else if ( parent ) ISSLogWarning(@"Property '%@' not found in parent view!", propertyName);
         else ISSLogWarning(@"Unable to set property '%@' - no file owner or parent view available!", propertyName);
     }
     return NO;
+}
+
+
+#pragma mark - View builder support methods
+
+- (ViewBuilderBlock) viewBuilderBlockForPrototypeTableViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName {
+    [(UITableView*)superview registerClass:clazz forCellReuseIdentifier:prototypeName];
+    return ^UIView* (UIView* cell) {
+        // The input of this block will be a newly instantiated table view cell
+        UITableViewCell* tableViewCell = [ISSViewBuilder setupView:cell withStyleClass:styleClass];
+        return tableViewCell.contentView; // We want subviews to be added to the content view of the cell, so let's return that
+    };
+}
+
+- (ViewBuilderBlock) viewBuilderBlockForPrototypeCollectionViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName {
+    [(UICollectionView*)superview registerClass:clazz forCellWithReuseIdentifier:prototypeName];
+    return ^UIView* (UIView* cell) {
+        // The input of this block will be a newly instantiated collection view cell
+        UICollectionViewCell* collectionViewCell = [ISSViewBuilder setupView:cell withStyleClass:styleClass];
+        return collectionViewCell.contentView; // We want subviews to be added to the content view of the cell, so let's return that
+    };
+}
+
+- (void) postProcessView:(UIView*)view {
+    if( [view isKindOfClass:UICollectionView.class] ) {
+        UICollectionView* collectionView = (UICollectionView*)view;
+        if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDataSource)] ) collectionView.dataSource = fileOwner;
+        if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDelegate)] ) collectionView.delegate = fileOwner;
+    }
+    else if( [view isKindOfClass:UITableView.class] ) {
+        UITableView* tableView = (UITableView*)view;
+        if( [fileOwner conformsToProtocol:@protocol(UITableViewDataSource)] ) tableView.dataSource = fileOwner;
+        if( [fileOwner conformsToProtocol:@protocol(UITableViewDelegate)] ) tableView.delegate = fileOwner;
+    }
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -67,10 +127,13 @@
     NSString* lcElementName = [elementName lowercaseString];
     if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName substringFromIndex:2];
 
+    // Attributes
     NSString* styleClass = nil;
     NSString* propertyName = nil;
     NSString* prototypeName = nil;
     BOOL add = YES;
+    Class viewClass = nil;
+
     for (NSString* key in attributeDict.allKeys) {
         if ( [[key lowercaseString] hasPrefix:@"class"] ) {
             styleClass = attributeDict[key];
@@ -80,80 +143,52 @@
             propertyName = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
             add = [attributeDict[key] boolValue];
+        } else if ( [[key lowercaseString] hasPrefix:@"impl"] ) {
+            viewClass =  NSClassFromString(attributeDict[key]);
         }
     }
 
     id parent = viewStack.lastObject;
     ISSViewPrototype* parentPrototype = [parent isKindOfClass:ISSViewPrototype.class] ? parent : nil;
 
-    ViewBuilderBlock viewBuilderBlock = nil;
-
-    // Containers:
-    if ( [@"view" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView* { return [ISSViewBuilder viewWithStyle:styleClass]; };
-    } else if ( [@"collectionview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView* {
-            UICollectionView* collectionView = [ISSViewBuilder collectionViewWithStyle:styleClass];
-            if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDataSource)] ) collectionView.dataSource = fileOwner;
-            if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDelegate)] ) collectionView.delegate = fileOwner;
-            return collectionView;
-        };
-    } else if ( [@"imageview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView* { return [ISSViewBuilder imageViewWithStyle:styleClass]; };
-    } else if ( [@"scrollview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder scrollViewWithStyle:styleClass]; };
-    } else if ( [@"tableview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{
-            UITableView* tableView = [ISSViewBuilder tableViewWithStyle:styleClass andTableViewStyle:UITableViewStylePlain];
-            if( [fileOwner conformsToProtocol:@protocol(UITableViewDataSource)] ) tableView.dataSource = fileOwner;
-            if( [fileOwner conformsToProtocol:@protocol(UITableViewDelegate)] ) tableView.delegate = fileOwner;
-            return tableView;
-        };
-    } else if ( [@"webview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder webViewWithStyle:styleClass]; };
+    // Set viewClass if not specified by impl attribute
+    viewClass = viewClass ?: (Class)tagToClass[lcElementName];
+    if( !viewClass )  {
+        // Fallback - may be removed in favor of '<view impl="MyViewClass">'
+        viewClass = NSClassFromString(elementName);
     }
-    // Controls:
-    else if ( [lcElementName hasPrefix:@"activityindicator"] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder activityIndicatorViewWithStyle:styleClass]; };
-    } else if ( [@"button" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder buttonWithStyle:styleClass]; };
-    } else if ( [@"label" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder labelWithStyle:styleClass]; };
-    } else if ( [@"progressview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder progressViewWithStyle:styleClass]; };
-    } else if ( [@"slider" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder sliderWithStyle:styleClass]; };
-    } else if ( [@"stepper" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder stepperWithStyle:styleClass]; };
-    } else if ( [@"switch" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder switchWithStyle:styleClass]; };
-    } else if ( [@"textfield" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder textFieldWithStyle:styleClass]; };
-    } else if ( [@"textview" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView*{ return [ISSViewBuilder textViewWithStyle:styleClass]; };
-    } else if ( [@"tableviewcell" isEqualToString:lcElementName] ) {
-        viewBuilderBlock = ^UIView* {
-            return [ISSViewBuilder tableViewCellWithStyle:styleClass andReuseIdentifier:prototypeName];
+    viewClass = viewClass ?: UIView.class;
+
+
+    // Setup ViewBuilderBlock
+    ViewBuilderBlock viewBuilderBlock;
+
+    // Special cases (cell prototypes):
+    if ( [viewClass isSubclassOfClass:UITableViewCell.class] && [prototypeName iss_hasData] ) {
+        viewBuilderBlock = [self viewBuilderBlockForPrototypeTableViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName];
+    }
+    else if ( [viewClass isSubclassOfClass:UICollectionViewCell.class] && [prototypeName iss_hasData] ) {
+        viewBuilderBlock = [self viewBuilderBlockForPrototypeCollectionViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName];
+    }
+    // Default case:
+    else {
+        viewBuilderBlock = ^UIView* (UIView* superview) {
+            UIView* view = [ISSViewBuilder viewOfClass:viewClass withStyle:styleClass];
+            [self postProcessView:view];
+            return view;
         };
-    } else {
-        Class c = NSClassFromString(elementName);
-        if ( c ) {
-            viewBuilderBlock = ^UIView*{
-                return [ISSViewBuilder setupView:[[c alloc] init] withStyleClass:styleClass];
-            };
-        }
     }
 
     id currentViewObject;
 
-    if ( parentPrototype && viewBuilderBlock ) {
+    if ( parentPrototype ) {
         currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
     } else if ( [prototypeName iss_hasData] ) {
         currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
-    } else if( viewBuilderBlock ) {
-        currentViewObject = viewBuilderBlock();
+    } else {
+        currentViewObject = viewBuilderBlock(parent);
         if( [propertyName iss_hasData] ) {
-            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:fileOwner];
+            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:fileOwner silent:NO];
         }
         if( add ) [addViewAsSubView addObject:currentViewObject];
     }

@@ -11,7 +11,8 @@
 
 #import "ISSPropertyRegistry.h"
 
-const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
+const NSString* ISSIndexPathKey = @"ISSIndexPathKey";
+const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
 
 
 @interface ISSUIElementDetails ()
@@ -169,26 +170,37 @@ const NSString* ISSTableViewCellIndexPathKey = @"ISSTableViewCellIndexPathKey";
     return _additionalDetails;
 }
 
+- (void) setPosition:(NSInteger*)position count:(NSInteger*)count fromIndexPath:(NSIndexPath*)indexPath countBlock:(NSInteger(^)(NSIndexPath*))countBlock {
+    if( !indexPath ) indexPath = self.additionalDetails[ISSIndexPathKey];
+    if( indexPath ) {
+        *position = indexPath.row;
+        *count = countBlock(indexPath);
+    }
+}
+
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count {
     *position = NSNotFound;
     *count = 0;
 
     if( [self.uiElement isKindOfClass:UITableViewCell.class] ) {
         UITableView* tv = [self findParent:self.parentView ofClass:UITableView.class];
-        NSIndexPath* indexPath = [tv indexPathForCell:(UITableViewCell*)self.uiElement];
-        if( !indexPath ) indexPath = self.additionalDetails[ISSTableViewCellIndexPathKey];
-        if( indexPath ) {
-            *position = indexPath.row;
-            *count = [tv numberOfRowsInSection:indexPath.section];
-        }
+        NSIndexPath* _indexPath = [tv indexPathForCell:(UITableViewCell*)self.uiElement];
+        [self setPosition:position count:count fromIndexPath:_indexPath countBlock:^NSInteger(NSIndexPath* indexPath) {
+            return [tv numberOfRowsInSection:indexPath.section];;
+        }];
     }
     else if( [self.uiElement isKindOfClass:UICollectionViewCell.class] ) {
         UICollectionView* cv = [self findParent:self.parentView ofClass:UICollectionView.class];
-        NSIndexPath* indexPath = [cv indexPathForCell:(UICollectionViewCell*)self.uiElement];
-        if( indexPath ) {
-            *position = indexPath.row;
-            *count = [cv numberOfItemsInSection:indexPath.section];
-        }
+        NSIndexPath* _indexPath = [cv indexPathForCell:(UICollectionViewCell*)self.uiElement];
+        [self setPosition:position count:count fromIndexPath:_indexPath countBlock:^NSInteger(NSIndexPath* indexPath) {
+            return [cv numberOfItemsInSection:indexPath.section];
+        }];
+    }
+    else if( [self.uiElement isKindOfClass:UICollectionReusableView.class] ) {
+        UICollectionView* cv = [self findParent:self.parentView ofClass:UICollectionView.class];
+        [self setPosition:position count:count fromIndexPath:nil countBlock:^NSInteger(NSIndexPath* indexPath) {
+            return [cv numberOfItemsInSection:indexPath.section];
+        }];
     }
     else if( [self.uiElement isKindOfClass:UIBarButtonItem.class] && [self.parentView isKindOfClass:UINavigationBar.class] ) {
         UINavigationBar* navBar = (UINavigationBar*)self.parentView;

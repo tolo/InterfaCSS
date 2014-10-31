@@ -93,6 +93,16 @@ typedef NSArray* (^SubViewBlock)();
  */
 + (UIView*) viewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 
+/**
+ * Builds a view of the specified implementation class and style class.
+ */
++ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass;
+
+/**
+ * Builds a view of the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`.
+ */
++ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
+
 
 /**
  * Builds a `UICollectionView` with the specified style class.
@@ -103,6 +113,11 @@ typedef NSArray* (^SubViewBlock)();
  * Builds a `UICollectionView` with the specified style class and adds the subviews from the specified `SubViewBlock`.
  */
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
+
+/**
+ * Builds a `UICollectionView` with the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`.
+ */
++ (UICollectionView*) collectionViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 
 
 /**
@@ -136,6 +151,11 @@ typedef NSArray* (^SubViewBlock)();
  * Builds a `UITableView` with the specified style class and adds the subviews from the specified `SubViewBlock`.
  */
 + (UITableView*) tableViewWithStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
+
+/**
+ * Builds a `UITableView` with the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`.
+ */
++ (UITableView*) tableViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
 
 
 /**

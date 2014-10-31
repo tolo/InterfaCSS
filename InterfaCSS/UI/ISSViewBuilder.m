@@ -69,12 +69,27 @@
     return [self setupView:[[UIView alloc] init] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
++ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass {
+    clazz = clazz ?: UIView.class;
+    return [self setupView:(UIView*)[[clazz alloc] init] withStyleClass:styleClass];
+}
+
++ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
+    clazz = clazz ?: UIView.class;
+    return [self setupView:(UIView*)[[clazz alloc] init] withStyleClass:styleClass andSubViews:subViewBlock];
+}
+
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass {
-    return [self setupView:[[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass];
+    return [self collectionViewOfClass:nil withStyle:styleClass andSubViews:nil];
 }
 
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
-    return [self setupView:[[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass andSubViews:subViewBlock];
+    return [self collectionViewOfClass:nil withStyle:styleClass andSubViews:subViewBlock];
+}
+
++ (UICollectionView*) collectionViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
+    clazz = clazz ?: UICollectionView.class;
+    return [self setupView:[(UICollectionView*)[clazz alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
 + (UIImageView*) imageViewWithStyle:(NSString*)styleClass {
@@ -94,11 +109,16 @@
 }
 
 + (UITableView*) tableViewWithStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle {
-    return [self setupView:[[UITableView alloc] initWithFrame:CGRectZero style:tableViewStyle] withStyleClass:styleClass];
+    return [self tableViewOfClass:nil withStyle:styleClass andTableViewStyle:tableViewStyle andSubViews:nil];
 }
 
 + (UITableView*) tableViewWithStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock {
-    return [self setupView:[[UITableView alloc] initWithFrame:CGRectZero style:tableViewStyle] withStyleClass:styleClass andSubViews:subViewBlock];
+    return [self tableViewOfClass:nil withStyle:styleClass andTableViewStyle:tableViewStyle andSubViews:subViewBlock];
+}
+
++ (UITableView*) tableViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock {
+    clazz = clazz ?: UITableView.class;
+    return [self setupView:[(UITableView*)[clazz alloc] initWithFrame:CGRectZero style:tableViewStyle] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass {

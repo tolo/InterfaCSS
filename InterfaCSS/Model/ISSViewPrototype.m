@@ -31,17 +31,22 @@
 }
 
 - (UIView*) createViewObjectFromPrototypeWithViewStack:(NSArray*)viewStack {
-    UIView* view = _viewBuilderBlock();
+    UIView* view = _viewBuilderBlock([viewStack lastObject]);
     if( !view ) {
         ISSLogWarning(@"View builder block returned nil view");
         return nil;
     }
 
     if( [_propertyName iss_hasData] ) {
+        BOOL propertyFound = NO;
         for(UIView* parentObject in viewStack.reverseObjectEnumerator) {
-            if( [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil] ) {
+            if( [ISSViewHierarchyParser setViewObjectPropertyValue:view withName:_propertyName inParent:parentObject orFileOwner:nil silent:YES] ) {
+                propertyFound = YES;
                 break;
             }
+        }
+        if( !propertyFound ) {
+            ISSLogWarning(@"Property '%@' not found in any ancestor of prototype!", _propertyName);
         }
     }
 
@@ -52,6 +57,13 @@
         if( subview && subviewPrototype.addAsSubView ) [view addSubview:subview];
     }
     return view;
+}
+
+
+#pragma mark - NSObject overrides
+
+- (NSString*) description {
+    return [NSString stringWithFormat:@"ISSViewPrototype(%@)", _name ?: @"n/a"];
 }
 
 @end

@@ -275,6 +275,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 - (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName;
 
+/**
+ * Creates a view from a prototype defined in a view definition file.
+ */
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName parentObject:(id)parentObject;
+
 
 #pragma mark - Variable access
 
