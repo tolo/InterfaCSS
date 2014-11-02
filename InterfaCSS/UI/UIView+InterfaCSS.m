@@ -59,12 +59,12 @@
     return [[InterfaCSS interfaCSS] customStylingIdentityForUIElement:self];
 }
 
-- (NSString*) elementAlias {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementAlias;
+- (NSString*) elementId {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId;
 }
 
-- (void) setElementAlias:(NSString*)elementAlias {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementAlias = elementAlias;
+- (void) setElementId:(NSString*)elementId {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId = elementId;
 }
 
 
@@ -180,8 +180,8 @@
     [[InterfaCSS interfaCSS] setStylingEnabled:YES forProperty:propertyName inUIElement:self];
 }
 
-- (id) subviewWithAlias:(NSString*)alias {
-    return [[InterfaCSS interfaCSS] subviewWithAlias:alias inView:self];
+- (id) subviewWithElementId:(NSString*)elementId {
+    return [[InterfaCSS interfaCSS] subviewWithElementId:elementId inView:self];
 }
 
 @end

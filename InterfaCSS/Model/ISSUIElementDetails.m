@@ -52,7 +52,7 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
     copy->_uiElement = self->_uiElement;
     copy.parentView = self.parentView;
 
-    copy.elementAlias = self.elementAlias;
+    copy.elementId = self.elementId;
 
     copy.canonicalType = self.canonicalType;
     copy.styleClasses = self.styleClasses;

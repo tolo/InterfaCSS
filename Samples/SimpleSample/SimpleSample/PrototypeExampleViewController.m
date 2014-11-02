@@ -94,8 +94,8 @@
     
     cell.label1.text = item[0];
 
-    // Testing the use of an alias for this label
-    UILabel* label2 = [cell subviewWithAlias:@"label2"];
+    // Testing the use of an element Id for this label
+    UILabel* label2 = [cell subviewWithElementId:@"label2"];
     label2.text = item[1];
     
     cell.label3.text = item[2];

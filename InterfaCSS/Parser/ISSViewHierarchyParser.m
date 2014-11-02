@@ -88,14 +88,14 @@ static NSDictionary* tagToClass;
 
 #pragma mark - View builder support methods
 
-- (void) setAlias:(NSString*)alias forView:(UIView*)view overwrite:(BOOL)overwrite {
-    if( alias ) {
+- (void) setElementId:(NSString*)elementId forView:(UIView*)view overwrite:(BOOL)overwrite {
+    if( elementId ) {
         ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
-        if( overwrite || !details.elementAlias ) details.elementAlias = alias;
+        if( overwrite || !details.elementId) details.elementId = elementId;
     }
 }
 
-- (ViewBuilderBlock) viewBuilderBlockForPrototypeTableViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName alias:(NSString*)alias {
+- (ViewBuilderBlock) viewBuilderBlockForPrototypeTableViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName {
     [(UITableView*)superview registerClass:clazz forCellReuseIdentifier:prototypeName];
     return ^UIView* (UIView* cell) {
         // The input of this block will be a newly instantiated table view cell
@@ -104,7 +104,7 @@ static NSDictionary* tagToClass;
     };
 }
 
-- (ViewBuilderBlock) viewBuilderBlockForPrototypeCollectionViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName alias:(NSString*)alias {
+- (ViewBuilderBlock) viewBuilderBlockForPrototypeCollectionViewCellWithClass:(Class)clazz superview:(id)superview styleClass:(NSString*)styleClass prototypeName:(NSString*)prototypeName {
     [(UICollectionView*)superview registerClass:clazz forCellWithReuseIdentifier:prototypeName];
     return ^UIView* (UIView* cell) {
         // The input of this block will be a newly instantiated collection view cell
@@ -113,7 +113,7 @@ static NSDictionary* tagToClass;
     };
 }
 
-- (void) postProcessView:(UIView*)view alias:(NSString*)alias {
+- (void) postProcessView:(UIView*)view elementId:(NSString*)elementId {
     if( [view isKindOfClass:UICollectionView.class] ) {
         UICollectionView* collectionView = (UICollectionView*)view;
         if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDataSource)] ) collectionView.dataSource = fileOwner;
@@ -125,7 +125,7 @@ static NSDictionary* tagToClass;
         if( [fileOwner conformsToProtocol:@protocol(UITableViewDelegate)] ) tableView.delegate = fileOwner;
     }
 
-    [self setAlias:alias forView:view overwrite:YES];
+    [self setElementId:elementId forView:view overwrite:YES];
 }
 
 #pragma mark - NSXMLParserDelegate
@@ -141,7 +141,7 @@ static NSDictionary* tagToClass;
     NSString* styleClass = nil;
     NSString* propertyName = nil;
     NSString* prototypeName = nil;
-    NSString* alias = nil;
+    NSString* elementId = nil;
     BOOL add = YES;
     Class viewClass = nil;
 
@@ -152,8 +152,8 @@ static NSDictionary* tagToClass;
             prototypeName = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"property"] ) {
             propertyName = attributeDict[key];
-        } else if ( [[key lowercaseString] hasPrefix:@"alias"] ) {
-            alias = attributeDict[key];
+        } else if ( [[key lowercaseString] hasSuffix:@"id"] || [[key lowercaseString] hasPrefix:@"alias"] ) {
+            elementId = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
             add = [attributeDict[key] boolValue];
         } else if ( [[key lowercaseString] hasPrefix:@"impl"] ) {
@@ -178,16 +178,16 @@ static NSDictionary* tagToClass;
 
     // Special cases (cell prototypes):
     if ( [viewClass isSubclassOfClass:UITableViewCell.class] && [prototypeName iss_hasData] ) {
-        viewBuilderBlock = [self viewBuilderBlockForPrototypeTableViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName alias:alias];
+        viewBuilderBlock = [self viewBuilderBlockForPrototypeTableViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName];
     }
     else if ( [viewClass isSubclassOfClass:UICollectionViewCell.class] && [prototypeName iss_hasData] ) {
-        viewBuilderBlock = [self viewBuilderBlockForPrototypeCollectionViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName alias:alias];
+        viewBuilderBlock = [self viewBuilderBlockForPrototypeCollectionViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName];
     }
     // Default case:
     else {
         viewBuilderBlock = ^UIView* (UIView* superview) {
             UIView* view = [ISSViewBuilder viewOfClass:viewClass withStyle:styleClass];
-            [self postProcessView:view alias:alias];
+            [self postProcessView:view elementId:elementId];
             return view;
         };
     }

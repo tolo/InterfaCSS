@@ -48,8 +48,8 @@
  */
 @property (nonatomic, strong) NSString* customStylingIdentityISS;
 
-/** An optional alias for this view. May be used to find a view using the method `subviewWithAlias:`. */
-@property (nonatomic, strong) NSString* elementAlias;
+/** An optional element identifier for this view. May be used to find a view using the method `subviewWithElementId:`. */
+@property (nonatomic, strong) NSString* elementId;
 
 
 /**
@@ -182,7 +182,7 @@
 - (void) enableStylingForPropertyISS:(NSString*)propertyName;
 
 
-/** Finds a sub view with the specified alias. */
-- (id) subviewWithAlias:(NSString*)alias;
+/** Finds a sub view with the specified element identifier. */
+- (id) subviewWithElementId:(NSString*)elementId;
 
 @end

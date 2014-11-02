@@ -671,17 +671,17 @@ static InterfaCSS* singleton = nil;
     return ![uiElementDetails hasDisabledProperty:property];
 }
 
-- (id) subviewWithAlias:(NSString*)alias inView:(UIView*)view {
-    // Check for alias in subview first
+- (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view {
+    // Check for elementId in subviews first
     for(UIView* subview in view.subviews) {
         ISSUIElementDetails* subviewDetails = [self detailsForUIElement:subview];
-        if( [subviewDetails.elementAlias isEqualToString:alias] ) return subview;
+        if( [subviewDetails.elementId isEqualToString:elementId] ) return subview;
     }
 
     // Then drill down
     for(UIView* subview in view.subviews) {
-        UIView* aliasView = [self subviewWithAlias:alias inView:subview];
-        if( aliasView ) return aliasView;
+        UIView* matchingSubview = [self subviewWithElementId:elementId inView:subview];
+        if( matchingSubview) return matchingSubview;
     }
     return nil;
 }
