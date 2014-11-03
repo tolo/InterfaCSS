@@ -20,6 +20,7 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentity;
 @property (nonatomic, strong) NSString* canonicalTypeAndClasses;
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
+@property (nonatomic, strong) NSMutableDictionary* prototypes;
 
 @end
 
@@ -70,7 +71,9 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
     copy.willApplyStylingBlock = self.willApplyStylingBlock;
     copy.didApplyStylingBlock = self.didApplyStylingBlock;
 
-    copy->_additionalDetails = self->_additionalDetails;
+    copy.additionalDetails = self.additionalDetails;
+
+    copy.prototypes = self.prototypes;
 
     return copy;
 }
@@ -249,6 +252,11 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
 
 - (void) clearDisabledProperties {
     _disabledProperties = nil;
+}
+
+- (NSMutableDictionary*) prototypes {
+    if( !_prototypes ) _prototypes = [[NSMutableDictionary alloc] init];
+    return _prototypes;
 }
 
 @end

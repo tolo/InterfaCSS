@@ -690,23 +690,48 @@ static InterfaCSS* singleton = nil;
 #pragma mark - Prototypes
 
 - (void) registerPrototype:(ISSViewPrototype*)prototype {
-    if( self.prototypes[prototype.name] ) {
+    [self registerPrototype:prototype prototypeStore:self.prototypes];
+}
+
+- (void) registerPrototype:(ISSViewPrototype*)prototype inElement:(id)registeredInElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:registeredInElement];
+    [self registerPrototype:prototype prototypeStore:uiElementDetails.prototypes];
+}
+
+- (void) registerPrototype:(ISSViewPrototype*)prototype prototypeStore:(NSMutableDictionary*)prototypeStore {
+    if( prototypeStore[prototype.name] ) {
         ISSLogWarning(@"Attempting to register a prototype with a name that already exists - previous prototype will be overwritten!");
     }
 
     if( prototype.name ) {
-        self.prototypes[prototype.name] = prototype;
+        prototypeStore[prototype.name] = prototype;
     } else {
         ISSLogWarning(@"Attempted to register prototype without name!");
     }
 }
 
 - (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName {
-    return [self viewFromPrototypeWithName:prototypeName parentObject:nil];
+    return [self viewFromPrototypeWithName:prototypeName registeredInElement:nil prototypeParent:nil];
 }
 
-- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName parentObject:(id)parentObject {
-    return [self.prototypes[prototypeName] createViewObjectFromPrototype:parentObject];
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName prototypeParent:(id)prototypeParent {
+    return [self viewFromPrototypeWithName:prototypeName registeredInElement:prototypeParent prototypeParent:prototypeParent];
+}
+
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName registeredInElement:(id)registeredInElement prototypeParent:(id)prototypeParent {
+    ISSViewPrototype* prototype = nil;
+    if( registeredInElement ) {
+        ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:registeredInElement];
+        prototype = uiElementDetails.prototypes[prototypeName];
+    }
+    if( !prototype ) prototype = self.prototypes[prototypeName];
+
+    if( prototype ) {
+        return [prototype createViewObjectFromPrototypeWithParent:prototypeParent];
+    } else {
+        ISSLogWarning(@"Prototype with name '%@' not found!", prototypeName);
+        return nil;
+    }
 }
 
 

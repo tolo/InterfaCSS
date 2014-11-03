@@ -11,7 +11,7 @@
 
 #import "InterfaCSS.h"
 #import "ISSUIElementDetails.h"
-#import "UIView+ISSPrototypeView.h"
+#import "UIView+ISSPrototypeReusableView.h"
 
 @implementation UITableView (InterfaCSS)
 
@@ -24,13 +24,13 @@
 
 - (id) dequeueReusablePrototypeCellWithIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
     UIView* cell = [self dequeueReusableCellWithIdentifierISS:prototypeName forIndexPath:indexPath];
-    [cell setupViewFromPrototypeISS];
+    [cell setupViewFromPrototypeRegisteredInViewISS:self];
     return cell;
 }
 
 - (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName {
     UIView* view = [self dequeueReusableHeaderFooterViewWithIdentifier:prototypeName];
-    [view setupViewFromPrototypeISS];
+    [view setupViewFromPrototypeRegisteredInViewISS:self];
     return view;
 }
 

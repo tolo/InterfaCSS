@@ -1,19 +1,19 @@
 //
 //  InterfaCSS
-//  UIView+ISSPrototypeView.m
+//  UIView+ISSPrototypeReusableView.m
 //  
 //  Created by Tobias Löfstrand on 2014-10-29.
 //  Copyright (c) 2014 Leafnode AB. All rights reserved.
 //
 
 
-#import "UIView+ISSPrototypeView.h"
+#import "UIView+ISSPrototypeReusableView.h"
 
 #import "InterfaCSS.h"
 #import "ISSUIElementDetails.h"
 
 
-@implementation UIView (ISSPrototypeView)
+@implementation UIView (ISSPrototypeReusableView)
 
 - (BOOL) initializedFromPrototypeISS {
     ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self];
@@ -27,13 +27,17 @@
 }
 
 - (void) setupViewFromPrototypeISS {
-    NSString* reuseIdentifier = nil;
+    [self setupViewFromPrototypeRegisteredInViewISS:nil];
+}
+
+- (void) setupViewFromPrototypeRegisteredInViewISS:(UIView*)registeredInView {
+    NSString* prototypeName = nil;
     if( [self respondsToSelector:@selector(reuseIdentifier)] ) {
-        reuseIdentifier = [(id)self performSelector:@selector(reuseIdentifier)];
+        prototypeName = [(id)self performSelector:@selector(reuseIdentifier)];
     }
 
-    if( reuseIdentifier && !self.initializedFromPrototypeISS) {
-        [[InterfaCSS sharedInstance] viewFromPrototypeWithName:reuseIdentifier parentObject:self];
+    if( prototypeName && !self.initializedFromPrototypeISS ) {
+        [[InterfaCSS sharedInstance] viewFromPrototypeWithName:prototypeName registeredInElement:registeredInView prototypeParent:self];
         self.initializedFromPrototypeISS = YES;
     }
 }

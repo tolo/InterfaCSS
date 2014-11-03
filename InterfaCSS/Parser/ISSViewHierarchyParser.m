@@ -141,6 +141,7 @@ static NSDictionary* tagToClass;
     NSString* styleClass = nil;
     NSString* propertyName = nil;
     NSString* prototypeName = nil;
+    BOOL prototypeScopeParent = YES;
     NSString* elementId = nil;
     BOOL add = YES;
     Class viewClass = nil;
@@ -148,15 +149,17 @@ static NSDictionary* tagToClass;
     for (NSString* key in attributeDict.allKeys) {
         if ( [[key lowercaseString] hasPrefix:@"class"] ) {
             styleClass = attributeDict[key];
+        } else if ( [[key lowercaseString] hasSuffix:@"scope"] ) { // "propertyScope" or "scope"
+            prototypeScopeParent = [[attributeDict[key] iss_trim] iss_isEqualIgnoreCase:@"parent"]; // "parent" or "global"
         } else if ( [[key lowercaseString] hasPrefix:@"prototype"] ) {
             prototypeName = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"property"] ) {
             propertyName = attributeDict[key];
-        } else if ( [[key lowercaseString] hasSuffix:@"id"] || [[key lowercaseString] hasPrefix:@"alias"] ) {
+        } else if ( [[key lowercaseString] hasSuffix:@"id"] || [[key lowercaseString] hasPrefix:@"alias"] ) { // "id", "identifier" or "alias"
             elementId = attributeDict[key];
         } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
             add = [attributeDict[key] boolValue];
-        } else if ( [[key lowercaseString] hasPrefix:@"impl"] ) {
+        } else if ( [[key lowercaseString] hasPrefix:@"impl"] ) { // "impl" or "implementation"
             viewClass =  NSClassFromString(attributeDict[key]);
         }
     }
@@ -194,10 +197,9 @@ static NSDictionary* tagToClass;
 
     id currentViewObject;
 
-    if ( parentPrototype ) {
+    if ( parentPrototype || [prototypeName iss_hasData] ) {
         currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
-    } else if ( [prototypeName iss_hasData] ) {
-        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
+        ((ISSViewPrototype*)currentViewObject).prototypeScopeParent = prototypeScopeParent;
     } else {
         currentViewObject = viewBuilderBlock(parent);
         if( [propertyName iss_hasData] ) {
@@ -227,7 +229,11 @@ static NSDictionary* tagToClass;
     }
     // Topmost prototype end tag - register prototype
     else if( currentPrototype ) {
-        [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
+        if( currentPrototype.prototypeScopeParent ) {
+            [[InterfaCSS interfaCSS] registerPrototype:currentPrototype inElement:superViewObject];
+        } else {
+            [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
+        }
     }
     // Child view end tag
     else if ( viewObject && superViewObject && [addViewAsSubView containsObject:viewObject] ) {

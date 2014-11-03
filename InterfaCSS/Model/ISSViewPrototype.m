@@ -16,16 +16,21 @@
 @implementation ISSViewPrototype
 
 + (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock {
-    ISSViewPrototype* prototypeDefinition = [[self alloc] init];
-    prototypeDefinition->_name = name;
-    prototypeDefinition->_propertyName = propertyName;
-    prototypeDefinition->_addAsSubView = addAsSubView;
-    prototypeDefinition->_viewBuilderBlock = viewBuilderBlock;
-    prototypeDefinition.subviewPrototypes = @[];
-    return prototypeDefinition;
+    return [[self alloc] initWithName:name propertyName:propertyName addAsSubView:addAsSubView viewBuilderBlock:viewBuilderBlock];
 }
 
-- (UIView*) createViewObjectFromPrototype:(id)parentObject {
+- (instancetype) initWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock {
+    if ( self = [super init] ) {
+        _name = name;
+        _propertyName = propertyName;
+        _addAsSubView = addAsSubView;
+        _viewBuilderBlock = viewBuilderBlock;
+        _subviewPrototypes = @[];
+    }
+    return self;
+}
+
+- (UIView*) createViewObjectFromPrototypeWithParent:(id)parentObject {
     if( parentObject ) return [self createViewObjectFromPrototypeWithViewStack:@[parentObject]];
     else return [self createViewObjectFromPrototypeWithViewStack:@[]];
 }

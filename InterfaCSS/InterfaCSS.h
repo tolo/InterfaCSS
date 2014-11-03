@@ -273,6 +273,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) registerPrototype:(ISSViewPrototype*)prototype;
 
 /**
+ * Registers a prototype defined in a view definition file.
+ */
+- (void) registerPrototype:(ISSViewPrototype*)prototype inElement:(id)registeredInElement;
+
+/**
  * Creates a view from a prototype defined in a view definition file.
  */
 - (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName;
@@ -280,7 +285,12 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 /**
  * Creates a view from a prototype defined in a view definition file.
  */
-- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName parentObject:(id)parentObject;
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName prototypeParent:(id)prototypeParent;
+
+/**
+ * Creates a view from a prototype defined in a view definition file.
+ */
+- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName registeredInElement:(id)registeredInElement prototypeParent:(id)prototypeParent;
 
 
 #pragma mark - Variable access

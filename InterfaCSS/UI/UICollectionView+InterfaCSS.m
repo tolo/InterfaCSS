@@ -10,7 +10,7 @@
 #import "UICollectionView+InterfaCSS.h"
 
 #import "ISSUIElementDetails.h"
-#import "UIView+ISSPrototypeView.h"
+#import "UIView+ISSPrototypeReusableView.h"
 
 @implementation UICollectionView (InterfaCSS)
 
@@ -23,7 +23,7 @@
 
 - (id) dequeueReusablePrototypeCellWithReuseIdentifierISS:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
     UIView* cell = [self dequeueReusableCellWithReuseIdentifierISS:prototypeName forIndexPath:indexPath];
-    [cell setupViewFromPrototypeISS];
+    [cell setupViewFromPrototypeRegisteredInViewISS:self];
     return cell;
 }
 
@@ -36,7 +36,7 @@
 
 - (id) dequeueReusableSupplementaryPrototypeViewOfKindISS:(NSString*)elementKind withReuseIdentifier:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath {
     UIView* cell = [self dequeueReusableSupplementaryViewOfKindISS:elementKind withReuseIdentifier:prototypeName forIndexPath:indexPath];
-    [cell setupViewFromPrototypeISS];
+    [cell setupViewFromPrototypeRegisteredInViewISS:self];
     return cell;
 }
 

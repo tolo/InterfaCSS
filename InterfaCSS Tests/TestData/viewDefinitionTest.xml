@@ -4,7 +4,7 @@
     <label property="label1" class="label1"/>
     <button property="button1" class="button1"/>
     
-    <CustomView1 prototype="prototype1" class="prototype1">
+    <CustomView1 prototype="prototype1" prototypeScope="global" class="prototype1">
         <label property="label2" class="label2"/>
         
         <CustomView2 class="nestedView2" property="customView2">

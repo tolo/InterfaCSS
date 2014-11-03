@@ -49,6 +49,8 @@ extern const NSString* ISSPrototypeViewInitializedKey;
 
 @property (nonatomic, strong, readonly) NSMutableDictionary* additionalDetails;
 
+@property (nonatomic, strong, readonly) NSMutableDictionary* prototypes;
+
 
 - (id) initWithUIElement:(id)uiElement;
 

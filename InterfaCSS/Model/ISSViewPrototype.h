@@ -13,7 +13,7 @@
 typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 
 /**
- * Represents a registered
+ * Represents a registered view prototype.
  */
 @interface ISSViewPrototype : NSObject
 
@@ -25,8 +25,10 @@ typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 @property (nonatomic, copy, readonly) ViewBuilderBlock viewBuilderBlock;
 @property (nonatomic, strong) NSArray* subviewPrototypes;
 
-+ (ISSViewPrototype*) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
+@property (nonatomic) BOOL prototypeScopeParent;
 
-- (UIView*) createViewObjectFromPrototype:(id)parentObject;
++ (instancetype) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
+
+- (UIView*) createViewObjectFromPrototypeWithParent:(id)parentObject;
 
 @end
