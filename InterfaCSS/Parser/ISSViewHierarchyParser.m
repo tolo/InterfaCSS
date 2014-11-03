@@ -183,6 +183,13 @@ static NSDictionary* tagToClass;
     else if ( [viewClass isSubclassOfClass:UICollectionViewCell.class] && [prototypeName iss_hasData] ) {
         viewBuilderBlock = [self viewBuilderBlockForPrototypeCollectionViewCellWithClass:viewClass superview:parent styleClass:styleClass prototypeName:prototypeName];
     }
+    else if ( [viewClass isSubclassOfClass:UICollectionView.class] ) {
+        viewBuilderBlock = ^UIView* (UIView* superview) {
+            UIView* view = [ISSViewBuilder collectionViewOfClass:viewClass withStyle:styleClass andSubViews:nil];
+            [self postProcessView:view elementId:elementId];
+            return view;
+        };
+    }    
     // Default case:
     else {
         viewBuilderBlock = ^UIView* (UIView* superview) {
