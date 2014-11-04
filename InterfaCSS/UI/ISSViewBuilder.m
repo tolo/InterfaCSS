@@ -70,13 +70,16 @@
 }
 
 + (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass {
-    clazz = clazz ?: UIView.class;
-    return [self setupView:(UIView*)[[clazz alloc] init] withStyleClass:styleClass];
+    return [self viewOfClass:clazz withStyle:styleClass andSubViews:nil];
 }
 
 + (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
     clazz = clazz ?: UIView.class;
-    return [self setupView:(UIView*)[[clazz alloc] init] withStyleClass:styleClass andSubViews:subViewBlock];
+    if( [clazz isSubclassOfClass:UICollectionView.class] ) {
+        return [self collectionViewOfClass:clazz withStyle:styleClass andSubViews:subViewBlock];
+    } else {
+        return [self setupView:(UIView*)[[clazz alloc] init] withStyleClass:styleClass andSubViews:subViewBlock];
+    }
 }
 
 + (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass {
