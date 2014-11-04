@@ -25,6 +25,10 @@ UIButton {
     titlePositionAdjustment: offset(0, -10);
 }
 
+UITabBarItem.tab1 {
+    font: Avenir-Heavy 20;
+}
+
 .mainTitleLabel {
     frame: sizeToFit(160, 50).left(15).top(30);
     textColor: rgb(255, 255, 255);

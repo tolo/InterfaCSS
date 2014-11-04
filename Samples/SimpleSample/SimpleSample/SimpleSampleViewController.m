@@ -90,6 +90,9 @@
     
     // Apply styling only once as startup to mainButtonTop, then disable automatic re-styling, to make it possible do adjust styling manually in code.
     [self.mainButtonTop applyStylingOnceISS];
+    
+    // Add custom style to tab bar item
+    [[InterfaCSS sharedInstance] addStyleClass:@"tab1" forUIElement:self.tabBarItem];
 }
 
 - (NSUInteger) supportedInterfaceOrientations {
