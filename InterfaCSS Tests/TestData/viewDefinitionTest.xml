@@ -4,10 +4,10 @@
     <label property="label1" class="label1"/>
     <button property="button1" class="button1"/>
     
-    <CustomView1 prototype="prototype1" prototypeScope="global" class="prototype1">
+    <uiview id="CustomView1Id" property="CustomView1Property" prototype="prototype1" prototypeScope="global" class="prototype1" impl="CustomView1" customAttr1="customValue1">
         <label property="label2" class="label2"/>
         
-        <CustomView2 class="nestedView2" property="customView2">
+        <uiview class="nestedView2" property="customView2" impl="CustomView2">
             <label property="label3" class="label3"/>
         
             <view class="nestedView3" property="customView3">
@@ -15,9 +15,9 @@
                 <label property="label5" class="label5"/>
             </view>
             
-        </CustomView2>
+        </uiview>
         
-    </CustomView1>
+    </uiview>
     
     <UICollectionView/>
     <UITableView/>

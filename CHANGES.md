@@ -11,6 +11,8 @@
     * Added support for registering (the iOS6 way) UITableViewCell and UICollectionViewCell classes in the parent UITableView/UICollectionView.
 * Added support for associating a view with an element identifier, both though`UIView+InterfaCSS` and the xml view definition file (`id` attribute).
 * Added support for setting properties on `UICollectionViewFlowLayout`.
+* Added support for "scoping" prototypes under a specific view, instead of always being defined on a global level. Also added support for using the attribute `propertyScope` (valid values are `parent` or `global`) in view definition files.
+* Added protocol `ISSViewHierarchyParserDelegate`, to support post processing of view defined in a view definition file. 
 
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.

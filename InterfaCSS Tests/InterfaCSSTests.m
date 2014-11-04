@@ -12,15 +12,7 @@
 #import "ISSUIElementDetails.h"
 #import "UIView+InterfaCSS.h"
 #import "UIColor+ISSColorAdditions.h"
-
-
-@interface TestFileOwner : NSObject
-@property (nonatomic, strong) UILabel* label1;
-@property (nonatomic, strong) UIButton* button1;
-@end
-
-@implementation TestFileOwner
-@end
+#import "ISSViewHierarchyParser.h"
 
 
 @interface CustomView2 : UIView
@@ -37,6 +29,28 @@
 @property (nonatomic, strong) CustomView2* customView2;
 @end
 @implementation CustomView1
+@end
+
+
+@interface TestFileOwner : NSObject
+@property (nonatomic, strong) UILabel* label1;
+@property (nonatomic, strong) UIButton* button1;
+@end
+@implementation TestFileOwner
+@end
+
+@interface TestFileOwnerDelegate : TestFileOwner<ISSViewHierarchyParserDelegate>
+@property NSDictionary* customView1Properties;
+@end
+@implementation TestFileOwnerDelegate
+
+- (void) viewHierarchyParser:(ISSViewHierarchyParser*)viewHierarchyParser didBuildView:(UIView*)view parent:(UIView*)parentView
+                 elementName:(NSString*)elementName attributes:(NSDictionary*)attributes {
+    if( [view isKindOfClass:CustomView1.class] ) {
+        self.customView1Properties = attributes;
+    }
+}
+
 @end
 
 
@@ -382,6 +396,24 @@
     // Test elements defined on nested view but set in topmost view
     XCTAssertNotNil(customView1.customView2.label4);
     XCTAssertNotNil(customView1.label5);
+}
+
+- (void) testLoadViewDefinitionFileWithDelegate {
+    TestFileOwnerDelegate* fileOwner = [[TestFileOwnerDelegate alloc] init];
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"viewDefinitionTest" ofType:@"xml"];
+    [ISSViewBuilder loadViewHierarchyFromFile:path fileOwner:fileOwner];
+    
+    // Load prototype to trigger execution of prototype view block, and call to delegate
+    [[InterfaCSS interfaCSS] viewFromPrototypeWithName:@"prototype1"];
+    
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeId], @"CustomView1Id");
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeClass], @"prototype1");
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeProperty], @"CustomView1Property");
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributePrototype], @"prototype1");
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributePrototypeScope], @"global");
+    XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeImplementationClass], @"CustomView1");
+    
+    XCTAssertEqualObjects(fileOwner.customView1Properties[@"customAttr1"], @"customValue1");
 }
 
 - (void) testShadowProperties {

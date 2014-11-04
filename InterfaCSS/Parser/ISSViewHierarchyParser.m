@@ -17,14 +17,30 @@
 #import "ISSUIElementDetails.h"
 
 
+NSString* const ISSViewDefinitionFileAttributeId = @"id";
+NSString* const ISSViewDefinitionFileAttributeClass = @"class";
+NSString* const ISSViewDefinitionFileAttributeProperty = @"property";
+NSString* const ISSViewDefinitionFileAttributePrototype = @"prototype";
+NSString* const ISSViewDefinitionFileAttributePrototypeScope = @"prototypeScope";
+NSString* const ISSViewDefinitionFileAttributeAddAsSubview = @"addSubview";
+NSString* const ISSViewDefinitionFileAttributeImplementationClass = @"implementation";
+
+
 static NSDictionary* tagToClass;
 
-@implementation ISSViewHierarchyParser {
-    id fileOwner;
-    ISSRootView* rootView;
-    NSMutableArray* viewStack;
-    NSMutableSet* addViewAsSubView;
-}
+
+@interface ISSViewHierarchyParser ()
+
+@property (nonatomic, readwrite, weak) id fileOwner;
+@property (nonatomic, readwrite, weak) id<ISSViewHierarchyParserDelegate> delegate;
+
+@property (nonatomic, strong) ISSRootView* rootView;
+@property (nonatomic, strong) NSMutableArray* viewStack;
+@property (nonatomic, strong) NSMutableSet* addViewAsSubView;
+
+@end
+
+@implementation ISSViewHierarchyParser
 
 + (void) initialize {
     tagToClass = @{
@@ -51,10 +67,19 @@ static NSDictionary* tagToClass;
 }
 
 + (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner {
-    ISSViewHierarchyParser* viewParser = [[ISSViewHierarchyParser alloc] init];
-    viewParser->viewStack = [[NSMutableArray alloc] init];
-    viewParser->fileOwner = fileOwner;
-    viewParser->addViewAsSubView = [[NSMutableSet alloc] init];
+    id<ISSViewHierarchyParserDelegate> delegate = nil;
+    if( [fileOwner conformsToProtocol:@protocol(ISSViewHierarchyParserDelegate)] ) {
+        delegate = fileOwner;
+    }
+    return [self parseViewHierarchyFromData:fileData withFileOwner:fileOwner delegate:delegate];
+}
+
++ (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner delegate:(id<ISSViewHierarchyParserDelegate>)delegate {
+    ISSViewHierarchyParser* viewParser = [[self alloc] init];
+    viewParser.viewStack = [[NSMutableArray alloc] init];
+    viewParser.fileOwner = fileOwner;
+    viewParser.delegate = delegate;
+    viewParser.addViewAsSubView = [[NSMutableSet alloc] init];
 
     @try {
         NSXMLParser* parser = [[NSXMLParser alloc] initWithData:fileData];
@@ -64,7 +89,7 @@ static NSDictionary* tagToClass;
         ISSLogDebug(@"Error view hierarchy file - %@", exception);
     }
 
-    return viewParser->rootView;
+    return viewParser.rootView;
 }
 
 + (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner silent:(BOOL)silent {
@@ -116,20 +141,20 @@ static NSDictionary* tagToClass;
 - (void) postProcessView:(UIView*)view elementId:(NSString*)elementId {
     if( [view isKindOfClass:UICollectionView.class] ) {
         UICollectionView* collectionView = (UICollectionView*)view;
-        if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDataSource)] ) collectionView.dataSource = fileOwner;
-        if( [fileOwner conformsToProtocol:@protocol(UICollectionViewDelegate)] ) collectionView.delegate = fileOwner;
+        if( [self.fileOwner conformsToProtocol:@protocol(UICollectionViewDataSource)] ) collectionView.dataSource = self.fileOwner;
+        if( [self.fileOwner conformsToProtocol:@protocol(UICollectionViewDelegate)] ) collectionView.delegate = self.fileOwner;
     }
     else if( [view isKindOfClass:UITableView.class] ) {
         UITableView* tableView = (UITableView*)view;
-        if( [fileOwner conformsToProtocol:@protocol(UITableViewDataSource)] ) tableView.dataSource = fileOwner;
-        if( [fileOwner conformsToProtocol:@protocol(UITableViewDelegate)] ) tableView.delegate = fileOwner;
+        if( [self.fileOwner conformsToProtocol:@protocol(UITableViewDataSource)] ) tableView.dataSource = self.fileOwner;
+        if( [self.fileOwner conformsToProtocol:@protocol(UITableViewDelegate)] ) tableView.delegate = self.fileOwner;
     }
 
     [self setElementId:elementId forView:view overwrite:YES];
 }
 
-#pragma mark - NSXMLParserDelegate
 
+#pragma mark - NSXMLParserDelegate
 
 - (void) parser:(NSXMLParser*)parser didStartElement:(NSString*)elementName namespaceURI:(NSString*)nameSpaceURI qualifiedName:(NSString*)qName attributes:(NSDictionary*)attributeDict {
 
@@ -143,28 +168,50 @@ static NSDictionary* tagToClass;
     NSString* prototypeName = nil;
     BOOL prototypeScopeParent = YES;
     NSString* elementId = nil;
-    BOOL add = YES;
+    BOOL addSubview = YES;
     Class viewClass = nil;
+    NSMutableDictionary* canonicalAttributes = nil;
+    if( self.delegate ) {
+        canonicalAttributes = [NSMutableDictionary dictionary];
+    }
 
     for (NSString* key in attributeDict.allKeys) {
-        if ( [[key lowercaseString] hasPrefix:@"class"] ) {
-            styleClass = attributeDict[key];
-        } else if ( [[key lowercaseString] hasSuffix:@"scope"] ) { // "propertyScope" or "scope"
-            prototypeScopeParent = [[attributeDict[key] iss_trim] iss_isEqualIgnoreCase:@"parent"]; // "parent" or "global"
-        } else if ( [[key lowercaseString] hasPrefix:@"prototype"] ) {
-            prototypeName = attributeDict[key];
-        } else if ( [[key lowercaseString] hasPrefix:@"property"] ) {
-            propertyName = attributeDict[key];
-        } else if ( [[key lowercaseString] hasSuffix:@"id"] || [[key lowercaseString] hasPrefix:@"alias"] ) { // "id", "identifier" or "alias"
-            elementId = attributeDict[key];
-        } else if ( [[key lowercaseString] hasPrefix:@"add"] ) {
-            add = [attributeDict[key] boolValue];
-        } else if ( [[key lowercaseString] hasPrefix:@"impl"] ) { // "impl" or "implementation"
-            viewClass =  NSClassFromString(attributeDict[key]);
+        NSString* value = attributeDict[key];
+
+        if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeClass] ) {
+            styleClass = value;
+            canonicalAttributes[ISSViewDefinitionFileAttributeClass] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributePrototype] ) {
+            prototypeName = value;
+            canonicalAttributes[ISSViewDefinitionFileAttributePrototype] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributePrototypeScope] || [key iss_isEqualIgnoreCase:@"scope"] ) { // "propertyScope" or "scope"
+            prototypeScopeParent = [[value iss_trim] iss_isEqualIgnoreCase:@"parent"]; // "parent" or "global"
+            canonicalAttributes[ISSViewDefinitionFileAttributePrototypeScope] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeProperty] ) {
+            propertyName = value;
+            canonicalAttributes[ISSViewDefinitionFileAttributeProperty] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeId] || [key iss_isEqualIgnoreCase:@"elementid"] ) { // "id" or "elementId"
+            elementId = value;
+            canonicalAttributes[ISSViewDefinitionFileAttributeId] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeAddAsSubview] || [key iss_isEqualIgnoreCase:@"add"] ) { // "add" or "addSubview"
+            addSubview = [value boolValue];
+            canonicalAttributes[ISSViewDefinitionFileAttributeAddAsSubview] = value;
+        }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeImplementationClass] || [key iss_isEqualIgnoreCase:@"impl"] ) { // "impl" or "implementation"
+            viewClass =  NSClassFromString(value);
+            canonicalAttributes[ISSViewDefinitionFileAttributeImplementationClass] = value;
+        }
+        else {
+            canonicalAttributes[key] = value;
         }
     }
 
-    id parent = viewStack.lastObject;
+    id parent = self.viewStack.lastObject;
     ISSViewPrototype* parentPrototype = [parent isKindOfClass:ISSViewPrototype.class] ? parent : nil;
 
     // Set viewClass if not specified by impl attribute
@@ -191,6 +238,7 @@ static NSDictionary* tagToClass;
         viewBuilderBlock = ^UIView* (UIView* superview) {
             UIView* view = [ISSViewBuilder viewOfClass:viewClass withStyle:styleClass];
             [self postProcessView:view elementId:elementId];
+            [self.delegate viewHierarchyParser:self didBuildView:view parent:superview elementName:elementName attributes:canonicalAttributes];
             return view;
         };
     }
@@ -198,27 +246,27 @@ static NSDictionary* tagToClass;
     id currentViewObject;
 
     if ( parentPrototype || [prototypeName iss_hasData] ) {
-        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:add viewBuilderBlock:viewBuilderBlock];
+        currentViewObject = [ISSViewPrototype prototypeWithName:prototypeName propertyName:propertyName addAsSubView:addSubview viewBuilderBlock:viewBuilderBlock];
         ((ISSViewPrototype*)currentViewObject).prototypeScopeParent = prototypeScopeParent;
     } else {
         currentViewObject = viewBuilderBlock(parent);
         if( [propertyName iss_hasData] ) {
-            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:fileOwner silent:NO];
+            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:self.fileOwner silent:NO];
         }
-        if( add ) [addViewAsSubView addObject:currentViewObject];
+        if( addSubview ) [self.addViewAsSubView addObject:currentViewObject];
     }
 
-    if( !rootView ) {
-        rootView = [[ISSRootView alloc] initWithView:currentViewObject];
+    if( !self.rootView ) {
+        self.rootView = [[ISSRootView alloc] initWithView:currentViewObject];
     }
 
-    if( currentViewObject ) [viewStack addObject:currentViewObject];
+    if( currentViewObject ) [self.viewStack addObject:currentViewObject];
 }
 
 - (void) parser:(NSXMLParser*)parser didEndElement:(NSString*)elementName namespaceURI:(NSString*)namespaceURI qualifiedName:(NSString*)qName {
-    id viewObject = viewStack.lastObject;
-    [viewStack removeLastObject];
-    id superViewObject = viewStack.lastObject;
+    id viewObject = self.viewStack.lastObject;
+    [self.viewStack removeLastObject];
+    id superViewObject = self.viewStack.lastObject;
 
     ISSViewPrototype* currentPrototype = [viewObject isKindOfClass:ISSViewPrototype.class] ? viewObject : nil;
     ISSViewPrototype* parentPrototype = [superViewObject isKindOfClass:ISSViewPrototype.class] ? superViewObject : nil;
@@ -236,7 +284,7 @@ static NSDictionary* tagToClass;
         }
     }
     // Child view end tag
-    else if ( viewObject && superViewObject && [addViewAsSubView containsObject:viewObject] ) {
+    else if ( viewObject && superViewObject && [self.addViewAsSubView containsObject:viewObject] ) {
         [superViewObject addSubview:viewObject];
     }
 }
