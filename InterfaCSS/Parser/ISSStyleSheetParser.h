@@ -23,13 +23,23 @@
 - (NSMutableArray*) parse:(NSString*)styleSheetData;
 
 /**
- * Transforms the specified value, using the specified propertyType.
+ * Transforms the specified value, using the specified propertyType. Any variable references in `value` will be replaced with their corresponding values.
  */
 - (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType;
 
 /**
- * Transforms the specified value, using the specified propertyDefinition.
+ * Transforms the specified value, using the specified propertyType. Optionally replaces variable references in `value` with the corresponding values.
+ */
+- (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType replaceVariableReferences:(BOOL)replaceVariableReferences;
+
+/**
+ * Transforms the specified value, using the specified propertyDefinition. Any variable references in `value` will be replaced with their corresponding values.
  */
 - (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
+
+/**
+ * Transforms the specified value, using the specified propertyDefinition. Optionally replaces variable references in `value` with the corresponding values.
+ */
+- (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition replaceVariableReferences:(BOOL)replaceVariableReferences;
 
 @end

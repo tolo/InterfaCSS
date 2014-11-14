@@ -1158,7 +1158,12 @@
 }
 
 - (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType {
+    return [self transformValue:value asPropertyType:propertyType replaceVariableReferences:YES];
+}
+
+- (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType replaceVariableReferences:(BOOL)replaceVariableReferences {
     if( propertyType != ISSPropertyTypeEnumType ) {
+        if( replaceVariableReferences ) value = [self replaceVariableReferences:value];
         ISSPropertyDefinition* fauxDef = [[ISSPropertyDefinition alloc] initAnonymousPropertyDefinitionWithType:propertyType];
         return [self doTransformValue:value forProperty:fauxDef];
     } else {
@@ -1168,6 +1173,11 @@
 }
 
 - (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition {
+    return [self transformValue:value forPropertyDefinition:propertyDefinition replaceVariableReferences:YES];
+}
+
+- (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition replaceVariableReferences:(BOOL)replaceVariableReferences {
+    if( replaceVariableReferences ) value = [self replaceVariableReferences:value];
     return [self transformValueWithCaching:value forProperty:propertyDefinition];
 }
 

@@ -13,6 +13,7 @@
 #import "UIView+InterfaCSS.h"
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSViewHierarchyParser.h"
+#import "ISSStyleSheetParser.h"
 
 
 @interface CustomView2 : UIView
@@ -479,6 +480,14 @@
     [collectionView applyStylingISS];
     
     XCTAssertEqual(flow.minimumLineSpacing, 42);
+}
+
+- (void) testTransformedValueOfStyleSheetVariableWithName {
+    UIColor* color = [[InterfaCSS sharedInstance] transformedValueOfStyleSheetVariableWithName:@"globalVariableTest2" asPropertyType:ISSPropertyTypeColor];
+    XCTAssertEqualObjects(color, [UIColor redColor]);
+    
+    color = [[[InterfaCSS sharedInstance] parser] transformValue:@"@globalVariableTest2" asPropertyType:ISSPropertyTypeColor];
+    XCTAssertEqualObjects(color, [UIColor redColor]);
 }
 
 @end

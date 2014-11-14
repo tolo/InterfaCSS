@@ -1,4 +1,5 @@
 @globalVariableTest: 0.33;
+@globalVariableTest2: red;
 
 // Test caching using enabled/disabled pseudo class
 .class1 uilabel:enabled {
