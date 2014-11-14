@@ -32,6 +32,11 @@
 - (ISSPropertyDefinition*) registerCustomProperty:(NSString*)propertyName propertyType:(ISSPropertyType)propertyType;
 
 /**
+ * Registers a custom property definition.
+ */
+- (void) registerCustomProperty:(ISSPropertyDefinition*)propertyDefinition;
+
+/**
  * Registers a valid property prefix (i.e. nested property name).
  */
 - (void) registerValidPrefixKeyPath:(NSString*)prefix;

@@ -9,7 +9,6 @@
 #import "ISSPropertyRegistry.h"
 
 #import "NSString+ISSStringAdditions.h"
-#import "ISSPropertyDefinition+Private.h"
 #import "NSObject+ISSLogSupport.h"
 #import "InterfaCSS.h"
 #import "NSAttributedString+ISSAdditions.h"
@@ -43,11 +42,11 @@ static ISSPropertyDefinition* pas(NSString* name, NSArray* aliases, ISSPropertyT
 }
 
 static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:NO];
 }
 
 static ISSPropertyDefinition* pea(NSString* name, NSArray* aliases, NSDictionary* enumValues) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:ISSPropertyTypeEnumType enumBlock:enumValues enumBitMaskType:NO];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:NO];
 }
 
 static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
@@ -156,6 +155,12 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ISSPropertyDefinition* propertyDefinition = [[ISSPropertyDefinition alloc] initWithName:propertyName type:propertyType];
     self.propertyDefinitions = [self.propertyDefinitions setByAddingObject:propertyDefinition];
     return propertyDefinition;
+}
+
+- (void) registerCustomProperty:(ISSPropertyDefinition*)propertyDefinition {
+    if( propertyDefinition ) {
+        self.propertyDefinitions = [self.propertyDefinitions setByAddingObject:propertyDefinition];
+    }
 }
 
 - (void) registerValidPrefixKeyPath:(NSString*)prefix {

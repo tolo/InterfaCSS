@@ -7,7 +7,9 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import "ISSPropertyDefinition+Private.h"
+#import "ISSPropertyDefinition.h"
+
+#import "ISSPropertyDeclaration.h"
 
 #import <objc/runtime.h>
 
@@ -40,15 +42,15 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type {
-    return [self initWithName:name aliases:aliases type:type enumBlock:nil enumBitMaskType:NO];
+    return [self initWithName:name aliases:aliases type:type enumValues:nil enumBitMaskType:NO];
 }
 
-- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumBlock:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
     return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:nil parameterEnumValues:nil];
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
-          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(void (^)(ISSPropertyDefinition*, id, id, NSArray*))setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
+          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(PropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
     if (self = [super init]) {
         _name = name;
 
