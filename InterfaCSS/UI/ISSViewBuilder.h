@@ -119,6 +119,11 @@ typedef NSArray* (^SubViewBlock)();
  */
 + (UICollectionView*) collectionViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 
+/**
+ * Builds a `UICollectionView` with the specified implementation class, collection view layout class and style class, and adds the subviews from the specified `SubViewBlock`.
+ */
++ (UICollectionView*) collectionViewOfClass:(Class)clazz collectionViewLayoutClass:(Class)collectionViewLayoutClass withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
+
 
 /**
  * Builds a `UIImageView` with the specified style class.

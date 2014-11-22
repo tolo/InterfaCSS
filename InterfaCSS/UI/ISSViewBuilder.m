@@ -91,8 +91,12 @@
 }
 
 + (UICollectionView*) collectionViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
+    return [self collectionViewOfClass:nil collectionViewLayoutClass:UICollectionViewFlowLayout.class withStyle:styleClass andSubViews:subViewBlock];
+}
+
++ (UICollectionView*) collectionViewOfClass:(Class)clazz collectionViewLayoutClass:(Class)collectionViewLayoutClass withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
     clazz = clazz ?: UICollectionView.class;
-    return [self setupView:[(UICollectionView*)[clazz alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]] withStyleClass:styleClass andSubViews:subViewBlock];
+    return [self setupView:[(UICollectionView*)[clazz alloc] initWithFrame:CGRectZero collectionViewLayout:(UICollectionViewLayout*)[[collectionViewLayoutClass alloc] init]] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
 + (UIImageView*) imageViewWithStyle:(NSString*)styleClass {

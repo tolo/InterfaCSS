@@ -20,6 +20,7 @@ extern NSString* const ISSViewDefinitionFileAttributePrototype;
 extern NSString* const ISSViewDefinitionFileAttributePrototypeScope;
 extern NSString* const ISSViewDefinitionFileAttributeAddAsSubview;
 extern NSString* const ISSViewDefinitionFileAttributeImplementationClass;
+extern NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass;
 
 
 /**

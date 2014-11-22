@@ -24,6 +24,7 @@ NSString* const ISSViewDefinitionFileAttributePrototype = @"prototype";
 NSString* const ISSViewDefinitionFileAttributePrototypeScope = @"prototypeScope";
 NSString* const ISSViewDefinitionFileAttributeAddAsSubview = @"addSubview";
 NSString* const ISSViewDefinitionFileAttributeImplementationClass = @"implementation";
+NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass = @"layoutClass";
 
 
 static NSDictionary* tagToClass;
@@ -170,6 +171,8 @@ static NSDictionary* tagToClass;
     NSString* elementId = nil;
     BOOL addSubview = YES;
     Class viewClass = nil;
+    Class collectionViewLayoutClass = nil;
+
     NSMutableDictionary* canonicalAttributes = nil;
     if( self.delegate ) {
         canonicalAttributes = [NSMutableDictionary dictionary];
@@ -206,6 +209,10 @@ static NSDictionary* tagToClass;
             viewClass =  NSClassFromString(value);
             canonicalAttributes[ISSViewDefinitionFileAttributeImplementationClass] = value;
         }
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeCollectionViewLayoutClass] ) { // "layoutClass"
+            collectionViewLayoutClass =  NSClassFromString(value);
+            canonicalAttributes[ISSViewDefinitionFileAttributeCollectionViewLayoutClass] = value;
+        }
         else {
             canonicalAttributes[key] = value;
         }
@@ -217,7 +224,7 @@ static NSDictionary* tagToClass;
     // Set viewClass if not specified by impl attribute
     viewClass = viewClass ?: (Class)tagToClass[lcElementName];
     if( !viewClass )  {
-        // Fallback - may be removed in favor of '<view impl="MyViewClass">'
+        // Fallback - use element name as viewClass
         viewClass = NSClassFromString(elementName);
     }
     viewClass = viewClass ?: UIView.class;
@@ -236,7 +243,14 @@ static NSDictionary* tagToClass;
     // Default case:
     else {
         viewBuilderBlock = ^UIView* (UIView* superview) {
-            UIView* view = [ISSViewBuilder viewOfClass:viewClass withStyle:styleClass];
+            UIView* view;
+            // Custom handling for UICollectionView: if collectionViewLayoutClass attribute is specified - used dedicated builder method to create a collection view using that layout class
+            if( collectionViewLayoutClass && [viewClass isSubclassOfClass:UICollectionView.class] ) {
+                view = [ISSViewBuilder collectionViewOfClass:viewClass collectionViewLayoutClass:collectionViewLayoutClass withStyle:styleClass andSubViews:nil];
+            } else {
+                view = [ISSViewBuilder viewOfClass:viewClass withStyle:styleClass];
+            }
+
             [self postProcessView:view elementId:elementId];
             [self.delegate viewHierarchyParser:self didBuildView:view parent:superview elementName:elementName attributes:canonicalAttributes];
             return view;

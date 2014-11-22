@@ -3,6 +3,7 @@
 <view class="rootClass">
     <label property="label1" class="label1"/>
     <button property="button1" class="button1"/>
+    <collectionView property="collectionView" layoutClass="CustomCollectionViewLayout"/>
     
     <uiview id="CustomView1Id" property="CustomView1Property" prototype="prototype1" prototypeScope="global" class="prototype1" impl="CustomView1" customAttr1="customValue1">
         <label property="label2" class="label2"/>

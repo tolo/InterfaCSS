@@ -16,6 +16,12 @@
 #import "ISSStyleSheetParser.h"
 
 
+@interface CustomCollectionViewLayout : UICollectionViewFlowLayout
+@end
+@implementation CustomCollectionViewLayout
+@end
+
+
 @interface CustomView2 : UIView
 @property (nonatomic, strong) UILabel* label3;
 @property (nonatomic, strong) UILabel* label4;
@@ -36,6 +42,7 @@
 @interface TestFileOwner : NSObject
 @property (nonatomic, strong) UILabel* label1;
 @property (nonatomic, strong) UIButton* button1;
+@property (nonatomic, strong) UICollectionView* collectionView;
 @end
 @implementation TestFileOwner
 @end
@@ -373,6 +380,8 @@
     XCTAssertNotNil(v);
     XCTAssertNotNil(fileOwner.label1);
     XCTAssertNotNil(fileOwner.button1);
+    XCTAssertNotNil(fileOwner.collectionView);
+    XCTAssertTrue([fileOwner.collectionView.collectionViewLayout isKindOfClass:CustomCollectionViewLayout.class]);
 }
 
 - (void) testLoadViewDefinitionFileWithPrototypes {
