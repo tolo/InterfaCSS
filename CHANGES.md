@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 0.9.13
+
+### New features & changes
+* Added support for specifying the collection view layout class (via the `layoutClass` attribute) when creating collection views in a view definition file.
+* Added method `elementNameToViewClass` to `ISSViewHierarchyParser`, to make it possible for subclasses to override mapping of tag name to view class.
+
+
 ##Version 0.9.12
 
 ### New features & changes
@@ -15,7 +22,6 @@
 * Added protocol `ISSViewHierarchyParserDelegate`, to support post processing of view defined in a view definition file.
 * Added method to register a ISSPropertyDefinition directly to ISSPropertyRegistry.
 * Added support for variable substitution when doing manual property value transformation (i.e. for instance using `-[InterfaCSS transformedValueOfStyleSheetVariableWithName:asPropertyType:]` or `-[ISSStyleSheetParser transformValue:asPropertyType:]`).
-
 
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
