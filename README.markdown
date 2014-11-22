@@ -13,7 +13,7 @@ Everyone loves a beautifully designed app with a consistent UI, and getting ther
 
 
 ### Simple yet powerful styling
-InterfaCSS uses an easy to understand styling [syntax](#StylesheetFormat) that is based on *CSS*, and augmented with some *Sass/Less*-like features, such as *nested declarations* and *constants*. Property names are what you expect them to be - i.e. the same as in UIKit, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [**more**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
+InterfaCSS uses an easy to understand styling [syntax](#stylesheet-format) that is based on *CSS*, and augmented with some *Sass/Less*-like features, such as *nested declarations* and *constants*. Property names are what you expect them to be - i.e. the same as in UIKit, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [**more**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
 
 
 
@@ -44,7 +44,7 @@ UITableViewCell .mySpecialButton {
 
 
 ### Consice and clean setup of view hierarchy
-Using a [view builder](#Layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
+Using a [view builder](#layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
 
 
 
@@ -92,8 +92,8 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
     * Use [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) to create your view hierarchy in a concise fashion, like this: `self.view = [ISSViewBuilder labelWithStyle:@"myFancyStyleClass" ....`
 
     * If you feel more at home in Interface Builder, you can specify one or more style classes for each UI element in the *Identity Inspector* under *User Defined Runtime Attributes* - just set the **Key Path** to `styleClassISS`, the **Type** to `String` and the **Value** to whatever style class(es) you want to use (multiple style classes are separated by a space).
-    
-    * Using a [view definition file](#ViewDefinitionFile), you can set the style classes of the elements in the definition file and load it like this:
+
+    * Using a [view definition file](#using-a-view-definition-file), you can set the style classes of the elements in the definition file and load it like this:
         `self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];`
 
 * Update styles as you go:
@@ -109,7 +109,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 ###Setup automatic css reload during development
 
-To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. Checkout the snippet below for an example on how you add refreshable stylesheets (in your app delegate for instance). Also, checkout the properties `stylesheetAutoRefreshInterval` and `processRefreshableStylesheetsLast` in `InterfaCSS`, for more control over how refreshable stylesheets are managed. 
+To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. Checkout the snippet below for an example on how you add refreshable stylesheets (in your app delegate for instance). Also, checkout the properties `stylesheetAutoRefreshInterval` and `processRefreshableStylesheetsLast` in `InterfaCSS`, for more control over how refreshable stylesheets are managed.
 
 ```objective-c
 #if DEBUG == 1
@@ -128,8 +128,8 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
 
 If you need more control over how/when styling is applied, have a look at these properties and methods in [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h):
 
- * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31) - specify a block to be run before styling. 
- * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36) - specify a block to be run after styling. 
+ * [`willApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L31) - specify a block to be run before styling.
+ * [`didApplyStylingBlockISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L36) - specify a block to be run after styling.
  * [`disableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L123) - disable styling entirely of view.
  * [`enableStylingISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L128) - re-enable styling of view.
  * [`applyStylingOnceISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L103) - apply styling only once for the view (then disable styling).
@@ -137,10 +137,12 @@ If you need more control over how/when styling is applied, have a look at these 
  * [`enableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L148) - re-enable styling of property.
  * [`customStylingIdentityISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L143) - specify a custom styling identity to increase performance.
 
+There is also support for registering custom styleable properties, via the class [`ISSPropertyRegistry`](InterfaCSS/Model/ISSPropertyRegistry.h), accessible 
+through the property `propertyRegistry` in [`InterfaCSS`](InterfaCSS/InterfaCSS.h).
 
 
-<a name="StylesheetFormat" href="#StylesheetFormat">Stylesheet format</a>
-------------------------------------------------
+Stylesheet format
+-----------------
 
 InterfaCSS does not try to impose some artificial mapping layer between the stylesheet format and iOS - the names of stylesheet properties are the same as the actual UI object properties they set (except that case is not important and you may insert dashes anywhere you fancy). That being said, there are some areas in which InterfaCSS tries to make life easier, but more on that below.
 
@@ -161,7 +163,8 @@ This is what InterfaCSS supports:
 `imageView`, `contentView`, `backgroundView`, `selectedBackgroundView`, `multipleSelectionBackgroundView`, `titleLabel`, `textLabel`, `detailTextLabel`, `inputView`, `inputAccessoryView`,
 `tableHeaderView`, `tableFooterView` and `backgroundView`.
 * Support properties that are bound to a certain `UIControlState` (for instance): `titleColor(highlighted): red;`
-* Support for locking a property to its current value (through the `current` keyword / value). 
+* Support for locking a property to its current value (through the `current` keyword / value).
+* Support for expressing a range of different [value types](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#PropertyValueTypes), such as fonts, colors, images, transform, insets, offsets, rects, enums, [attributed strings](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#NSAttributedString) etc.
 
 Furthermore, InterfaCSS also supports some Sass/Less-like features:
 
@@ -239,7 +242,7 @@ UILabel {
 }
 ```
 
-<a name="Layout" href="#Layout">Layout</a>
+Layout
 ------
 In the layout department, InterfaCSS can help you in these ways:
 
@@ -288,8 +291,8 @@ The pattern of the shorthand is basically this: `[ISSBuildXXX:...` = `[ISSViewBu
 Furthermore, you can also use the `beginSubViews` and `endSubViews` macros to make adding of subviews cleaner, as shown above.
 
 
-#### <a name="ViewDefinitionFile" href="#ViewDefinitionFile">Using a view definition file</a>
-Another way of creating a view hierarchy is by using an XML-based view definition file. This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute (`fileOwner` is first attempted, then superview).
+#### Using a view definition file
+Another way of creating a view hierarchy is by using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference). This way also have the benefit of making the view hierarchy very easy to understand, and just like the programmatic way, you can specify multiple style classes in the `class` attribute and you can assign views to properties by using the `property` attribute (`fileOwner` is first attempted, then superview).
 
 Using a view definition file, you also have the option of creating prototype views (use the `prototype` attribute), which can be useful for table view cells for instance.
 
@@ -334,7 +337,7 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.10. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.12. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
