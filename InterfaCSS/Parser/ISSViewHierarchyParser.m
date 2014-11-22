@@ -43,6 +43,8 @@ static NSDictionary* tagToClass;
 
 @implementation ISSViewHierarchyParser
 
+#pragma mark - Lifecycle
+
 + (void) initialize {
     tagToClass = @{
         // Containers:
@@ -93,6 +95,9 @@ static NSDictionary* tagToClass;
     return viewParser.rootView;
 }
 
+
+#pragma mark - Support methods
+
 + (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner silent:(BOOL)silent {
     SEL selector = NSSelectorFromString(propertyName);
 
@@ -109,6 +114,12 @@ static NSDictionary* tagToClass;
         else ISSLogWarning(@"Unable to set property '%@' - no file owner or parent view available!", propertyName);
     }
     return NO;
+}
+
+- (Class) elementNameToViewClass:(NSString*)elementName {
+    NSString* lcElementName = [elementName lowercaseString];
+    if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName substringFromIndex:2];
+    return (Class)tagToClass[lcElementName];
 }
 
 
@@ -158,10 +169,7 @@ static NSDictionary* tagToClass;
 #pragma mark - NSXMLParserDelegate
 
 - (void) parser:(NSXMLParser*)parser didStartElement:(NSString*)elementName namespaceURI:(NSString*)nameSpaceURI qualifiedName:(NSString*)qName attributes:(NSDictionary*)attributeDict {
-
     elementName = [elementName iss_trim];
-    NSString* lcElementName = [elementName lowercaseString];
-    if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName substringFromIndex:2];
 
     // Attributes
     NSString* styleClass = nil;
@@ -222,7 +230,7 @@ static NSDictionary* tagToClass;
     ISSViewPrototype* parentPrototype = [parent isKindOfClass:ISSViewPrototype.class] ? parent : nil;
 
     // Set viewClass if not specified by impl attribute
-    viewClass = viewClass ?: (Class)tagToClass[lcElementName];
+    viewClass = viewClass ?: [self elementNameToViewClass:elementName];
     if( !viewClass )  {
         // Fallback - use element name as viewClass
         viewClass = NSClassFromString(elementName);

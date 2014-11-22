@@ -61,6 +61,14 @@ extern NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass;
  */
 + (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner delegate:(id<ISSViewHierarchyParserDelegate>)delegate;
 
+/**
+ * Utility method for setting the value of a property in either a parent element or a file owner object.
+ */
 + (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner silent:(BOOL)silent;
+
+/**
+ * Returns the view class that corresponds to the specified XML element name.
+ */
+- (Class) elementNameToViewClass:(NSString*)elementName;
 
 @end
