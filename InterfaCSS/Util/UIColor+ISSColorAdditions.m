@@ -44,8 +44,12 @@ static inline CGFloat adjustWithAbsoluteAmount(CGFloat value, CGFloat adjustAmou
 
 - (NSArray*) iss_rgbaComponents {
 	CGFloat r,g,b,a;
-	[self getRed:&r green:&g blue:&b alpha:&a];
-	return @[@(r), @(g), @(b), @(a)];
+	if( ![self getRed:&r green:&g blue:&b alpha:&a] ) {
+        if( [self getWhite:&r alpha:&a] ) { // Grayscale
+            return @[ @(r), @(r), @(r), @(a) ];
+        }
+    }
+    return @[ @(r), @(g), @(b), @(a) ];
 }
 
 - (UIColor*) iss_colorByIncreasingBrightnessBy:(CGFloat)amount {

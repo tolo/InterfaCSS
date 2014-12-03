@@ -51,6 +51,9 @@
 /** An optional element identifier for this view. May be used to find a view using the method `subviewWithElementId:`. */
 @property (nonatomic, strong) NSString* elementId;
 
+/** Flag indicating if styling is enabled for this view. */
+@property (nonatomic, readonly) BOOL stylingEnabledISS;
+
 
 /**
  * Sets the style class for the this view, replacing any previous style classes.

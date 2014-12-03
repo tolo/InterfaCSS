@@ -168,6 +168,10 @@
     [[InterfaCSS interfaCSS] setStylingEnabled:YES forUIElement:self];
 }
 
+- (BOOL) stylingEnabledISS {
+    return [[InterfaCSS interfaCSS] isStylingEnabledForUIElement:self];
+}
+
 - (void) clearCachedStylesISS {
     [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
 }
