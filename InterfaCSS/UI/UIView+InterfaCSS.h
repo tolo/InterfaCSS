@@ -54,6 +54,9 @@
 /** Flag indicating if styling is enabled for this view. */
 @property (nonatomic, readonly) BOOL stylingEnabledISS;
 
+/** Flag indicating if styling has been successfully applied to this view. */
+@property (nonatomic, readonly) BOOL stylingAppliedISS;
+
 
 /**
  * Sets the style class for the this view, replacing any previous style classes.

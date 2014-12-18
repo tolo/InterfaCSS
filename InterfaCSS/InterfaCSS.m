@@ -658,6 +658,10 @@ static InterfaCSS* singleton = nil;
     return ![self detailsForUIElement:uiElement].stylingDisabled;
 }
 
+- (BOOL) isStylingAppliedForUIElement:(id)uiElement {
+    return ![self detailsForUIElement:uiElement].stylingApplied;
+}
+
 - (void) setStylingEnabled:(BOOL)enabled forProperty:(NSString*)propertyName inUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     ISSPropertyDefinition* property = [self.propertyRegistry propertyDefinitionForProperty:propertyName inClass:[uiElement class]];

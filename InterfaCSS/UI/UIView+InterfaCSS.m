@@ -172,6 +172,10 @@
     return [[InterfaCSS interfaCSS] isStylingEnabledForUIElement:self];
 }
 
+- (BOOL) stylingAppliedISS {
+    return [[InterfaCSS interfaCSS] isStylingAppliedForUIElement:self];
+}
+
 - (void) clearCachedStylesISS {
     [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
 }

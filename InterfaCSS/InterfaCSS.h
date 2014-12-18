@@ -219,6 +219,10 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 /** Returns `YES` if styling is enabled for the specified UI element. */
 - (BOOL) isStylingEnabledForUIElement:(id)uiElement;
 
+/** Returns `YES` if styling has been successfully applied to the specified UI element. */
+- (BOOL) isStylingAppliedForUIElement:(id)uiElement;
+
+
 /**
  * Disables or re-enables styling of a specific property in the specified UI element. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to the
  * property, but any value that has already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS,
