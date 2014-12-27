@@ -453,6 +453,27 @@ static InterfaCSS* singleton = nil;
     if( !uiElement ) return;
 
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
+    [self applyStyling:uiElementDetails includeSubViews:includeSubViews force:force];
+}
+
+// Main styling method (element details version)
+- (void) applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
+    if( !uiElementDetails ) return;
+
+    // If styling is disabled for element - abort styling of whole sub tre, but not if force is YES
+    if( uiElementDetails.stylingDisabled && !force ) {
+        ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
+        return;
+    }
+
+    // Make sure view hierarchy is traversed once, before proceeding with styling
+    if( !self.keyWindow && includeSubViews ) {
+        [self initViewHierarchy];
+        if( uiElementDetails.stylingApplied ) { // If styling was applied by initViewHierarchy, we don't need to do it again
+            return;
+        }
+    }
+
     uiElementDetails.stylingScheduled = NO;
 
     if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
@@ -464,7 +485,7 @@ static InterfaCSS* singleton = nil;
             uiElementDetails.beingStyled = NO;
             // Cancel scheduled calls after styling has been applied, to avoid "loop"
             if( uiElementDetails.stylingScheduled ) {
-                [self cancelScheduledApplyStyling:uiElement];
+                [self cancelScheduledApplyStyling:uiElementDetails.uiElement];
                 uiElementDetails.stylingScheduled = NO;
             }
         }
@@ -473,76 +494,63 @@ static InterfaCSS* singleton = nil;
 
 // Internal styling method - should only be called by -[applyStyling:includeSubViews:].
 - (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
-    // If styling is disabled for element - abort styling of whole sub tre
-    if( uiElementDetails.stylingDisabled ) {
-        ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
-        return;
-    }
+    ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
 
+    // Reset cached styles if superview has changed (but not if using custom styling identity)
     UIView* view = uiElementDetails.view;
-    BOOL styleAppliedToView = NO;
-    if( !self.keyWindow && includeSubViews ) {
-        [self initViewHierarchy];
-        styleAppliedToView = uiElementDetails.stylingApplied; // If styling was applied by initViewHierarchy, we don't need to do it again
+    if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
+        ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
+        [self clearCachedStylesForUIElementDetails:uiElementDetails];
+        uiElementDetails.parentView = view.superview;
     }
-    if( !styleAppliedToView ) {
-        ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
 
-        // Reset cached styles if superview has changed (but not if using custom styling identity)
-        if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
-            ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
-            [self clearCachedStylesForUIElementDetails:uiElementDetails];
-            uiElementDetails.parentView = view.superview;
+    [self styleUIElement:uiElementDetails force:force];
+
+    if( includeSubViews ) {
+        NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
+        UIView* parentView = nil;
+        // Special case: UIToolbar - add toolbar items to "subview" list
+        if( [view isKindOfClass:UIToolbar.class] ) {
+            UIToolbar* toolbar = (UIToolbar*)view;
+            parentView = toolbar;
+            if( toolbar.items ) subviews = [subviews arrayByAddingObjectsFromArray:toolbar.items];
+        }
+        // Special case: UINavigationBar - add nav bar items to "subview" list
+        else if( [view isKindOfClass:UINavigationBar.class] ) {
+            UINavigationBar* navigationBar = (UINavigationBar*)view;
+            parentView = navigationBar;
+
+            NSMutableArray* additionalSubViews = [NSMutableArray array];
+            for(id item in navigationBar.items) {
+                if( [item isKindOfClass:UINavigationItem.class] ) {
+                    UINavigationItem* navigationItem = (UINavigationItem*)item;
+                    if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
+                    if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
+                    if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
+                    if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];
+                } else {
+                    [additionalSubViews addObject:item];
+                }
+            }
+            subviews = [subviews arrayByAddingObjectsFromArray:additionalSubViews];
+        }
+        // Special case: UITabBar - add tab bar items to "subview" list
+        else if( [view isKindOfClass:UITabBar.class] ) {
+            UITabBar* tabBar = (UITabBar*)view;
+            parentView = tabBar;
+            if( tabBar.items ) subviews = [subviews arrayByAddingObjectsFromArray:tabBar.items];
         }
 
-        [self styleUIElement:uiElementDetails force:force];
+        // Process subviews
+        for(id subView in subviews) {
+            ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
 
-        if( includeSubViews ) {
-            NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
-            UIView* parentView = nil;
-            // Special case: UIToolbar - add toolbar items to "subview" list
-            if( [view isKindOfClass:UIToolbar.class] ) {
-                UIToolbar* toolbar = (UIToolbar*)view;
-                parentView = toolbar;
-                if( toolbar.items ) subviews = [subviews arrayByAddingObjectsFromArray:toolbar.items];
-            }
-            // Special case: UINavigationBar - add nav bar items to "subview" list
-            else if( [view isKindOfClass:UINavigationBar.class] ) {
-                UINavigationBar* navigationBar = (UINavigationBar*)view;
-                parentView = navigationBar;
-
-                NSMutableArray* additionalSubViews = [NSMutableArray array];
-                for(id item in navigationBar.items) {
-                    if( [item isKindOfClass:UINavigationItem.class] ) {
-                        UINavigationItem* navigationItem = (UINavigationItem*)item;
-                        if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
-                        if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
-                        if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
-                        if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];
-                    } else {
-                        [additionalSubViews addObject:item];
-                    }
-                }
-                subviews = [subviews arrayByAddingObjectsFromArray:additionalSubViews];
-            }
-            // Special case: UITabBar - add tab bar items to "subview" list
-            else if( [view isKindOfClass:UITabBar.class] ) {
-                UITabBar* tabBar = (UITabBar*)view;
-                parentView = tabBar;
-                if( tabBar.items ) subviews = [subviews arrayByAddingObjectsFromArray:tabBar.items];
+            // If subview isn't view (i.e. UIToolbarItem for instance) - set parent view as super view in ViewProperties
+            if( parentView && ![subView isKindOfClass:UIView.class] ) {
+                if( !subViewDetails.parentView ) subViewDetails.parentView = parentView;
             }
 
-            // Process subviews
-            for(id subView in subviews) {
-                ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
-
-                // If subview isn't view (i.e. UIToolbarItem for instance) - set parent view as super view in ViewProperties
-                if( parentView && ![subView isKindOfClass:UIView.class] ) {
-                    if( !subViewDetails.parentView ) subViewDetails.parentView = parentView;
-                }
-
-                [self applyStyling:subView includeSubViews:YES force:force];
-            }
+            [self applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)subViewDetails includeSubViews:YES force:force];
         }
     }
 }
