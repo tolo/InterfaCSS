@@ -453,7 +453,7 @@ static InterfaCSS* singleton = nil;
     if( !uiElement ) return;
 
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
-    [self applyStyling:uiElementDetails includeSubViews:includeSubViews force:force];
+    [self applyStylingWithDetails:uiElementDetails includeSubViews:includeSubViews force:force];
 }
 
 // Main styling method (element details version)
