@@ -348,10 +348,15 @@ This is what must happen before version 1.0:
 
 And of course - all feedback is most welcome!
 
-
-
 *"þetta er ágætis byrjun."*
 
+
+
+Apps using InterfaCSS
+---------------------
+
+* [PlayMyQ HD - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-hd-music-player-remote/id432506056?mt=8)
+* [PlayMyQ - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-music-player-remote/id432505283?mt=8)
 
 
 License
