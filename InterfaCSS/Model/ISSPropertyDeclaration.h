@@ -30,7 +30,7 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters prefix:(NSString*)prefix;
 - (instancetype) initWithUnrecognizedProperty:(NSString*)unrecognizedPropertyName;
 
-- (void) transformValueIfNeeded;
+- (BOOL) transformValueIfNeeded;
 
 - (BOOL) applyPropertyValueOnTarget:(id)target;
 

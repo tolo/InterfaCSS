@@ -63,11 +63,13 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
 #pragma mark - Public interface
 
 
-- (void) transformValueIfNeeded {
+- (BOOL) transformValueIfNeeded {
     if( self.lazyPropertyTransformationBlock ) {
         self.propertyValue = self.lazyPropertyTransformationBlock(self);
         self.lazyPropertyTransformationBlock = nil;
+        return YES;
     }
+    return NO;
 }
 
 - (BOOL) applyPropertyValueOnTarget:(id)target {
@@ -75,15 +77,19 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
         ISSLogWarning(@"Cannot apply property value - unknown property!");
         return NO;
     }
-
+    if( !self.propertyValue ) {
+        ISSLogWarning(@"Cannot apply property value - value is nil!");
+        return NO;
+    }
     if( self.propertyValue == ISSPropertyDefinitionUseCurrentValue ) {
         ISSLogTrace(@"Property value not changed - using existing value");
         return YES;
     }
 
-    [self transformValueIfNeeded];
-    if( !self.propertyValue ) {
-        ISSLogWarning(@"Cannot apply property value - empty property value after transform!");
+    id valueBeforeTransform = self.propertyValue;
+    BOOL didTransform = [self transformValueIfNeeded];
+    if( didTransform && !self.propertyValue ) {
+        ISSLogWarning(@"Cannot apply property value - empty property value after transform! Value before transform: '%@'.", valueBeforeTransform);
         return NO;
     }
 
