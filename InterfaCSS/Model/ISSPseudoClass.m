@@ -29,8 +29,19 @@ static NSDictionary* stringToPseudoClassType;
             @"portrait" : @(ISSPseudoClassTypeInterfaceOrientationPortrait),
             @"portraitupright" : @(ISSPseudoClassTypeInterfaceOrientationPortraitUpright),
             @"portraitupsidedown" : @(ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown),
+
+            @"pad" : @(ISSPseudoClassTypeUserInterfaceIdiomPad),
+            @"phone" : @(ISSPseudoClassTypeUserInterfaceIdiomPhone),
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+            @"regularwidth" : @(ISSPseudoClassTypeHorizontalSizeClassRegular),
+            @"compactwidth" : @(ISSPseudoClassTypeHorizontalSizeClassCompact),
+            @"regularheight" : @(ISSPseudoClassTypeVerticalSizeClassRegular),
+            @"compactheight" : @(ISSPseudoClassTypeVerticalSizeClassCompact),
+#endif
+
             @"enabled" : @(ISSPseudoClassTypeStateEnabled),
             @"disabled" : @(ISSPseudoClassTypeStateDisabled),
+
             @"nthchild" : @(ISSPseudoClassTypeNthChild),
             @"nthlastchild" : @(ISSPseudoClassTypeNthLastChild),
             @"onlychild" : @(ISSPseudoClassTypeOnlyChild),
@@ -85,16 +96,19 @@ static NSDictionary* stringToPseudoClassType;
     return NO;
 }
 
-- (UIInterfaceOrientation) currentInterfaceOrientationForDevice {
+- (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
     UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) {
+
+    if( elementDetails.parentViewController ) { // First, attempt to use interface orientation of parent view controller...
+        return elementDetails.parentViewController.interfaceOrientation;
+    } else if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) { // ...if not found - fall back to device orientation...
         switch( deviceOrientation ) {
             case UIDeviceOrientationLandscapeLeft : return UIInterfaceOrientationLandscapeRight;
             case UIDeviceOrientationLandscapeRight : return UIInterfaceOrientationLandscapeLeft;
             case UIDeviceOrientationPortraitUpsideDown : return UIInterfaceOrientationPortraitUpsideDown;
             default: return UIInterfaceOrientationPortrait;
         }
-    } else if( [UIApplication sharedApplication].keyWindow.rootViewController )  { // Fallback to last interface orientation if face up/down
+    } else if( [UIApplication sharedApplication].keyWindow.rootViewController )  { // ...but if that also fails, fallback to last interface orientation of the root view controller (i.e. if device orientation is face up/down)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         return [UIApplication sharedApplication].keyWindow.rootViewController.interfaceOrientation;
@@ -107,18 +121,30 @@ static NSDictionary* stringToPseudoClassType;
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
     id uiElement = elementDetails.uiElement;
     switch( _pseudoClassType ) {
-        case ISSPseudoClassTypeInterfaceOrientationLandscape: return UIInterfaceOrientationIsLandscape([self currentInterfaceOrientationForDevice]);
-        case ISSPseudoClassTypeInterfaceOrientationLandscapeLeft: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationLandscapeLeft;
-        case ISSPseudoClassTypeInterfaceOrientationLandscapeRight: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationLandscapeRight;
-        case ISSPseudoClassTypeInterfaceOrientationPortrait: return UIInterfaceOrientationIsPortrait([self currentInterfaceOrientationForDevice]);
-        case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationPortrait;
-        case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return [self currentInterfaceOrientationForDevice] == UIInterfaceOrientationPortraitUpsideDown;
+        case ISSPseudoClassTypeInterfaceOrientationLandscape: return UIInterfaceOrientationIsLandscape([self currentInterfaceOrientationForDevice:elementDetails]);
+        case ISSPseudoClassTypeInterfaceOrientationLandscapeLeft: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeLeft;
+        case ISSPseudoClassTypeInterfaceOrientationLandscapeRight: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeRight;
+        case ISSPseudoClassTypeInterfaceOrientationPortrait: return UIInterfaceOrientationIsPortrait([self currentInterfaceOrientationForDevice:elementDetails]);
+        case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationPortrait;
+        case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationPortraitUpsideDown;
+
+        case ISSPseudoClassTypeUserInterfaceIdiomPad: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
+        case ISSPseudoClassTypeUserInterfaceIdiomPhone: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+        case ISSPseudoClassTypeHorizontalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+        case ISSPseudoClassTypeHorizontalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        case ISSPseudoClassTypeVerticalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+        case ISSPseudoClassTypeVerticalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+#endif
+
         case ISSPseudoClassTypeStateEnabled: {
             return [uiElement respondsToSelector:@selector(isEnabled)] && [uiElement isEnabled];
         }
         case ISSPseudoClassTypeStateDisabled: {
             return [uiElement respondsToSelector:@selector(isEnabled)] && ![uiElement isEnabled];
         }
+
         case ISSPseudoClassTypeNthChild:
         case ISSPseudoClassTypeFirstChild: {
             if( elementDetails.parentView ) return [self matchesIndex:[elementDetails.parentView.subviews indexOfObject:uiElement] count:elementDetails.parentView.subviews.count reverse:NO];
@@ -161,8 +187,20 @@ static NSDictionary* stringToPseudoClassType;
         case ISSPseudoClassTypeInterfaceOrientationPortrait: return @"portrait";
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return @"portraitUpright";
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return @"portraitUpsideDown";
+
+        case ISSPseudoClassTypeUserInterfaceIdiomPad: return @"pad";
+        case ISSPseudoClassTypeUserInterfaceIdiomPhone: return @"phone";
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+        case ISSPseudoClassTypeHorizontalSizeClassRegular: return @"regularwidth";
+        case ISSPseudoClassTypeHorizontalSizeClassCompact: return @"compactwidth";
+        case ISSPseudoClassTypeVerticalSizeClassRegular: return @"regularheight";
+        case ISSPseudoClassTypeVerticalSizeClassCompact: return @"compactheight";
+#endif
+
         case ISSPseudoClassTypeStateEnabled: return @"enabled";
         case ISSPseudoClassTypeStateDisabled: return @"disabled";
+
         case ISSPseudoClassTypeNthChild: return [NSString stringWithFormat:@"nthchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];
         case ISSPseudoClassTypeNthLastChild: return [NSString stringWithFormat:@"nthlastchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];
         case ISSPseudoClassTypeOnlyChild: return @"onlychild";

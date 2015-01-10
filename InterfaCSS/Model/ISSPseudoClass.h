@@ -10,14 +10,28 @@
 @class ISSUIElementDetails;
 
 typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
+    // User interface orientation and traits
     ISSPseudoClassTypeInterfaceOrientationLandscape,
     ISSPseudoClassTypeInterfaceOrientationLandscapeLeft,
     ISSPseudoClassTypeInterfaceOrientationLandscapeRight,
     ISSPseudoClassTypeInterfaceOrientationPortrait,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpright,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown,
+    ISSPseudoClassTypeUserInterfaceIdiomPad,
+    ISSPseudoClassTypeUserInterfaceIdiomPhone,
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+    ISSPseudoClassTypeHorizontalSizeClassRegular,
+    ISSPseudoClassTypeHorizontalSizeClassCompact,
+    ISSPseudoClassTypeVerticalSizeClassRegular,
+    ISSPseudoClassTypeVerticalSizeClassCompact,
+#endif
+
+    // UI element state
     ISSPseudoClassTypeStateEnabled,
     ISSPseudoClassTypeStateDisabled,
+
+    // Structural
     ISSPseudoClassTypeNthChild,
     ISSPseudoClassTypeNthLastChild,
     ISSPseudoClassTypeOnlyChild,

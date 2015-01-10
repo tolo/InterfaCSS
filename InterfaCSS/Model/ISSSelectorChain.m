@@ -97,7 +97,7 @@
             if( i%2 == 0 && ![selectorComponents[i] isKindOfClass:ISSSelector.class] ) return nil;
             else if( i%2 == 1 && ![selectorComponents[i] isKindOfClass:NSNumber.class] ) return nil;
 
-            if( (i%2 == 0) && !hasPseudoClassSelector ) hasPseudoClassSelector = ((ISSSelector*)selectorComponents[i]).pseudoClass != nil;
+            if( (i%2 == 0) && !hasPseudoClassSelector ) hasPseudoClassSelector = ((ISSSelector*)selectorComponents[i]).pseudoClasses.count > 0;
         }
         return [[self alloc] initWithComponents:selectorComponents hasPseudoClassSelector:hasPseudoClassSelector];
     }
@@ -110,7 +110,7 @@
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector {
     NSArray* newComponents = [self.selectorComponents arrayByAddingObjectsFromArray:@[@(ISSSelectorCombinatorDescendant), selector]];
-    return [[ISSSelectorChain alloc] initWithComponents:newComponents hasPseudoClassSelector:_hasPseudoClassSelector || (selector.pseudoClass != nil)];
+    return [[ISSSelectorChain alloc] initWithComponents:newComponents hasPseudoClassSelector:_hasPseudoClassSelector || (selector.pseudoClasses.count > 0)];
 }
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain {

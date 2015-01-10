@@ -61,6 +61,14 @@ uiview.classx {
     }
 }
 
+uiview:pad:landscape {
+    alpha: 0.666;
+}
+
+uiview:portrait:phone {
+    alpha: 0.666;
+}
+
 // Wildcard selectors
 * uiview {
     alpha: 0.666;

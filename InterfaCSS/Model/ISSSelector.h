@@ -21,11 +21,11 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 
 @property (nonatomic, readonly) Class type;
 @property (nonatomic, readonly) NSString* styleClass;
-@property (nonatomic, readonly) ISSPseudoClass* pseudoClass;
+@property (nonatomic, readonly) NSArray* pseudoClasses;
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
-+ (instancetype) selectorWithType:(NSString*)type class:(NSString*)styleClass pseudoClass:(ISSPseudoClass*)pseudoClass;
++ (instancetype) selectorWithType:(NSString*)type styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
 

@@ -172,7 +172,7 @@
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @".class1",
                                                                             @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
-                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx uilabel:lastoftype",
+                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
                                                                             @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
     
     for (ISSPropertyDeclarations* d in result) {

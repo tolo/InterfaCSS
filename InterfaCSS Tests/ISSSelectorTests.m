@@ -49,8 +49,10 @@
 #pragma mark - Utils
 
 - (ISSSelectorChain*) createSelectorChainWithChildType:(NSString*)type combinator:(ISSSelectorCombinator)combinator childPseudoClass:(ISSPseudoClass*)childPseudoClass {
-    ISSSelector* parentSelector = [ISSSelector selectorWithType:nil class:@"parentClass" pseudoClass:nil];
-    ISSSelector* clildSelector = [ISSSelector selectorWithType:type class:@"childClass" pseudoClass:childPseudoClass];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:nil styleClass:@"parentClass" pseudoClasses:nil];
+    ISSSelector* clildSelector;
+    if( childPseudoClass ) clildSelector = [ISSSelector selectorWithType:type styleClass:@"childClass" pseudoClasses:@[childPseudoClass]];
+    else clildSelector = [ISSSelector selectorWithType:type styleClass:@"childClass" pseudoClasses:nil];
     return [ISSSelectorChain selectorChainWithComponents:@[parentSelector, @(combinator), clildSelector]];
 }
 
@@ -121,8 +123,8 @@
     [label addStyleClassISS:@"labelClass"];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    ISSSelector* buttonSelector = [ISSSelector selectorWithType:@"uibutton" class:@"buttonClass" pseudoClass:nil];
-    ISSSelector* labelSelector = [ISSSelector selectorWithType:@"uilabel" class:@"labelClass" pseudoClass:nil];
+    ISSSelector* buttonSelector = [ISSSelector selectorWithType:@"uibutton" styleClass:@"buttonClass" pseudoClasses:nil];
+    ISSSelector* labelSelector = [ISSSelector selectorWithType:@"uilabel" styleClass:@"labelClass" pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[buttonSelector, @(ISSSelectorCombinatorAdjacentSibling), labelSelector]];
     
     if( adjacent ) XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Adjacent sibling selector chain must match!");
@@ -226,7 +228,7 @@
     ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:rootView];
     ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
 
-    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:@"parentClass" pseudoClass:pseudo];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" styleClass:@"parentClass" pseudoClasses:@[pseudo]];
 
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector]];
 
@@ -239,8 +241,8 @@
 }
 
 - (void) testWildcardSelectorFirst {
-    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
-    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" class:@"childClass" pseudoClass:nil];
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" styleClass:nil pseudoClasses:nil];
+    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" styleClass:@"childClass" pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[wildcardSelector, @(ISSSelectorCombinatorDescendant), clildSelector]];
     
     UILabel* label = [[UILabel alloc] init];
@@ -254,9 +256,9 @@
 }
 
 - (void) testWildcardSelectorMiddle {
-    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
-    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiwindow" class:nil pseudoClass:nil];
-    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" class:@"childClass" pseudoClass:nil];
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" styleClass:nil pseudoClasses:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiwindow" styleClass:nil pseudoClasses:nil];
+    ISSSelector* clildSelector = [ISSSelector selectorWithType:@"uilabel" styleClass:@"childClass" pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector, @(ISSSelectorCombinatorDescendant),
                                                                               wildcardSelector, @(ISSSelectorCombinatorDescendant), clildSelector]];
     
@@ -271,8 +273,8 @@
 }
 
 - (void) testWildcardSelectorLast {
-    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
-    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:nil pseudoClass:nil];
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" styleClass:nil pseudoClasses:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" styleClass:nil pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector, @(ISSSelectorCombinatorDescendant), wildcardSelector]];
     
     UILabel* label = [[UILabel alloc] init];
@@ -285,8 +287,8 @@
 }
 
 - (void) testWildcardSelectorFirstAndLast {
-    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" class:nil pseudoClass:nil];
-    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" class:nil pseudoClass:nil];
+    ISSSelector* wildcardSelector = [ISSSelector selectorWithType:@"*" styleClass:nil pseudoClasses:nil];
+    ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" styleClass:nil pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[wildcardSelector, @(ISSSelectorCombinatorDescendant),
                                                                               parentSelector, @(ISSSelectorCombinatorDescendant), wildcardSelector]];
     

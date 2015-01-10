@@ -471,10 +471,24 @@
     return [Parcoa iss_parseLineUpToInvalidCharactersInString:@"{}"];
 }
 
+- (NSArray*) nonNullElementArray:(NSArray*)array {
+    if( [array indexOfObject:[NSNull null]] != NSNotFound ) {
+        NSMutableArray* cleanArray = [NSMutableArray array];
+        for(id entry in array) {
+            if( entry != [NSNull null] ) [cleanArray addObject:entry];
+        }
+        return cleanArray;
+    }
+    return array;
+}
+
 - (id) elementOrNil:(NSArray*)array index:(NSUInteger)index {
     if( index < array.count ) {
         id element = array[index];
-        if( element != [NSNull null] ) return element;
+        if( element != [NSNull null] ) {
+            if( [element isKindOfClass:NSArray.class] ) return [self nonNullElementArray:element];
+            return element;
+        }
     }
     return nil;
 }
@@ -1030,7 +1044,7 @@
         
         ParcoaParser* pseudoClassParameterParsers = [Parcoa choice:@[pseudoClassParameterParserFull, pseudoClassParameterParserAN, pseudoClassParameterParserEven, pseudoClassParameterParserOdd]];
 
-        ParcoaParser* pseudoClassSelector = [[Parcoa sequential:@[colon, identifier, [Parcoa optional:pseudoClassParameterParsers]]] transform:^id(id value) {
+        ParcoaParser* pseudoClassSelector = [[[Parcoa sequential:@[colon, identifier, [Parcoa optional:pseudoClassParameterParsers] ]] transform:^id(id value) {
             NSString* pseudoClassName = [blockSelf elementOrNil:value index:1] ?: @"";
             pseudoClassName = [pseudoClassName stringByReplacingOccurrencesOfString:@"-" withString:@""];
             NSArray* p = [blockSelf elementOrNil:value index:2] ?: @[@1, @0];
@@ -1044,20 +1058,19 @@
                 ISSLogWarning(@"Invalid pseudo class: %@", pseudoClassName);
                 return [NSNull null];
             }
-        } name:@"pseudoClass"];
+        } name:@"pseudoClass"] many];
 
         ParcoaParser* typeSelector = [[Parcoa sequential:@[
                 typeName, [Parcoa optional:classNameSelector], [Parcoa optional:pseudoClassSelector],
         ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:[blockSelf elementOrNil:value index:0] class:[blockSelf
-                    elementOrNil:value index:1] pseudoClass:[blockSelf elementOrNil:value index:2]];
+            ISSSelector* selector = [ISSSelector selectorWithType:[blockSelf elementOrNil:value index:0] styleClass:[blockSelf elementOrNil:value index:1] pseudoClasses:[blockSelf elementOrNil:value index:2]];
             return selector ?: [NSNull null];
         } name:@"typeAndClassSelector"];
 
         ParcoaParser* classSelector = [[Parcoa sequential:@[
                 classNameSelector, [Parcoa optional:pseudoClassSelector],
         ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:nil class:[blockSelf elementOrNil:value index:0] pseudoClass:[blockSelf elementOrNil:value index:1]];
+            ISSSelector* selector = [ISSSelector selectorWithType:nil styleClass:[blockSelf elementOrNil:value index:0] pseudoClasses:[blockSelf elementOrNil:value index:1]];
             return selector ?: [NSNull null];
         } name:@"typeAndClassSelector"];
 
