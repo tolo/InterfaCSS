@@ -59,7 +59,7 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
 + (ISSRectValue*) parentRelativeRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight {
     ISSRectValue* rectValue = [[self alloc] initWithType:ISSRectValueTypeParentRelative rect:CGRectMake(0, 0, size.width, size.height)
-                               insets:UIEdgeInsetsMake(ISSRectValueAuto, ISSRectValueAuto, ISSRectValueAuto, ISSRectValueAuto)];
+                               insets:UIEdgeInsetsMake(ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue)];
     if( relativeWidth || size.width == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeWidth;
     if( relativeHeight || size.height == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeHeight;
     return rectValue;

@@ -500,13 +500,9 @@
 
     child.styleClassISS = @"centeredRectTest4";
     [child applyStylingISS];
-    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(150, 225, 300, 450)));
-
-    child.styleClassISS = @"centeredRectTest5";
-    [child applyStylingISS];
     XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(150, 42, 300, 450)));
 
-    child.styleClassISS = @"centeredRectTest6";
+    child.styleClassISS = @"centeredRectTest5";
     [child applyStylingISS];
     XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(42, 225, 300, 450)));
 }
