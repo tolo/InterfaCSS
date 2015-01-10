@@ -24,7 +24,9 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
 
 @end
 
-@implementation ISSUIElementDetails
+@implementation ISSUIElementDetails {
+    __weak UIViewController* _parentViewController;
+}
 
 #pragma mark - Lifecycle
 
@@ -134,10 +136,24 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
     self.stylingApplied = NO;
     self.ancestorUsesCustomElementStyleIdentity = NO;
     self.cachedDeclarations = nil;
+    _parentViewController = nil;
 }
 
 - (UIView*) view {
     return [self.uiElement isKindOfClass:UIView.class] ? self.uiElement : nil;
+}
+
+- (UIViewController*) parentViewController {
+    if( !_parentViewController ) {
+        for (UIView* next = self.view.superview; next; next = next.superview) {
+            UIResponder* nextResponder = next.nextResponder;
+            if ( [nextResponder isKindOfClass:UIViewController.class] ) {
+                _parentViewController = (UIViewController*)nextResponder;
+                break;
+            }
+        }
+    }
+    return _parentViewController;
 }
 
 - (void) setStyleClasses:(NSSet*)styleClasses {
