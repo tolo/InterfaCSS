@@ -57,7 +57,7 @@ UITabBarItem.tab1 {
 
 .simpleSampleMainView .mainTitleLabel {
     shadowColor: fadeout(black, 50%);
-    shadowOffset: offset(1,1);
+    shadowOffset: size(1,1);
 }
 
 .mainTitleButton {
@@ -82,7 +82,7 @@ UITabBarItem.tab1 {
 }
 
 .simpleSampleContentTitleLabel {
-    frame: rect(20, 10, 160, 30);
+    frame: sizeToFit(140, 30).left(auto).right(auto).top(10); // Size to fit and center horizontally
     textColor: rgb(255, 255, 255);
     font: smaller(@stdTitleLabel, 2);
 }

@@ -25,6 +25,7 @@ CGFloat const ISSRectValueAuto = CGFLOAT_MIN;
 CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
 #define ISS_SCALE [UIScreen mainScreen].scale
+#define ISS_SCALED_FLOOR(value) floorf(ISS_SCALE * value) / ISS_SCALE
 
 
 @implementation ISSRectValue {
@@ -58,7 +59,7 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
 + (ISSRectValue*) parentRelativeRectWithSize:(CGSize)size relativeWidth:(BOOL)relativeWidth relativeHeight:(BOOL)relativeHeight {
     ISSRectValue* rectValue = [[self alloc] initWithType:ISSRectValueTypeParentRelative rect:CGRectMake(0, 0, size.width, size.height)
-                               insets:UIEdgeInsetsMake(ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue, ISSRectValueNoValue)];
+                               insets:UIEdgeInsetsMake(ISSRectValueAuto, ISSRectValueAuto, ISSRectValueAuto, ISSRectValueAuto)];
     if( relativeWidth || size.width == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeWidth;
     if( relativeHeight || size.height == ISSRectValueAuto ) rectValue-> _parentRelativeMask |= ISSParentRelativeHeight;
     return rectValue;
@@ -136,7 +137,7 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
 
 - (CGFloat) relativeValue:(CGFloat)value parentValue:(CGFloat)parentValue relativeMaskValue:(ISSParentRelative)relativeMaskValue {
-    if( _parentRelativeMask & relativeMaskValue ) return floorf(ISS_SCALE * parentValue * value / 100.0f) / ISS_SCALE;
+    if( _parentRelativeMask & relativeMaskValue ) return ISS_SCALED_FLOOR(parentValue * value / 100.0f);
     else return value;
 }
 
@@ -157,27 +158,50 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     }
 
     CGRect resultingRect = CGRectMake(0, 0, width, height);
-    UIEdgeInsets actualInsets = UIEdgeInsetsZero;
+    UIEdgeInsets actualInsets = UIEdgeInsetsZero; // Only used if either width or height is auto
 
-    if( _insets.left != ISSRectValueNoValue ) {
-        CGFloat leftInset = [self relativeValue:_insets.left parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeLeft];
-        if( self.autoWidth ) actualInsets.left = leftInset;
-        else resultingRect.origin.x = leftInset;
+
+    // Horizontal insets
+    if( _insets.left == ISSRectValueAuto && _insets.right == ISSRectValueAuto ) { // Auto left and right margins - horizontal centering
+        if( self.autoWidth ) {
+            actualInsets.left = actualInsets.right = ISS_SCALED_FLOOR(parentRect.size.width / 3);
+        } else {
+            resultingRect.origin.x = ISS_SCALED_FLOOR((parentRect.size.width - width) / 2);
+        }
     }
-    if( _insets.right != ISSRectValueNoValue ) {
-        CGFloat rightInset = [self relativeValue:_insets.right parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeRight];
-        if( self.autoWidth ) actualInsets.right = rightInset;
-        else resultingRect.origin.x += (parentRect.size.width - width - rightInset);
+    else { // "Normal" insets
+        if ( _insets.left != ISSRectValueNoValue && _insets.left != ISSRectValueAuto ) {
+            CGFloat leftInset = [self relativeValue:_insets.left parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeLeft];
+            if ( self.autoWidth ) actualInsets.left = leftInset;
+            else resultingRect.origin.x = leftInset;
+        }
+        if ( _insets.right != ISSRectValueNoValue && _insets.right != ISSRectValueAuto ) {
+            CGFloat rightInset = [self relativeValue:_insets.right parentValue:parentRect.size.width relativeMaskValue:ISSParentRelativeRight];
+            if ( self.autoWidth ) actualInsets.right = rightInset;
+            else resultingRect.origin.x = (parentRect.size.width - width - rightInset);
+        }
     }
-    if( _insets.top != ISSRectValueNoValue ) {
-        CGFloat topInset = [self relativeValue:_insets.top parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeTop];
-        if( self.autoHeight ) actualInsets.top = topInset;
-        else resultingRect.origin.y = topInset;
+
+
+    // Vertical insets
+    if( _insets.top == ISSRectValueAuto && _insets.bottom == ISSRectValueAuto ) { // Auto top and bottom margins - vertical centering
+        if( self.autoWidth ) {
+            actualInsets.top = actualInsets.bottom = ISS_SCALED_FLOOR(parentRect.size.height / 3);
+        } else {
+            resultingRect.origin.y = ISS_SCALED_FLOOR((parentRect.size.height - height) / 2);
+        }
     }
-    if( _insets.bottom != ISSRectValueNoValue ) {
-        CGFloat bottomInset = [self relativeValue:_insets.bottom parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeBottom];
-        if( self.autoHeight ) actualInsets.bottom = bottomInset;
-        else resultingRect.origin.y += (parentRect.size.height - height - bottomInset);
+    else { // "Normal" insets
+        if( _insets.top != ISSRectValueNoValue && _insets.top != ISSRectValueAuto ) {
+            CGFloat topInset = [self relativeValue:_insets.top parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeTop];
+            if( self.autoHeight ) actualInsets.top = topInset;
+            else resultingRect.origin.y = topInset;
+        }
+        if( _insets.bottom != ISSRectValueNoValue && _insets.bottom != ISSRectValueAuto ) {
+            CGFloat bottomInset = [self relativeValue:_insets.bottom parentValue:parentRect.size.height relativeMaskValue:ISSParentRelativeBottom];
+            if( self.autoHeight ) actualInsets.bottom = bottomInset;
+            else resultingRect.origin.y = (parentRect.size.height - height - bottomInset);
+        }
     }
 
     return UIEdgeInsetsInsetRect(resultingRect, actualInsets);

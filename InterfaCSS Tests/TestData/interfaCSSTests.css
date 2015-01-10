@@ -127,6 +127,30 @@ UIView.disabledStylingTest {
     frame: sizeToFit(5, 5);
 }
 
+.centeredRectTest1 {
+    frame: size(auto, auto).insets(auto, auto, auto, auto); // Centering with auto width/height
+}
+
+.centeredRectTest2 {
+    frame: size(100, 100).insets(auto, auto, auto, auto); // Centering with fixed width/height
+}
+
+.centeredRectTest3 {
+    frame: size(50%, 50%).left(auto).right(auto).top(auto).bottom(auto); // Centering with relative width/height
+}
+
+.centeredRectTest4 {
+    frame: size(50%, 50%); // Centering with relative width/height, using default values for insets (auto)
+}
+
+.centeredRectTest5 {
+    frame: size(50%, 50%).left(auto).right(auto).top(42); // Only horizontal centering
+}
+
+.centeredRectTest6 {
+    frame: size(50%, 50%).top(auto).bottom(auto).left(42); // Only vertical centering
+}
+
 .collectionViewTest {
     minimumLineSpacing: 42;
 }

@@ -72,7 +72,7 @@
 
 .rect4 { // Automatic sizes with parent relative insets/positioning
     frame: size(auto, auto).left(10%).top(20%);
-    bounds: left(50%).right(5);
+    bounds: left(50%).right(5).top(0);
 }
 
 .rect5 { // Automatic sizes with parent relative insets/positioning

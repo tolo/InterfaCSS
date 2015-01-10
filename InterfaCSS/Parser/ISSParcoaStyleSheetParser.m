@@ -9,7 +9,7 @@
 
 #import "ISSParcoaStyleSheetParser.h"
 
-#import "Parcoa.h"
+#import <Parcoa/Parcoa.h>
 
 #import "Parcoa+ISSAdditions.h"
 #import "ISSSelector.h"
@@ -76,27 +76,7 @@
 }
 
 
-#pragma mark - Utils
-
-
-- (BOOL) isRelativeValue:(NSString*)value {
-    NSRange r = [value rangeOfString:@"%"];
-    return r.location != NSNotFound && r.location > 0;
-}
-
-- (ParcoaParser*) unrecognizedLineParser {
-    return [Parcoa iss_parseLineUpToInvalidCharactersInString:@"{}"];
-}
-
-- (id) elementOrNil:(NSArray*)array index:(NSUInteger)index {
-    if( index < array.count ) {
-        id element = array[index];
-        if( element != [NSNull null] ) return element;
-    }
-    return nil;
-}
-
-#pragma mark - Property parsing
+#pragma mark - Enum property parsing
 
 - (id) enumValueForString:(NSString*)enumString inProperty:(ISSPropertyDefinition*)p {
     enumString = [enumString lowercaseString];
@@ -139,6 +119,9 @@
     }
     return result;
 }
+
+
+#pragma mark - Color parsing
 
 - (NSArray*) basicColorValueParsers:(BOOL)cgColor {
     ParcoaParser* rgb = [[Parcoa iss_parameterStringWithPrefix:@"rgb"] transform:^id(NSArray* cc) {
@@ -240,6 +223,9 @@
     return @[patternImageParser, catchAll];
 }
 
+
+#pragma mark - Image parsing
+
 - (ParcoaParser*) imageParsers:(ParcoaParser*)imageParser colorValueParsers:(NSArray*)colorValueParsers {
     ParcoaParser* preDefColorParser = [identifier transform:^id(id value) {
         return [self parsePredefColorValue:value cgColor:NO];
@@ -302,6 +288,9 @@
     finalColorParsers = [finalColorParsers arrayByAddingObjectsFromArray:colorCatchAllParsers];
     return [Parcoa choice:finalColorParsers];
 }
+
+
+#pragma mark - Property declarations and value transform
 
 - (ISSPropertyDeclaration*) parsePropertyDeclaration:(NSString*)propertyNameString {
     // Parse parameters
@@ -385,14 +374,6 @@
     }
 
     return propertyValue;
-}
-
-- (UIFont*) fontWithSize:(UIFont*)font size:(CGFloat)size {
-    if( [UIFont.class respondsToSelector:@selector(fontWithDescriptor:size:)] ) {
-        return [UIFont fontWithDescriptor:font.fontDescriptor size:size];
-    } else {
-        return [font fontWithSize:size]; // Doesn't seem to work right in iOS7 (for some fonts anyway...)
-    }
 }
 
 - (id) parsePropertyValue:(NSString*)propertyValue ofType:(ISSPropertyType)type {
@@ -483,9 +464,56 @@
     return unrecognized;
 }
 
+
+#pragma mark - Misc (property) parsing related
+
+- (ParcoaParser*) unrecognizedLineParser {
+    return [Parcoa iss_parseLineUpToInvalidCharactersInString:@"{}"];
+}
+
+- (id) elementOrNil:(NSArray*)array index:(NSUInteger)index {
+    if( index < array.count ) {
+        id element = array[index];
+        if( element != [NSNull null] ) return element;
+    }
+    return nil;
+}
+
+- (UIFont*) fontWithSize:(UIFont*)font size:(CGFloat)size {
+    if( [UIFont.class respondsToSelector:@selector(fontWithDescriptor:size:)] ) {
+        return [UIFont fontWithDescriptor:font.fontDescriptor size:size];
+    } else {
+        return [font fontWithSize:size]; // Doesn't seem to work right in iOS7 (for some fonts anyway...)
+    }
+}
+
 - (UIImage*) imageNamed:(NSString*)name { // For testing purposes...
     return [UIImage imageNamed:name];
 }
+
+- (BOOL) isRelativeValue:(NSString*)value {
+    NSRange r = [value rangeOfString:@"%"];
+    return r.location != NSNotFound && r.location > 0;
+}
+
+- (CGFloat) rectParamValueFromString:(NSString*)value autoValue:(CGFloat)autoValue relative:(BOOL*)relative {
+    BOOL isAuto = [@"auto" iss_isEqualIgnoreCase:value] || [@"*" isEqualToString:value];
+    *relative = isAuto || [self isRelativeValue:value];
+    return isAuto ? autoValue : [value floatValue];
+}
+
+- (void) setRectInsetValueFromString:(NSString*)rawValue onRect:(ISSRectValue*)rectValue insetIndex:(NSUInteger)insetIndex {
+    BOOL relativeInsetValue = NO;
+    CGFloat insetValue = [self rectParamValueFromString:rawValue autoValue:ISSRectValueAuto relative:&relativeInsetValue];
+
+    if( insetIndex == 0 ) [rectValue setTopInset:insetValue relative:relativeInsetValue];
+    else if( insetIndex == 1 ) [rectValue setLeftInset:insetValue relative:relativeInsetValue];
+    else if( insetIndex == 2 ) [rectValue setBottomInset:insetValue relative:relativeInsetValue];
+    else if( insetIndex == 3 ) [rectValue setRightInset:insetValue relative:relativeInsetValue];
+}
+
+
+#pragma mark - Property parsers setup
 
 - (ParcoaParser*) propertyParsers:(ParcoaParser*)selectorsParser {
     __weak ISSParcoaStyleSheetParser* blockSelf = self;
@@ -601,12 +629,10 @@
 
     ParcoaParser* rectSizeValueParser = [[Parcoa iss_parameterStringWithPrefix:@"size"] transform:^id(NSArray* c) {
         if( c.count == 2 ) {
-            BOOL autoWidth = [@"auto" iss_isEqualIgnoreCase:c[0]] || [@"*" isEqualToString:c[0]];
-            CGFloat width = autoWidth ? ISSRectValueAuto : [c[0] floatValue];
-            BOOL relativeWidth = autoWidth || [blockSelf isRelativeValue:c[0]];
-            BOOL autoHeight = [@"auto" iss_isEqualIgnoreCase:c[1]] || [@"*" isEqualToString:c[1]];
-            CGFloat height = autoHeight ? ISSRectValueAuto : [c[1] floatValue];
-            BOOL relativeHeight = autoHeight || [blockSelf isRelativeValue:c[1]];
+            BOOL relativeWidth = NO;
+            CGFloat width = [self rectParamValueFromString:c[0] autoValue:ISSRectValueAuto relative:&relativeWidth];
+            BOOL relativeHeight = NO;
+            CGFloat height = [self rectParamValueFromString:c[1] autoValue:ISSRectValueAuto relative:&relativeHeight];
             return [ISSRectValue parentRelativeRectWithSize:CGSizeMake(width, height) relativeWidth:relativeWidth relativeHeight:relativeHeight];
         } else {
             return [ISSRectValue zeroRect];
@@ -615,12 +641,10 @@
 
     ParcoaParser* rectSizeToFitValueParser = [[Parcoa iss_parameterStringWithPrefix:@"sizeToFit"] transform:^id(NSArray* c) {
         if( c.count == 2 ) {
-            BOOL autoWidth = [@"auto" iss_isEqualIgnoreCase:c[0]] || [@"*" isEqualToString:c[0]]; // Auto is treated as 100% for sizeToFit
-            CGFloat width = autoWidth ? 100.0f : [c[0] floatValue];
-            BOOL relativeWidth = autoWidth || [blockSelf isRelativeValue:c[0]];
-            BOOL autoHeight = [@"auto" iss_isEqualIgnoreCase:c[1]] || [@"*" isEqualToString:c[1]]; // Auto is treated as 100% for sizeToFit
-            CGFloat height = autoHeight ? 100.0f : [c[1] floatValue];
-            BOOL relativeHeight = autoHeight || [blockSelf isRelativeValue:c[1]];
+            BOOL relativeWidth = NO;
+            CGFloat width = [self rectParamValueFromString:c[0] autoValue:100.0f relative:&relativeWidth]; // Auto is treated as 100% for sizeToFit
+            BOOL relativeHeight = NO;
+            CGFloat height = [self rectParamValueFromString:c[1] autoValue:100.0f relative:&relativeHeight]; // Auto is treated as 100% for sizeToFit
             return [ISSRectValue parentRelativeSizeToFitRectWithSize:CGSizeMake(width, height) relativeWidth:relativeWidth relativeHeight:relativeHeight];
         } else {
             return [ISSRectValue parentRelativeSizeToFitRectWithSize:CGSizeMake(100.0f, 100.0f) relativeWidth:YES relativeHeight:YES];
@@ -630,11 +654,15 @@
     ParcoaParser* insetParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES], anyName, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
         // Use ISSLazyValue to create a typed block container for setting the insets on the ISSRectValue (see below)
         return [ISSLazyValue lazyValueWithBlock:^id(ISSRectValue* rectValue) {
-            if( [@"left" iss_isEqualIgnoreCase:value[0]] ) [rectValue setLeftInset:[value[2] floatValue] relative:[blockSelf isRelativeValue:value[2]]];
-            else if( [@"right" iss_isEqualIgnoreCase:value[0]] ) [rectValue setRightInset:[value[2] floatValue] relative:[blockSelf isRelativeValue:value[2]]];
-            else if( [@"top" iss_isEqualIgnoreCase:value[0]] ) [rectValue setTopInset:[value[2] floatValue] relative:[blockSelf isRelativeValue:value[2]]];
-            else if( [@"bottom" iss_isEqualIgnoreCase:value[0]] ) [rectValue setBottomInset:[value[2] floatValue] relative:[blockSelf isRelativeValue:value[2]]];
+            NSInteger insetIndex = -1;
+            if( [@"top" iss_isEqualIgnoreCase:value[0]] ) insetIndex = 0;
+            else if( [@"left" iss_isEqualIgnoreCase:value[0]] ) insetIndex = 1;
+            else if( [@"bottom" iss_isEqualIgnoreCase:value[0]] ) insetIndex = 2;
+            else if( [@"right" iss_isEqualIgnoreCase:value[0]] ) insetIndex = 3;
             else ISSLogWarning(@"Unknown inset: %@", value[0]);
+
+            if( insetIndex > -1 ) [blockSelf setRectInsetValueFromString:value[2] onRect:rectValue insetIndex:(NSUInteger)insetIndex];
+
             return nil;
         }];
     } name:@"insetParser"];
@@ -643,10 +671,10 @@
         // Use ISSLazyValue to create a typed block container for setting the insets on the ISSRectValue (see below)
         return [ISSLazyValue lazyValueWithBlock:^id(ISSRectValue* rectValue) {
             if( vals.count == 4 ) {
-                [rectValue setTopInset:[vals[0] floatValue] relative:[blockSelf isRelativeValue:vals[0]]];
-                [rectValue setLeftInset:[vals[1] floatValue] relative:[blockSelf isRelativeValue:vals[1]]];
-                [rectValue setBottomInset:[vals[2] floatValue] relative:[blockSelf isRelativeValue:vals[2]]];
-                [rectValue setRightInset:[vals[3] floatValue] relative:[blockSelf isRelativeValue:vals[3]]];
+                [blockSelf setRectInsetValueFromString:vals[0] onRect:rectValue insetIndex:0];
+                [blockSelf setRectInsetValueFromString:vals[1] onRect:rectValue insetIndex:1];
+                [blockSelf setRectInsetValueFromString:vals[2] onRect:rectValue insetIndex:2];
+                [blockSelf setRectInsetValueFromString:vals[3] onRect:rectValue insetIndex:3];
             }
             return nil;
         }];
@@ -906,6 +934,7 @@
     return propertyParser;
 }
 
+
 #pragma mark - Parser setup
 
 - (id) init {
@@ -1065,7 +1094,7 @@
 
         // Properties
         transformedValueCache = [[NSMutableDictionary alloc] init];
-        ParcoaParser* propertyDeclarations = [blockSelf propertyParsers:selectorsChainsDeclaration];
+        ParcoaParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclaration];
 
         // Ruleset
         ParcoaParser* rulesetParser = [[selectorsChainsDeclaration then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] transform:^id(id value) {
@@ -1076,7 +1105,7 @@
 
 
          // Unrecognized content
-        ParcoaParser* unrecognizedContent = [[blockSelf unrecognizedLineParser] transform:^id(id value) {
+        ParcoaParser* unrecognizedContent = [[self unrecognizedLineParser] transform:^id(id value) {
             if( [value iss_hasData] ) ISSLogWarning(@"Warning! Unrecognized content: '%@'", [value iss_trim]);
             return [NSNull null];
         } name:@"unrecognizedContent"];

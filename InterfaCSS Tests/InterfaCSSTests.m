@@ -481,6 +481,36 @@
     XCTAssertTrue(CGSizeEqualToSize(l3.frame.size, CGSizeMake(5, 5)));
 }
 
+- (void) testCenteredRect {
+    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 600, 900)];
+    UIView* child = [[UIView alloc] init];
+    [parent addSubview:child];
+
+    child.styleClassISS = @"centeredRectTest1";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(200, 300, 200, 300)));
+
+    child.styleClassISS = @"centeredRectTest2";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(250, 400, 100, 100)));
+
+    child.styleClassISS = @"centeredRectTest3";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(150, 225, 300, 450)));
+
+    child.styleClassISS = @"centeredRectTest4";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(150, 225, 300, 450)));
+
+    child.styleClassISS = @"centeredRectTest5";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(150, 42, 300, 450)));
+
+    child.styleClassISS = @"centeredRectTest6";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(42, 225, 300, 450)));
+}
+
 - (void) testCollectionViewFlowLayoutProperties {
     UICollectionViewFlowLayout* flow = [[UICollectionViewFlowLayout alloc] init];
     UICollectionView* collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:flow];
