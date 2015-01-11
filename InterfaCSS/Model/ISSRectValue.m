@@ -163,11 +163,8 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
     // Horizontal insets
     if( _insets.left == ISSRectValueAuto && _insets.right == ISSRectValueAuto ) { // Auto left and right margins - horizontal centering
-        if( self.autoWidth ) {
-            actualInsets.left = actualInsets.right = ISS_SCALED_FLOOR(parentRect.size.width / 3);
-        } else {
-            resultingRect.origin.x = ISS_SCALED_FLOOR((parentRect.size.width - width) / 2);
-        }
+        if( self.autoWidth ) actualInsets.left = actualInsets.right = ISS_SCALED_FLOOR(parentRect.size.width / 3);
+        else resultingRect.origin.x = ISS_SCALED_FLOOR((parentRect.size.width - width) / 2);
     }
     else { // "Normal" insets
         if ( _insets.left != ISSRectValueNoValue && _insets.left != ISSRectValueAuto ) {
@@ -180,16 +177,17 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
             if ( self.autoWidth ) actualInsets.right = rightInset;
             else resultingRect.origin.x = (parentRect.size.width - width - rightInset);
         }
+        // Handle single auto inset in auto width mode - i.e. distribute available space between inset and width
+        if ( self.autoWidth && _insets.left == ISSRectValueAuto ) actualInsets.left = ISS_SCALED_FLOOR((parentRect.size.width - actualInsets.right) / 2);
+        else if ( self.autoWidth && _insets.right == ISSRectValueAuto ) actualInsets.right = ISS_SCALED_FLOOR((parentRect.size.width - actualInsets.left) / 2);
+
     }
 
 
     // Vertical insets
     if( _insets.top == ISSRectValueAuto && _insets.bottom == ISSRectValueAuto ) { // Auto top and bottom margins - vertical centering
-        if( self.autoWidth ) {
-            actualInsets.top = actualInsets.bottom = ISS_SCALED_FLOOR(parentRect.size.height / 3);
-        } else {
-            resultingRect.origin.y = ISS_SCALED_FLOOR((parentRect.size.height - height) / 2);
-        }
+        if( self.autoHeight ) actualInsets.top = actualInsets.bottom = ISS_SCALED_FLOOR(parentRect.size.height / 3);
+        else resultingRect.origin.y = ISS_SCALED_FLOOR((parentRect.size.height - height) / 2);
     }
     else { // "Normal" insets
         if( _insets.top != ISSRectValueNoValue && _insets.top != ISSRectValueAuto ) {
@@ -202,6 +200,9 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
             if( self.autoHeight ) actualInsets.bottom = bottomInset;
             else resultingRect.origin.y = (parentRect.size.height - height - bottomInset);
         }
+        // Handle single auto inset in auto height mode - i.e. distribute available space between inset and height
+        if ( self.autoHeight && _insets.top == ISSRectValueAuto ) actualInsets.top = ISS_SCALED_FLOOR((parentRect.size.height - actualInsets.bottom) / 2);
+        else if ( self.autoHeight && _insets.bottom == ISSRectValueAuto ) actualInsets.bottom = ISS_SCALED_FLOOR((parentRect.size.height - actualInsets.top) / 2);
     }
 
     return UIEdgeInsetsInsetRect(resultingRect, actualInsets);

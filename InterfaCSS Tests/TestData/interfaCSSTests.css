@@ -147,6 +147,14 @@ UIView.disabledStylingTest {
     frame: size(50%, 50%).top(auto).bottom(auto).left(42); // Only vertical centering
 }
 
+.centeredRectTest6 {
+    frame: size(auto, auto).left(auto).right(50).top(auto).bottom(50); // Only single auto inset per axix
+}
+
+.centeredRectTest7 {
+    frame: size(auto, auto).left(50).right(auto).top(50).bottom(auto); // Only single auto inset per axix
+}
+
 .collectionViewTest {
     minimumLineSpacing: 42;
 }

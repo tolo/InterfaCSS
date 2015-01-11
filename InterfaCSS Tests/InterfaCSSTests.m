@@ -505,6 +505,14 @@
     child.styleClassISS = @"centeredRectTest5";
     [child applyStylingISS];
     XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(42, 225, 300, 450)));
+
+    child.styleClassISS = @"centeredRectTest6";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(275, 425, 275, 425)));
+
+    child.styleClassISS = @"centeredRectTest7";
+    [child applyStylingISS];
+    XCTAssertEqualObjects(NSStringFromCGRect(child.frame), NSStringFromCGRect(CGRectMake(50, 50, 275, 425)));
 }
 
 - (void) testCollectionViewFlowLayoutProperties {
