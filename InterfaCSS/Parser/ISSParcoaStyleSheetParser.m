@@ -123,15 +123,13 @@
 
 #pragma mark - Color parsing
 
-- (NSArray*) basicColorValueParsers:(BOOL)cgColor {
+- (NSArray*) basicColorValueParsers {
     ParcoaParser* rgb = [[Parcoa iss_parameterStringWithPrefix:@"rgb"] transform:^id(NSArray* cc) {
         UIColor* color = [UIColor magentaColor];
         if( cc.count == 3 ) {
             color = [UIColor iss_colorWithR:[cc[0] intValue] G:[cc[1] intValue] B:[cc[2] intValue]];
         }
-
-        if( cgColor ) return (id)color.CGColor;
-        else return color;
+        return color;
     } name:@"rgb"];
 
     ParcoaParser* rgba = [[Parcoa iss_parameterStringWithPrefix:@"rgba"] transform:^id(NSArray* cc) {
@@ -139,24 +137,20 @@
         if( cc.count == 4 ) {
             color = [UIColor iss_colorWithR:[cc[0] intValue] G:[cc[1] intValue] B:[cc[2] intValue] A:[cc[3] floatValue]];
         }
-
-        if( cgColor ) return (id)color.CGColor;
-        else return color;
+        return color;
     } name:@"rgba"];
 
     NSMutableCharacterSet* hexDigitsSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"aAbBcCdDeEfF"];
     [hexDigitsSet formUnionWithCharacterSet:[NSCharacterSet decimalDigitCharacterSet]];
 
     ParcoaParser* hexColor = [[[Parcoa string:@"#"] keepRight:[Parcoa iss_takeUntilInSet:[hexDigitsSet invertedSet] minCount:6]] transform:^id(id value) {
-        UIColor* color = [UIColor iss_colorWithHexString:value];
-        if( cgColor ) return (id)color.CGColor;
-        else return color;
+        return [UIColor iss_colorWithHexString:value];
     } name:@"hex"];
 
     return @[rgb, rgba, hexColor];
 }
 
-- (id) parsePredefColorValue:(id)value cgColor:(BOOL)cgColor {
+- (UIColor*) parsePredefColorValue:(id)value {
     UIColor* color = [UIColor magentaColor];
     NSString* colorString = [[value iss_trimQuotes] lowercaseString];
     if( ![colorString hasSuffix:@"color"] ) colorString = [colorString stringByAppendingString:@"color"];
@@ -166,11 +160,10 @@
         color = [UIColor performSelector:colorSelector];
     }
 
-    if( cgColor ) return (id)color.CGColor;
-    else return color;
+    return color;
 }
 
-- (ParcoaParser*) colorFunctionParser:(BOOL)cgColor colorValueParsers:(NSArray*)colorValueParsers preDefColorParser:(ParcoaParser*)preDefColorParser {
+- (ParcoaParser*) colorFunctionParser:(NSArray*)colorValueParsers preDefColorParser:(ParcoaParser*)preDefColorParser {
     ParcoaParserForward* colorFunctionParserProxy = [ParcoaParserForward forwardWithName:@"colorFunctionParserProxy" summary:@""];
     colorValueParsers = [@[colorFunctionParserProxy] arrayByAddingObjectsFromArray:colorValueParsers];
     colorValueParsers = [colorValueParsers arrayByAddingObject:preDefColorParser];
@@ -187,25 +180,21 @@
                 else if( [@"fadeout" iss_isEqualIgnoreCase:value[0]] ) color = [value[2] iss_colorByIncreasingAlphaBy:-[value[4] floatValue]];
                 else color = value[2];
             }
-
-            if( cgColor ) return (id)color.CGColor;
-            else return color;
+            return color;
     } name:@"colorFunctionParser"];
     [colorFunctionParserProxy setImplementation:colorFunctionParser];
 
     return colorFunctionParserProxy;
 }
 
-- (NSArray*) colorCatchAllParser:(BOOL)cgColor imageParser:(ParcoaParser*)imageParser {
+- (NSArray*) colorCatchAllParser:(ParcoaParser*)imageParser {
     // Parses an arbitrary text string as a predefined color (i.e. redColor) or pattern image from file name - in that order
     ParcoaParser* catchAll = [anyName transform:^id(id value) {
-        id color = [self parsePredefColorValue:value cgColor:cgColor];
+        id color = [self parsePredefColorValue:value];
         if( !color ) {
             UIImage* image = [self imageNamed:value];
-            if( image && cgColor ) return (id)[UIColor colorWithPatternImage:image].CGColor;
-            else if( image ) return [UIColor colorWithPatternImage:image];
-            if( cgColor ) return (id)[UIColor magentaColor].CGColor;
-            else return [UIColor magentaColor];
+            if( image ) return [UIColor colorWithPatternImage:image];
+            return [UIColor magentaColor];
         } else {
             return color;
         }
@@ -215,9 +204,7 @@
     ParcoaParser* patternImageParser = [imageParser transform:^id(id value) {
         UIColor* color = [UIColor magentaColor];
         if( [value isKindOfClass:UIImage.class] ) color = [UIColor colorWithPatternImage:value];
-
-        if( cgColor ) return (id)color.CGColor;
-        else return color;
+        return color;
     } name:@"patternImage"];
 
     return @[patternImageParser, catchAll];
@@ -228,11 +215,11 @@
 
 - (ParcoaParser*) imageParsers:(ParcoaParser*)imageParser colorValueParsers:(NSArray*)colorValueParsers {
     ParcoaParser* preDefColorParser = [identifier transform:^id(id value) {
-        return [self parsePredefColorValue:value cgColor:NO];
+        return [self parsePredefColorValue:value];
     } name:@"preDefColorParser"];
 
     // Parse color functions as UIImage
-    ParcoaParser* colorFunctionParser = [self colorFunctionParser:NO colorValueParsers:colorValueParsers preDefColorParser:preDefColorParser];
+    ParcoaParser* colorFunctionParser = [self colorFunctionParser:colorValueParsers preDefColorParser:preDefColorParser];
     ParcoaParser* colorFunctionAsImage = [colorFunctionParser transform:^id(id value) {
         return [value iss_asUIImage];
     } name:@"colorFunctionAsImage"];
@@ -248,7 +235,7 @@
         value = [value iss_trimQuotes];
         UIImage* image = [self imageNamed:value];
         if( !image ) {
-            UIColor* color = [self parsePredefColorValue:value cgColor:NO];
+            UIColor* color = [self parsePredefColorValue:value];
             if( color ) return [color iss_asUIImage];
             else return [NSNull null];
         } else {
@@ -259,12 +246,12 @@
     return [Parcoa choice:@[imageParser, colorFunctionAsImage, imageAsColor, catchAll]];
 }
 
-- (ParcoaParser*) colorParser:(BOOL)cgColor colorValueParsers:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {
+- (ParcoaParser*) colorParser:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {
     ParcoaParser* preDefColorParser = [identifier transform:^id(id value) {
-        return [self parsePredefColorValue:value cgColor:cgColor];
+        return [self parsePredefColorValue:value];
     } name:@"preDefColorParser"];
 
-    ParcoaParser* colorFunctionParser = [self colorFunctionParser:cgColor colorValueParsers:colorValueParsers preDefColorParser:preDefColorParser];
+    ParcoaParser* colorFunctionParser = [self colorFunctionParser:colorValueParsers preDefColorParser:preDefColorParser];
     colorValueParsers = [@[colorFunctionParser] arrayByAddingObjectsFromArray:colorValueParsers];
 
     ParcoaParser* gradientParser = [[Parcoa iss_twoParameterFunctionParserWithName:@"gradient" leftParameterParser:[Parcoa choice:colorValueParsers] rightParameterParser:[Parcoa choice:colorValueParsers]] transform:^id(id value) {
@@ -278,9 +265,7 @@
                     color = [color1 iss_topDownLinearGradientToColor:color2 height:frame.size.height];
                 } else color = [UIColor clearColor];
             }
-
-            if( cgColor ) return (id)color.CGColor;
-            else return color;
+            return color;
         }];
     } name:@"gradient"];
 
@@ -402,7 +387,11 @@
     }
     // Other properties
     else {
-        return [self parsePropertyValue:propertyValue ofType:p.type];
+        id value = [self parsePropertyValue:propertyValue ofType:p.type];
+        if( p.type == ISSPropertyTypeCGColor ) {
+            value = (id)((UIColor*)value).CGColor;
+        }
+        return value;
     }
     return nil;
 }
@@ -806,17 +795,18 @@
         } name:@"image"];
 
 
-    // UIColor
-    NSArray* colorCatchAllParsers = [self colorCatchAllParser:NO imageParser:imageParser];
-    NSArray* uiColorValueParsers = [self basicColorValueParsers:NO];
-    ParcoaParser* colorPropertyParser = [self colorParser:NO colorValueParsers:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
+    // UIColor / CGColor
+    NSArray* colorCatchAllParsers = [self colorCatchAllParser:imageParser];
+    NSArray* uiColorValueParsers = [self basicColorValueParsers];
+    ParcoaParser* colorPropertyParser = [self colorParser:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
     typeToParser[@(ISSPropertyTypeColor)] = colorPropertyParser;
+    typeToParser[@(ISSPropertyTypeCGColor)] = colorPropertyParser;
 
     // CGColor
-    colorCatchAllParsers = [self colorCatchAllParser:YES imageParser:imageParser];
-    NSArray* cgColorValueParsers = [self basicColorValueParsers:YES];
-    ParcoaParser* cgColorPropertyParser = [self colorParser:YES colorValueParsers:cgColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
-    typeToParser[@(ISSPropertyTypeCGColor)] = cgColorPropertyParser;
+//    colorCatchAllParsers = [self colorCatchAllParser:imageParser];
+//    NSArray* cgColorValueParsers = [self basicColorValueParsers];
+//    ParcoaParser* cgColorPropertyParser = [self colorParser:cgColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
+//    typeToParser[@(ISSPropertyTypeCGColor)] = cgColorPropertyParser;
 
 
     // UIImage (2)
