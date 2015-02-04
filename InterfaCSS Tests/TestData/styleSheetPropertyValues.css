@@ -97,6 +97,12 @@
 .font5 {
     font: HelveticaNeue-Medium 5;
 }
+.font6 {
+    font: "Times New Roman" 5;
+}
+.font7 {
+    font: 'Times New Roman' 5;
+}
 
 
 .image1 {

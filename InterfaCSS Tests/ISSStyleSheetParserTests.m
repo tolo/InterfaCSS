@@ -495,6 +495,12 @@
 
     value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font5"] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:5], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font6"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font7"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {
