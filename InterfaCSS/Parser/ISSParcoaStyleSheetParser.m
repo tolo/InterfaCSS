@@ -852,7 +852,7 @@
     // Ex: smaller(@font, 1)
     // Ex: fontWithSize(@font, 12)
     ParcoaParser* commaOrSpace = [[Parcoa choice:@[[Parcoa space], comma]] many1];
-    ParcoaParser* fontValueParser = anyName;
+    ParcoaParser* fontValueParser = [Parcoa choice:@[quotedString, anyName]];
     fontValueParser = [[fontValueParser keepLeft:commaOrSpace] then:fontValueParser];
     fontValueParser = [fontValueParser transform:^id(id value) {
         CGFloat fontSize = [UIFont systemFontSize];
