@@ -55,7 +55,7 @@ Load an auto-refreshable stylesheet from a (file/web) URL, and watch how the UI 
 ### InterfaCSS also ...
 
 * Free of dodgy Objective-C runtime manipulations* (such as method swizzling and whatnot), something that may or may not make you sleep better at night.
-    > **\*** *The only runtime manipulation used is a single associated object reference on NSObject, used to associate styling information with UI elements*
+    > *** *The only runtime manipulation used is a single associated object reference on NSObject, used to associate styling information with UI elements*
 
 * Using a CSS parser based upon the amazing parser combinator framework [Parcoa](https://github.com/brotchie/Parcoa).
 
