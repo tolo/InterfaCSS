@@ -49,7 +49,7 @@
 @property (nonatomic, strong) NSString* customStylingIdentityISS;
 
 /** An optional element identifier for this view. May be used to find a view using the method `subviewWithElementId:`. */
-@property (nonatomic, strong) NSString* elementId;
+@property (nonatomic, strong) NSString* elementIdISS;
 
 /** Flag indicating if styling is enabled for this view. */
 @property (nonatomic, readonly) BOOL stylingEnabledISS;

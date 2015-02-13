@@ -59,12 +59,12 @@
     return [[InterfaCSS interfaCSS] customStylingIdentityForUIElement:self];
 }
 
-- (NSString*) elementId {
+- (NSString*) elementIdISS {
     return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId;
 }
 
-- (void) setElementId:(NSString*)elementId {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId = elementId;
+- (void) setElementIdISS:(NSString*)elementIdISS {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId = elementIdISS;
 }
 
 
