@@ -9,10 +9,28 @@
 
 #import "ISSUIElementDetails.h"
 
+#import <objc/runtime.h>
 #import "ISSPropertyRegistry.h"
+#import "ISSRelativeRectValue.h"
 
-const NSString* ISSIndexPathKey = @"ISSIndexPathKey";
-const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
+NSString* const ISSIndexPathKey = @"ISSIndexPathKey";
+NSString* const ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
+NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElementDetailsResetCachedDataNotification";
+
+
+@implementation NSObject (ISSUIElementDetails)
+
+@dynamic elementDetailsISS;
+
+- (void) setElementDetailsISS:(ISSUIElementDetails*)elementDetailsISS {
+     objc_setAssociatedObject(self, @selector(elementDetailsISS), elementDetailsISS, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (ISSUIElementDetails*) elementDetailsISS {
+    return objc_getAssociatedObject(self, @selector(elementDetailsISS));
+}
+
+@end
 
 
 @interface ISSUIElementDetails ()
@@ -44,9 +62,16 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
         if( !_canonicalType ) _canonicalType = [uiElement class];
 
         [self updateElementStyleIdentity];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetCachedData) name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
     }
     return self;
 }
+
+- (void) dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
+}
+
 
 #pragma mark - NSCopying
 
@@ -131,12 +156,18 @@ const NSString* ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKe
     return self.usingCustomElementStyleIdentity || self.ancestorUsesCustomElementStyleIdentity || self.addedToViewHierarchy;
 }
 
++ (void) resetAllCachedData {
+    [[NSNotificationCenter defaultCenter] postNotificationName:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
+}
+
 - (void) resetCachedData {
+    // Identity and structure:
     if( !self.usingCustomElementStyleIdentity ) self.elementStyleIdentity = nil;
-    self.stylingApplied = NO;
     self.ancestorUsesCustomElementStyleIdentity = NO;
-    self.cachedDeclarations = nil;
     _parentViewController = nil;
+    // Cached styles:
+    self.stylingApplied = NO;
+    self.cachedDeclarations = nil;
 }
 
 - (UIView*) view {

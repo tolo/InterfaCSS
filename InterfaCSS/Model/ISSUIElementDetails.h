@@ -9,8 +9,15 @@
 
 #import "InterfaCSS.h"
 
-extern const NSString* ISSIndexPathKey;
-extern const NSString* ISSPrototypeViewInitializedKey;
+@class ISSRelativeRectValue;
+
+extern NSString* const ISSIndexPathKey;
+extern NSString* const ISSPrototypeViewInitializedKey;
+
+
+@interface NSObject (ISSUIElementDetails)
+@property (nonatomic, strong) ISSUIElementDetails* elementDetailsISS;
+@end
 
 
 // InterfaCSS class extension
@@ -56,6 +63,7 @@ extern const NSString* ISSPrototypeViewInitializedKey;
 
 - (id) initWithUIElement:(id)uiElement;
 
++ (void) resetAllCachedData;
 - (void) resetCachedData;
 
 - (void) setCustomElementStyleIdentity:(NSString*)identityPath;

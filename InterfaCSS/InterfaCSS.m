@@ -39,10 +39,7 @@ static InterfaCSS* singleton = nil;
 
 @property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
 
-@property (nonatomic, strong) NSMapTable* trackedElements; // Pointer address (NSValue) -> UI element (weak ref)
-@property (nonatomic, strong) NSMutableDictionary* detailsForElements; // Pointer address (NSValue) -> ISSUIElementDetails
-
-@property (nonatomic, strong) NSMapTable* cachedStyleDeclarationsForElements; // Canonical element styling identity (NSString) -> NSMutableArray
+@property (nonatomic, strong) NSMapTable* cachedStyleDeclarationsForElements; // Weak canonical element styling identity (NSString) -> NSMutableArray
 
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
 
@@ -55,7 +52,6 @@ static InterfaCSS* singleton = nil;
 
 @implementation InterfaCSS {
     BOOL deviceIsRotating;
-    BOOL cleanUpTrackedElementsScheduled;
 }
 
 
@@ -79,9 +75,9 @@ static InterfaCSS* singleton = nil;
     singleton.parser = nil;
     [singleton.styleSheets removeAllObjects];
     [singleton.styleSheetsVariables removeAllObjects];
-    [singleton.detailsForElements removeAllObjects];
-    [singleton.cachedStyleDeclarationsForElements removeAllObjects];
     [singleton.prototypes removeAllObjects];
+
+    [singleton clearAllCachedStyles];
 
     [singleton disableAutoRefreshTimer];
 }
@@ -100,8 +96,6 @@ static InterfaCSS* singleton = nil;
         _styleSheets = [[NSMutableArray alloc] init];
         _styleSheetsVariables = [[NSMutableDictionary alloc] init];
 
-        _trackedElements = [NSMapTable strongToWeakObjectsMapTable];
-        _detailsForElements = [NSMutableDictionary dictionary];
         _cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
         _prototypes = [[NSMutableDictionary alloc] init];
 
@@ -123,35 +117,6 @@ static InterfaCSS* singleton = nil;
 
 - (void) memoryWarning:(NSNotification*)notification {
     [self clearAllCachedStyles];
-    [self cleanUpTrackedElements];
-}
-
-- (void) cleanUpTrackedElements {
-    cleanUpTrackedElementsScheduled = NO;
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:_cmd object:nil];
-
-    NSMutableSet* stillValid = [NSMutableSet set];
-
-    for(NSString* key in self.trackedElements.keyEnumerator) {
-        if( [self.trackedElements objectForKey:key] ) [stillValid addObject:key];
-    }
-
-    if( stillValid.count == self.detailsForElements.count ) return;
-
-    for(NSString* key in self.detailsForElements.allKeys) {
-        if( ![stillValid containsObject:key] ) {
-            ISSLogTrace(@"Removing detailsForElements - %@", self.detailsForElements[key]);
-            [self.detailsForElements removeObjectForKey:key];
-            [self.trackedElements removeObjectForKey:key];
-        }
-    }
-}
-
-- (void) scheduleCleanUpTrackedElements {
-    if( !cleanUpTrackedElementsScheduled ) {
-        cleanUpTrackedElementsScheduled = YES;
-        [self performSelector:@selector(cleanUpTrackedElements) withObject:nil afterDelay:1];
-    }
 }
 
 
@@ -356,17 +321,11 @@ static InterfaCSS* singleton = nil;
 - (ISSUIElementDetailsInterfaCSS*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
 
-    NSValue* key = [NSValue valueWithPointer:(__bridge void*)uiElement];
-    ISSUIElementDetailsInterfaCSS* details = self.detailsForElements[key];
-    if( !details.uiElement ) details = nil; // UIElement has been dealloced and address reused - make sure we don't reuse this invalid ISSUIElementDetails object
+    ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)[uiElement elementDetailsISS];
     if( !details && create ) {
         details = [[ISSUIElementDetailsInterfaCSS alloc] initWithUIElement:uiElement];
-        self.detailsForElements[key] = details;
-        [self.trackedElements setObject:uiElement forKey:key];
+        [uiElement setElementDetailsISS:details];
     }
-
-    // Clean up
-    [self scheduleCleanUpTrackedElements];
 
     return details;
 }
@@ -395,10 +354,11 @@ static InterfaCSS* singleton = nil;
 }
 
 - (void) clearAllCachedStyles {
-    ISSLogTrace(@"Clearing all cached styles");
-    [self.cachedStyleDeclarationsForElements removeAllObjects];
-    for(ISSUIElementDetails* details in [self.detailsForElements objectEnumerator]) {
-        [details resetCachedData];
+    if( self.cachedStyleDeclarationsForElements.count ) {
+        ISSLogTrace(@"Clearing all cached styles");
+        [self.cachedStyleDeclarationsForElements removeAllObjects];
+
+        [ISSUIElementDetails resetAllCachedData];
     }
 }
 
