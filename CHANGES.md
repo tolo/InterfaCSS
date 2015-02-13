@@ -6,6 +6,14 @@
 ### New features & changes
 * Added support for specifying the collection view layout class (via the `layoutClass` attribute) when creating collection views in a view definition file.
 * Added method `elementNameToViewClass` to `ISSViewHierarchyParser`, to make it possible for subclasses to override mapping of tag name to view class.
+* Added support for horizontal and vertical centering of rect values, by using the value `auto` in insets (e.g. left(auto).right(auto)`).
+* Added pseudo classes for user interface idiom (`pad` & `phone`) and size classes (`regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`) ([issue 18](https://github.com/tolo/InterfaCSS/issues/18)). 
+* Added support for chaining pseudo classes.
+* Simplified handling of view related styling data (ISSUIElementDetails) by using associated objects.
+
+### Bug fixes
+* Fixed issue with parsing of CGColor values, when using color functions.
+* Merged fix for incorrect parsing of font names with spaces ([issue 22](https://github.com/tolo/InterfaCSS/issues/22)) added by @tbrannam.
 
 
 ##Version 0.9.12
@@ -26,9 +34,9 @@
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
 * Reduction of excessive cleanup of caches.
-* Added fix for issue with view definition file prototypes (issue #5) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
-* Merged fix for use of incorrect setters for property `attributedTitle` (issue #4), added by @tbrannam.
-* Added support for properly handling custom UITableViewCell/UICollectionViewCell subclasses in ISSViewHierarchyParser (issue #7).
+* Added fix for issue with view definition file prototypes ([issue 5](https://github.com/tolo/InterfaCSS/issues/5)) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
+* Merged fix for use of incorrect setters for property `attributedTitle` ([issue 4](https://github.com/tolo/InterfaCSS/issues/4)), added by @tbrannam.
+* Added support for properly handling custom UITableViewCell/UICollectionViewCell subclasses in ISSViewHierarchyParser ([issue 7](https://github.com/tolo/InterfaCSS/issues/7)).
 
 
 ##Version 0.9.11

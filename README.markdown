@@ -52,11 +52,13 @@ Using a [view builder](#layout), setting up the UI in your view controllers is a
 Load an auto-refreshable stylesheet from a (file/web) URL, and watch how the UI updates itself before your very eyes, without having to wait for those frustrating `compile`/`deploy`/`launch`/`returnToWhereYouWere`-cycles.
 
 
-### InterfaCSS is also ...
+### InterfaCSS also ...
 
-* Completely free of dodgy Objective-C runtime manipulations (such as method swizzling and whatnot), something that may or may not make you sleep better at night.  
+* Free of dodgy Objective-C runtime manipulations* (such as method swizzling and whatnot), something that may or may not make you sleep better at night.
+    > **\*** *The only runtime manipulation used is a single associated object reference on NSObject, used to associate styling information with UI elements*
 
 * Using a CSS parser based upon the amazing parser combinator framework [Parcoa](https://github.com/brotchie/Parcoa).
+
 
 
 
