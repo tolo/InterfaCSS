@@ -11,7 +11,6 @@
 
 #import <objc/runtime.h>
 #import "ISSPropertyRegistry.h"
-#import "ISSRelativeRectValue.h"
 
 NSString* const ISSIndexPathKey = @"ISSIndexPathKey";
 NSString* const ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
