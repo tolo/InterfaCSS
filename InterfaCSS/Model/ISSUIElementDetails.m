@@ -267,6 +267,13 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             *count = toolbar.items.count;
         }
     }
+    else if( [self.uiElement isKindOfClass:UITabBarItem.class] && [self.parentView isKindOfClass:UITabBar.class] ) {
+        UITabBar* tabbar = (UITabBar*)self.parentView;
+        if( tabbar ) {
+            *position = [tabbar.items indexOfObject:self.uiElement];
+            *count = tabbar.items.count;
+        }
+    }
     else if( self.parentView ) {
         ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
         Class uiKitClass = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
