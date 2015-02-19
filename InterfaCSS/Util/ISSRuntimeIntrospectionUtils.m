@@ -17,13 +17,16 @@
 + (SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz {
     unsigned int c = 0;
     Method* methods = class_copyMethodList(object_getClass(clazz), &c);
+    SEL sel = nil;
     for(NSUInteger i=0; i<c; i++) {
         NSString* selectorName = [[NSString alloc] initWithCString:sel_getName(method_getName(methods[i])) encoding:NSUTF8StringEncoding];
         if( [name iss_isEqualIgnoreCase:selectorName] ) {
-            return NSSelectorFromString(selectorName);
+            sel = NSSelectorFromString(selectorName);
+            break;
         }
     }
-    return nil;
+    free(methods);
+    return sel;
 }
 
 + (void) invokeSingleObjectArgumentSelector:(SEL)selector inObject:(id)object parameter:(id)parameter {
