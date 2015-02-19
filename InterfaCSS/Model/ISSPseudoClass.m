@@ -48,7 +48,7 @@ static NSDictionary* stringToPseudoClassType;
             @"firstchild" : @(ISSPseudoClassTypeFirstChild),
             @"lastchild" : @(ISSPseudoClassTypeLastChild),
             @"nthoftype" : @(ISSPseudoClassTypeNthOfType),
-            @"nthlastofyype" : @(ISSPseudoClassTypeNthLastOfType),
+            @"nthlastoftype" : @(ISSPseudoClassTypeNthLastOfType),
             @"onlyoftype" : @(ISSPseudoClassTypeOnlyOfType),
             @"firstoftype" : @(ISSPseudoClassTypeFirstOfType),
             @"lastoftype" : @(ISSPseudoClassTypeLastOfType),
