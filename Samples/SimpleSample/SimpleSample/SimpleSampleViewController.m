@@ -80,12 +80,12 @@
     // Setup notification blocks to get notified when styles are applied to mainButton
     self.mainButton.willApplyStylingBlockISS = ^(NSArray* styles) {
         // Use this block to for instance override which style properties are allowed to be set at the moment.
-        NSLog(@"Will apply styles to mainButton - %lu properties", (unsigned long)styles.count);
+        //NSLog(@"Will apply styles to mainButton - %lu properties", (unsigned long)styles.count);
         return styles;
     };
     self.mainButton.didApplyStylingBlockISS = ^(NSArray* styles) {
         // In this block it's possible to for instance update any derived styling properties, or override values set during styling.
-        NSLog(@"Did apply styles to mainButton - %lu properties", (unsigned long)styles.count);
+        //NSLog(@"Did apply styles to mainButton - %lu properties", (unsigned long)styles.count);
     };
     
     // Apply styling only once as startup to mainButtonTop, then disable automatic re-styling, to make it possible do adjust styling manually in code.
@@ -125,18 +125,31 @@
     } completion:nil];
 }
 
-- (void) willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [self.view applyStylingOnceISS]; // Re-apply styling when interface orientation changes
-}
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 80000
 
 - (void) didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
     
     // Debug log matching styles for self.mainTitleLabel:
-#if DEBUG == 1
     [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
-#endif
 }
+
+#else
+
+- (void) viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    // Debug log matching styles for self.mainTitleLabel:
+    [self iss_logDebug:@"Matching declarations before rotation:"];
+    [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
+    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self iss_logDebug:@"Matching declarations after rotation:"];
+        [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
+    }];
+}
+
+#endif
 
 
 #pragma mark - Actions 
