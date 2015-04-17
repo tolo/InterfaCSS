@@ -254,7 +254,10 @@
     ParcoaParser* colorFunctionParser = [self colorFunctionParser:colorValueParsers preDefColorParser:preDefColorParser];
     colorValueParsers = [@[colorFunctionParser] arrayByAddingObjectsFromArray:colorValueParsers];
 
-    ParcoaParser* gradientParser = [[Parcoa iss_twoParameterFunctionParserWithName:@"gradient" leftParameterParser:[Parcoa choice:colorValueParsers] rightParameterParser:[Parcoa choice:colorValueParsers]] transform:^id(id value) {
+    NSArray* parsers = [[@[ colorFunctionParser ] arrayByAddingObjectsFromArray:colorValueParsers] arrayByAddingObject:preDefColorParser];
+    ParcoaParser* gradientInputColorParsers = [Parcoa choice:parsers];
+
+    ParcoaParser* gradientParser = [[Parcoa iss_twoParameterFunctionParserWithName:@"gradient" leftParameterParser:gradientInputColorParsers rightParameterParser:gradientInputColorParsers] transform:^id(id value) {
         return [ISSLazyValue lazyValueWithBlock:^id(id uiObject) {
             UIColor* color = [UIColor magentaColor];
             if( [uiObject isKindOfClass:UIView.class] ) {
@@ -801,12 +804,6 @@
     ParcoaParser* colorPropertyParser = [self colorParser:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
     typeToParser[@(ISSPropertyTypeColor)] = colorPropertyParser;
     typeToParser[@(ISSPropertyTypeCGColor)] = colorPropertyParser;
-
-    // CGColor
-//    colorCatchAllParsers = [self colorCatchAllParser:imageParser];
-//    NSArray* cgColorValueParsers = [self basicColorValueParsers];
-//    ParcoaParser* cgColorPropertyParser = [self colorParser:cgColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
-//    typeToParser[@(ISSPropertyTypeCGColor)] = cgColorPropertyParser;
 
 
     // UIImage (2)

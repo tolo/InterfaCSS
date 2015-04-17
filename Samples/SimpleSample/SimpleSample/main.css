@@ -52,7 +52,7 @@ UITabBarItem.tab1 {
 
 .simpleSampleMainView { // Root view of SimpleSampleViewController
     autoresizingMask: width height;
-    backgroundColor: gradient(#e7abff, #e4e1e6);
+    backgroundColor: gradient(darken(magenta, 50%), #e4e1e6);
 }
 
 .simpleSampleMainView .mainTitleLabel {
