@@ -963,6 +963,7 @@
         number = [[Parcoa digit] concatMany1];
         ParcoaParser* fraction = [[dot then:number] concat];
         number = [[number then:[Parcoa option:fraction default:@""]] concat];
+        number = [[[Parcoa option:[Parcoa iss_quickUnichar:'-'] default:@""] then:number] concat];
 
         ParcoaParser* singleQuote = [Parcoa iss_quickUnichar:'\''];
         ParcoaParser* notSingleQuote = [Parcoa iss_anythingButUnichar:'\'' escapesEnabled:YES];
