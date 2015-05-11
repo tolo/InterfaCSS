@@ -79,7 +79,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 
 + (ParcoaParser*) iss_stringIgnoringCase:(NSString*)string {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
-        if ( [[input lowercaseString] hasPrefix:string]) {
+        if ( [[input lowercaseString] hasPrefix:[string lowercaseString]] ) {
             return [ParcoaResult ok:string residual:[input substringFromIndex:string.length] expected:[ParcoaExpectation unsatisfiable]];
         } else {
             return [ParcoaResult failWithRemaining:input expectedWithFormat:@"String literal \"%@\"", string];
@@ -260,6 +260,12 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 + (ParcoaParser*) iss_twoParameterFunctionParserWithName:(NSString*)name leftParameterParser:(ParcoaParser*)left rightParameterParser:(ParcoaParser*)right {
     ParcoaParser* parser = [[self iss_stringIgnoringCase:name] then:[self iss_quickUnichar:'(' skipSpace:YES]];
     parser = [[[parser keepRight:left] keepLeft:[self iss_quickUnichar:',' skipSpace:YES]] then:right];
+    return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
+}
+
++ (ParcoaParser*) iss_singleParameterFunctionParserWithName:(NSString*)name parameterParser:(ParcoaParser*)parameterParser {
+    ParcoaParser* parser = [[self iss_stringIgnoringCase:name] then:[self iss_quickUnichar:'(' skipSpace:YES]];
+    parser = [parser keepRight:parameterParser];
     return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
 }
 

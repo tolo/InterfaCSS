@@ -169,10 +169,10 @@
 
 - (void) testStylesheetStructure {
     NSArray* result = [self parseStyleSheet:@"styleSheetStructure"];
-    NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @".class1",
+    NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @"uilabel#identity.class1", @"#identity.class1", @".class1",
                                                                             @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
-                                                                            @"uiview:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
+                                                                            @"uiview:onlychild", @"uiview#identifier.class1:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
                                                                             @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
     
     for (ISSPropertyDeclarations* d in result) {
@@ -184,13 +184,15 @@
         
         ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
         [decl transformValueIfNeeded];
-        if( decl && [decl.propertyValue isEqual:@(0.666f)] ) {
+        if( decl && [decl.propertyValue isEqual:@(0.666)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
                 [expectedSelectors removeObject:selectorDescription];
             } else {
                 NSLog(@"Didn't find: %@", selectorDescription);
             }
-        } else NSLog(@"Didn't find: %@", selectorDescription);
+        } else {
+            NSLog(@"Didn't find: %@", selectorDescription);
+        }
     }
     
     XCTAssertEqual((NSUInteger)0, expectedSelectors.count, @"Not all selectors were found");

@@ -21,14 +21,73 @@
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSRectValue.h"
 #import "ISSPointValue.h"
-#import "ISSLazyValue.h"
 #import "ISSPseudoClass.h"
 #import "InterfaCSS.h"
 #import "ISSPropertyRegistry.h"
 #import "ISSRuntimeIntrospectionUtils.h"
+#import "ISSLayout.h"
 
 
-// Selector chains declaration wrapper class, to keep track of property ordering and of nested declarations
+/* Helper functions */
+
+static NSArray* nonNullElementArray(NSArray* array) {
+    if( [array indexOfObject:[NSNull null]] != NSNotFound ) {
+        NSMutableArray* cleanArray = [NSMutableArray array];
+        for(id entry in array) {
+            if( entry != [NSNull null] ) [cleanArray addObject:entry];
+        }
+        return cleanArray;
+    }
+    return array;
+}
+
+static id elementOrNil(NSArray* array, NSUInteger index) {
+    if( index < array.count ) {
+        id element = array[index];
+        if( element != [NSNull null] ) {
+            if( [element isKindOfClass:NSArray.class] ) return nonNullElementArray(element);
+            return element;
+        }
+    }
+    return nil;
+}
+
+
+/* Helper classes */
+
+
+/**
+ * Placeholder for bad data, to support better error feedback.
+ */
+@interface ISSStyleSheetParserBadData : NSObject
+@property (nonatomic, strong) NSString* badDataDescription;
+@end
+@implementation ISSStyleSheetParserBadData
++ (instancetype) badDataWithDescription:(NSString*)badDataDescription {
+    ISSStyleSheetParserBadData* styleSheetParserBadData = [[self alloc] init];
+    styleSheetParserBadData.badDataDescription = badDataDescription;
+    return styleSheetParserBadData;
+}
+- (NSString*) description {
+    return self.badDataDescription;
+}
+@end
+
+
+/**
+ * ISSLayoutAttributeValue class extension to make targetAttribute writable.
+ */
+@interface ISSLayoutAttributeValue ()
+@property (nonatomic, readwrite) ISSLayoutAttribute targetAttribute;
+@end
+
+/* Flag for indicating that a size to fit should be used for an ISSLayout */
+static NSObject* ISSLayoutAttributeSizeToFitFlag;
+
+
+/**
+ * Selector chains declaration wrapper class, to keep track of property ordering and of nested declarations
+ */
 @interface ISSSelectorChainsDeclaration : NSObject<NSCopying>
 @property (nonatomic, strong, readonly) NSMutableArray* chains;
 @property (nonatomic, strong) NSMutableArray* properties;
@@ -46,8 +105,11 @@
     chainsDeclaration->_chains = self.chains;
     return chainsDeclaration;
 }
-- (NSString*)description {
+- (NSString*) description {
     return [NSString stringWithFormat:@"[%@ - %@]", self.chains, self.properties];
+}
+- (NSString*) displayDescription {
+    return [[[ISSPropertyDeclarations alloc] initWithSelectorChains:self.chains andProperties:nil] displayDescription:NO];
 }
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
@@ -58,11 +120,15 @@
 }
 @end
 
+
+/**
+ * ISSParcoaStyleSheetParser
+ */
 @implementation ISSParcoaStyleSheetParser {
     // Common parsers
-    ParcoaParser *dot, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
+    ParcoaParser *dot, *hash, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
             *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *anythingButControlCharsExceptColon,
-            *identifier, *number, *anyValue, *commentParser, *quotedString;
+            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *anyValue, *commentParser, *quotedString;
 
     NSCharacterSet* validVariableNameSet;
 
@@ -75,6 +141,9 @@
     ParcoaParser* cssParser;
 }
 
++ (void) initialize {
+    ISSLayoutAttributeSizeToFitFlag = [[NSObject alloc] init];
+}
 
 #pragma mark - Enum property parsing
 
@@ -103,7 +172,7 @@
 
 - (id) transformEnumValue:(NSString*)enumValue forProperty:(ISSPropertyDefinition*)p {
     id result = [self enumValueForString:enumValue inProperty:p];
-    if( !result ) [self iss_logWarning:@"Warning! Unrecognized enum value: '%@'", enumValue];
+    if( !result ) [self iss_logWarning:@"Unrecognized enum value: '%@'", enumValue];
     return result;
 }
 
@@ -115,7 +184,7 @@
             NSUInteger constVal = [enumValue unsignedIntegerValue];
             if( result ) result = @([result unsignedIntegerValue] | constVal);
             else result = @(constVal);
-        } else [self iss_logWarning:@"Warning! Unrecognized enum value: '%@'", value];
+        } else [self iss_logWarning:@"Unrecognized enum value: '%@'", value];
     }
     return result;
 }
@@ -463,28 +532,6 @@
     return [Parcoa iss_parseLineUpToInvalidCharactersInString:@"{}"];
 }
 
-- (NSArray*) nonNullElementArray:(NSArray*)array {
-    if( [array indexOfObject:[NSNull null]] != NSNotFound ) {
-        NSMutableArray* cleanArray = [NSMutableArray array];
-        for(id entry in array) {
-            if( entry != [NSNull null] ) [cleanArray addObject:entry];
-        }
-        return cleanArray;
-    }
-    return array;
-}
-
-- (id) elementOrNil:(NSArray*)array index:(NSUInteger)index {
-    if( index < array.count ) {
-        id element = array[index];
-        if( element != [NSNull null] ) {
-            if( [element isKindOfClass:NSArray.class] ) return [self nonNullElementArray:element];
-            return element;
-        }
-    }
-    return nil;
-}
-
 - (UIFont*) fontWithSize:(UIFont*)font size:(CGFloat)size {
     if( [UIFont.class respondsToSelector:@selector(fontWithDescriptor:size:)] ) {
         return [UIFont fontWithDescriptor:font.fontDescriptor size:size];
@@ -518,6 +565,76 @@
     else if( insetIndex == 3 ) [rectValue setRightInset:insetValue relative:relativeInsetValue];
 }
 
+- (ISSLayoutAttributeValue*) layoutAttributeValueForElement:(id)elementId attribute:(id)rawAttribute multiplier:(id)rawMultiplier constant:(id)rawConstant {
+    CGFloat multiplier = rawMultiplier ? (CGFloat)[rawMultiplier doubleValue] : 1.0f;
+    CGFloat constant = (CGFloat)[rawConstant doubleValue];
+
+    // Layout guide:
+    if( [elementId iss_isEqualIgnoreCase:@"guide"] || [elementId iss_isEqualIgnoreCase:@"layoutguide"] ) {
+        return [ISSLayoutAttributeValue valueRelativeToLayoutGuide:[ISSLayout layoutGuideFromString:rawAttribute] multiplier:multiplier constant:constant];
+    }
+    // Relative to parent (can either be specified by using parent/superview or by using a percentage value, in which case elementId is nil):
+    else if( [elementId iss_isEqualIgnoreCase:@"parent"] || [elementId iss_isEqualIgnoreCase:@"superview"] || (!elementId && rawMultiplier != nil) ) {
+        return [ISSLayoutAttributeValue valueRelativeToAttributeInParent:[ISSLayout attributeFromString:rawAttribute] multiplier:multiplier constant:constant];
+    }
+    // Relative to other view:
+    else if( elementId ) {
+        return [ISSLayoutAttributeValue valueRelativeToAttribute:[ISSLayout attributeFromString:rawAttribute] inElement:elementId multiplier:multiplier constant:constant];
+    }
+    // Constant:
+    else {
+        return [ISSLayoutAttributeValue constantValue:constant];
+    }
+}
+
+- (ParcoaParser*) layoutAttributeValueParserForAttributeName:(NSString*)attributeName contentParser:(ParcoaParser*)contentParser {
+    ISSLayoutAttribute attribute = [ISSLayout attributeFromString:attributeName];
+    return [[Parcoa iss_singleParameterFunctionParserWithName:attributeName parameterParser:contentParser] transform:^id(id value) {
+        ISSLayoutAttributeValue* attributeValue = value;
+        attributeValue.targetAttribute = attribute;
+        return attributeValue;
+    } name:[NSString stringWithFormat:@"layoutAttributeValueParser(%@)", attributeName]];
+}
+
+- (void) compoundLayoutAttributeValueParser:(NSArray*)attributeNames contentParser:(ParcoaParser*)contentParser
+                                                       leftAttribute:(ISSLayoutAttribute)leftAttribute rightAttribute:(ISSLayoutAttribute)rightAttribute addToParsers:(NSMutableArray*)parsers {
+    [self compoundLayoutAttributeValueParser:attributeNames contentParser:contentParser leftAttribute:leftAttribute rightAttribute:rightAttribute addToParsers:parsers isSizeToFit:NO];
+}
+
+- (void) compoundLayoutAttributeValueParser:(NSArray*)attributeNames contentParser:(ParcoaParser*)layoutAttributeValueContentParser
+                                                       leftAttribute:(ISSLayoutAttribute)leftAttribute rightAttribute:(ISSLayoutAttribute)rightAttribute addToParsers:(NSMutableArray*)parsers isSizeToFit:(BOOL)sizeToFit {
+    for(NSString* attributeName in attributeNames) {
+        ParcoaParser* parser = [[Parcoa iss_twoParameterFunctionParserWithName:attributeName leftParameterParser:layoutAttributeValueContentParser rightParameterParser:layoutAttributeValueContentParser] transform:^id(id value) {
+            NSArray* values = value;
+            ISSLayoutAttributeValue* attributeValueLeft = values[0];
+            attributeValueLeft.targetAttribute = leftAttribute;
+            ISSLayoutAttributeValue* attributeValueRight = values[1];
+            attributeValueRight.targetAttribute = rightAttribute;
+            if ( sizeToFit ) {
+                return @[ ISSLayoutAttributeSizeToFitFlag, attributeValueLeft, attributeValueRight ];
+            } else {
+                return @[ attributeValueLeft, attributeValueRight ];
+            }
+        } name:[NSString stringWithFormat:@"layoutAttributeValueParserForCompoundAttributeName(%@)", attributeName]];
+
+        [parsers addObject:parser];
+    }
+}
+
+- (void) addLayoutAttributeValue:(id)result layout:(ISSLayout*)layout {
+    if( [result isKindOfClass:NSArray.class] ) { // For compound values (i.e. "size" etc)
+        for(ISSLayoutAttributeValue* attributeValue in (NSArray*)result) {
+            if( attributeValue == ISSLayoutAttributeSizeToFitFlag ) {
+                layout.layoutType = ISSLayoutTypeSizeToFit; // "sizeToFit" used
+            } else {
+                [layout addLayoutAttributeValue:attributeValue];
+            }
+        }
+    } else { // Single attribute: (i.e. "left" etc)
+        [layout addLayoutAttributeValue:result];
+    }
+}
+
 
 #pragma mark - Property parsers setup
 
@@ -537,21 +654,18 @@
     }
 
 
-    // BOOL
+    /** -- BOOL -- **/
     ParcoaParser* boolValueParser = [identifier transform:^id(id value) {
         return @([value boolValue]);
     } name:@"bool"];
     typeToParser[@(ISSPropertyTypeBool)] = boolValueParser;
 
 
-    // Number
-    ParcoaParser* numberValueParser = [number transform:^id(id value) {
-        return @([value floatValue]);
-    } name:@"number"];
-    typeToParser[@(ISSPropertyTypeNumber)] = numberValueParser;
+    /** -- Number -- **/
+    typeToParser[@(ISSPropertyTypeNumber)] = numberValue;
 
 
-    // AttributedString
+    /** -- AttributedString -- **/
     NSMutableDictionary* attributedStringProperties = [NSMutableDictionary dictionary];
     for(ISSPropertyDefinition* def in [[InterfaCSS interfaCSS].propertyRegistry typePropertyDefinitions:ISSPropertyTypeAttributedString]) {
         for(NSString* lowerCaseAlias in def.allNames) {
@@ -597,10 +711,80 @@
     typeToParser[@(ISSPropertyTypeAttributedString)] = attributedStringParser;
 
 
-    // CGRect
+    /** -- ISSLayout -- **/
+    ParcoaParser* asterisk = [[Parcoa iss_quickUnichar:'*'] skipSurroundingSpaces];
+    ParcoaParser* percent = [[Parcoa iss_quickUnichar:'%'] skipSurroundingSpaces];
+
+    ParcoaParser* percentageValue = [[numberValue keepLeft:percent] transform:^id(id value) {
+        return @([value doubleValue] / 100.0);
+    } name:@"percentageValue"];
+    ParcoaParser* multiplierValue = [Parcoa choice:@[percentageValue, numberValue]];
+
+    ParcoaParser* multiplierLeft = [[multiplierValue keepLeft:asterisk] skipSurroundingSpaces];
+    ParcoaParser* multiplierRight = [[asterisk keepRight:multiplierValue] skipSurroundingSpaces];
+
+    ParcoaParser* additionalConstant = [numberValue skipSurroundingSpaces];
+    ParcoaParser* constantOnlyValue = [numberValue skipSurroundingSpaces];
+
+    ParcoaParser* elementAttribute = [[dot keepRight:identifier] skipSurroundingSpaces];
+    ParcoaParser* elementId = [Parcoa choice:@[identifier, quotedIdentifier]];
+
+
+    // A.attr [* 1.5] [+/- 0.5]
+    ParcoaParser* layoutAttributeValueFormat1Parser = [[Parcoa sequential:@[elementId, [Parcoa optional:elementAttribute], [Parcoa optional:multiplierRight], [Parcoa optional:additionalConstant]]] transform:^id(id value) {
+        return [blockSelf layoutAttributeValueForElement:elementOrNil(value, 0) attribute:elementOrNil(value, 1) multiplier:elementOrNil(value, 2) constant:elementOrNil(value, 3)];
+    } name:@"relativeRectValueFormat1Parser"];
+    // 1.5 * A.attr [+/- 0,5]
+    ParcoaParser* layoutAttributeValueFormat2Parser = [[Parcoa sequential:@[multiplierLeft, elementId, [Parcoa optional:elementAttribute], [Parcoa optional:additionalConstant]]] transform:^id(id value) {
+        return [blockSelf layoutAttributeValueForElement:elementOrNil(value, 1) attribute:elementOrNil(value, 2) multiplier:elementOrNil(value, 0) constant:elementOrNil(value, 3)];
+    } name:@"relativeRectValueFormat2Parser"];
+
+    ParcoaParser* parentPercentageValue = [percentageValue transform:^id(id value) { // TODO: Should we really have this...?
+        return [blockSelf layoutAttributeValueForElement:nil attribute:nil multiplier:value constant:@(0)];
+    } name:@"multiplierOrConstant"];
+    ParcoaParser* constantValue = [constantOnlyValue transform:^id(id value) {
+        return [blockSelf layoutAttributeValueForElement:nil attribute:nil multiplier:nil constant:value];
+    } name:@"constantValue"];
+
+    ParcoaParser* layoutAttributeValueContentParser = [Parcoa choice:@[parentPercentageValue, constantValue, layoutAttributeValueFormat1Parser, layoutAttributeValueFormat2Parser]];
+
+    NSMutableArray* layoutAttributeValueParsers = [NSMutableArray array];
+    for(NSString* attributeName in [ISSLayout attributeNames]) {
+        [layoutAttributeValueParsers addObject:[self layoutAttributeValueParserForAttributeName:attributeName contentParser:layoutAttributeValueContentParser]];
+    }
+
+    // Compound attribute parsers
+    {
+        ParcoaParser* cp = layoutAttributeValueContentParser;
+        NSMutableArray* pl =layoutAttributeValueParsers;
+
+        [self compoundLayoutAttributeValueParser:@[ @"size" ] contentParser:cp leftAttribute:ISSLayoutAttributeWidth rightAttribute:ISSLayoutAttributeHeight addToParsers:pl];
+        [self compoundLayoutAttributeValueParser:@[ @"sizeToFit" ] contentParser:cp leftAttribute:ISSLayoutAttributeWidth rightAttribute:ISSLayoutAttributeHeight addToParsers:pl isSizeToFit:YES];
+
+        [self compoundLayoutAttributeValueParser:@[ @"leftTop", @"topLeft", @"origin" ] contentParser:cp leftAttribute:ISSLayoutAttributeLeft rightAttribute:ISSLayoutAttributeTop addToParsers:pl];
+        [self compoundLayoutAttributeValueParser:@[ @"rightTop", @"topRight" ] contentParser:cp leftAttribute:ISSLayoutAttributeRight rightAttribute:ISSLayoutAttributeTop addToParsers:pl];
+        [self compoundLayoutAttributeValueParser:@[ @"leftBottom", @"bottomLeft" ] contentParser:cp leftAttribute:ISSLayoutAttributeLeft rightAttribute:ISSLayoutAttributeBottom addToParsers:pl];
+        [self compoundLayoutAttributeValueParser:@[ @"rightBottom", @"bottomRight" ] contentParser:cp leftAttribute:ISSLayoutAttributeRight rightAttribute:ISSLayoutAttributeBottom addToParsers:pl];
+        [self compoundLayoutAttributeValueParser:@[ @"center" ] contentParser:cp leftAttribute:ISSLayoutAttributeCenterX rightAttribute:ISSLayoutAttributeCenterY addToParsers:pl];
+    }
+
+    // Parse ISSLayout
+    ParcoaParser* layoutParserAttributeSeparator = [[[Parcoa optional:[Parcoa spaces]] then:[Parcoa choice:@[dot, comma]]] then:[Parcoa optional:[Parcoa spaces]]];
+    ParcoaParser* layoutParser = [[[Parcoa choice:layoutAttributeValueParsers] sepBy:layoutParserAttributeSeparator] transform:^id(id values) {
+        ISSLayout* layout = [[ISSLayout alloc] init];
+        for(id value in (NSArray*)values) {
+            [self addLayoutAttributeValue:value layout:layout];
+        }
+        return layout;
+    } name:@"layoutParser"];
+
+    typeToParser[@(ISSPropertyTypeLayout)] = layoutParser;
+
+
+    /** -- CGRect -- **/
     // Ex: rect(0, 0, 320, 480)
     // Ex: size(320, 480)
-    // Ex: size(50%, 70).right(5).top(5)     // TODO: min(50, *).max(500, *), or size(auto [<=50,>=100], 480)
+    // Ex: size(50%, 70).right(5).top(5)
     // Ex: size(50%, 70).insets(0,0,0,0)
     // Ex: parent (=parent(0,0))
     // Ex: parent(10, 10) // dx, dy - CGRectInset
@@ -715,7 +899,7 @@
                 relativeRectParser, rectSizeValueParser]];
 
 
-    // UIOffset
+    /** -- UIOffset -- **/
     ParcoaParser* offsetValueParser = [[Parcoa iss_parameterStringWithPrefix:@"offset"] transform:^id(NSArray* c) {
         if( c.count == 2 ) {
             return [NSValue valueWithUIOffset:UIOffsetMake([c[0] floatValue], [c[1] floatValue])];
@@ -724,7 +908,7 @@
     typeToParser[@(ISSPropertyTypeOffset)] = offsetValueParser;
 
 
-    // CGSize
+    /** -- CGSize -- **/
     ParcoaParser* sizeValueParser = [[Parcoa iss_parameterStringWithPrefix:@"size"] transform:^id(NSArray* c) {
         if( c.count == 2 ) {
             return [NSValue valueWithCGSize:CGSizeMake([c[0] floatValue], [c[1] floatValue])];
@@ -733,7 +917,7 @@
     typeToParser[@(ISSPropertyTypeSize)] = sizeValueParser;
 
 
-    // CGPoint
+    /** -- CGPoint -- **/
     // Ex: point(160, 240)
     // Ex: parent
     // Ex: parent(0, -100)
@@ -768,7 +952,7 @@
             windowCenterRelativeValueParser, windowCenterPointValueParser]];
 
 
-    // UIEdgeInsets
+    /** -- UIEdgeInsets -- **/
     ParcoaParser* insetsValueParser = [[Parcoa iss_parameterStringWithPrefix:@"insets"] transform:^id(NSArray* c) {
         if( c.count == 4 ) {
             return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake([c[0] floatValue], [c[1] floatValue], [c[2] floatValue], [c[3] floatValue])];
@@ -777,7 +961,7 @@
     typeToParser[@(ISSPropertyTypeEdgeInsets)] = insetsValueParser;
 
 
-    // UIImage (1)
+    /** -- UIImage (1) -- **/
     // Ex: image.png
     // Ex: image(image.png);
     // Ex: image(image.png, 1, 2);
@@ -798,7 +982,7 @@
         } name:@"image"];
 
 
-    // UIColor / CGColor
+    /** -- UIColor / CGColor -- **/
     NSArray* colorCatchAllParsers = [self colorCatchAllParser:imageParser];
     NSArray* uiColorValueParsers = [self basicColorValueParsers];
     ParcoaParser* colorPropertyParser = [self colorParser:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
@@ -806,12 +990,12 @@
     typeToParser[@(ISSPropertyTypeCGColor)] = colorPropertyParser;
 
 
-    // UIImage (2)
+    /** -- UIImage (2) -- **/
     ParcoaParser* imageParsers = [self imageParsers:imageParser colorValueParsers:uiColorValueParsers];
     typeToParser[@(ISSPropertyTypeImage)] = imageParsers;
 
 
-    // CGAffineTransform
+    /** -- CGAffineTransform -- **/
     // Ex: rotate(90) scale(2,2) translate(100,100);
     ParcoaParser* rotateValueParser = [[Parcoa iss_parameterStringWithPrefix:@"rotate"] transform:^id(NSArray* values) {
             CGFloat angle = [[values firstObject] floatValue];
@@ -843,7 +1027,7 @@
     typeToParser[@(ISSPropertyTypeTransform)] = transformValuesParser;
 
 
-    // UIFont
+    /** -- UIFont -- **/
     // Ex: Helvetica 12
     // Ex: bigger(@font, 1)
     // Ex: smaller(@font, 1)
@@ -876,7 +1060,7 @@
     } name:@"font"];
 
     ParcoaParser* fontFunctionParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES],
-        fontValueParser, [Parcoa iss_quickUnichar:',' skipSpace:YES], number, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
+        fontValueParser, [Parcoa iss_quickUnichar:',' skipSpace:YES], plainNumber, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
             if( [value[2] isKindOfClass:UIFont.class] ) {
                 if( [@"bigger" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[(UIFont*)value[2] pointSize] + [value[4] floatValue]];
                 else if( [@"smaller" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[(UIFont*)value[2] pointSize] - [value[4] floatValue]];
@@ -889,19 +1073,19 @@
     typeToParser[@(ISSPropertyTypeFont)] = [Parcoa choice:@[fontFunctionParser, fontValueParser]];
 
 
-    // Enums
+    /** -- Enums -- **/
     enumValueParser = identifier;
     enumBitMaskValueParser = [identifier sepBy:commaOrSpace];
 
-    
-    // Unrecognized line
-    ParcoaParser* unrecognizedLine = [[self unrecognizedLineParser] transform:^id(id value) {
-        if( [value iss_hasData] ) ISSLogWarning(@"Unrecognized property line: '%@'", [value iss_trim]);
-        return [NSNull null];
-    } name:@"unrecognizedLine"];
-    
 
-    // Property pair
+    /** -- Unrecognized line -- **/
+    ParcoaParser* unrecognizedLine = [[self unrecognizedLineParser] transform:^id(id value) {
+        if( [value iss_hasData] ) return [ISSStyleSheetParserBadData badDataWithDescription:[NSString stringWithFormat:@"Unrecognized property line: '%@'", [value iss_trim]]];
+        else return [NSNull null];
+    } name:@"unrecognizedLine"];
+
+
+    /** -- Property pair -- **/
     ParcoaParser* propertyValueCombined = [[Parcoa sequential:@[quotedString, anythingButControlCharsExceptColon]] concat];
     ParcoaParser* propertyValue = [Parcoa choice:@[propertyValueCombined, quotedString, anythingButControlCharsExceptColon]];
     ParcoaParser* propertyPairParser = [[[anythingButControlChars keepLeft:propertyNameValueSeparator] then:[propertyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
@@ -913,8 +1097,7 @@
     NSMutableCharacterSet* bracesSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"{}"];
     ParcoaParser* anythingButBraces = [Parcoa iss_takeUntilInSet:bracesSet minCount:1];
     ParcoaParser* unsupportedNestedRulesetParser = [[anythingButBraces then:[anythingButBraces between:openBraceSkipSpace and:closeBraceSkipSpace]] transform:^id(id value) {
-        ISSLogWarning(@"Unsupported nested ruleset: '%@'", value);
-        return [NSNull null];
+        return [ISSStyleSheetParserBadData badDataWithDescription:[NSString stringWithFormat:@"Unsupported nested ruleset: '%@'", value]];
     } name:@"unsupportedNestedRuleset"];
 
     // Create forward declaration for nested ruleset/declarations parser
@@ -940,10 +1123,10 @@
 
 - (id) init {
     if ( (self = [super init]) ) {
-        __weak ISSParcoaStyleSheetParser* blockSelf = self;
 
-        // Common parsers
+        /** Common parsers **/
         dot = [Parcoa iss_quickUnichar:'.'];
+        hash = [Parcoa iss_quickUnichar:'#'];
         ParcoaParser* colon = [Parcoa iss_quickUnichar:':'];
         semiColonSkipSpace = [Parcoa iss_quickUnichar:';' skipSpace:YES];
         comma = [Parcoa iss_quickUnichar:','];
@@ -960,9 +1143,19 @@
         identifier = [Parcoa iss_validIdentifierChars:1];
         anyValue = untilSemiColon;
 
-        number = [[Parcoa digit] concatMany1];
-        ParcoaParser* fraction = [[dot then:number] concat];
-        number = [[number then:[Parcoa option:fraction default:@""]] concat];
+        plainNumber = [[Parcoa digit] concatMany1];
+        ParcoaParser* fraction = [[dot then:plainNumber] concat];
+        plainNumber = [[plainNumber then:[Parcoa option:fraction default:@""]] concat];
+        ParcoaParser* plus = [[Parcoa iss_quickUnichar:'+'] skipSurroundingSpaces];
+        ParcoaParser* minus = [[Parcoa iss_quickUnichar:'-'] skipSurroundingSpaces];
+        ParcoaParser* negativeNumber = [[minus keepRight:plainNumber] transform:^id(id value) {
+            return @(-[value doubleValue]);
+        } name:@"negativeNumber"];
+        ParcoaParser* positiveNumber = [plus keepRight:plainNumber];
+        positiveNumber = [[Parcoa choice:@[positiveNumber, plainNumber]] transform:^id(id value) {
+            return @([value doubleValue]);
+        } name:@"positiveNumber"];
+        numberValue = [Parcoa choice:@[negativeNumber, positiveNumber]];
 
         ParcoaParser* singleQuote = [Parcoa iss_quickUnichar:'\''];
         ParcoaParser* notSingleQuote = [Parcoa iss_anythingButUnichar:'\'' escapesEnabled:YES];
@@ -977,16 +1170,17 @@
         } name:@"doubleQuotedString"];
 
         quotedString = [Parcoa choice:@[singleQuotedString, doubleQuotedString]];
+        quotedIdentifier = [[[singleQuote keepRight:identifier] keepLeft:singleQuote] or:[[doubleQuote keepRight:identifier] keepLeft:doubleQuote]];
 
 
-        // Comments
+        /** Comments **/
         commentParser = [[Parcoa iss_commentParser] transform:^id(id value) {
             ISSLogTrace(@"Comment: %@", [value iss_trim]);
             return [NSNull null];
         } name:@"commentParser"];
 
 
-        // Variables
+        /** Variables **/
         validVariableNameSet = [Parcoa iss_validIdentifierCharsSet];
         ParcoaParser* variableParser = [[[[[[Parcoa iss_quickUnichar:'@'] keepRight:[identifier concatMany1]] skipSurroundingSpaces] keepLeft:propertyNameValueSeparator] then:[anyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
             [[InterfaCSS interfaCSS] setValue:value[1] forStyleSheetVariableWithName:value[0]];
@@ -994,27 +1188,31 @@
         } name:@"variableParser"];
 
 
-        // Selectors
+        /** Selectors **/
+        // Basic selector fragment parsers:
         ParcoaParser* typeName = [Parcoa choice:@[identifier, [Parcoa iss_quickUnichar:'*']]];
         ParcoaParser* classNameSelector = [dot keepRight:identifier];
+        ParcoaParser* elementIdSelector = [hash keepRight:identifier];
+
+        // Pseudo class parsers:
         ParcoaParser* plusOrMinus = [Parcoa choice:@[ [Parcoa iss_quickUnichar:'+'], [Parcoa iss_quickUnichar:'-']]];
         ParcoaParser* pseudoClassParameterParserFull = [[Parcoa sequential:@[
-                openParen, [Parcoa spaces], [Parcoa optional:plusOrMinus], [Parcoa optional:number], [Parcoa iss_quickUnichar:'n'], [Parcoa spaces],
-                plusOrMinus, [Parcoa spaces], number, [Parcoa spaces], closeParen]]
+                openParen, [Parcoa spaces], [Parcoa optional:plusOrMinus], [Parcoa optional:plainNumber], [Parcoa iss_quickUnichar:'n'], [Parcoa spaces],
+                plusOrMinus, [Parcoa spaces], plainNumber, [Parcoa spaces], closeParen]]
         transform:^id(id value) {
-            NSString* aModifier = [blockSelf elementOrNil:value index:2] ?: @"";
-            NSString* aValue = [blockSelf elementOrNil:value index:3] ?: @"1";
+            NSString* aModifier = elementOrNil(value, 2) ?: @"";
+            NSString* aValue = elementOrNil(value, 3) ?: @"1";
             NSInteger a = [[aModifier stringByAppendingString:aValue] integerValue];
-            NSString* bModifier = [blockSelf elementOrNil:value index:6] ?: @"";
-            NSString* bValue = [blockSelf elementOrNil:value index:8];
+            NSString* bModifier = elementOrNil(value, 6) ?: @"";
+            NSString* bValue = elementOrNil(value, 8);
             NSInteger b = [[bModifier stringByAppendingString:bValue] integerValue];
             return @[@(a), @(b)];
         } name:@"pseudoClassParameterFull"];
         ParcoaParser* pseudoClassParameterParserAN = [[Parcoa sequential:@[
-                openParen, [Parcoa spaces], [Parcoa optional:plusOrMinus], [Parcoa optional:number], [Parcoa iss_quickUnichar:'n'], [Parcoa spaces], closeParen]]
+                openParen, [Parcoa spaces], [Parcoa optional:plusOrMinus], [Parcoa optional:plainNumber], [Parcoa iss_quickUnichar:'n'], [Parcoa spaces], closeParen]]
         transform:^id(id value) {
-            NSString* aModifier = [blockSelf elementOrNil:value index:2] ?: @"";
-            NSString* aValue = [blockSelf elementOrNil:value index:3] ?: @"1";
+            NSString* aModifier = elementOrNil(value, 2) ?: @"";
+            NSString* aValue = elementOrNil(value, 3) ?: @"1";
             NSInteger a = [[aModifier stringByAppendingString:aValue] integerValue];
             return @[@(a), @0];
         } name:@"pseudoClassParameterAN"];
@@ -1032,9 +1230,9 @@
         ParcoaParser* pseudoClassParameterParsers = [Parcoa choice:@[pseudoClassParameterParserFull, pseudoClassParameterParserAN, pseudoClassParameterParserEven, pseudoClassParameterParserOdd]];
 
         ParcoaParser* pseudoClassSelector = [[[Parcoa sequential:@[colon, identifier, [Parcoa optional:pseudoClassParameterParsers] ]] transform:^id(id value) {
-            NSString* pseudoClassName = [blockSelf elementOrNil:value index:1] ?: @"";
+            NSString* pseudoClassName = elementOrNil(value, 1) ?: @"";
             pseudoClassName = [pseudoClassName stringByReplacingOccurrencesOfString:@"-" withString:@""];
-            NSArray* p = [blockSelf elementOrNil:value index:2] ?: @[@1, @0];
+            NSArray* p = elementOrNil(value, 2) ?: @[@1, @0];
             NSInteger a = [p[0] integerValue];
             NSInteger b = [p[1] integerValue];
 
@@ -1047,22 +1245,55 @@
             }
         } name:@"pseudoClass"] many];
 
-        ParcoaParser* typeSelector = [[Parcoa sequential:@[
-                typeName, [Parcoa optional:classNameSelector], [Parcoa optional:pseudoClassSelector],
-        ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:[blockSelf elementOrNil:value index:0] styleClass:[blockSelf elementOrNil:value index:1] pseudoClasses:[blockSelf elementOrNil:value index:2]];
+
+        /* Actual selectors parsers: */
+
+        // type #id .class [:pseudo]
+        ParcoaParser* typeSelector1 = [[Parcoa sequential:@[ typeName, elementIdSelector, classNameSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) elementId:elementOrNil(value, 1) styleClass:elementOrNil(value, 2) pseudoClasses:elementOrNil(value, 3)];
             return selector ?: [NSNull null];
-        } name:@"typeAndClassSelector"];
+        } name:@"typeSelector1"];
 
-        ParcoaParser* classSelector = [[Parcoa sequential:@[
-                classNameSelector, [Parcoa optional:pseudoClassSelector],
-        ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:nil styleClass:[blockSelf elementOrNil:value index:0] pseudoClasses:[blockSelf elementOrNil:value index:1]];
+        // type #id [:pseudo]
+        ParcoaParser* typeSelector2 = [[Parcoa sequential:@[ typeName, elementIdSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) elementId:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
             return selector ?: [NSNull null];
-        } name:@"typeAndClassSelector"];
+        } name:@"typeSelector2"];
 
-        ParcoaParser* simpleSelector = [Parcoa choice:@[classSelector, typeSelector]];
+        // type .class [:pseudo]
+        ParcoaParser* typeSelector3 = [[Parcoa sequential:@[ typeName, classNameSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) styleClass:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
+            return selector ?: [NSNull null];
+        } name:@"typeSelector3"];
 
+        // type [:pseudo]
+        ParcoaParser* typeSelector4 = [[Parcoa sequential:@[ typeName, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) styleClass:nil pseudoClasses:elementOrNil(value, 1)];
+            return selector ?: [NSNull null];
+        } name:@"typeSelector4"];
+
+        // #id .class [:pseudo]
+        ParcoaParser* elementSelector1 = [[Parcoa sequential:@[ elementIdSelector, classNameSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:nil elementId:elementOrNil(value, 0) styleClass:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
+            return selector ?: [NSNull null];
+        } name:@"elementSelector1"];
+
+        // #id [:pseudo]
+        ParcoaParser* elementSelector2 = [[Parcoa sequential:@[ elementIdSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:nil elementId:elementOrNil(value, 0) styleClass:nil pseudoClasses:elementOrNil(value, 1)];
+            return selector ?: [NSNull null];
+        } name:@"elementSelector2"];
+
+        // .class [:pseudo]
+        ParcoaParser* classSelector = [[Parcoa sequential:@[ classNameSelector, [Parcoa optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:nil styleClass:elementOrNil(value, 0) pseudoClasses:elementOrNil(value, 1)];
+            return selector ?: [NSNull null];
+        } name:@"classSelector"];
+
+        ParcoaParser* simpleSelector = [Parcoa choice:@[typeSelector1, typeSelector2, typeSelector3, typeSelector4, elementSelector1, elementSelector2, classSelector]];
+
+
+        // Selector combinator parsers:
         ParcoaParser* descendantCombinator = [[[Parcoa space] many1] transform:^id(id value) {
             return @(ISSSelectorCombinatorDescendant);
         } name:@"descendantCombinator"];
@@ -1077,11 +1308,11 @@
         } name:@"generalSiblingCombinator"];
         ParcoaParser* combinators = [Parcoa choice:@[generalSiblingCombinator, adjacentSiblingCombinator, childCombinator, descendantCombinator]];
 
+        // Selector chain parsers:
         ParcoaParser* selectorChain = [[simpleSelector sepBy1Keep:combinators] transform:^id(id value) {
             id result = [ISSSelectorChain selectorChainWithComponents:value];
             if( !result ) {
-                ISSLogWarning(@"Invalid selector chain: %@", value);
-                return [NSNull null];
+                return [ISSStyleSheetParserBadData badDataWithDescription:[NSString stringWithFormat:@"Invalid selector chain: %@", value]];
             }
             else return result;
         } name:@"selectorChain"];
@@ -1091,12 +1322,11 @@
             return [ISSSelectorChainsDeclaration selectorChainsWithArray:value];
         } name:@"selectorsChainsDeclaration"];
 
-
-        // Properties
+        /** Properties **/
         transformedValueCache = [[NSMutableDictionary alloc] init];
         ParcoaParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclaration];
 
-        // Ruleset
+        /** Ruleset **/
         ParcoaParser* rulesetParser = [[selectorsChainsDeclaration then:[propertyDeclarations between:openBraceSkipSpace and:closeBraceSkipSpace]] transform:^id(id value) {
             ISSSelectorChainsDeclaration* selectorChainsDeclaration = value[0];
             selectorChainsDeclaration.properties = value[1];
@@ -1104,10 +1334,10 @@
         } name:@"rulesetParser"];
 
 
-         // Unrecognized content
+        /** Unrecognized content **/
         ParcoaParser* unrecognizedContent = [[self unrecognizedLineParser] transform:^id(id value) {
-            if( [value iss_hasData] ) ISSLogWarning(@"Warning! Unrecognized content: '%@'", [value iss_trim]);
-            return [NSNull null];
+            if( [value iss_hasData] ) return [ISSStyleSheetParserBadData badDataWithDescription:[NSString stringWithFormat:@"Unrecognized content: '%@'", [value iss_trim]]];
+            else return [NSNull null];
         } name:@"unrecognizedContent"];
 
         cssParser = [[Parcoa choice:@[commentParser, variableParser, rulesetParser, unrecognizedContent]] many];
@@ -1130,8 +1360,12 @@
         for(id entry in properties) {
             ISSSelectorChainsDeclaration* selectorChainsDeclaration = [entry isKindOfClass:ISSSelectorChainsDeclaration.class] ? entry : nil;
 
+            // Bad data:
+            if( [entry isKindOfClass:ISSStyleSheetParserBadData.class] ) {
+                ISSLogWarning(@"Warning! %@ - in declaration: %@", entry, [[[ISSPropertyDeclarations alloc] initWithSelectorChains:selectorChains andProperties:nil] displayDescription:NO]);
+            }
             // Nested property declaration (ISSSelectorChainsDeclaration):
-            if( selectorChainsDeclaration ) {
+            else if( selectorChainsDeclaration ) {
                 // Construct new selector chains by appending selector to parent selector chains
                 NSMutableArray* nestedSelectorChains = [[NSMutableArray alloc] init];
                 for(ISSSelectorChain* selectorChain in selectorChainsDeclaration.chains) {
@@ -1170,10 +1404,22 @@
     if( result.isOK ) {
         NSMutableArray* declarations = [NSMutableArray array];
 
+        ISSSelectorChainsDeclaration* lastElement = nil;
         for(id element in result.value) {
+
+            // Valid declaration:
             if( [element isKindOfClass:[ISSSelectorChainsDeclaration class]] ) {
                 ISSSelectorChainsDeclaration* selectorChainsDeclaration = element;
                 [self processProperties:selectorChainsDeclaration.properties withSelectorChains:selectorChainsDeclaration.chains andAddToDeclarations:declarations];
+                lastElement = element;
+            }
+            // Bad data:
+            else if( [element isKindOfClass:ISSStyleSheetParserBadData.class] ) {
+                if( lastElement ) {
+                    ISSLogWarning(@"Warning! %@ - near %@", element, [lastElement displayDescription]);
+                } else {
+                    ISSLogWarning(@"Warning! %@ - near beginning of file", element);
+                }
             }
         }
 

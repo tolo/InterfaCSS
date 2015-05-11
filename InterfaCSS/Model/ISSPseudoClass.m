@@ -78,7 +78,7 @@ static NSDictionary* stringToPseudoClassType;
 }
 
 + (ISSPseudoClassType) pseudoClassTypeFromString:(NSString*)typeAsString {
-    NSNumber* b = stringToPseudoClassType[typeAsString.lowercaseString];
+    NSNumber* b = typeAsString ? stringToPseudoClassType[typeAsString.lowercaseString] : nil;
     if( b ) return (ISSPseudoClassType)b.integerValue;
     else @throw([NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Invalid enum class type: %@", typeAsString] userInfo:nil]);
 }

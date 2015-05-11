@@ -20,6 +20,7 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
     ISSPropertyTypeNumber,
     ISSPropertyTypeOffset,
     ISSPropertyTypeRect,
+    ISSPropertyTypeLayout,
     ISSPropertyTypeSize,
     ISSPropertyTypePoint,
     ISSPropertyTypeEdgeInsets,

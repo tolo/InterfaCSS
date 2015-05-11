@@ -8,6 +8,11 @@
 //
 
 
+@protocol ISSStyleSheetParser;
+@class ISSViewPrototype;
+@class ISSPropertyRegistry;
+
+
 typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
 typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
 
@@ -18,11 +23,6 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 #import "UIView+InterfaCSS.h"
 #import "UITableView+InterfaCSS.h"
 #import "NSObject+ISSLogSupport.h"
-
-
-@protocol ISSStyleSheetParser;
-@class ISSViewPrototype;
-@class ISSPropertyRegistry;
 
 
 /** 
@@ -235,6 +235,8 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 
 /** Finds a sub view with the specified element identifier. */
 - (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view;
+
+- (void) autoPopulatePropertiesInViewHierarchyFromView:(UIView*)view inOwner:(id)owner;
 
 
 #pragma mark - Stylesheets

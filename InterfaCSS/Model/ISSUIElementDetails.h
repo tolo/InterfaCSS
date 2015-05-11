@@ -9,7 +9,7 @@
 
 #import "InterfaCSS.h"
 
-@class ISSRelativeRectValue;
+@class ISSLayout;
 
 extern NSString* const ISSIndexPathKey;
 extern NSString* const ISSPrototypeViewInitializedKey;
@@ -36,11 +36,13 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 @property (nonatomic, strong) NSString* elementId;
 
+@property (nonatomic, strong) ISSLayout* layout;
+
 @property (nonatomic, readonly) BOOL addedToViewHierarchy;
 @property (nonatomic, readonly) BOOL stylesCacheable;
 
-@property (nonatomic, strong, readonly) NSString* elementStyleIdentity;
-@property (nonatomic, readonly) BOOL elementStyleIdentityResolved;
+@property (nonatomic, strong, readonly) NSString* elementStyleIdentityPath;
+@property (nonatomic, readonly) BOOL elementStyleIdentityPathResolved;
 @property (nonatomic, weak) NSMutableArray* cachedDeclarations; // Optimization for quick access to cached declarations
 @property (nonatomic) BOOL usingCustomElementStyleIdentity;
 @property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;

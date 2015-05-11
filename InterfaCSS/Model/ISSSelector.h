@@ -20,12 +20,15 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 @interface ISSSelector : NSObject<NSCopying>
 
 @property (nonatomic, readonly) Class type;
+@property (nonatomic, readonly) NSString* elementId;
 @property (nonatomic, readonly) NSString* styleClass;
 @property (nonatomic, readonly) NSArray* pseudoClasses;
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
++ (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId pseudoClasses:(NSArray*)pseudoClasses;
 + (instancetype) selectorWithType:(NSString*)type styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses;
++ (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
 

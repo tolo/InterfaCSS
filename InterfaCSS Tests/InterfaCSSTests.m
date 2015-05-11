@@ -14,6 +14,7 @@
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSViewHierarchyParser.h"
 #import "ISSStyleSheetParser.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 @interface CustomCollectionViewLayout : UICollectionViewFlowLayout
@@ -30,12 +31,17 @@
 @implementation CustomView2
 @end
 
-@interface CustomView1 : UIView
+@interface CustomView1 : UIView {
+    CustomView2* _customViewWithCustomSetter;
+}
 @property (nonatomic, strong) UILabel* label2;
 @property (nonatomic, strong) UILabel* label5;
 @property (nonatomic, strong) CustomView2* customView2;
+@property (nonatomic, strong, setter=setCustomFTW:, getter=getCustomFTW) CustomView2* customViewWithCustomSetter;
 @end
 @implementation CustomView1
+- (CustomView2*) getCustomFTW { return _customViewWithCustomSetter; }
+- (void) setCustomFTW:(CustomView2*)c { _customViewWithCustomSetter = c; }
 @end
 
 
@@ -319,7 +325,7 @@
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     XCTAssertFalse(details.stylesCacheable, @"Expected styles to be NOT cacheable");
-    XCTAssertFalse(details.elementStyleIdentityResolved, @"Expected style identity to be NOT resolved");
+    XCTAssertFalse(details.elementStyleIdentityPathResolved, @"Expected style identity to be NOT resolved");
     
     UIWindow* window = [[UIWindow alloc] init];
     [window addSubview:view];
@@ -334,7 +340,7 @@
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:view];
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperView {
@@ -344,9 +350,9 @@
     [view addSubview:label];
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
-    [details elementStyleIdentity]; // Make sure styling identity is built
+    [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperViewSetLater {
@@ -358,18 +364,18 @@
     [window addSubview:view];
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
-    [details elementStyleIdentity]; // Make sure styling identity is built
+    [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
     
     view.customStylingIdentityISS = @"custom";
     
     details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([details.elementStyleIdentity hasPrefix:@"custom"], @"Expected styles identity to begin with custom style identity of parent");
+    XCTAssertTrue([details.elementStyleIdentityPath hasPrefix:@"custom"], @"Expected styles identity to begin with custom style identity of parent");
 
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityResolved, @"Expected style identity to be resolved");
+    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testLoadViewDefinitionFile {
@@ -531,6 +537,17 @@
     
     color = [[[InterfaCSS sharedInstance] parser] transformValue:@"@globalVariableTest2" asPropertyType:ISSPropertyTypeColor];
     XCTAssertEqualObjects(color, [UIColor redColor]);
+}
+
+- (void) testIntrospectionGetSetterForClass {
+    BOOL hasCustomView2 = [ISSRuntimeIntrospectionUtils doesClass:CustomView1.class havePropertyWithName:@"customView2"];
+    XCTAssertTrue(hasCustomView2);
+    
+    BOOL hasCustomViewWithCustomSetter = [ISSRuntimeIntrospectionUtils doesClass:CustomView1.class havePropertyWithName:@"customViewWithCustomSetter"];
+    XCTAssertTrue(hasCustomViewWithCustomSetter);
+    
+    hasCustomViewWithCustomSetter = [ISSRuntimeIntrospectionUtils doesClass:CustomView2.class havePropertyWithName:@"customViewWithCustomSetter"];
+    XCTAssertFalse(hasCustomViewWithCustomSetter);
 }
 
 @end

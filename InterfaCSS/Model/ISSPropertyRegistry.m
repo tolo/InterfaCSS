@@ -14,6 +14,7 @@
 #import "NSAttributedString+ISSAdditions.h"
 #import "ISSPointValue.h"
 #import "ISSRectValue.h"
+#import "ISSUIElementDetails.h"
 
 
 #define S(selName) NSStringFromSelector(@selector(selName))
@@ -475,6 +476,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pa(@"layer.cornerRadius", @[@"cornerradius"], ISSPropertyTypeNumber),
             pa(@"layer.borderColor", @[@"bordercolor"], ISSPropertyTypeCGColor),
             pa(@"layer.borderWidth", @[@"borderwidth"], ISSPropertyTypeNumber),
+            ps(S(layout), ISSPropertyTypeLayout, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSLayout
+                ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:viewObject];
+                details.layout = value;
+            }),
+            p(@"layoutMargins", ISSPropertyTypeEdgeInsets),
             p(@"multipleTouchEnabled", ISSPropertyTypeBool),
             p(@"opaque", ISSPropertyTypeBool),
             shadowOffset,

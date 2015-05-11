@@ -35,6 +35,7 @@
 		CC3C81248BA91E147E8A0ACC /* Parcoa+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C87B7069CA9BDCD00825F /* Parcoa+ISSAdditions.h */; };
 		CC3C81614BE09A047EFEB70D /* ISSRuntimeIntrospectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */; };
 		CC3C82264586100F4F287DC8 /* ISSPropertyDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8CC1BB8A2B2FAF7113DA /* ISSPropertyDefinition.m */; };
+		CC3C8307DC815ADB1FEA044D /* ISSLayoutContextView.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C835E1893E996397261CB /* ISSLayoutContextView.h */; };
 		CC3C830B6FC858F906CC2223 /* NSDictionary+ISSDictionaryAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C86B36E1E4AE2D2E09402 /* NSDictionary+ISSDictionaryAdditions.m */; };
 		CC3C8353C4EBE1A513D6D751 /* ISSPointValue.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8E8AC3C55159B33BCE4B /* ISSPointValue.m */; };
 		CC3C839E88395CA0DFE8FAF0 /* ISSRootView.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C898C3A710A285F391B62 /* ISSRootView.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -48,15 +49,18 @@
 		CC3C874ED81C2E3E03B301B1 /* Parcoa+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C879DE5B06D2319FA54D8 /* Parcoa+ISSAdditions.m */; };
 		CC3C879A10542E8660D29082 /* ISSRefreshableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8B89FA10B0349098BE46 /* ISSRefreshableResource.m */; };
 		CC3C87A92A71F2E634A7C75F /* ISSRootView.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C89C2AED22DBD8DA09ADC /* ISSRootView.m */; };
+		CC3C87B841947A1C543B170B /* ISSLayout.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C85AE6B79C6486AFC1634 /* ISSLayout.h */; };
 		CC3C87D079604D61DDBCDB3F /* ISSSelectorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8DF04440B1FD460AEA07 /* ISSSelectorTests.m */; };
 		CC3C87E80DDADF224FD175AF /* ISSStyleSheetParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8531BD7C16B81E84DCEB /* ISSStyleSheetParserTests.m */; };
 		CC3C888A00A59B266BCA612C /* ISSViewPrototype.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C86D98E3FBB3F7B12BDAB /* ISSViewPrototype.m */; };
 		CC3C88BAA21A54EC9853129F /* NSMutableArray+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */; };
+		CC3C8920BC9FB650C34DCD61 /* ISSLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8BF176FB12B868CCA749 /* ISSLayout.m */; };
 		CC3C89672A2F3A3E2ADD6F7C /* ISSPseudoClass.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8E3D3EBEF5D54592B845 /* ISSPseudoClass.m */; };
 		CC3C89A1198640F73C58E683 /* ISSLazyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8616E221BB469698032E /* ISSLazyValue.m */; };
 		CC3C89C90CEF4ED24CC45C95 /* ISSViewHierarchyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C88B72A3EBA684963C228 /* ISSViewHierarchyParser.m */; };
 		CC3C89EA883A75C29C2C1BCA /* UITableView+InterfaCSS.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C885371209FA20B21C18F /* UITableView+InterfaCSS.m */; };
 		CC3C89FB978EC04E5A439018 /* ISSPropertyRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C88928B0760180BFAB41B /* ISSPropertyRegistry.h */; };
+		CC3C8A3F314B685352D3A6CD /* ISSLayoutContextView.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C8CD87AEE86C1C117F021 /* ISSLayoutContextView.m */; };
 		CC3C8B395A96C4DEF7AFC03A /* UIView+ISSPrototypeReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C803DD954E495E1789FFB /* UIView+ISSPrototypeReusableView.m */; };
 		CC3C8B47FF48205404047254 /* UICollectionView+InterfaCSS.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8FD30877A9A28290D23B /* UICollectionView+InterfaCSS.h */; };
 		CC3C8B4BBAEA07A6DFF3A07A /* NSAttributedString+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8133205B709D492A7ED4 /* NSAttributedString+ISSAdditions.h */; };
@@ -144,6 +148,7 @@
 		CC3C81A3D5E7700AF520BADE /* ISSPropertyDeclaration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclaration.h; sourceTree = "<group>"; };
 		CC3C82B417030D3C0260D40E /* ISSPropertyRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyRegistry.m; sourceTree = "<group>"; };
 		CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRuntimeIntrospectionUtils.m; sourceTree = "<group>"; };
+		CC3C835E1893E996397261CB /* ISSLayoutContextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSLayoutContextView.h; sourceTree = "<group>"; };
 		CC3C83FFBC650611AEFB8E9A /* ISSUIElementDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSUIElementDetails.m; sourceTree = "<group>"; };
 		CC3C8414CB6B1F70FF8436C3 /* ISSPointValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPointValue.h; sourceTree = "<group>"; };
 		CC3C85028E68343AE0CAE9D4 /* ISSLazyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSLazyValue.h; sourceTree = "<group>"; };
@@ -152,6 +157,7 @@
 		CC3C8531BD7C16B81E84DCEB /* ISSStyleSheetParserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserTests.m; sourceTree = "<group>"; };
 		CC3C8583C197EBF3BDED28B9 /* ISSViewHierarchyParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSViewHierarchyParser.h; sourceTree = "<group>"; };
 		CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+ISSAdditions.m"; sourceTree = "<group>"; };
+		CC3C85AE6B79C6486AFC1634 /* ISSLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSLayout.h; sourceTree = "<group>"; };
 		CC3C8616E221BB469698032E /* ISSLazyValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSLazyValue.m; sourceTree = "<group>"; };
 		CC3C866B238BD25DA0B89228 /* ISSRectValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRectValue.h; sourceTree = "<group>"; };
 		CC3C8682A0ABFB4C0090E2E9 /* styleSheetWithBadData.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetWithBadData.css; sourceTree = "<group>"; };
@@ -171,7 +177,9 @@
 		CC3C8B89FA10B0349098BE46 /* ISSRefreshableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRefreshableResource.m; sourceTree = "<group>"; };
 		CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+ISSAdditions.m"; sourceTree = "<group>"; };
 		CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+ISSDictionaryAdditions.h"; sourceTree = "<group>"; };
+		CC3C8BF176FB12B868CCA749 /* ISSLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSLayout.m; sourceTree = "<group>"; };
 		CC3C8CC1BB8A2B2FAF7113DA /* ISSPropertyDefinition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDefinition.m; sourceTree = "<group>"; };
+		CC3C8CD87AEE86C1C117F021 /* ISSLayoutContextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSLayoutContextView.m; sourceTree = "<group>"; };
 		CC3C8D883AC61B4BA8763604 /* ISSUIElementDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSUIElementDetails.h; sourceTree = "<group>"; };
 		CC3C8DF04440B1FD460AEA07 /* ISSSelectorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSSelectorTests.m; sourceTree = "<group>"; };
 		CC3C8E2EB46CD784DA9DD788 /* ISSPropertyDeclaration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclaration.m; sourceTree = "<group>"; };
@@ -308,6 +316,8 @@
 				CC3C8D883AC61B4BA8763604 /* ISSUIElementDetails.h */,
 				CC3C82B417030D3C0260D40E /* ISSPropertyRegistry.m */,
 				CC3C88928B0760180BFAB41B /* ISSPropertyRegistry.h */,
+				CC3C85AE6B79C6486AFC1634 /* ISSLayout.h */,
+				CC3C8BF176FB12B868CCA749 /* ISSLayout.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -341,6 +351,8 @@
 				CC3C86B1C38201CA9050889A /* UIView+ISSPrototypeReusableView.h */,
 				CC3C8FD18CAA89A2BD0F5F5D /* UICollectionView+InterfaCSS.m */,
 				CC3C8FD30877A9A28290D23B /* UICollectionView+InterfaCSS.h */,
+				CC3C835E1893E996397261CB /* ISSLayoutContextView.h */,
+				CC3C8CD87AEE86C1C117F021 /* ISSLayoutContextView.m */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -473,6 +485,8 @@
 				CC3C81614BE09A047EFEB70D /* ISSRuntimeIntrospectionUtils.h in Headers */,
 				CC3C803B99218B157D6EC836 /* UIView+ISSPrototypeReusableView.h in Headers */,
 				CC3C8B47FF48205404047254 /* UICollectionView+InterfaCSS.h in Headers */,
+				CC3C8307DC815ADB1FEA044D /* ISSLayoutContextView.h in Headers */,
+				CC3C87B841947A1C543B170B /* ISSLayout.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,7 +536,7 @@
 		F6F5FC0E14F5683B008E647E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0630;
 				ORGANIZATIONNAME = "Leafnode AB";
 				TargetAttributes = {
 					2785E25B18A8DCBB001D1104 = {
@@ -646,6 +660,8 @@
 				CC3C84F638DA363880488FC4 /* ISSRuntimeIntrospectionUtils.m in Sources */,
 				CC3C8B395A96C4DEF7AFC03A /* UIView+ISSPrototypeReusableView.m in Sources */,
 				CC3C8E189FD9C3AABED456BD /* UICollectionView+InterfaCSS.m in Sources */,
+				CC3C8A3F314B685352D3A6CD /* ISSLayoutContextView.m in Sources */,
+				CC3C8920BC9FB650C34DCD61 /* ISSLayout.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -743,6 +759,7 @@
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -781,6 +798,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

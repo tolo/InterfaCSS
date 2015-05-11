@@ -11,6 +11,16 @@ uilabel.class1 {
     alpha: 0.666;
 }
 
+// Type+elementId+class selector
+uilabel#identity.class1 {
+    alpha: 0.666;
+}
+
+// elementId+class selector
+#identity.class1 {
+    alpha: 0.666;
+}
+
 // Class selector
 .class1 {
     alpha: 0.666;
@@ -47,6 +57,10 @@ uiview:onlychild {
     alpha: 0.666;
 }
 
+uiview#identifier.class1:onlychild {
+    alpha: 0.666;
+}
+
 uiview:nthchild(2n+1) {
     alpha: 0.666;
 }
@@ -56,6 +70,8 @@ uiview uilabel:first-of-type {
 }
 
 uiview.classx {
+    alpha: 0.666;
+    
     uilabel:last-of-type {
         alpha: 0.666;
     }

@@ -18,6 +18,10 @@
 #import "ISSSelectorChain.h"
 #import "NSMutableArray+ISSAdditions.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSRuntimeIntrospectionUtils.h"
+
+
+typedef id (^ISSViewHierarchyVisitorBlock)(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop);
 
 
 static InterfaCSS* singleton = nil;
@@ -232,12 +236,12 @@ static InterfaCSS* singleton = nil;
     // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
     // This makes it possible to reuse identical style information in sibling elements for instance.
     if( !cachedDeclarations ) {
-        cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentity];
+        cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
         elementDetails.cachedDeclarations = cachedDeclarations;
     }
     
     if ( !cachedDeclarations ) {
-        ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentity);
+        ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentityPath);
 
         elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been clear, to make sure element is re-styled
 
@@ -254,20 +258,20 @@ static InterfaCSS* singleton = nil;
 
         // Only add declarations to cache if styles are cacheable for element (i.e. added to the view hierarchy or using custom styling identity)
         if( elementDetails.stylesCacheable ) {
-            [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentity];
+            [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentityPath];
             elementDetails.cachedDeclarations = cachedDeclarations;
         } else {
-            ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentity);
+            ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentityPath);
         }
     } else {
-        ISSLogTrace(@"Cached declarations exists for '%@'", elementDetails.elementStyleIdentity);
+        ISSLogTrace(@"Cached declarations exists for '%@'", elementDetails.elementStyleIdentityPath);
     }
 
     if( !force && elementDetails.stylingApplied ) {
-        ISSLogTrace(@"Styles aleady applied for '%@'", elementDetails.elementStyleIdentity);
+        ISSLogTrace(@"Styles aleady applied for '%@'", elementDetails.elementStyleIdentityPath);
         return nil; // Current styling information has already been applied
     } else {
-        ISSLogTrace(@"Processing style declarations for '%@'", elementDetails.elementStyleIdentity);
+        ISSLogTrace(@"Processing style declarations for '%@'", elementDetails.elementStyleIdentityPath);
 
         // Process declarations to see which styles currently match
         BOOL hasPseudoClass = NO;
@@ -285,7 +289,7 @@ static InterfaCSS* singleton = nil;
         if( !hasPseudoClass && elementDetails.stylesCacheable ) {
             elementDetails.stylingApplied = YES;
         } else {
-            ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentity);
+            ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentityPath);
         }
 
         return viewStyles;
@@ -342,9 +346,9 @@ static InterfaCSS* singleton = nil;
 - (void) clearCachedStylesForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
     if( !uiElementDetails ) return;
 
-    ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentity);
+    ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentityPath);
 
-    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentity];
+    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
     [uiElementDetails resetCachedData];
 
     UIView* view = uiElementDetails.view;
@@ -613,7 +617,7 @@ static InterfaCSS* singleton = nil;
 }
 
 - (NSString*) customStylingIdentityForUIElement:(id)uiElement {
-    return [self detailsForUIElement:uiElement].elementStyleIdentity;
+    return [self detailsForUIElement:uiElement].elementStyleIdentityPath;
 }
 
 - (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
@@ -643,19 +647,42 @@ static InterfaCSS* singleton = nil;
     return ![uiElementDetails hasDisabledProperty:property];
 }
 
-- (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view {
-    // Check for elementId in subviews first
-    for(UIView* subview in view.subviews) {
-        ISSUIElementDetails* subviewDetails = [self detailsForUIElement:subview];
-        if( [subviewDetails.elementId isEqualToString:elementId] ) return subview;
-    }
+- (id) visitViewHierarchyFromView:(UIView*)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
+    BOOL stop = NO;
+    return [self visitViewHierarchyFromView:view visitorBlock:visitorBlock stop:&stop];
+}
 
-    // Then drill down
+- (id) visitViewHierarchyFromView:(UIView*)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
+    ISSUIElementDetails* details = [self detailsForUIElement:view create:NO];
+    id result = visitorBlock(view, details, stop);
+    if( *stop ) return result;
+
+    // Drill down
     for(UIView* subview in view.subviews) {
-        UIView* matchingSubview = [self subviewWithElementId:elementId inView:subview];
-        if( matchingSubview) return matchingSubview;
+        result = [self visitViewHierarchyFromView:subview visitorBlock:visitorBlock stop:stop];
+        if( *stop ) return result;
     }
     return nil;
+}
+
+- (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view {
+    return [self visitViewHierarchyFromView:view visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
+        if( [elementDetails.elementId isEqualToString:elementId] ) {
+            *stop = YES;
+            return viewObject;
+        }
+        return nil;
+    }];
+}
+
+- (void) autoPopulatePropertiesInViewHierarchyFromView:(UIView*)view inOwner:(id)owner {
+    [self visitViewHierarchyFromView:view visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
+        if( elementDetails.elementId && [ISSRuntimeIntrospectionUtils doesClass:[owner class] havePropertyWithName:elementDetails.elementId] ) {
+            // If element has elementId and if owner has matching property - set it using KVC
+            [owner setValue:viewObject forKey:elementDetails.elementId];
+        }
+        return nil;
+    }];
 }
 
 

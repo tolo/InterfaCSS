@@ -22,11 +22,12 @@
 
 #pragma mark - ISSelector interface
 
-- (instancetype) initWithType:(Class)type wildcardType:(BOOL)wildcardType styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
+- (instancetype) initWithType:(Class)type wildcardType:(BOOL)wildcardType elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
     self = [super init];
     if (self) {
         _wildcardType = wildcardType;
         _type = type;
+        _elementId = elementId;
         _styleClass = [styleClass lowercaseString];
         if( pseudoClasses.count == 0 ) pseudoClasses = nil;
         _pseudoClasses = pseudoClasses;
@@ -34,7 +35,15 @@
     return self;
 };
 
++ (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId pseudoClasses:(NSArray*)pseudoClasses {
+    return [self selectorWithType:type elementId:elementId styleClass:nil pseudoClasses:pseudoClasses];
+}
+
 + (instancetype) selectorWithType:(NSString*)type styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
+    return [self selectorWithType:type elementId:nil styleClass:styleClass pseudoClasses:pseudoClasses];
+}
+
++ (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
     Class typeClass = nil;
     BOOL wildcardType = NO;
 
@@ -48,12 +57,12 @@
         }
     }
 
-    if( typeClass || wildcardType || styleClass ) {
-        return [[self alloc] initWithType:typeClass wildcardType:wildcardType styleClass:styleClass pseudoClasses:pseudoClasses];
+    if( typeClass || wildcardType || elementId || styleClass ) {
+        return [[self alloc] initWithType:typeClass wildcardType:wildcardType elementId:elementId styleClass:styleClass pseudoClasses:pseudoClasses];
     } else if( [type iss_hasData] ) {
         if( [InterfaCSS interfaCSS].useLenientSelectorParsing ) {
             ISSLogWarning(@"Unrecognized type: %@ - using type as style class instead", type);
-            return [[self alloc] initWithType:nil wildcardType:NO styleClass:type pseudoClasses:pseudoClasses];
+            return [[self alloc] initWithType:nil wildcardType:NO elementId:nil styleClass:type pseudoClasses:pseudoClasses];
         } else {
             ISSLogWarning(@"Unrecognized type: %@", type);
         }
@@ -64,7 +73,7 @@
 }
 
 - (instancetype) copyWithZone:(NSZone*)zone {
-    return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType styleClass:self.styleClass pseudoClasses:self.pseudoClasses];
+    return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType elementId:self.elementId styleClass:self.styleClass pseudoClasses:self.pseudoClasses];
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
@@ -73,7 +82,12 @@
     if( !match ) {
         match = elementDetails.canonicalType == self.type;
     }
-
+    
+    // ELEMENT ID
+    if( match && self.elementId ) {
+        match = [elementDetails.elementId iss_isEqualIgnoreCase:self.elementId];
+    }
+    
     // STYLE CLASS
     if( match && self.styleClass ) {
         match = [elementDetails.styleClasses containsObject:self.styleClass];
@@ -91,19 +105,33 @@
 }
 
 - (NSString*) displayDescription {
-    NSString* pseudoClassSuffix = @"";
     ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-    NSString* typeString = _type ? [registry canonicalTypeForViewClass:_type] : nil;
+
+    NSString* typeString = _type ? [registry canonicalTypeForViewClass:_type] : @"";
     if( !_type && _wildcardType ) typeString = @"*";
-    
+
+    NSString* idString = @"";
+    if( _elementId ) {
+        idString = [NSString stringWithFormat:@"#%@", _elementId];
+    }
+
+    NSString* classString = @"";
+    if( _styleClass ) {
+        classString = [NSString stringWithFormat:@".%@", _styleClass];
+    }
+
+    NSString* pseudoClassSuffix = @"";
     if( self.pseudoClasses.count > 0 ) {
         for(ISSPseudoClass* pseudoClass in self.pseudoClasses) {
             pseudoClassSuffix = [pseudoClassSuffix stringByAppendingFormat:@":%@", pseudoClass.displayDescription];
         }
     }
-    if ( typeString && _styleClass ) return [NSString stringWithFormat:@"%@.%@%@", typeString, _styleClass, pseudoClassSuffix];
-    else if ( typeString ) return [NSString stringWithFormat:@"%@%@", typeString, pseudoClassSuffix];
-    else return [NSString stringWithFormat:@".%@%@", _styleClass, pseudoClassSuffix];
+
+//    return [NSString stringWithFormat:@"%@%@%@%@", typeString, idString, classString, pseudoClassSuffix];
+
+    if ( typeString && _styleClass ) return [NSString stringWithFormat:@"%@%@.%@%@", typeString, idString, _styleClass, pseudoClassSuffix];
+    else if ( typeString ) return [NSString stringWithFormat:@"%@%@%@", typeString, idString, pseudoClassSuffix];
+    else return [NSString stringWithFormat:@"%@.%@%@", idString, _styleClass, pseudoClassSuffix];
 }
 
 
