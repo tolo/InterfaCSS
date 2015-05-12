@@ -1,0 +1,51 @@
+
+#rootView {
+    backgroundColor: #fafafa;
+}
+
+#rootView UIView, #rootView UIButton {
+    cornerRadius: 5;
+}
+
+
+#marginLabel {
+    text: "Using margin";
+    font: AvenirNextCondensed-Regular 14;
+}
+
+#layoutGuideLabel {
+    text: "Using layout guide";
+    font: AvenirNextCondensed-Regular 14;
+}
+
+
+#button {
+    backgroundColor: #2bff8a;
+    textColor: white;
+    titleLabel.font: AvenirNextCondensed-Bold 18;
+}
+
+#button.moveMe {
+    backgroundColor: #7febff;
+}
+
+#view1 {
+    backgroundColor: #ff3ab7;
+}
+
+#view2 {
+    backgroundColor: #ff1717;
+}
+
+#view3 {
+    backgroundColor: #9f38ff;
+}
+
+#view4 {
+    backgroundColor: #ff9227;
+}
+
+#label {
+    textColor: black;
+    font: AvenirNextCondensed-Regular 14;
+}

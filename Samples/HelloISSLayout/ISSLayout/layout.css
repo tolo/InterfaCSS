@@ -1,0 +1,47 @@
+
+/**
+ 
+ This demo uses a separate stylesheet file for specifying the layout. This is not a requirement, it's only used here
+ 
+**/
+
+#marginLabel {
+    layout: left(parent.leftMargin), top(50); /* Placing label at left layout margin of parent and using intrinsic content size of label */
+}
+
+#layoutGuideLabel {
+    layout: top(guide.top + 1), centerX(parent); /* Placing label at top layout guide (with offset) and using intrinsic content size of label */
+}
+
+
+#button {
+    layout: size(100, 100), center(parent, parent - 60); /* Using implicit/default parent relations that evaluates to parent.centerX / parent.centerY (same attributes used) */
+}
+
+#button.moveMe {
+    layout: size(100, 100), center(parent, parent + 100);
+}
+
+#view1 {
+    layout: size(25, 25), bottomRight(button - 30, button - 30); /* Using implicit/default element relations that in this case evaluates to button.left/button.top (opposing attributes used) */
+}
+
+#view2 {
+    layout: size(25, 25),
+            bottomLeft(button + 30, button - 30); /* Different attributes in the layout can be separated by either a dot or a comma, and newlines are also allowed before/after separator */
+}
+
+#view3 {
+    layout: size(25, 25),
+            topRight(button - 30, button + 30);
+}
+
+#view4 {
+    layout: size(25, 25),
+            topLeft(button + 30, button + 30);
+}
+
+#label {
+    layout: top(button.top - 20),
+            centerX(parent); /* Using intrinsic content size of label */
+}
