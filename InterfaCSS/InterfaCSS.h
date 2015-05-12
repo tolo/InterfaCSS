@@ -150,27 +150,27 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 #pragma mark - Style classes
 
 /**
- * Gets the current style classes for the specifiied UI element.
+ * Gets the current style classes for the specified UI element.
  */
 - (NSSet*) styleClassesForUIElement:(id)uiElement;
 
 /**
- * Checks if the specified class is set on the specifiied UI element.
+ * Checks if the specified class is set on the specified UI element.
  */
 - (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass;
 
 /**
- * Sets the style classes for the specifiied UI element, replacing any previous style classes.
+ * Sets the style classes for the specified UI element, replacing any previous style classes.
  */
 - (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement;
 
 /**
- * Adds a style class to the specifiied UI element.
+ * Adds a style class to the specified UI element.
  */
 - (void) addStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
 
 /**
- * Removes a style class from the specifiied UI element.
+ * Removes a style class from the specified UI element.
  */
 - (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
 
