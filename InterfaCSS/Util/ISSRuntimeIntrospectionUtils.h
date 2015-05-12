@@ -16,4 +16,8 @@
 
 + (void) invokeSingleObjectArgumentSelector:(SEL)selector inObject:(id)object parameter:(id)parameter;
 
++ (NSSet*) propertyNamesForClass:(Class)class;
+
++ (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName;
+
 @end

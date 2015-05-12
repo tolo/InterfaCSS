@@ -15,6 +15,7 @@
 #import "ISSViewPrototype.h"
 #import "InterfaCSS.h"
 #import "ISSUIElementDetails.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 NSString* const ISSViewDefinitionFileAttributeId = @"id";
@@ -99,12 +100,10 @@ static NSDictionary* tagToClass;
 #pragma mark - Support methods
 
 + (BOOL) setViewObjectPropertyValue:(id)value withName:(NSString*)propertyName inParent:(id)parent orFileOwner:(id)fileOwner silent:(BOOL)silent {
-    SEL selector = NSSelectorFromString(propertyName);
-
-    if( [fileOwner respondsToSelector:selector] ) {
+    if( [ISSRuntimeIntrospectionUtils doesClass:[fileOwner class] havePropertyWithName:propertyName] ) {
         [fileOwner setValue:value forKey:propertyName];
         return YES;
-    } else if( [parent respondsToSelector:selector] ) {
+    } else if( [ISSRuntimeIntrospectionUtils doesClass:[parent class] havePropertyWithName:propertyName] ) {
         [parent setValue:value forKey:propertyName];
         return YES;
     } else if( !silent ) {
