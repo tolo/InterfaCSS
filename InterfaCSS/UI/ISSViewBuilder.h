@@ -165,7 +165,7 @@ typedef NSArray* (^SubViewBlock)();
  * Builds a `UIScrollView` with the specified style class.
  */
 + (UIScrollView*) scrollViewWithStyle:(NSString*)styleClass;
-+ (UIScrollView*) scrollViewWithWithId:(NSString*)elementId;
++ (UIScrollView*) scrollViewWithId:(NSString*)elementId;
 
 /**
  * Builds a `UIScrollView` with the specified style class and adds the subviews from the specified `SubViewBlock`.
@@ -178,7 +178,7 @@ typedef NSArray* (^SubViewBlock)();
  * Builds a `UITableView` with the specified style class.
  */
 + (UITableView*) tableViewWithStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle;
-+ (UITableView*) tableViewWithWithId:(NSString*)elementId andTableViewStyle:(UITableViewStyle)tableViewStyle;
++ (UITableView*) tableViewWithId:(NSString*)elementId andTableViewStyle:(UITableViewStyle)tableViewStyle;
 
 /**
  * Builds a `UITableView` with the specified style class and adds the subviews from the specified `SubViewBlock`.
