@@ -114,7 +114,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
     else if( [object isKindOfClass:ISSSelectorChainsDeclaration.class] ) {
-        if( ISEQUAL(self.chains, [object chains]) && ISEQUAL(self.properties, [(ISSPropertyDeclarations*)object properties]) ) return YES;
+        if( ISS_ISEQUAL(self.chains, [object chains]) && ISS_ISEQUAL(self.properties, [(ISSPropertyDeclarations*)object properties]) ) return YES;
     }
     return NO;
 }
@@ -746,7 +746,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return [blockSelf layoutAttributeValueForElement:nil attribute:nil multiplier:nil constant:value];
     } name:@"constantValue"];
 
-    ParcoaParser* layoutAttributeValueContentParser = [Parcoa choice:@[parentPercentageValue, constantValue, layoutAttributeValueFormat1Parser, layoutAttributeValueFormat2Parser]];
+    ParcoaParser* layoutAttributeValueContentParser = [Parcoa choice:@[layoutAttributeValueFormat1Parser, layoutAttributeValueFormat2Parser, parentPercentageValue, constantValue]];
 
     NSMutableArray* layoutAttributeValueParsers = [NSMutableArray array];
     for(NSString* attributeName in [ISSLayout attributeNames]) {
@@ -1182,7 +1182,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
         /** Variables **/
         validVariableNameSet = [Parcoa iss_validIdentifierCharsSet];
-        ParcoaParser* variableParser = [[[[[[Parcoa iss_quickUnichar:'@'] keepRight:[identifier concatMany1]] skipSurroundingSpaces] keepLeft:propertyNameValueSeparator] then:[anyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
+        ParcoaParser* variableParser = [[[[[[Parcoa iss_quickUnichar:'@'] keepRight:identifier] skipSurroundingSpaces] keepLeft:propertyNameValueSeparator] then:[anyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
             [[InterfaCSS interfaCSS] setValue:value[1] forStyleSheetVariableWithName:value[0]];
             return value;
         } name:@"variableParser"];
