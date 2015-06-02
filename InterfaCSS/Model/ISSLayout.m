@@ -25,6 +25,7 @@ static NSDictionary* stringToLayoutGuide;
  */
 @interface ISSLayoutAttributeValue ()
 @property (nonatomic, readwrite) ISSLayoutAttribute targetAttribute;
+@property (nonatomic, readonly) ISSLayoutAttribute resolvedRelativeAttributeForTargetAttribute;
 @end
 
 @implementation ISSLayoutAttributeValue
@@ -48,6 +49,7 @@ static NSDictionary* stringToLayoutGuide;
 
 - (instancetype) initWithElementId:(NSString*)elementId attribute:(ISSLayoutAttribute)attribute multiplier:(CGFloat)multiplier constant:(CGFloat)constant {
     if ( self = [super init] ) {
+        _targetAttribute = ISSLayoutAttributeDefault;
         _relativeElementId = elementId;
         _relativeAttribute = attribute;
         _multiplier = multiplier;
@@ -120,9 +122,7 @@ static NSDictionary* stringToLayoutGuide;
     return [self resolveWithRect:rect];
 }
 
-- (CGFloat) resolveWithRect:(CGRect)rect {
-    CGFloat value = 0;
-
+- (ISSLayoutAttribute) resolvedRelativeAttributeForTargetAttribute {
     ISSLayoutAttribute targetAttribute = self.targetAttribute;
     ISSLayoutAttribute effectiveRelativeAttribute = self.relativeAttribute;
     // Resolve relativeAttribute with default value to appropriate value based on targetAttribute:
@@ -138,6 +138,13 @@ static NSDictionary* stringToLayoutGuide;
             else effectiveRelativeAttribute = targetAttribute;
         }
     }
+    return effectiveRelativeAttribute;
+}
+
+- (CGFloat) resolveWithRect:(CGRect)rect {
+    CGFloat value = 0;
+
+    ISSLayoutAttribute effectiveRelativeAttribute = self.resolvedRelativeAttributeForTargetAttribute;
 
     switch( effectiveRelativeAttribute ) {
         case ISSLayoutAttributeWidth: {
@@ -178,25 +185,40 @@ static NSDictionary* stringToLayoutGuide;
 
 #pragma mark - NSObject overrides
 
+- (NSUInteger) hash {
+    return self.targetAttribute * 31;
+}
+
+- (BOOL) isEqual:(id)object {
+    if( object == self ) return YES;
+    else if( [object isKindOfClass:ISSLayoutAttributeValue.class] ) {
+        ISSLayoutAttributeValue* other = object;
+        return self.targetAttribute == other.targetAttribute && ISS_ISEQUAL(self.relativeElementId, other.relativeElementId) &&
+            self.resolvedRelativeAttributeForTargetAttribute == other.resolvedRelativeAttributeForTargetAttribute &&
+            self.multiplier == other.multiplier && self.constant == other.constant;
+    }
+    return NO;
+}
+
 - (NSString*) description {
     NSString* constantString = @"";
     if( self.constant != 0 ) {
         if( self.constant > 0 ) constantString = [NSString stringWithFormat:@" + %.2f", self.constant];
-        constantString = [NSString stringWithFormat:@" - %.2f", fabs(self.constant)];
+        else constantString = [NSString stringWithFormat:@" - %.2f", fabs(self.constant)];
     }
     NSString* multiplierString = @"";
     if( self.multiplier != 1 ) {
-        multiplierString = [NSString stringWithFormat:@" * %.2f", self.constant];
+        multiplierString = [NSString stringWithFormat:@" * %.2f", self.multiplier];
     }
     
     if( self.isConstantValue ) {
         return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = %.2f )", [ISSLayout attributeToString:self.targetAttribute], self.constant];
     } else if( self.isParentRelativeValue ) {
-        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = parent.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], [ISSLayout attributeToString:self.relativeAttribute], multiplierString, constantString];
+        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = parent.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], [ISSLayout attributeToString:self.resolvedRelativeAttributeForTargetAttribute], multiplierString, constantString];
     } else if( self.isLayoutGuideValue ) {
-        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = guide.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], [ISSLayout attributeToString:self.relativeAttribute], multiplierString, constantString];
+        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = guide.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], [ISSLayout attributeToString:self.resolvedRelativeAttributeForTargetAttribute], multiplierString, constantString];
     } else {
-        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = %@.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], self.relativeElementId, [ISSLayout attributeToString:self.relativeAttribute], multiplierString, constantString];
+        return [NSString stringWithFormat:@"LayoutAttributeValue( %@ = %@.%@%@%@ )", [ISSLayout attributeToString:self.targetAttribute], self.relativeElementId, [ISSLayout attributeToString:self.resolvedRelativeAttributeForTargetAttribute], multiplierString, constantString];
     }
 }
 
@@ -207,9 +229,7 @@ static NSDictionary* stringToLayoutGuide;
  * ISSLayout
  */
 @interface ISSLayout ()
-@property (nonatomic, strong) NSMutableDictionary* attributes;
-@property (nonatomic) BOOL autoWidth; // Set to YES by default, set to NO when constraint is added
-@property (nonatomic) BOOL autoHeight; // Set to YES by default, set to NO when constraint is added
+@property (nonatomic, strong) NSMutableDictionary* attributeValues;
 @end
 
 @implementation ISSLayout
@@ -242,9 +262,7 @@ static NSDictionary* stringToLayoutGuide;
 - (instancetype) init {
     if ( self = [super init] ) {
         _layoutType = ISSLayoutTypeStandard;
-        _attributes = [[NSMutableDictionary alloc] init];
-        _autoWidth = YES;
-        _autoHeight = YES;
+        _attributeValues = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -252,8 +270,7 @@ static NSDictionary* stringToLayoutGuide;
 
 #pragma mark - Frame and attribute value resolving
 
-- (CGFloat) resolveValueForView:(UIView*)view targetLayoutAttribute:(ISSLayoutAttribute)attribute elementMappings:(NSDictionary*)elementMappings layoutGuideInsets:(UIEdgeInsets)layoutGuideInsets didResolve:(BOOL*)didResolve {
-    ISSLayoutAttributeValue* attributeValue = self.attributes[@(attribute)];
+- (CGFloat) resolveValue:(ISSLayoutAttributeValue*)attributeValue forView:(UIView*)view elementMappings:(NSDictionary*)elementMappings layoutGuideInsets:(UIEdgeInsets)layoutGuideInsets didResolve:(BOOL*)didResolve {
     ISSUIElementDetails* relativeElementDetails = attributeValue.relativeElementId ? elementMappings[attributeValue.relativeElementId] : nil;
 
     return [attributeValue resolveForElement:view withRelativeElement:relativeElementDetails layoutGuideInsets:layoutGuideInsets didResolve:didResolve];
@@ -308,24 +325,27 @@ static NSDictionary* stringToLayoutGuide;
     CGSize intrinsicSize = view.intrinsicContentSize;
 
     // Resolve width and height first
-    BOOL usingAutoWidth = self.autoWidth;
-    BOOL usingAutoHeight = self.autoHeight;
-    if( self.autoWidth ) {
+    ISSLayoutAttributeValue* widthAttributeValue = self.attributeValues[@(ISSLayoutAttributeWidth)];
+    ISSLayoutAttributeValue* heightAttributeValue = self.attributeValues[@(ISSLayoutAttributeHeight)];
+    BOOL usingAutoWidth = widthAttributeValue == nil;
+    BOOL usingAutoHeight = heightAttributeValue == nil;
+    
+    if( usingAutoWidth ) {
         if( intrinsicSize.width != UIViewNoIntrinsicMetric ) { // If no width layout value has been specified, but an intrinsic content width is available - use that
             resolvedRect.size.width = intrinsicSize.width;
             usingAutoWidth = NO;
         }
     } else {
-        resolvedRect.size.width = [self resolveValueForView:view targetLayoutAttribute:ISSLayoutAttributeWidth elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
+        resolvedRect.size.width = [self resolveValue:widthAttributeValue forView:view elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
         if( !didResolve ) return NO;
     }
-    if( self.autoHeight ) {
+    if( usingAutoHeight ) {
         if( intrinsicSize.height != UIViewNoIntrinsicMetric ) { // If no height layout value has been specified, but an intrinsic content height is available - use that
             resolvedRect.size.height = intrinsicSize.height;
             usingAutoHeight = NO;
         }
     } else {
-        resolvedRect.size.height = [self resolveValueForView:view targetLayoutAttribute:ISSLayoutAttributeHeight elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
+        resolvedRect.size.height = [self resolveValue:heightAttributeValue forView:view elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
         if( !didResolve ) return NO;
     }
 
@@ -338,12 +358,11 @@ static NSDictionary* stringToLayoutGuide;
     }
     
     // Resolve layout attributes
-    for(NSNumber* attributeKey in self.attributes.allKeys) {
-        ISSLayoutAttribute attribute = (ISSLayoutAttribute)attributeKey.integerValue;
-        CGFloat value = [self resolveValueForView:view targetLayoutAttribute:attribute elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
+    for(ISSLayoutAttributeValue* attributeValue in self.attributeValues.allValues) {
+        CGFloat value = [self resolveValue:attributeValue forView:view elementMappings:elementMappings layoutGuideInsets:layoutGuideInsets didResolve:&didResolve];
         if( !didResolve ) return NO;
 
-        [self applyValue:value toRect:&resolvedRect forView:view autoWidth:usingAutoWidth autoHeight:usingAutoHeight forLayoutAttribute:attribute];
+        [self applyValue:value toRect:&resolvedRect forView:view autoWidth:usingAutoWidth autoHeight:usingAutoHeight forLayoutAttribute:attributeValue.targetAttribute];
     }
 
     // Update frame
@@ -390,20 +409,54 @@ static NSDictionary* stringToLayoutGuide;
     else return ISSLayoutGuideTop;
 }
 
+- (NSArray*) layoutAttributeValues {
+    return self.attributeValues.allValues;
+}
+
+- (ISSLayoutAttributeValue*) valueForLayoutAttribute:(ISSLayoutAttribute)attribute {
+    return self.attributeValues[@(attribute)];
+}
+
+- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute {
+    attributeValue.targetAttribute = targetAttribute;
+    [self addLayoutAttributeValue:attributeValue];
+}
+
 - (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue {
     NSAssert(attributeValue.targetAttribute != ISSLayoutAttributeDefault, @"ISSLayoutAttributeDefault cannot be used as parameter to %@", NSStringFromSelector(_cmd));
 
-    if( attributeValue.targetAttribute == ISSLayoutAttributeWidth ) self.autoWidth = NO;
-    else if( attributeValue.targetAttribute == ISSLayoutAttributeHeight ) self.autoHeight = NO;
+    self.attributeValues[@(attributeValue.targetAttribute)] = attributeValue;
+}
 
-    self.attributes[@(attributeValue.targetAttribute)] = attributeValue;
+- (void) removeLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue {
+    [self removeValueForLayoutAttribute:attributeValue.targetAttribute];
+}
+
+- (void) removeValueForLayoutAttribute:(ISSLayoutAttribute)attribute {
+    [self.attributeValues removeObjectForKey:@(attribute)];
+}
+
+- (void) removeValuesForLayoutAttributes:(NSArray*)attributes {
+    for(NSNumber* attribute in attributes) {
+        [self.attributeValues removeObjectForKey:attribute];
+    }
 }
 
 
 #pragma mark - NSObject overrides
 
+- (BOOL) isEqual:(id)object {
+    if( object == self ) return YES;
+    else if( [object isKindOfClass:ISSLayout.class] ) {
+        ISSLayout* other = object;
+        return [self.attributeValues isEqual:other.attributeValues] && self.layoutType == other.layoutType;
+    }
+    return NO;
+}
+
 - (NSString*) description {
-    return [NSString stringWithFormat:@"Layout%@", self.attributes.allValues];
+    if( self.layoutType == ISSLayoutTypeSizeToFit ) return [NSString stringWithFormat:@"Layout(sizeToFit) %@", self.attributeValues.allValues];
+    else return [NSString stringWithFormat:@"Layout %@", self.attributeValues.allValues];
 }
 
 @end

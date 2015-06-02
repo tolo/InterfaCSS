@@ -8,7 +8,7 @@
 @class ISSLayout;
 
 
-typedef void (^ISSLayoutPostProcessingBlock)(UIView* view, ISSLayout* layout);
+typedef void (^ISSLayoutProcessingBlock)(UIView* view, ISSLayout* layout);
 
 
 /**
@@ -16,6 +16,6 @@ typedef void (^ISSLayoutPostProcessingBlock)(UIView* view, ISSLayout* layout);
  */
 @interface ISSLayoutContextView : UIView
 
-@property (nonatomic, copy) ISSLayoutPostProcessingBlock layoutPostProcessingBlock;
+@property (nonatomic, copy) ISSLayoutProcessingBlock layoutPostProcessingBlock;
 
 @end

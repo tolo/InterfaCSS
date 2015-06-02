@@ -54,8 +54,8 @@ typedef NS_ENUM(NSInteger, ISSLayoutType) {
 @property (nonatomic, strong, readonly) NSString* relativeElementId;
 @property (nonatomic, readonly) ISSLayoutAttribute relativeAttribute;
 
-@property (nonatomic, readonly) CGFloat multiplier;
-@property (nonatomic, readonly) CGFloat constant;
+@property (nonatomic) CGFloat multiplier;
+@property (nonatomic) CGFloat constant;
 
 @property (nonatomic, readonly) BOOL isConstantValue;
 @property (nonatomic, readonly) BOOL isParentRelativeValue;
@@ -82,7 +82,15 @@ typedef NS_ENUM(NSInteger, ISSLayoutType) {
 + (ISSLayoutAttribute) attributeFromString:(NSString*)string;
 + (ISSLayoutGuide) layoutGuideFromString:(NSString*)string;
 
+@property (nonatomic, readonly) NSArray* layoutAttributeValues;
+- (ISSLayoutAttributeValue*) valueForLayoutAttribute:(ISSLayoutAttribute)attribute;
+
+- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute;
 - (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)value;
+
+- (void) removeLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue;
+- (void) removeValueForLayoutAttribute:(ISSLayoutAttribute)attribute;
+- (void) removeValuesForLayoutAttributes:(NSArray*)attributes;
 
 - (BOOL) resolveRectForView:(UIView*)view withResolvedElements:(NSDictionary*)elementMappings andLayoutGuideInsets:(UIEdgeInsets)layoutGuideInsets;
 
