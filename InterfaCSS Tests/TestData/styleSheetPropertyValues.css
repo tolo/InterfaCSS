@@ -136,3 +136,41 @@
     lineBreakMode: NSLineBreakByWordWrapping;
     titleColor(UIControlStateSelected): red;
 }
+
+
+.layoutParentRelative1 {
+    layout: size(100, 100), center(parent, parent.centerY - 100); // Using implicit centerX attribute...
+}
+.layoutParentRelative2 {
+    layout: size(2 * parent.width, parent.height + 100), left(100), top(100);
+}
+
+.layoutElementRelative1 {
+    layout: size(100, 100), right(elementFoo), bottom(elementFoo.top - 100); // Using implicit left attribute...
+}
+.layoutElementRelative2 {
+    layout: size(elementFoo.width, 2 * elementFoo.height + 100), left(elementFoo.right), top(elementFoo.bottom - 100);
+}
+
+.layoutParentSizeToFit1 {
+    layout: sizeToFit(100, 100), left(parent.right), top(parent.bottom + 100);
+}
+.layoutParentSizeToFit2 {
+    layout: sizeToFit(parent.width * 2, 2 * parent.height + 100), right(3 * parent.left), bottom(guide.bottom);
+}
+
+.layoutImplicitAttributes1 {
+    layout: size(elementFoo, 2 * elementFoo + 100), center(elementFoo, elementFoo - 100);
+}
+.layoutImplicitAttributes2 {
+    layout: size(elementFoo, elementFoo * 2 + 100), topLeft(elementFoo, elementFoo);
+}
+.layoutImplicitAttributes3 {
+    layout: size(elementFoo, 2 * elementFoo + 100), topRight(elementFoo, elementFoo);
+}
+.layoutImplicitAttributes4 {
+    layout: size(elementFoo, elementFoo * 2 + 100), bottomLeft(elementFoo, elementFoo);
+}
+.layoutImplicitAttributes5 {
+    layout: size(elementFoo, 2 * elementFoo + 100), bottomRight(elementFoo, elementFoo);
+}
