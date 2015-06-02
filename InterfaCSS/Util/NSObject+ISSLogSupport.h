@@ -7,7 +7,7 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#define ISEQUAL(x,y) ((x == y) || (x != nil && [x isEqual:y]))
+#define ISS_ISEQUAL(x,y) ((x == y) || (x != nil && [x isEqual:y]))
 
 #define ISS_LOG_LEVEL_NONE      0
 #define ISS_LOG_LEVEL_WARNING   1
