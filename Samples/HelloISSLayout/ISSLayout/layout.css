@@ -1,7 +1,7 @@
 
 /**
  
- This demo uses a separate stylesheet file for specifying the layout. This is not a requirement, it's only used here
+ Note: This demo uses a separate stylesheet file for specifying the layout. This is not actually necessary - it's only done this way for demonstration purposes.
  
 **/
 
@@ -12,7 +12,6 @@
 #layoutGuideLabel {
     layout: top(guide.top + 1), centerX(parent); /* Placing label at top layout guide (with offset) and using intrinsic content size of label */
 }
-
 
 #button {
     layout: size(100, 100), center(parent, parent - 60); /* Using implicit/default parent relations that evaluates to parent.centerX / parent.centerY (same attributes used) */
