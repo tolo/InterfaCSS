@@ -148,7 +148,7 @@
     [view addStyleClassISS:style];
     [view applyStylingISS];
     [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:view];
-    XCTAssertEqual(view.alpha, alpha, @"Unexpected property value");
+    XCTAssertEqual((NSUInteger)(100*view.alpha), (NSUInteger)(100*alpha), @"Unexpected property value");
 }
 
 - (void) testMultipleMatchingClassesWithSameProperty {

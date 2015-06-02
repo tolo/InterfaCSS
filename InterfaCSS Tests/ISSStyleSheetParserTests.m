@@ -20,6 +20,8 @@
 #import "ISSRectValue.h"
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSParcoaStyleSheetParser.h"
+#import "ISSLayout.h"
+
 
 @interface ISSParcoaStyleSheetTestParser : ISSParcoaStyleSheetParser
 @end
@@ -418,7 +420,7 @@
 
     XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
     for(id value in values) {
-        XCTAssertEqualObjects(value, @(0.42f));
+        XCTAssertEqualObjects(value, @(0.42));
     }
 }
 
@@ -540,6 +542,114 @@
     [values[1] transformValueIfNeeded];
     XCTAssertEqualObjects([values[1] propertyValue], @(NSLineBreakByWordWrapping), @"Unexpected propety value");
     XCTAssertEqualObjects([values[2] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
+}
+
+- (void) testISSLayoutParentRelative {
+    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative1"] firstObject];
+
+    ISSLayout* layout = [[ISSLayout alloc] init];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeCenterX multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeCenterX];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeCenterY multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeCenterY];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative2"] firstObject];
+    
+    layout = [[ISSLayout alloc] init];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeWidth multiplier:2.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeHeight multiplier:1.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeLeft];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeTop];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+}
+
+- (void) testISSLayoutElementRelative {
+    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutElementRelative1"] firstObject];
+    
+    ISSLayout* layout = [[ISSLayout alloc] init];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeBottom];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutElementRelative2"] firstObject];
+    
+    layout = [[ISSLayout alloc] init];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeWidth inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeHeight inElement:@"elementFoo" multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeTop];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+}
+
+- (void) testISSLayoutSizeToFit {
+    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentSizeToFit1"] firstObject];
+    
+    ISSLayout* layout = [[ISSLayout alloc] init];
+    layout.layoutType = ISSLayoutTypeSizeToFit;
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeRight multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeBottom multiplier:1.0f constant:100] forTargetAttribute:ISSLayoutAttributeTop];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentSizeToFit2"] firstObject];
+    
+    layout = [[ISSLayout alloc] init];
+    layout.layoutType = ISSLayoutTypeSizeToFit;
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeWidth multiplier:2.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeHeight multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeLeft multiplier:3.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToLayoutGuide:ISSLayoutGuideBottom multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+}
+
+- (void) testISSLayoutImplicitAttributes {
+    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes1"] firstObject];
+    
+    ISSLayout* layout = [[ISSLayout alloc] init];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeWidth inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeHeight inElement:@"elementFoo" multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeCenterX inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeCenterX];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeCenterY inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeCenterY];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes2"] firstObject];
+    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeCenterX), @(ISSLayoutAttributeCenterY)]];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeTop];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes3"] firstObject];
+    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeLeft), @(ISSLayoutAttributeTop)]];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeTop];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes4"] firstObject];
+    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeRight), @(ISSLayoutAttributeTop)]];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
+    
+    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes5"] firstObject];
+    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeLeft), @(ISSLayoutAttributeBottom)]];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
+    [layout addLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
+    
+    XCTAssertEqualObjects(parsedLayout, layout);
 }
 
 @end
