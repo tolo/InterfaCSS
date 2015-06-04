@@ -96,12 +96,12 @@
     label.enabled = YES;
     [label applyStylingISS];
     
-    XCTAssertEqual(label.alpha, 0.25f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.25, @"Unexpected property value");
     
     label.enabled = NO;
     [label applyStylingISS]; // Styling should not be cached
     
-    XCTAssertEqual(label.alpha, 0.75f, @"Expected change in property value after state change");
+    ISSAssertEqualFloats(label.alpha, 0.75, @"Expected change in property value after state change");
 }
 
 - (void) testCachingWhenParentObjectStateAffectsSelectorMatching {
@@ -117,12 +117,12 @@
     control.enabled = YES;
     [label applyStylingISS];
     
-    XCTAssertEqual(label.alpha, 0.33f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.33, @"Unexpected property value");
     
     control.enabled = NO;
     [label applyStylingISS]; // Styling should not be cached
     
-    XCTAssertEqual(label.alpha, 0.66f, @"Expected change in property value after state change");
+    ISSAssertEqualFloats(label.alpha, 0.66, @"Expected change in property value after state change");
 }
 
 - (void) testVariableReuse {
@@ -133,7 +133,7 @@
     [rootView addStyleClassISS:@"reuseTest"];
     [rootView applyStylingISS];
     
-    XCTAssertEqual(rootView.alpha, 0.33f, @"Unexpected property value");
+    ISSAssertEqualFloats(rootView.alpha, 0.33, @"Unexpected property value");
 }
 
 - (void) testSetPropertyThatDoesntExistInTarget {
@@ -141,14 +141,15 @@
     [label addStyleClassISS:@"class2"];
     [label applyStylingISS];
     
-    XCTAssertEqual(label.alpha, 0.99f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.99, @"Unexpected property value");
 }
 
 - (void) applyStyle:(NSString*)style onView:(UIView*)view andExpectAlpha:(CGFloat)alpha {
     [view addStyleClassISS:style];
     [view applyStylingISS];
     [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:view];
-    XCTAssertEqual((NSUInteger)(100*view.alpha), (NSUInteger)(100*alpha), @"Unexpected property value");
+    NSLog(@"%@ - view.alpha: %f", style, view.alpha);
+    ISSAssertEqualFloats(view.alpha, alpha, @"Unexpected property value");
 }
 
 - (void) testMultipleMatchingClassesWithSameProperty {
@@ -162,22 +163,22 @@
     UILabel* label = [[UILabel alloc] init];
     [intermediateView addSubview:label];
 
-    [self applyStyle:@"class10" onView:label andExpectAlpha:0.1f];
+    [self applyStyle:@"class10" onView:label andExpectAlpha:0.1];
     
-    [self applyStyle:@"class11" onView:label andExpectAlpha:0.2f];
+    [self applyStyle:@"class11" onView:label andExpectAlpha:0.2];
     
-    [self applyStyle:@"class12" onView:label andExpectAlpha:0.2f]; // class12 defines alpha as 0.3, but appears before class11, so value of class11 should still apply
+    [self applyStyle:@"class12" onView:label andExpectAlpha:0.2]; // class12 defines alpha as 0.3, but appears before class11, so value of class11 should still apply
     
     [label removeStyleClassISS:@"class11"]; // After class11 is removed, value of class12 should apply
     [label applyStylingISS];
-    XCTAssertEqual(label.alpha, 0.3f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.3f, @"Unexpected property value");
 
     // Test ordering - attempt to make sure that class name doesn't affect ordering
-    [self applyStyle:@"abc123" onView:label andExpectAlpha:0.31f];
-    [self applyStyle:@"123abc" onView:label andExpectAlpha:0.32f];
-    [self applyStyle:@"zyxvyt" onView:label andExpectAlpha:0.33f];
-    [self applyStyle:@"abc123abc" onView:label andExpectAlpha:0.34f];
-    [self applyStyle:@"123abc123" onView:label andExpectAlpha:0.35f];
+    [self applyStyle:@"abc123" onView:label andExpectAlpha:0.31];
+    [self applyStyle:@"x123abc" onView:label andExpectAlpha:0.32];
+    [self applyStyle:@"zyxvyt" onView:label andExpectAlpha:0.33];
+    [self applyStyle:@"abc123abc" onView:label andExpectAlpha:0.34];
+    [self applyStyle:@"x123abc123" onView:label andExpectAlpha:0.35];
     
     
     [self applyStyle:@"class13" onView:label andExpectAlpha:0.4f];
@@ -185,7 +186,7 @@
 
 - (void) testThatPrefixedPropertyDoesntOverwrite {
     UIButton* btn = [[UIButton alloc] init];
-    [self applyStyle:@"overwriteTest" onView:btn andExpectAlpha:0.5f];
+    [self applyStyle:@"overwriteTest" onView:btn andExpectAlpha:0.5];
 }
 
 - (void) testAttributedTextIntegrity {
@@ -215,11 +216,11 @@
     button.styleClassISS = @"attributedTextTest";
     [button applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
+    ISSAssertEqualFloats(label.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
     XCTAssertEqualObjects(label.font, font, @"Unexpected property value");
     XCTAssertEqualObjects(label.textColor, color, @"Unexpected property value");
     XCTAssertEqualObjects(label2.font, cssFont, @"Unexpected property value");
-    XCTAssertEqual(button.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
+    ISSAssertEqualFloats(button.alpha, 0.5f, @"Unexpected property value"); // Just to test that styling actually has occurred
     XCTAssertEqualObjects(button.titleLabel.font, font, @"Unexpected property value");
     XCTAssertEqualObjects(button.currentTitleColor, color, @"Unexpected property value");
 }
@@ -264,24 +265,24 @@
 
     // Call applyStylingISS and verify that values have been read from CSS
     [root applyStylingISS];
-    XCTAssertEqual(root.alpha, 0.5f, @"Unexpected property value");
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    ISSAssertEqualFloats(root.alpha, 0.5, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 
     // Disable styling and change alpha values
     [root disableStylingISS];
-    root.alpha = 0.666f;
-    label.alpha = 0.666f;
+    root.alpha = 0.666;
+    label.alpha = 0.666;
 
     // Call applyStylingISS and verify that values didn't change
     [root applyStylingISS];
-    XCTAssertEqual(root.alpha, 0.666f, @"Unexpected property value");
-    XCTAssertEqual(label.alpha, 0.666f, @"Unexpected property value");
+    ISSAssertEqualFloats(root.alpha, 0.666, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.666, @"Unexpected property value");
 
     // Re-enable styling and verify that values revert back to those in CSS
     [root enableStylingISS];
     [root applyStylingISS];
-    XCTAssertEqual(root.alpha, 0.5f, @"Unexpected property value");
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    ISSAssertEqualFloats(root.alpha, 0.5, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 }
 
 - (void) testCascadingStylePropertyOverrideWithDefault {
@@ -291,14 +292,14 @@
 
     [label applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 0.666f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.666, @"Unexpected property value");
 
     label.alpha = 0.5;
     [label addStyleClassISS:@"cascadingStylePropertyOverrideWithDefault2"];
 
     [label applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 }
 
 - (void) testDisableStylingOfProperty {
@@ -308,14 +309,14 @@
 
     [label applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 0.5f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 
     label.alpha = 1;
     [label disableStylingForPropertyISS:@"alpha"];
 
     [label applyStylingISS];
 
-    XCTAssertEqual(label.alpha, 1.0f, @"Unexpected property value");
+    ISSAssertEqualFloats(label.alpha, 1.0, @"Unexpected property value");
 }
 
 - (void) testElementStyleCaching {
@@ -439,8 +440,8 @@
 
     XCTAssertEqualObjects((id)v.layer.shadowColor, (id)[UIColor redColor].CGColor);
     XCTAssertTrue(CGSizeEqualToSize(v.layer.shadowOffset, CGSizeMake(1,2)));
-    XCTAssertEqual(v.layer.shadowOpacity, 0.5);
-    XCTAssertEqual(v.layer.shadowRadius, 10);
+    ISSAssertEqualFloats(v.layer.shadowOpacity, 0.5);
+    ISSAssertEqualFloats(v.layer.shadowRadius, 10);
     
     UILabel* l = [[UILabel alloc] init];
     l.styleClassISS = @"shadowTest2";
@@ -468,8 +469,8 @@
     [l1 applyStylingISS];
     
     XCTAssertTrue(CGSizeEqualToSize(l1.frame.size, referenceSize));
-    XCTAssertEqual(l1.frame.origin.x, 20);
-    XCTAssertEqual(l1.frame.origin.y, 10);
+    ISSAssertEqualFloats(l1.frame.origin.x, 20);
+    ISSAssertEqualFloats(l1.frame.origin.y, 10);
     
     
     UILabel* l2 = [self labelWithString:string parent:parent];
@@ -477,8 +478,8 @@
     [l2 applyStylingISS];
     
     XCTAssertTrue(CGSizeEqualToSize(l2.frame.size, referenceSize));
-    XCTAssertEqual(l2.frame.origin.x, parent.bounds.size.width - referenceSize.width - 20);
-    XCTAssertEqual(l2.frame.origin.y, parent.bounds.size.height - referenceSize.height - 10);
+    ISSAssertEqualFloats(l2.frame.origin.x, parent.bounds.size.width - referenceSize.width - 20);
+    ISSAssertEqualFloats(l2.frame.origin.y, parent.bounds.size.height - referenceSize.height - 10);
     
     UILabel* l3 = [self labelWithString:string parent:parent];
     l3.styleClassISS = @"sizeToFitTest3";
@@ -528,7 +529,7 @@
     collectionView.styleClassISS = @"collectionViewTest";
     [collectionView applyStylingISS];
     
-    XCTAssertEqual(flow.minimumLineSpacing, 42);
+    ISSAssertEqualFloats(flow.minimumLineSpacing, 42);
 }
 
 - (void) testTransformedValueOfStyleSheetVariableWithName {

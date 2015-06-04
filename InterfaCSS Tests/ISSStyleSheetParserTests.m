@@ -408,8 +408,8 @@
     UIView* view = [[UIView alloc] init];
     [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:view];
     [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:view];
-    XCTAssertEqual(view.layer.cornerRadius, 5.0f);
-    XCTAssertEqual(view.layer.borderWidth, 10.0f);
+    ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
+    ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
     
     
     // Test other valid property prefixes
