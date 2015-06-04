@@ -1,10 +1,12 @@
 <img src="https://raw.githubusercontent.com/tolo/InterfaCSS/master/Resources/InterfaCSS-title-logo.png" alt="InterfaCSS" title="InterfaCSS" width="432">
 
+#*Update: Say hello to [ISSLayout](#layout)!*
+
 
 [![Build Status](https://travis-ci.org/tolo/InterfaCSS.svg?branch=master)](https://travis-ci.org/tolo/InterfaCSS)
 
 
-Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way you could style your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like on the web?
+Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way you could style and layout your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like on the web?
 
 
 
@@ -42,10 +44,10 @@ UITableViewCell .mySpecialButton {
 ```
 
 
+### Flexible layouts, the easy way
+InterfaCSS lets you define layouts based on values relative to other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.
 
-### Consice and clean setup of view hierarchy
-Using a [view builder](#layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
-
+In addition, using a [view builder](#layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
 
 
 ### *Hot deployment* of your stylesheets
@@ -114,14 +116,12 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) loaded from a URL (file in the local file system, web server or cloud service for instance). This will let you play around with the styles while you're running the application, which can really be a time and frustration saver, particularly when you're running on a device. Note though that this feature is only intended for use during development. Checkout the snippet below for an example on how you add refreshable stylesheets (in your app delegate for instance). Also, checkout the properties `stylesheetAutoRefreshInterval` and `processRefreshableStylesheetsLast` in `InterfaCSS`, for more control over how refreshable stylesheets are managed.
 
 ```objective-c
-#if DEBUG == 1
     /* For local (simulator) use, you can for instance load the actual css file used in your project as an auto-refreshable stylesheet: */
     [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
         [NSURL URLWithString:@"file://Users/username/myCoolXcodeProject/myDazzlingStyles.css"]];
     /* Or if you want to be able to run on a device, you can for instance simply upload the file to your cloud provider of choice: */
     [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
         [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/myDazzlingStyles.css"]];
-#endif
 ```
 
 
@@ -139,7 +139,7 @@ If you need more control over how/when styling is applied, have a look at these 
  * [`enableStylingForPropertyISS:`](InterfaCSS/UI/UIView+InterfaCSS.h#L148) - re-enable styling of property.
  * [`customStylingIdentityISS`](InterfaCSS/UI/UIView+InterfaCSS.h#L143) - specify a custom styling identity to increase performance.
 
-There is also support for registering custom styleable properties, via the class [`ISSPropertyRegistry`](InterfaCSS/Model/ISSPropertyRegistry.h), accessible 
+There is also support for registering custom styleable properties, via the class [`ISSPropertyRegistry`](InterfaCSS/Model/ISSPropertyRegistry.h), accessible
 through the property `propertyRegistry` in [`InterfaCSS`](InterfaCSS/InterfaCSS.h).
 
 
@@ -152,7 +152,7 @@ The format of the stylesheet files used by InterfaCSS is in structure essentiall
 
 This is what InterfaCSS supports:
 
-* Type, style class and wildcard selectors are supported.
+* Type, style class, element id, and wildcard selectors are supported.
 * Descendant (whitespace), child (`>`), adjacent sibling (`+`) and general sibling (`~`) selector combinators.
 * Pseudo classes:
     * [Structural pseudo classes](http://www.w3.org/TR/selectors/#structural-pseudos)
@@ -244,14 +244,44 @@ UILabel {
 }
 ```
 
+
 Layout
 ------
-In the layout department, InterfaCSS can help you in these ways:
 
-* Make it easier to create the view hierarchy through the use of the builder methods defined in [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h) or by using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference).
-* Make positioning and sizing of views easier, by making it possible to use parent relative values when setting frame, bounds and center properties in the stylesheet.
+When it comes to layout, InterfaCSS can help you in two ways: define layouts for views and view hierarchy setup for a view controller.
 
-### Create the view hierarchy
+
+### Layout definitions
+
+Until recently, InterfaCSS only provided a rather limited support for expressing layouts for views. However, since of 0.9.14, InterfaCSS now supports a more advanced layout system, aptly dubbed ISSLayout.
+
+What ISSLayout is:
+
+* An easier way of expressing layouts, while still maintaining layout flexibility and power
+* Lets you define your layout by using constant values combined with relationships to other elements and layout guides
+* Lets you easily handle the most common layout scenarios, and provides support for post processing to handle edge cases
+* Suitable for people who can visualize the layout from just abstract definitions
+* If you are struggling with maintaining complex storyboards
+
+What ISSLayout is not:
+
+* A direct replacement of Auto Layout
+* Capable of expressing really complex layout definitions that can fully solve any conceivable layout scenario though a single massive Chuck Norris style layout definition
+
+
+More documentation will come, but for now - have a look at the `HelloISSLayout` sample code.
+
+
+If you still prefer the more direct approach of setting `frame` and `center` properties etc, InterfaCSS has you covered here also - have a look at [Rect](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGRect) and [Point](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGPoint) in the stylesheet reference. Using these properties can take you further than you think, as InterfaCSS provides support for more than simple absolute values.
+
+
+### View setup
+
+View setup can be done in two different ways, depending on you preference:
+
+* In code with the help of the builder methods defined in [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h)
+* By using an XML-based [view definition file](https://github.com/tolo/InterfaCSS/wiki/View-Definition-File-Reference).
+
 
 #### Using ISSViewBuilder view builder methods
 ISSViewBuilder lets you programmatically create a view hierarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma).
@@ -305,22 +335,6 @@ Example of loading a view hierarchy from a view definition file in the `loadView
     self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];
 }
 ```
-
-
-### Positioning and sizing
-Besides setting fixed values for `frame`, `bounds` and `center` properties, you also have the option of using parent (or window) relative values. These relative values are evaluated during styling of a view, which means that you may have to manually apply styling when the parent view frame changes, unless you are using using a `ISSRootView` as the root view of a view hierarchy.
-
-####[Rect](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGRect) (frame / bounds)
-A relative rect value can be created in these ways:
-
-* `parent` - the bounds of the superview
-* `parent(xInset, yInset)` - the bounds of the superview, with the specified insets applied (using `CGRectInset`)
-* `size(width, height)` - sets the size using absolute point values or parent relative values. Relative values can either be percentage values like `50%` or the keyword `auto`. The auto keyword is only useful if insets are specified along with the size, for instance: `size(auto, 50%).left(5%).right(50)`. When auto is used, InterfaCSS makes sure that the sum of width/height and insets always adds up to the width/height of the parent.
-
-
-####[Point](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGPoint) (center):
-* `parent` - the center point in the superview
-* `parent(xOffset, yOffset)` - the center point in the superview, offset with the specifed offsets.
 
 
 Project background and status
