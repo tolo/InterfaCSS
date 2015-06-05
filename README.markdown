@@ -45,9 +45,9 @@ UITableViewCell .mySpecialButton {
 
 
 ### Flexible layouts, the easy way
-InterfaCSS lets you define layouts based on values relative to other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.
+InterfaCSS lets you define [layouts](#layout) based on values relative to other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.
 
-In addition, using a [view builder](#layout), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
+In addition, using a [view builder](#viewsetup), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course).
 
 
 ### *Hot deployment* of your stylesheets
@@ -152,12 +152,13 @@ The format of the stylesheet files used by InterfaCSS is in structure essentiall
 
 This is what InterfaCSS supports:
 
-* Type, style class, element id, and wildcard selectors are supported.
+* Type (e.g. `UILabel`), style class (e.g. `.myStyleClass`), element id (e.g. `#myElement`), and wildcard selectors are supported.
 * Descendant (whitespace), child (`>`), adjacent sibling (`+`) and general sibling (`~`) selector combinators.
 * Pseudo classes:
+    * Interface orientation: `landscape`, `landscapeLeft`, `landscapeRight`, `portrait`, `portraitUpright`, `portraitUpSideDown`
+    * Device type and size classes: `pad`, `phone`, `regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`
+    * Element state: `enabled`, `disabled` (for `UIControl` and others)
     * [Structural pseudo classes](http://www.w3.org/TR/selectors/#structural-pseudos)
-    * Enabled/disabled (for `UIControl` and others)
-    * Interface orientation (`landscape`, `landscapeLeft`, `landscapeRight`, `portrait`, `portraitUpright`, `portraitUpSideDown`)
 * Multiple selectors / selector chains may be specified for each declaration block.
 * Supported type selectors are most of the typical UIKit view (and view related) classes, such as `UIView` etc (case insensitive, 'UI' is optional)
 * If multiple declarations match, the last one wins. This rule also applies to stylesheets, i.e the stylesheet added last may override declarations in previously added stylesheets.
@@ -181,66 +182,37 @@ Below is an example of how a stylesheet file for InterfaCSS could look like:
 
 ```css
 /* Variables: */
-@stdFont1: HelveticaNeue-Medium 14;
-@stdColor1: rgb(0, 0, 255);
+@stdFont1: GillSans-Bold 14;
+@stdColor1: rgb(32, 64, 255);
+@stdColor2: #4f4f4f;
 
 UILabel {
-    minimumScaleFactor: 0.75;
+    font: @stdFont1;
     adjustsFontSizeToFitWidth: YES;
-    autoresizingMask: none;
     textAlignment: left;
 }
 
 .mainView {
-    autoresizingMask: width height;
-    backgroundColor: stdColor1;
+    backgroundImage: yellow; // Using color as image
 
-    .mainTitleLabel, .mainSubtitleLabel {
+    .nestedLabel {
+        frame: size(auto, auto).left(50%).right(3%);   // Frame using parent-relative sizing & insets
+        backgroundColor: @stdColor1;
         textColor: desaturate(magenta, 25%);
-    }
-
-    .mainTitleLabel {
-        frame: rect(15, 30, 160, 30);
-        textColor: #ffffff;
-        font: @stdFont1;
-        anchorPoint: point(0, 0);
         transform: rotate(5);   // Rotate 5 degrees
     }
 
-    .simpleSampleMainButton {
-        bounds: size(160, 40);
-        center: parent(0, 10);  // Offset from parent center
-        backgroundImage: red; // Using color as image
-        titleColor(highlighted): magenta;
-    }
-
-    .mainTable {
-        frame: parent(100, 10, 10, 10);   // Parent bounds inset using UIEdgeInsetsInsetRect
-        clipsToBounds: YES;
+    #aButton {
+        layout: size(100, 100), left(parent + 10), top(guide.top + 100); // Using ISSLayoyt
+        backgroundColor: @stdColor2;
         cornerRadius: 6;
-        borderColor: darkGray;
-        borderWidth: 1;
-
-        UITableViewCell * {
-            textColor: #4f4f4f;
-        }
-
-        .cellLabel1 {
-            frame: rect(5, 2, 120, 21);
-            font: @stdFont1;
-        }
-
-        .cellLabel2 {
-            frame: size(auto, auto).left(50%).right(3%);   // Frame using parent-relative sizing & insets
-            font: HelveticaNeue-UltraLight 36;
-            textAlignment: right;
-        }
+        titleColor: magenta;
+        titleColor(highlighted): lighten(magenta, 50%);
     }
+}
 
-    // Landscape orientation adjustment for tableview:  
-    .mainTable:landscape {
-        frame: parent(80, 10, 10, 10);  // Parent bounds inset using UIEdgeInsetsInsetRect
-    }
+.mainView:landscape { // Landscape orientation specific style class (using pseudo class)
+    backgroundImage: blue; // Using color as image
 }
 ```
 
@@ -255,13 +227,14 @@ When it comes to layout, InterfaCSS can help you in two ways: define layouts for
 
 Until recently, InterfaCSS only provided a rather limited support for expressing layouts for views. However, since of 0.9.14, InterfaCSS now supports a more advanced layout system, aptly dubbed ISSLayout.
 
-What ISSLayout is:
+What ISSLayout is/does:
 
 * An easier way of expressing layouts, while still maintaining layout flexibility and power
 * Lets you define your layout by using constant values combined with relationships to other elements and layout guides
+* Resolves layouts to frames and respects transforms, which makes it easier to do view animations
 * Lets you easily handle the most common layout scenarios, and provides support for post processing to handle edge cases
 * Suitable for people who can visualize the layout from just abstract definitions
-* If you are struggling with maintaining complex storyboards
+* Good if you are struggling with storyboards/nibs that are getting to cumbersome to work with
 
 What ISSLayout is not:
 
@@ -269,7 +242,8 @@ What ISSLayout is not:
 * Capable of expressing really complex layout definitions that can fully solve any conceivable layout scenario though a single massive Chuck Norris style layout definition
 
 
-More documentation will come, but for now - have a look at the `HelloISSLayout` sample code.
+You can find more documentation on how to define layouts [here](https://github.com/tolo/InterfaCSS/wiki/ISSLayout-Reference). Also, have a look at the `HelloISSLayout` sample code to see ISSLayout in action.
+
 
 
 If you still prefer the more direct approach of setting `frame` and `center` properties etc, InterfaCSS has you covered here also - have a look at [Rect](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGRect) and [Point](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#CGPoint) in the stylesheet reference. Using these properties can take you further than you think, as InterfaCSS provides support for more than simple absolute values.
@@ -284,16 +258,16 @@ View setup can be done in two different ways, depending on you preference:
 
 
 #### Using ISSViewBuilder view builder methods
-ISSViewBuilder lets you programmatically create a view hierarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma).
+ISSViewBuilder lets you programmatically create a view hierarchy in a quick and convenient way, that also makes it very easy to understand the layout of the view tree. You can easily assign created view to properties (see examples below) and you may optionally specify multiple style classes for each view (separated by space or comma). You can also associate views with elementIds, which primarily is used by `ISSLayout`, but also makes it possible to auto populate properties in a view controller - all you have to do is specify the owner parameter when creating the root view.
 
 Example of using ISSViewBuilder in the `loadView method of a view controller:
 
 ```objective-c
 - (void) loadView {
-    self.view = [ISSViewBuilder rootViewWithStyle:@"mainView" andSubViews:^{
+    self.view = [ISSViewBuilder rootViewWithStyle:@"mainView" withOwner:self andSubViews:^{
         return @[
             self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainLabel stdLabel"],
-            [ISSViewBuilder labelWithStyle:@"subLabel stdLabel"],
+            [ISSViewBuilder labelWithId:@"subLabel"],
             [ISSViewBuilder viewWithStyle:@"contentView" andSubViews:^{
                 return @[
                     [ISSViewBuilder labelWithStyle:@"contentTitleLabel"],
@@ -304,23 +278,6 @@ Example of using ISSViewBuilder in the `loadView method of a view controller:
     }];
 }
 ```
-
-You can also use a shorthand style by defining the macro `ISS_VIEW_BUILDER_SHORTHAND_ENABLED`:
-
-```objective-c
-self.view = [ISSBuildRoot:@"mainView" beginSubViews
-        self.mainTitleLabel = [ISSBuildLabel:@"mainLabel stdLabel"],
-        [ISSBuildLabel:@"subLabel stdLabel"],
-        [ISSBuildView:@"contentView" beginSubViews
-            [ISSBuildLabel:@"contentTitleLabel"],
-            [ISSBuildLabel:@"contentSubtitleLabel"]
-        endSubViews]
-endSubViews];
-```
-
-The pattern of the shorthand is basically this: `[ISSBuildXXX:...` = `[ISSViewBuilder XXXWithStyle:...`, and you can create all the views supported by ISSViewBuilder using this shorthand (that is: `ISSBuildRoot`, `ISSBuildView`, `ISSBuildCollectionView`, `ISSBuildImageView`, `ISSBuildScrollView`, `ISSBuildTableView`, `ISSBuildWebView`, `ISSBuildActivityIndicator`, `ISSBuildButton`, `ISSBuildLabel`, `ISSBuildProgressView`, `ISSBuildSlider`, `ISSBuildStepper`, `ISSBuildSwitch`, `ISSBuildTextField`, `ISSBuildTextView`, `ISSBuildTableViewCell`).
-
-Furthermore, you can also use the `beginSubViews` and `endSubViews` macros to make adding of subviews cleaner, as shown above.
 
 
 #### Using a view definition file
@@ -353,14 +310,14 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.12. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
+The latest released version is currently 0.9.13. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
 
 This is what must happen before version 1.0:
 
-* Finalize basic feature set and public API.
-* Better unit test coverage.
-* Better documentation.
-* Parser performance enhancements (some work has already been done here, but more can be done).
+* Finalize basic feature set and public API (more or less complete).
+* Better unit test coverage (getting there).
+* Better documentation (the most important stuff is complete).
+* Parser performance enhancements (some work has already been done here, and it may suffice for a version 1).
 
 And of course - all feedback is most welcome!
 
