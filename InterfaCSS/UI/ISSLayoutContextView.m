@@ -38,9 +38,14 @@
         // Get layout for element
         ISSLayout* layout = elementDetails.layout;
 
+        // Execute layout pre processing block, to enable additional customization of layout before layout is resolved
+        if( self.layoutPreProcessingBlock ) {
+            self.layoutPreProcessingBlock(elementDetails.view, elementDetails.layout);
+        }
+
         // Attempt resolve of layout to frame
         if( [layout resolveRectForView:elementDetails.view withResolvedElements:resolvedElements andLayoutGuideInsets:(UIEdgeInsets)layoutGuideInsets] ) {
-            // Execute layout post processing block, to enable additional customization of layout
+            // Execute layout post processing block, to enable additional customization of frame
             if( self.layoutPostProcessingBlock ) {
                 self.layoutPostProcessingBlock(elementDetails.view, elementDetails.layout);
             }
