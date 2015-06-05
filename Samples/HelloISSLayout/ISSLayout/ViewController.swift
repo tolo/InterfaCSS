@@ -45,10 +45,12 @@ class ViewController: UIViewController {
         }
     }
     
+    // Function used as layout post processing block to calculate some custom weird frame value for view4:
     class func layoutPostProcessingBlock(v: UIView!, l: ISSLayout!) {
         if v.elementIdISS == "view4" {
-            if v.frame.origin.y > (UIScreen.mainScreen().bounds.size.height * 2 / 3) {
-                v.frame = CGRectMake(v.frame.origin.x - v.frame.size.width, v.frame.origin.y - v.frame.size.height, v.frame.size.width, v.frame.size.height)
+            let vf = v.frame
+            if vf.origin.y > (UIScreen.mainScreen().bounds.size.height * 2 / 3) {
+                v.frame = CGRectMake(vf.origin.x - vf.size.width, vf.origin.y - vf.size.height, vf.size.width, vf.size.height)
             }
         }
     }
