@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ 
+ This is an example of how you can define layout for views directly in a view definition file, i.e. instead of using a stylesheed (like layout.css in this demo).
+ 
+ -->
+<view id="rootView">
+    
+    <label id="marginLabel" layout="left(parent.leftMargin), top(50)"/>
+    <label id="layoutGuideLabel" layout="top(guide.top + 1), centerX(parent)"/>
+    
+    <button id="button" layout="size(100, 100), center(parent, parent - 60)"/>
+    
+    <view id="view1" layout="size(25, 25), bottomRight(button - 30, button - 30)"/>
+    <view id="view2" layout="size(25, 25), bottomLeft(button + 30, button - 30)"/>
+    <view id="view3" layout="size(25, 25), topRight(button - 30, button + 30)"/>
+    <view id="view4" layout="size(25, 25), topLeft(button + 30, button + 30)"/>
+    
+    <label id="label" layout="top(button.top - 20), centerX(parent)"/>
+    
+</view>

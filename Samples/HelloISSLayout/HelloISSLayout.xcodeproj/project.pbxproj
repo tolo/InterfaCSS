@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2764B14C1B25CC1D0054C7AF /* layout.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2764B14B1B25CC1D0054C7AF /* layout.xml */; };
 		27D59A571AF39BBF001F2F2F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D59A561AF39BBF001F2F2F /* AppDelegate.swift */; };
 		27D59A591AF39BBF001F2F2F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D59A581AF39BBF001F2F2F /* ViewController.swift */; };
 		27D59A5E1AF39BBF001F2F2F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27D59A5D1AF39BBF001F2F2F /* Images.xcassets */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2764B14B1B25CC1D0054C7AF /* layout.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = layout.xml; sourceTree = "<group>"; };
 		27D59A511AF39BBF001F2F2F /* HelloISSLayout.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloISSLayout.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27D59A551AF39BBF001F2F2F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27D59A561AF39BBF001F2F2F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 				27D59A541AF39BBF001F2F2F /* Supporting Files */,
 				27D59A771AF51204001F2F2F /* styles.css */,
 				27D59A791AF5120D001F2F2F /* layout.css */,
+				2764B14B1B25CC1D0054C7AF /* layout.xml */,
 				27D59A7B1AF51286001F2F2F /* ObjC-Bridge.h */,
 			);
 			path = ISSLayout;
@@ -160,6 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2764B14C1B25CC1D0054C7AF /* layout.xml in Resources */,
 				27D59A7A1AF5120D001F2F2F /* layout.css in Resources */,
 				27D59A781AF51204001F2F2F /* styles.css in Resources */,
 				27D59A611AF39BBF001F2F2F /* LaunchScreen.xib in Resources */,

@@ -50,7 +50,7 @@
     // Construct the view hierachy for this view controller using ISSViewBuilder
     self.view = [ISSViewBuilder rootViewWithStyle:@"simpleSampleMainView" andSubViews:^{
         return @[
-          self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainTitleLabel"],
+          self.mainTitleLabel = [ISSViewBuilder labelWithId:@"mainTitleLabel"],
           self.mainTitleButton = [ISSViewBuilder buttonWithStyle:@"mainTitleButton"],
           self.simpleSampleContentView = [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
                 self.contentTitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentTitleLabel"],

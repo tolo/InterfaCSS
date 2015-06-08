@@ -17,7 +17,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let iss:InterfaCSS = InterfaCSS.sharedInstance()
         
         iss.loadStyleSheetFromMainBundleFile("styles.css")
-        iss.loadStyleSheetFromMainBundleFile("layout.css")
         
         let mainWindow = UIWindow(frame: UIScreen.mainScreen().bounds)
         mainWindow.rootViewController = ViewController()

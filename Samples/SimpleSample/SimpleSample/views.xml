@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <view class="prototypeExampleMainView">
-    <label property="mainTitleLabel" class="mainTitleLabel"/>
-    <button property="mainTitleButton" class="mainTitleButton"/>
+    <label id="mainTitleLabel"/>
+    <button property="mainTitleBtn" class="mainTitleButton"/>
     
     <tableView property="tableView" class="prototypeExampleTable">
         <tableViewCell prototype="prototypeExampleCell" class="prototypeExampleCell" impl="PrototypeExampleCell">

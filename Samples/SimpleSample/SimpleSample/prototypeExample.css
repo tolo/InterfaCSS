@@ -5,7 +5,7 @@
     autoresizingMask: width height;
     backgroundColor: #f0f0f0;
 
-    .mainTitleLabel {
+    #mainTitleLabel {
         textColor: #b300fd;
     }
     

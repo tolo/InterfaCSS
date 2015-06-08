@@ -29,7 +29,7 @@ UITabBarItem.tab1 {
     font: Avenir-Heavy 20;
 }
 
-.mainTitleLabel {
+#mainTitleLabel {
     frame: sizeToFit(160, 50).left(15).top(30);
     textColor: rgb(255, 255, 255);
     font: @stdHeadingLabel;
@@ -40,7 +40,7 @@ UITabBarItem.tab1 {
     attributedText: "Simple" (foregroundColor: #e1881e), " Sample " (foregroundColor: #3f3f3f), "Main" (foregroundColor: #ab45ec);
 }
 
-.mainTitleLabel:landscape { // Landscape orientation
+#mainTitleLabel:landscape { // Landscape orientation
     alpha: 0.5;
     textAlignment: center;
 }
@@ -55,7 +55,7 @@ UITabBarItem.tab1 {
     backgroundColor: gradient(darken(magenta, 50%), #e4e1e6);
 }
 
-.simpleSampleMainView .mainTitleLabel {
+.simpleSampleMainView #mainTitleLabel {
     shadowColor: fadeout(black, 50%);
     shadowOffset: size(1,1);
 }

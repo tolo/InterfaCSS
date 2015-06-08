@@ -17,9 +17,12 @@
     layout: size(100, 100), center(parent, parent - 60); /* Using implicit/default parent relations that evaluates to parent.centerX / parent.centerY (same attributes used) */
 }
 
+/*
+// We could of course adjust the layout this way, instead of how it's currently being done in ViewController.swift, but it wouldn't be as much fun
 #button.moveMe {
     layout: size(100, 100), center(parent, parent + 100);
 }
+*/
 
 #view1 {
     layout: size(25, 25), bottomRight(button - 30, button - 30); /* Using implicit/default element relations that in this case evaluates to button.left/button.top (opposing attributes used) */

@@ -28,7 +28,7 @@
 @interface PrototypeExampleViewController ()
 
 @property (nonatomic, strong) UILabel* mainTitleLabel;
-@property (nonatomic, strong) UIButton* mainTitleButton;
+@property (nonatomic, strong) UIButton* mainTitleBtn;
 
 @end
 
@@ -69,10 +69,10 @@
     [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"prototypeExample.css"];
     
     // Load the complete view hierachy for this view controller from the view definition file 'views.xml'
-    self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];
+    self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" fileOwner:self];
     
     self.mainTitleLabel.text = @"Prototype Example";
-    [self.mainTitleButton setTitle:@"Sample button" forState:UIControlStateNormal];
+    [self.mainTitleBtn setTitle:@"Sample button" forState:UIControlStateNormal];
 }
 
 - (NSUInteger) supportedInterfaceOrientations {
