@@ -20,6 +20,7 @@ typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 @property (nonatomic, strong, readonly) NSString* name;
 
 @property (nonatomic, strong, readonly) NSString* propertyName;
+@property (nonatomic) BOOL implicitPropertyName;
 @property (nonatomic, readonly) BOOL addAsSubView;
 
 @property (nonatomic, copy, readonly) ViewBuilderBlock viewBuilderBlock;

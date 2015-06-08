@@ -50,7 +50,7 @@
                 break;
             }
         }
-        if( !propertyFound ) {
+        if( !propertyFound && !self.implicitPropertyName ) {
             ISSLogWarning(@"Property '%@' not found in any ancestor of prototype!", _propertyName);
         }
     }

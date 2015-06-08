@@ -53,13 +53,13 @@ extern NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass;
  * Parses a view hierarchy from the specified file data. Specifying a value for the `fileOwner` will enable setting properties identified in the file.
  * If the fileOwner implements the `ISSViewHierarchyParserDelegate` protocol, it will also be used as the delegate.
  */
-+ (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner;
++ (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData fileOwner:(id)fileOwner wrapRoot:(BOOL)wrapRoot;
 
 /**
  * Parses a view hierarchy from the specified file data. Specifying a value for the `fileOwner` will enable setting properties identified in the file.
  * Specifying a value for the `delegate` will enable post processing of views and XML attributes.
  */
-+ (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData withFileOwner:(id)fileOwner delegate:(id<ISSViewHierarchyParserDelegate>)delegate;
++ (ISSRootView*) parseViewHierarchyFromData:(NSData*)fileData fileOwner:(id)fileOwner wrapRoot:(BOOL)wrapRoot delegate:(id<ISSViewHierarchyParserDelegate>)delegate;
 
 /**
  * Utility method for setting the value of a property in either a parent element or a file owner object.

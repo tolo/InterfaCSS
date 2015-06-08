@@ -82,15 +82,37 @@
     return rootView;
 }
 
-+ (ISSRootView*) loadViewHierarchyFromMainBundleFile:(NSString*)fileName withFileOwner:(id)fileOwner {
++ (ISSRootView*) loadViewHierarchyFromMainBundleFile:(NSString*)fileName withFileOwner:(id)fileOwner { // Legacy, deprecated
+    return [self loadViewHierarchyFromMainBundleFile:fileName fileOwner:fileOwner wrapRoot:NO];
+}
+
++ (ISSRootView*) loadViewHierarchyFromMainBundleFile:(NSString*)fileName fileOwner:(id)fileOwner {
+    return [self loadViewHierarchyFromMainBundleFile:fileName fileOwner:fileOwner wrapRoot:NO];
+}
+
++ (ISSRootView*) loadViewHierarchyFromMainBundleFile:(NSString*)fileName fileOwner:(id)fileOwner wrapRoot:(BOOL)wrapRoot {
     NSURL* url = [[NSBundle mainBundle] URLForResource:fileName withExtension:nil];
     NSData* fileData = [NSData dataWithContentsOfURL:url];
-    return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData withFileOwner:fileOwner];
+    if( fileData ) {
+        return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData fileOwner:fileOwner wrapRoot:wrapRoot];
+    } else {
+        ISSLogWarning(@"Unable to load view definitions from file '%@'", url);
+        return nil;
+    }
 }
 
 + (ISSRootView*) loadViewHierarchyFromFile:(NSString*)fileName fileOwner:(id)fileOwner {
+    return [self loadViewHierarchyFromFile:fileName fileOwner:fileOwner wrapRoot:NO];
+}
+
++ (ISSRootView*) loadViewHierarchyFromFile:(NSString*)fileName fileOwner:(id)fileOwner wrapRoot:(BOOL)wrapRoot {
     NSData* fileData = [NSData dataWithContentsOfFile:fileName];
-    return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData withFileOwner:fileOwner];
+    if( fileData ) {
+        return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData fileOwner:fileOwner wrapRoot:wrapRoot];
+    } else {
+        ISSLogWarning(@"Unable to load view definitions from file '%@'", fileName);
+        return nil;
+    }
 }
 
 
@@ -118,6 +140,10 @@
 
 + (UIView*) viewOfClass:(Class)clazz withId:(NSString*)elementId {
     return [self viewOfClass:clazz withId:elementId andStyle:nil andSubViews:nil];
+}
+
++ (UIView*) viewOfClass:(Class)clazz withId:(NSString*)elementId andStyle:(NSString*)styleClass {
+    return [self viewOfClass:clazz withId:elementId andStyle:styleClass andSubViews:nil];
 }
 
 + (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
@@ -202,6 +228,10 @@
     return [self tableViewOfClass:nil withStyle:styleClass andTableViewStyle:tableViewStyle andSubViews:subViewBlock];
 }
 
++ (UITableView*) tableViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock {
+    return [self tableViewOfClass:nil withId:elementId andStyle:styleClass andTableViewStyle:tableViewStyle andSubViews:subViewBlock];
+}
+
 + (UITableView*) tableViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock {
     return [self tableViewOfClass:clazz withId:nil andStyle:styleClass andTableViewStyle:tableViewStyle andSubViews:subViewBlock];
 }
@@ -248,6 +278,10 @@
 
 + (UIButton*) buttonWithStyle:(NSString*)styleClass andButtonType:(UIButtonType)buttonType {
     return [self setupView:[UIButton buttonWithType:buttonType] withStyleClass:styleClass];
+}
+
++ (UIButton*) buttonWithId:(NSString*)elementId andButtonType:(UIButtonType)buttonType {
+    return [self setupView:[UIButton buttonWithType:buttonType] withId:elementId andStyleClass:nil];
 }
 
 + (UILabel*) labelWithStyle:(NSString*)styleClass {
