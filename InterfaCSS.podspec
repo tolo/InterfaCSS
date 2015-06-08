@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'InterfaCSS'
-  s.version      = '0.9.14'
+  s.version      = '1.0.0'
   s.summary      = 'A fabulous CSS based styling and layout framework for iOS applications.'
   s.homepage     = 'https://github.com/tolo/InterfaCSS'
   s.license      = 'MIT'

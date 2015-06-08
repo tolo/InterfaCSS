@@ -1,6 +1,8 @@
 <img src="https://raw.githubusercontent.com/tolo/InterfaCSS/master/Resources/InterfaCSS-title-logo.png" alt="InterfaCSS" title="InterfaCSS" width="432">
 
-#*Update: Say hello to [ISSLayout](#layout)!*
+
+###Update: Say hello to *[ISSLayout](#layout)* and version 1.0 of InterfaCSS!
+
 
 
 [![Build Status](https://travis-ci.org/tolo/InterfaCSS.svg?branch=master)](https://travis-ci.org/tolo/InterfaCSS)
@@ -226,7 +228,7 @@ When it comes to layout, InterfaCSS can help you in two ways: defining flexible 
 
 ### Layout definitions
 
-Until recently, InterfaCSS only provided a rather limited support for expressing layouts for views. However, since of 0.9.14, InterfaCSS now supports a more advanced layout system, aptly dubbed ISSLayout.
+Until recently, InterfaCSS only provided a rather limited support for expressing layouts for views. However, as of version 1.0, InterfaCSS now supports a more advanced layout system, aptly dubbed ISSLayout.
 
 What ISSLayout is/does:
 
@@ -320,18 +322,12 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ### Status
 
-The latest released version is currently 0.9.13. This basically means that most of the basic stuff is in place, and it's just that final polish that is missing before a first stable version can be announced.
-
-This is what must happen before version 1.0:
-
-* Finalize basic feature set and public API (more or less complete).
-* Better unit test coverage (getting there).
-* Better documentation (the most important stuff is complete).
-* Parser performance enhancements (some work has already been done here, and it may suffice for a version 1).
+The basic stuff is finally in place, so it's time to announce version 1.0. But the work with refining the feature set, improving documentation and perfecting
+unit tests will of course continue.
 
 And of course - all feedback is most welcome!
 
-*"þetta er ágætis byrjun."*
+*"Við munum gera betur næst, þetta er ágætis byrjun"*
 
 
 
