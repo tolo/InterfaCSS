@@ -67,6 +67,14 @@
     [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId = elementIdISS;
 }
 
+- (ISSLayout*) layoutISS {
+    return [[InterfaCSS interfaCSS] detailsForUIElement:self].layout;
+}
+
+- (void) setLayoutISS:(ISSLayout*)layoutISS {
+    [[InterfaCSS interfaCSS] detailsForUIElement:self].layout = layoutISS;
+}
+
 
 #pragma mark - Methods
 

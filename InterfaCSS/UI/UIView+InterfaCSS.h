@@ -57,6 +57,9 @@
 /** Flag indicating if styling has been successfully applied to this view. */
 @property (nonatomic, readonly) BOOL stylingAppliedISS;
 
+/** The layout currently assigned to this view. */
+@property (nonatomic, strong) ISSLayout* layoutISS;
+
 
 /**
  * Sets the style class for the this view, replacing any previous style classes.
