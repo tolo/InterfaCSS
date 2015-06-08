@@ -551,4 +551,26 @@
     XCTAssertFalse(hasCustomViewWithCustomSetter);
 }
 
+- (void) testLayoutOfViewHierarchy {
+    ISSRootView* view = [[ISSRootView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    
+    UIView* v1 = [ISSViewBuilder viewWithId:@"layoutElement1"];
+    [view addSubview:v1];
+    UIView* v2 = [ISSViewBuilder viewWithId:@"layoutElement2"];
+    [view addSubview:v2];
+    UIView* v3 = [ISSViewBuilder viewWithId:@"layoutElement3"];
+    [view addSubview:v3];
+    UIView* v4 = [ISSViewBuilder viewWithId:@"layoutElement4"];
+    [view addSubview:v4];
+    
+    [view setNeedsLayout];
+    [view layoutIfNeeded];
+    
+    XCTAssertEqualObjects(NSStringFromCGRect(v1.frame), NSStringFromCGRect(CGRectMake(10, 10, 100, 100)));
+    XCTAssertEqualObjects(NSStringFromCGRect(v2.frame), NSStringFromCGRect(CGRectMake(110, 110, 100, 100)));
+    // layoutElement3 and layoutElement4 have cyclic dependencies and should remain unresolved
+    XCTAssertEqualObjects(NSStringFromCGRect(v3.frame), NSStringFromCGRect(CGRectZero));
+    XCTAssertEqualObjects(NSStringFromCGRect(v4.frame), NSStringFromCGRect(CGRectZero));
+}
+
 @end

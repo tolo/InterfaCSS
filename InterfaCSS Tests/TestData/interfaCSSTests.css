@@ -158,3 +158,17 @@ UIView.disabledStylingTest {
 .collectionViewTest {
     minimumLineSpacing: 42;
 }
+
+
+#layoutElement1 {
+    layout: size(100, 100), left(parent + 10), top(parent + 10);
+}
+#layoutElement2 {
+    layout: size(100, 100), left(layoutElement1), top(layoutElement1);
+}
+#layoutElement3 {
+    layout: size(100, 100), left(layoutElement4), top(layoutElement1);
+}
+#layoutElement4 {
+    layout: size(100, 100), left(layoutElement3), top(layoutElement1);
+}
