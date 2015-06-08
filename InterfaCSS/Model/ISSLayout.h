@@ -11,7 +11,7 @@ extern NSString* const ISSLayoutAttributeRelationLayoutGuide;
 
 
 /**
- * Specified a in an element
+ * ISSLayoutAttribute
  */
 typedef NS_ENUM(NSInteger, ISSLayoutAttribute) {
     ISSLayoutAttributeDefault     = 0,
@@ -85,8 +85,8 @@ typedef NS_ENUM(NSInteger, ISSLayoutType) {
 @property (nonatomic, readonly) NSArray* layoutAttributeValues;
 - (ISSLayoutAttributeValue*) valueForLayoutAttribute:(ISSLayoutAttribute)attribute;
 
-- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute;
-- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)value;
+- (void) setLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute;
+- (void) setLayoutAttributeValue:(ISSLayoutAttributeValue*)value;
 
 - (void) removeLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue;
 - (void) removeValueForLayoutAttribute:(ISSLayoutAttribute)attribute;

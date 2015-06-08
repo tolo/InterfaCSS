@@ -417,12 +417,12 @@ static NSDictionary* stringToLayoutGuide;
     return self.attributeValues[@(attribute)];
 }
 
-- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute {
+- (void) setLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue forTargetAttribute:(ISSLayoutAttribute)targetAttribute {
     attributeValue.targetAttribute = targetAttribute;
-    [self addLayoutAttributeValue:attributeValue];
+    [self setLayoutAttributeValue:attributeValue];
 }
 
-- (void) addLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue {
+- (void) setLayoutAttributeValue:(ISSLayoutAttributeValue*)attributeValue {
     NSAssert(attributeValue.targetAttribute != ISSLayoutAttributeDefault, @"ISSLayoutAttributeDefault cannot be used as parameter to %@", NSStringFromSelector(_cmd));
 
     self.attributeValues[@(attributeValue.targetAttribute)] = attributeValue;

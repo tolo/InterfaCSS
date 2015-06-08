@@ -627,11 +627,11 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             if( attributeValue == ISSLayoutAttributeSizeToFitFlag ) {
                 layout.layoutType = ISSLayoutTypeSizeToFit; // "sizeToFit" used
             } else {
-                [layout addLayoutAttributeValue:attributeValue];
+                [layout setLayoutAttributeValue:attributeValue];
             }
         }
     } else { // Single attribute: (i.e. "left" etc)
-        [layout addLayoutAttributeValue:result];
+        [layout setLayoutAttributeValue:result];
     }
 }
 
