@@ -76,7 +76,7 @@ You can add InterfaCSS to your project in two ways:
 
 
 ###Sample code
-Checking out the sample code is a good way to get a feel for how InterfaCSS is used in an app. To run the sample code, do this:
+Checking out the sample code is a good way to get a feel for how InterfaCSS is used in an app. To run the sample code, do like this:
 
 * Run `pod install` in the `Samples/SimpleSample` directory.
 * Open `SimpleSample.xcworkspace`.
@@ -160,20 +160,21 @@ This is what InterfaCSS supports:
     * Element state: `enabled`, `disabled` (for `UIControl` and others)
     * [Structural pseudo classes](http://www.w3.org/TR/selectors/#structural-pseudos)
 * Multiple selectors / selector chains may be specified for each declaration block.
+* Multiple pseudo classes can be chained (e.g. `.style:pad:landscape`).
 * Supported type selectors are most of the typical UIKit view (and view related) classes, such as `UIView` etc (case insensitive, 'UI' is optional)
 * If multiple declarations match, the last one wins. This rule also applies to stylesheets, i.e the stylesheet added last may override declarations in previously added stylesheets.
 * Setting nested properties on certain nested views, i.e. for instance `titleLabel.font`. These are the nested views that are supported at the moment:
 `imageView`, `contentView`, `backgroundView`, `selectedBackgroundView`, `multipleSelectionBackgroundView`, `titleLabel`, `textLabel`, `detailTextLabel`, `inputView`, `inputAccessoryView`,
-`tableHeaderView`, `tableFooterView` and `backgroundView`.
-* Support properties that are bound to a certain `UIControlState` (for instance): `titleColor(highlighted): red;`
-* Support for locking a property to its current value (through the `current` keyword / value).
+`tableHeaderView` and `tableFooterView`.
+* Support properties that are bound to a certain `UIControlState` (for instance): `titleColor(highlighted): red;` - read more [here](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#Parameters).
+* Support for locking a property to its current value (through the `current` keyword / value). This can for instance be helpful to ensure that values set in code are retained even when styles are re-applied.
 * Support for expressing a range of different [value types](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#PropertyValueTypes), such as fonts, colors, images, transform, insets, offsets, rects, enums, [attributed strings](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#NSAttributedString) etc.
 
 Furthermore, InterfaCSS also supports some Sass/Less-like features:
 
-* Nested declarations - i.e. nest declaration blocks within declaration blocks.
-* Variables(constants) - basically reusable property values.
-* Color functions.
+* Nested declarations - i.e. nest declaration blocks within declaration blocks (see example below).
+* Variables(constants) - basically reusable property values, defined on the form `@variableName: value;`
+* [Color functions](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference#uicolor).
 
 
 For a complete reference to the supported properties etc, see the [**Stylesheet Property Reference**](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
@@ -220,7 +221,7 @@ UILabel {
 Layout
 ------
 
-When it comes to layout, InterfaCSS can help you in two ways: define layouts for views and view hierarchy setup for a view controller.
+When it comes to layout, InterfaCSS can help you in two ways: defining flexible view layouts and setup of the view hierarchy for a view controller.
 
 
 ### Layout definitions
@@ -291,6 +292,15 @@ Example of loading a view hierarchy from a view definition file in the `loadView
 - (void) loadView {
     self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" withFileOwner:self];
 }
+```
+
+And the file itself could look like this:
+
+```xml
+<view class="myGroovyRootView">
+    <label id="mainTitleLabel"/>
+    <label property="mainSubtitleLabel" class="mainSubtitleLabel"/>
+</view>
 ```
 
 
