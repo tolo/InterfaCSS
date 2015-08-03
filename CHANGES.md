@@ -1,14 +1,35 @@
 #Changes
 
 
+##Version 1.0.1
+
+### Bug fixes
+* Added fix for incorrect import of Parcoa header file ([issue 34](https://github.com/tolo/InterfaCSS/issues/34), reported by @TadeasKriz).
+
+
+##Version 1.0.0
+
+### New features & changes
+* Added ISSLayout - a lightweight and flexible layout system. 
+* Added HelloISSLayout sample code.
+* Updated ISSViewBuilder with methods that take elementId parameter.
+
+### Bug fixes
+* Fixed rotation issue in sample code ([issue 24](https://github.com/tolo/InterfaCSS/issues/24), reported by @tbrannam).
+* Merged fix for `nthlastoftype` pseudo class name ([issue 25](https://github.com/tolo/InterfaCSS/issues/25), reported by @tbrannam).
+* Merged fix missing support for `UITabBar` when calculating type qualified position in parent ([issue 26](https://github.com/tolo/InterfaCSS/issues/26), added by @tbrannam).
+* Added support for use of color functions and named colors in gradients ([issue 29](https://github.com/tolo/InterfaCSS/issues/29), reported by @tbrannam).
+* Fixed issues with ISSPropertyTypeNumber not supporting negative numbers ([issue 30](https://github.com/tolo/InterfaCSS/issues/30), reported by @tbrannam).
+
+
 ##Version 0.9.13
 
 ### New features & changes
-* Added support for specifying the collection view layout class (via the `layoutClass` attribute) when creating collection views in a view definition file.
+* Added support for specifying the collection view layout class (via the `layoutClass` attribute) when creating collection views in a view definition file (fixes [issue 10](https://github.com/tolo/InterfaCSS/issues/10), reported by @tbrannam).
 * Added method `elementNameToViewClass` to `ISSViewHierarchyParser`, to make it possible for subclasses to override mapping of tag name to view class.
 * Added support for horizontal and vertical centering of rect values, by using the value `auto` in insets (e.g. left(auto).right(auto)`).
-* Added pseudo classes for user interface idiom (`pad` & `phone`) and size classes (`regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`) ([issue 18](https://github.com/tolo/InterfaCSS/issues/18)). 
-* Added support for chaining pseudo classes.
+* Added pseudo classes for user interface idiom (`pad` & `phone`) and size classes (`regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`) (fixes [issue 18](https://github.com/tolo/InterfaCSS/issues/18), reported by @tbrannam). 
+* Added support for chaining pseudo classes (fixes [issue 18](https://github.com/tolo/InterfaCSS/issues/18), reported by @tbrannam).
 * Simplified handling of view related styling data (ISSUIElementDetails) by using associated objects.
 
 ### Bug fixes
@@ -27,16 +48,18 @@
 * Added support for associating a view with an element identifier, both though`UIView+InterfaCSS` and the xml view definition file (`id` attribute).
 * Added support for setting properties on `UICollectionViewFlowLayout`.
 * Added support for "scoping" prototypes under a specific view, instead of always being defined on a global level. Also added support for using the attribute `propertyScope` (valid values are `parent` or `global`) in view definition files.
-* Added protocol `ISSViewHierarchyParserDelegate`, to support post processing of view defined in a view definition file.
+* Added protocol `ISSViewHierarchyParserDelegate`, to support post processing of view defined in a view definition file (fixes [issue 12](https://github.com/tolo/InterfaCSS/issues/12), reported by @tbrannam).
 * Added method to register a ISSPropertyDefinition directly to ISSPropertyRegistry.
-* Added support for variable substitution when doing manual property value transformation (i.e. for instance using `-[InterfaCSS transformedValueOfStyleSheetVariableWithName:asPropertyType:]` or `-[ISSStyleSheetParser transformValue:asPropertyType:]`).
+* Added support for variable substitution when doing manual property value transformation (i.e. for instance using `-[InterfaCSS transformedValueOfStyleSheetVariableWithName:asPropertyType:]` or `-[ISSStyleSheetParser transformValue:asPropertyType:]`). Fixes [issue 17](https://github.com/tolo/InterfaCSS/issues/17), reported by @tbrannam.
 
 ### Bug fixes
 * Fixed problem with using multiple constants within the same property value.
 * Reduction of excessive cleanup of caches.
-* Added fix for issue with view definition file prototypes ([issue 5](https://github.com/tolo/InterfaCSS/issues/5)) reported by @tbrannam - prototype child elements can now be assigned to property in any ancestor element.
+* Added fix for issue with view definition file prototypes ([issue 5](https://github.com/tolo/InterfaCSS/issues/5), reported by @tbrannam) - prototype child elements can now be assigned to property in any ancestor element.
 * Merged fix for use of incorrect setters for property `attributedTitle` ([issue 4](https://github.com/tolo/InterfaCSS/issues/4)), added by @tbrannam.
 * Added support for properly handling custom UITableViewCell/UICollectionViewCell subclasses in ISSViewHierarchyParser ([issue 7](https://github.com/tolo/InterfaCSS/issues/7)).
+* Fixed issue with prototype views having a global namespace ([issue 8](https://github.com/tolo/InterfaCSS/issues/8), reported by @tbrannam)
+* Added fix for issue with custom enumerated property definition ([issue 16](https://github.com/tolo/InterfaCSS/issues/16), reported by @tbrannam)
 
 
 ##Version 0.9.11
