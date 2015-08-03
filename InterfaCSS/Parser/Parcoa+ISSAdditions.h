@@ -7,7 +7,7 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import "Parcoa.h"
+#import <Parcoa/Parcoa.h>
 
 typedef NSUInteger (^MatcherBlock)(NSString* input);
 
