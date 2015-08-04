@@ -25,7 +25,7 @@
 		27DDFCAF18B0CC3C00C4A6A1 /* libInterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1714F5683B008E647E /* libInterfaCSS.a */; };
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
-		2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */; };
+		8AA5A3B61B7091FD00D577D4 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
 		CC3C7E95D72191A7534CDDE8 /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C803B99218B157D6EC836 /* UIView+ISSPrototypeReusableView.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C86B1C38201CA9050889A /* UIView+ISSPrototypeReusableView.h */; };
@@ -111,10 +111,7 @@
 
 /* Begin PBXFileReference section */
 		09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.release.xcconfig"; sourceTree = "<group>"; };
-		0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		186DC3674630469E9A578BF5 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		270AD5ED19F79E1F004A649B /* viewDefinitionTest.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = viewDefinitionTest.xml; sourceTree = "<group>"; };
-		271FD12019FBC2560052221D /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
 		27530C36182AF066000FED8A /* ISSPropertyDeclarations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclarations.h; sourceTree = "<group>"; };
 		27530C37182AF066000FED8A /* ISSPropertyDeclarations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclarations.m; sourceTree = "<group>"; };
 		2785E25C18A8DCBB001D1104 /* InterfaCSS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InterfaCSS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -135,8 +132,8 @@
 		27D8145217FB5A7D00E365B1 /* UIColor+ISSColorAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+ISSColorAdditions.m"; sourceTree = "<group>"; };
 		27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetPropertyValues.css; sourceTree = "<group>"; };
 		27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
-		30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/../build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
 		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
 		BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.debug.xcconfig"; sourceTree = "<group>"; };
 		CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDateUtils.m; sourceTree = "<group>"; };
@@ -229,11 +226,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AA5A3B61B7091FD00D577D4 /* libPods-InterfaCSS.a in Frameworks */,
 				F65D52E014F7B12A0034E496 /* CoreGraphics.framework in Frameworks */,
 				F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */,
 				F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */,
 				F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */,
-				2950316A51003DF681C88ED2 /* libPods-InterfaCSS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,15 +406,12 @@
 		F6F5FC1914F5683B008E647E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				271FD12019FBC2560052221D /* libPods-InterfaCSS.a */,
+				8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */,
 				F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */,
 				F65D52D814F7B0F10034E496 /* UIKit.framework */,
 				F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */,
 				F6F5FC1A14F5683B008E647E /* Foundation.framework */,
-				186DC3674630469E9A578BF5 /* libPods.a */,
 				2785E25D18A8DCBB001D1104 /* XCTest.framework */,
-				0AB38492FAA03F5B94E7D0E4 /* libPods-InterfaCSS.a */,
-				30A03259FF3C75DD904FB15D /* libPods-InterfaCSS Tests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -689,6 +683,7 @@
 /* Begin XCBuildConfiguration section */
 		2785E26C18A8DCBB001D1104 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -716,6 +711,7 @@
 		};
 		2785E26D18A8DCBB001D1104 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09663E327AB9AA74CD9C88A5 /* Pods-InterfaCSS.release.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
