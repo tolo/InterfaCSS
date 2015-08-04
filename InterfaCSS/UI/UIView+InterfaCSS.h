@@ -18,7 +18,7 @@
 /**
  * Convenience property for setting/getting a single style class. If multiple classes are set, the value returned by this property can be any of those styles.
  */
-@property (nonatomic, strong) NSString* styleClassISS;
+@property (nonatomic, strong) ISS_IBInspectableIfAvailable NSString* styleClassISS;
 
 /**
  * Represents the style class for the this view.
