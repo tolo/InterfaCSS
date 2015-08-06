@@ -20,7 +20,7 @@
 
 #define S(selName) NSStringFromSelector(@selector(selName))
 #define SLC(selName) [S(selName) lowercaseString]
-
+#define resistanceIsFutile (id <NSCopying>)
 
 
 #pragma mark - Convenience/shorthand functions
@@ -151,7 +151,34 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 }
 
 - (Class) canonicalTypeClassForType:(NSString*)type {
-    return self.typeNamesToClasses[[type lowercaseString]];
+    return [self canonicalTypeClassForType:type registerIfNotFound:NO];
+}
+
+- (Class) canonicalTypeClassForType:(NSString*)type registerIfNotFound:(BOOL)registerIfNotFound {
+    NSString* uiKitClassName = [type lowercaseString];
+    if( ![uiKitClassName hasPrefix:@"ui"] ) {
+        uiKitClassName = [@"ui" stringByAppendingString:uiKitClassName];
+    }
+
+    Class clazz = self.typeNamesToClasses[uiKitClassName];
+    if( !clazz ) {
+        clazz = self.typeNamesToClasses[type]; // If not UIKit class - see if it is a custom class
+    }
+    if( !clazz && registerIfNotFound ) {
+        // If type doesn't match a registered class name, try to see if the type is a valid class...
+        clazz = NSClassFromString(type);
+        if( clazz ) {
+            // ...and if it is - register it as a canonical type (keep case)
+            NSMutableDictionary* temp = [NSMutableDictionary dictionaryWithDictionary:self.typeNamesToClasses];
+            temp[type] = clazz;
+            self.typeNamesToClasses = [NSDictionary dictionaryWithDictionary:temp];
+            
+            temp = [NSMutableDictionary dictionaryWithDictionary:self.classesToTypeNames];
+            temp[resistanceIsFutile clazz] = type;
+            self.classesToTypeNames = [NSDictionary dictionaryWithDictionary:temp];
+        }
+    }
+    return clazz;
 }
 
 - (ISSPropertyDefinition*) registerCustomProperty:(NSString*)propertyName propertyType:(ISSPropertyType)propertyType {
@@ -1021,7 +1048,6 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     self.propertyDefinitions = allProperties;
 
 
-    #define resistanceIsFutile (id <NSCopying>)
     self.classProperties = @{
             resistanceIsFutile UIView.class : viewProperties,
             resistanceIsFutile UIImageView.class : imageViewProperties,

@@ -25,6 +25,7 @@
 - (NSString*) canonicalTypeForViewClass:(Class)viewClass;
 - (Class) canonicalTypeClassForViewClass:(Class)viewClass;
 - (Class) canonicalTypeClassForType:(NSString*)type;
+- (Class) canonicalTypeClassForType:(NSString*)type registerIfNotFound:(BOOL)registerIfNotFound;
 
 /**
  * Registers a custom property with the specified name and type, that can then be used in stylesheets.

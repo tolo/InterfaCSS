@@ -20,6 +20,25 @@
 #import "UIView+InterfaCSS.h"
 
 
+@interface MyCustomView : UIView
+@end
+
+@implementation MyCustomView
+@end
+
+@interface MyCustomViewSubClass : MyCustomView
+@end
+
+@implementation MyCustomViewSubClass
+@end
+
+@interface MyCustomView2 : UIView
+@end
+
+@implementation MyCustomView2
+@end
+
+
 @interface ISSSelectorTests : XCTestCase
 @end
 
@@ -299,6 +318,38 @@
     XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
+}
+
+- (void) testUsingNonUIKitClassAsType {
+    ISSSelector* customClassTypeSelector = [ISSSelector selectorWithType:@"MyCustomView" styleClass:nil pseudoClasses:nil];
+    ISSSelectorChain* customClassTypeSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[customClassTypeSelector]];
+    
+    // Verify that custom type selector matches custom class
+    MyCustomView* myCustomView = [[MyCustomView alloc] init];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomView];
+    
+    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must match custom class!");
+    
+    // Verify that custom type selector does NOT match UIView
+    UIView* randomView = [[UIView alloc] init];
+    elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:randomView];
+    
+    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must NOT match standard UIView!");
+    
+    // Verify that custom type selector does NOT match other custom class
+    MyCustomView2* myCustomView2 = [[MyCustomView2 alloc] init];
+    elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomView2];
+    
+    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must NOT match other custom class!");
+    
+    // Verify that custom type selector does match other custom class that is subclass of first class (create the selector and selector chain again, to make sure multiple occurances of the same custom type selector works)
+    customClassTypeSelector = [ISSSelector selectorWithType:@"MyCustomView" styleClass:nil pseudoClasses:nil];
+    customClassTypeSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[customClassTypeSelector]];
+    
+    MyCustomViewSubClass* myCustomViewSubClass = [[MyCustomViewSubClass alloc] init];
+    elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomViewSubClass];
+    
+    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must match other custom class that is sub class of type in custom type selector!");
 }
 
 @end

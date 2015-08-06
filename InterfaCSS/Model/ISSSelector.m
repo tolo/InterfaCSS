@@ -50,10 +50,8 @@
     if( [type iss_hasData] ) {
         if( [type isEqualToString:@"*"] ) wildcardType = YES;
         else {
-            type = [type lowercaseString];
-            if( ![type hasPrefix:@"ui"] ) type = [@"ui" stringByAppendingString:type];
             ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-            typeClass = [registry canonicalTypeClassForType:type];
+            typeClass = [registry canonicalTypeClassForType:type registerIfNotFound:YES];
         }
     }
 
