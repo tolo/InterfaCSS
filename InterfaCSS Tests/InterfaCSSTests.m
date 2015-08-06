@@ -573,4 +573,25 @@
     XCTAssertEqualObjects(NSStringFromCGRect(v4.frame), NSStringFromCGRect(CGRectZero));
 }
 
+- (void) testPrefixedPropertyOverrideOfTypeProperty {
+    UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    view.styleClassISS = @"typeSelectorAndPrefixedPropertyTest";
+    
+    UIButton* btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [view addSubview:btn];
+    
+    [btn applyStylingISS];
+    
+    XCTAssertEqualObjects(btn.titleLabel.font, [UIFont fontWithName:@"GillSans" size:2]);
+}
+
+- (void) testPrefixedPropertyOnNonUIViewClass {
+    UIBarButtonItem* item = [[UIBarButtonItem alloc] initWithCustomView:[[UIView alloc] init]];
+    [[InterfaCSS interfaCSS] addStyleClass:@"prefixedPropertyOnNonUIViewClass" forUIElement:item];
+    
+    [[InterfaCSS interfaCSS] applyStyling:item];
+    
+    ISSAssertEqualFloats(item.customView.alpha, 0.5f);
+}
+
 @end

@@ -152,7 +152,7 @@
 }
 
 - (NSUInteger) hash {
-    return 31u*31u * [self.type hash] + 31*[self.styleClass hash] + [self.pseudoClasses hash] + (_wildcardType ? 1 : 0);
+    return 31u*31u*31u * [self.type hash] + 31u*31u*[self.styleClass hash] + 31*[self.elementId hash] + [self.pseudoClasses hash] + (_wildcardType ? 1 : 0);
 }
 
 @end

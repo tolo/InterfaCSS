@@ -37,14 +37,19 @@
 - (void) registerCustomProperty:(ISSPropertyDefinition*)propertyDefinition;
 
 /**
- * Registers a valid property prefix (i.e. nested property name).
+ * Registers a valid property prefix key path (i.e. nested element key path), which can be used in stylesheets to set properties on child elements of a particular element.
  */
 - (void) registerValidPrefixKeyPath:(NSString*)prefix;
 
 /**
- * Registers a set of valid property prefixes (i.e. nested property names).
+ * Registers a set of valid property prefixes (i.e. nested element key paths), which can be used in stylesheets to set properties on child elements of a particular element.
  */
 - (void) registerValidPrefixKeyPaths:(NSArray*)prefixes;
+
+/**
+ * Finds the subset of valid property prefix key paths that are supported by the specified class.
+ */
+- (NSSet*) validPrefixKeyPathsForClass:(Class)clazz;
 
 #if DEBUG == 1
 - (NSString*) propertyDescriptionsForMarkdown;

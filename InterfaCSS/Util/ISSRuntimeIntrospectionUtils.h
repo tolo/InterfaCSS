@@ -20,4 +20,8 @@
 
 + (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName;
 
++ (NSString*) actualPropertyNameForCaseInsensitiveName:(NSString*)caseInsensitivePropertyName inClass:(Class)class;
+
++ (NSString*) validKeyPathForCaseInsensitivePath:(NSString*)caseInsensitiveKeyPath inClass:(Class)class;
+
 @end

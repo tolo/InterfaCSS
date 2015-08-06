@@ -36,7 +36,11 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentityPath;
 @property (nonatomic, strong) NSString* elementStyleIdentity;
+
+@property (nonatomic, strong) NSDictionary* validNestedElements;
+
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
+
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
 
 @end
@@ -53,12 +57,21 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         _uiElement = uiElement;
         if( [uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)uiElement;
-            _parentView = view.superview;
+            _parentElement = view.superview;
         }
 
         ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
         _canonicalType = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
         if( !_canonicalType ) _canonicalType = [uiElement class];
+        
+        NSSet* validPrefixPathsForClass = [registry validPrefixKeyPathsForClass:[self.uiElement class]];
+        if( validPrefixPathsForClass.count ) {
+            NSMutableDictionary* validNestedElements = [NSMutableDictionary dictionary];
+            for(NSString* path in validPrefixPathsForClass) {
+                validNestedElements[[path lowercaseString]] = path;
+            }
+            _validNestedElements = validNestedElements;
+        }
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetCachedData) name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
     }
@@ -75,7 +88,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 - (id) copyWithZone:(NSZone*)zone {
     ISSUIElementDetails* copy = [[(id)self.class allocWithZone:zone] init];
     copy->_uiElement = self->_uiElement;
-    copy.parentView = self.parentView;
+    copy->_parentElement = self->_parentElement;
 
     copy.elementId = self.elementId;
 
@@ -136,7 +149,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         [element updateElementStyleIdentity];
     }
 
-    if( element.parentView && !element.usingCustomElementStyleIdentity ) [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentView] ancestorUsesCustomElementStyleIdentity:ancestorUsesCustomElementStyleIdentity];
+    if( element.parentElement && !element.usingCustomElementStyleIdentity ) {
+        [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentElement] ancestorUsesCustomElementStyleIdentity:ancestorUsesCustomElementStyleIdentity];
+    }
     if( identityPath.length ) [identityPath appendString:@" "];
 
     if( element.usingCustomElementStyleIdentity ) {
@@ -174,6 +189,10 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (UIView*) view {
     return [self.uiElement isKindOfClass:UIView.class] ? self.uiElement : nil;
+}
+
+- (UIView*) parentView {
+    return [self.parentElement isKindOfClass:UIView.class] ? self.parentElement : nil;
 }
 
 - (UIViewController*) parentViewController {
@@ -214,7 +233,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         [self.class buildElementStyleIdentityPath:identityPath element:self ancestorUsesCustomElementStyleIdentity:&ancestorUsesCustomElementStyleIdentity];
         self.ancestorUsesCustomElementStyleIdentity = ancestorUsesCustomElementStyleIdentity;
         path = [identityPath copy];
-        if( self.parentView && (ancestorUsesCustomElementStyleIdentity || self.parentView.window) ) {
+        if( self.parentElement && (ancestorUsesCustomElementStyleIdentity || self.parentView.window) ) {
             _elementStyleIdentityPath = path;
         }
     }
@@ -319,6 +338,60 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 - (NSMutableDictionary*) prototypes {
     if( !_prototypes ) _prototypes = [[NSMutableDictionary alloc] init];
     return _prototypes;
+}
+
+- (id) childElementForKeyPath:(NSString*)keyPath {
+    NSString* validKeyPath = self.validNestedElements[[keyPath lowercaseString]];
+    if( validKeyPath ) {
+        return [self.uiElement valueForKeyPath:validKeyPath];
+    }
+    return nil;
+}
+
+- (NSArray*) childElementsForElement {
+    //NSArray* subviews = self.view.subviews ?: [[NSArray alloc] init];
+    NSMutableOrderedSet* subviews = self.view.subviews ? [[NSMutableOrderedSet alloc] initWithArray:self.view.subviews] : [[NSMutableOrderedSet alloc] init];
+    
+    UIView* parentView = nil;
+    // Special case: UIToolbar - add toolbar items to "subview" list
+    if( [self.view isKindOfClass:UIToolbar.class] ) {
+        UIToolbar* toolbar = (UIToolbar*)self.view;
+        parentView = toolbar;
+        if( toolbar.items ) [subviews addObjectsFromArray:toolbar.items];
+    }
+    // Special case: UINavigationBar - add nav bar items to "subview" list
+    else if( [self.view isKindOfClass:UINavigationBar.class] ) {
+        UINavigationBar* navigationBar = (UINavigationBar*)self.view;
+        parentView = navigationBar;
+        
+        NSMutableArray* additionalSubViews = [NSMutableArray array];
+        for(id item in navigationBar.items) {
+            if( [item isKindOfClass:UINavigationItem.class] ) {
+                UINavigationItem* navigationItem = (UINavigationItem*)item;
+                if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
+                if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
+                if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
+                if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];
+            } else {
+                [additionalSubViews addObject:item];
+            }
+        }
+        [subviews addObjectsFromArray:additionalSubViews];
+    }
+    // Special case: UITabBar - add tab bar items to "subview" list
+    else if( [self.view isKindOfClass:UITabBar.class] ) {
+        UITabBar* tabBar = (UITabBar*)self.view;
+        parentView = tabBar;
+        if( tabBar.items ) [subviews addObjectsFromArray:tabBar.items];
+    }
+    
+    // Add any valid nested elements (valid property prefix key paths) to the subviews list
+    for(NSString* nestedElementKeyPath in self.validNestedElements.allValues) {
+        id nestedElement = [self.uiElement valueForKeyPath:nestedElementKeyPath];
+        if( nestedElement ) [subviews addObject:nestedElement];
+    }
+    
+    return [subviews array];
 }
 
 

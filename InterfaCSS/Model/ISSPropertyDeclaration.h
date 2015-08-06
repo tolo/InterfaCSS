@@ -19,15 +19,15 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
  */
 @interface ISSPropertyDeclaration : NSObject<NSCopying>
 
-@property (nonatomic, readonly) NSString* prefix;
+@property (nonatomic, readonly) NSString* nestedElementKeyPath;
 @property (nonatomic, readonly) ISSPropertyDefinition* property;
 @property (nonatomic, readonly) NSArray* parameters;
 @property (nonatomic, readonly) NSString* unrecognizedName;
 @property (nonatomic, strong) id propertyValue;
 @property (nonatomic, copy) ISSLazyValueBlock lazyPropertyTransformationBlock;
 
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property prefix:(NSString*)prefix;
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters prefix:(NSString*)prefix;
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property nestedElementKeyPath:(NSString*)nestedElementKeyPath;
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath;
 - (instancetype) initWithUnrecognizedProperty:(NSString*)unrecognizedPropertyName;
 
 - (BOOL) transformValueIfNeeded;

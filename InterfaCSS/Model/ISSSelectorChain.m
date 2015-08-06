@@ -21,7 +21,7 @@
                                         ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     if( !parentDetails ) return nil;
     else if( [selector matchesElement:parentDetails ignoringPseudoClasses:ignorePseudoClasses] ) return parentDetails;
-    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentView]
+    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentElement]
                                                forSelector:selector ignoringPseudoClasses:ignorePseudoClasses];
 }
 
@@ -55,7 +55,7 @@
 + (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails withSelector:(ISSSelector*)selector andCombinator:(ISSSelectorCombinator)combinator
                 ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     ISSUIElementDetails* nextUIElementDetails = nil;
-    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:elementDetails.parentView];
+    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:elementDetails.parentElement];
     parentDetails = [parentDetails copy]; // Use copy of parent to make sure any modification to stylesCacheable flag does not affect original object
     switch (combinator) {
         case ISSSelectorCombinatorDescendant: {

@@ -67,36 +67,35 @@
     return [parser parse:styleSheetData];
 }
 
-- (ISSPropertyDeclarations*) getPropertyDeclarationsForStyleClass:(NSString*)styleClass inStyleSheet:(NSString*)stylesheet {
+- (NSArray*) getAllPropertyDeclarationsForStyleClass:(NSString*)styleClass inStyleSheet:(NSString*)stylesheet {
     NSArray* result = [self parseStyleSheet:stylesheet];
     
-    ISSPropertyDeclarations* declarations = nil;
+    NSMutableArray* declarations = [NSMutableArray array];
     for (ISSPropertyDeclarations* d in result) {
         if( [[[d.selectorChains[0] selectorComponents][0] styleClass] isEqualToString:styleClass] ) {
-            declarations = d; break;
+            [declarations addObject:d];
         }
     }
     return declarations;
 }
 
-- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass {
-    return [self getPropertyValuesWithNames:names fromStyleClass:styleClass getDeclarations:NO];
+- (ISSPropertyDeclarations*) getPropertyDeclarationsForStyleClass:(NSString*)styleClass inStyleSheet:(NSString*)stylesheet {
+    return [[self getAllPropertyDeclarationsForStyleClass:styleClass inStyleSheet:stylesheet] firstObject];
 }
 
-- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
-    ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
-    
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromDeclarations:(ISSPropertyDeclarations*)declarations getDeclarations:(BOOL)getDeclarations {
     NSMutableArray* values = [NSMutableArray array];
     
     for(NSString* name in names) {
         id value = nil;
         for(ISSPropertyDeclaration* d in declarations.properties) {
             NSString* propertyName = d.property.name;
-            if( d.prefix && ![d.prefix isEqualToString:@"layer"] ) {
-                propertyName = [[d.prefix stringByAppendingString:@"."] stringByAppendingString:propertyName];
+            if( d.nestedElementKeyPath && ![d.nestedElementKeyPath isEqualToString:@"layer"] ) {
+                propertyName = [[d.nestedElementKeyPath stringByAppendingString:@"."] stringByAppendingString:propertyName];
             }
             
             if( [propertyName iss_isEqualIgnoreCase:name] || [d.property.allNames containsObject:[name lowercaseString]] ) {
+                NSLog(@"propertyName: %@", propertyName);
                 if( getDeclarations ) value = d;
                 else {
                     [d transformValueIfNeeded];
@@ -110,6 +109,27 @@
     
     return values;
 }
+
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
+    ISSPropertyDeclarations* declarations = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
+    
+    return [self getPropertyValuesWithNames:names fromDeclarations:declarations getDeclarations:getDeclarations];
+}
+
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass {
+    return [self getPropertyValuesWithNames:names fromStyleClass:styleClass getDeclarations:NO];
+}
+
+- (NSArray*) getAllPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
+    NSArray* allDeclarations = [self getAllPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
+    
+    NSMutableArray* result = [NSMutableArray array];
+    for(ISSPropertyDeclarations* declarations in allDeclarations) {
+        [result addObjectsFromArray:[self getPropertyValuesWithNames:names fromDeclarations:declarations getDeclarations:getDeclarations]];
+    }
+    return result;
+}
+
 
 - (id) getSimplePropertyValueWithName:(NSString*)name {
     return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple"] firstObject];
@@ -413,10 +433,10 @@
     
     
     // Test other valid property prefixes
-    values = [self getPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
+    values = [self getAllPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
                                                          @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
                                                          @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
-                                                         @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes"];
+                                                   @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes" getDeclarations:NO];
 
     XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
     for(id value in values) {

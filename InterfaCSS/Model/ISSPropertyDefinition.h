@@ -39,8 +39,10 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 @interface ISSPropertyDefinition : NSObject
 
 @property (nonatomic, readonly) NSString* name;
+@property (nonatomic, readonly) BOOL nameIsKeyPath; // Indicates weather this property definition refers to a property in a nested property, i.e. the name field contains a property name prefix
 @property (nonatomic, readonly) BOOL anonymous;
 @property (nonatomic, readonly) NSSet* allNames; // lowercase names/aliases
+
 
 @property (nonatomic, readonly) ISSPropertyType type;
 @property (nonatomic, readonly) NSString* typeDescription;
@@ -91,7 +93,7 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 /**
  * Sets the value of the property represented by this object, on the specified target.
  */
-- (void) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath;
+- (void) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params; // withPrefixKeyPath:(NSString*)prefixKeyPath;
 
 - (NSComparisonResult) compareByName:(ISSPropertyDefinition*)other;
 

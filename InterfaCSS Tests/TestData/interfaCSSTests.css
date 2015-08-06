@@ -172,3 +172,18 @@ UIView.disabledStylingTest {
 #layoutElement4 {
     layout: size(100, 100), left(layoutElement3), top(layoutElement1);
 }
+
+
+.typeSelectorAndPrefixedPropertyTest {
+    UILabel {
+        font: GillSans 1;
+    }
+
+    UIButton {
+        titleLabel.font: GillSans 2;
+    }
+}
+
+UIBarButtonItem.prefixedPropertyOnNonUIViewClass {
+    customView.alpha: 0.5;
+}

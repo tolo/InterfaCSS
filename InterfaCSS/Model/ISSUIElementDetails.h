@@ -30,7 +30,10 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 @property (nonatomic, weak, readonly) id uiElement;
 @property (nonatomic, weak, readonly) UIView* view;
-@property (nonatomic, weak) UIView* parentView;
+@property (nonatomic, weak) id parentElement;
+@property (nonatomic, weak, readonly) UIView* parentView;
+
+@property (nonatomic, readonly) NSArray* childElementsForElement;
 
 @property (nonatomic, weak, readonly) UIViewController* parentViewController;
 
@@ -76,5 +79,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 - (void) removeDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
 - (BOOL) hasDisabledProperty:(ISSPropertyDefinition*)disabledProperty;
 - (void) clearDisabledProperties;
+
+- (id) childElementForKeyPath:(NSString*)keyPath;
 
 @end

@@ -26,6 +26,8 @@
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
 		8AA5A3B61B7091FD00D577D4 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */; };
+		8AEE29821B716F26006991D5 /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE29801B716F26006991D5 /* ISSNestedElementSelector.h */; };
+		8AEE29831B716F26006991D5 /* ISSNestedElementSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE29811B716F26006991D5 /* ISSNestedElementSelector.m */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
 		CC3C7E95D72191A7534CDDE8 /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC3C803B99218B157D6EC836 /* UIView+ISSPrototypeReusableView.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C86B1C38201CA9050889A /* UIView+ISSPrototypeReusableView.h */; };
@@ -134,6 +136,8 @@
 		27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
 		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/../build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
+		8AEE29801B716F26006991D5 /* ISSNestedElementSelector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSNestedElementSelector.h; sourceTree = "<group>"; };
+		8AEE29811B716F26006991D5 /* ISSNestedElementSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSNestedElementSelector.m; sourceTree = "<group>"; };
 		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
 		BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.debug.xcconfig"; sourceTree = "<group>"; };
 		CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDateUtils.m; sourceTree = "<group>"; };
@@ -291,6 +295,8 @@
 				CC3C8BF176FB12B868CCA749 /* ISSLayout.m */,
 				CC3C85028E68343AE0CAE9D4 /* ISSLazyValue.h */,
 				CC3C8616E221BB469698032E /* ISSLazyValue.m */,
+				8AEE29801B716F26006991D5 /* ISSNestedElementSelector.h */,
+				8AEE29811B716F26006991D5 /* ISSNestedElementSelector.m */,
 				CC3C8414CB6B1F70FF8436C3 /* ISSPointValue.h */,
 				CC3C8E8AC3C55159B33BCE4B /* ISSPointValue.m */,
 				CC3C81A3D5E7700AF520BADE /* ISSPropertyDeclaration.h */,
@@ -336,20 +342,20 @@
 		F6EBAD061768B0AA0053DAFA /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				F6EBAD071768B0AA0053DAFA /* ISSViewBuilder.h */,
-				F6EBAD081768B0AA0053DAFA /* ISSViewBuilder.m */,
-				F6EBAD091768B0AA0053DAFA /* UIView+InterfaCSS.h */,
-				F6EBAD0A1768B0AA0053DAFA /* UIView+InterfaCSS.m */,
-				CC3C885371209FA20B21C18F /* UITableView+InterfaCSS.m */,
-				CC3C8523278DCFDF3EBE076A /* UITableView+InterfaCSS.h */,
-				CC3C89C2AED22DBD8DA09ADC /* ISSRootView.m */,
-				CC3C898C3A710A285F391B62 /* ISSRootView.h */,
-				CC3C803DD954E495E1789FFB /* UIView+ISSPrototypeReusableView.m */,
-				CC3C86B1C38201CA9050889A /* UIView+ISSPrototypeReusableView.h */,
-				CC3C8FD18CAA89A2BD0F5F5D /* UICollectionView+InterfaCSS.m */,
-				CC3C8FD30877A9A28290D23B /* UICollectionView+InterfaCSS.h */,
 				CC3C835E1893E996397261CB /* ISSLayoutContextView.h */,
 				CC3C8CD87AEE86C1C117F021 /* ISSLayoutContextView.m */,
+				CC3C898C3A710A285F391B62 /* ISSRootView.h */,
+				CC3C89C2AED22DBD8DA09ADC /* ISSRootView.m */,
+				F6EBAD071768B0AA0053DAFA /* ISSViewBuilder.h */,
+				F6EBAD081768B0AA0053DAFA /* ISSViewBuilder.m */,
+				CC3C8FD30877A9A28290D23B /* UICollectionView+InterfaCSS.h */,
+				CC3C8FD18CAA89A2BD0F5F5D /* UICollectionView+InterfaCSS.m */,
+				CC3C8523278DCFDF3EBE076A /* UITableView+InterfaCSS.h */,
+				CC3C885371209FA20B21C18F /* UITableView+InterfaCSS.m */,
+				F6EBAD091768B0AA0053DAFA /* UIView+InterfaCSS.h */,
+				F6EBAD0A1768B0AA0053DAFA /* UIView+InterfaCSS.m */,
+				CC3C86B1C38201CA9050889A /* UIView+ISSPrototypeReusableView.h */,
+				CC3C803DD954E495E1789FFB /* UIView+ISSPrototypeReusableView.m */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -359,22 +365,22 @@
 			children = (
 				CC3C7CAF67F354EE1D3A74E9 /* ISSDateUtils.h */,
 				CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */,
+				CC3C8F35FA06B51A007B098C /* ISSRefreshableResource.h */,
+				CC3C8B89FA10B0349098BE46 /* ISSRefreshableResource.m */,
+				CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */,
+				CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */,
+				CC3C8133205B709D492A7ED4 /* NSAttributedString+ISSAdditions.h */,
+				CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */,
+				CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */,
+				CC3C86B36E1E4AE2D2E09402 /* NSDictionary+ISSDictionaryAdditions.m */,
+				CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */,
+				CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */,
 				F6EBAD0E1768B0AA0053DAFA /* NSObject+ISSLogSupport.h */,
 				F6EBAD0F1768B0AA0053DAFA /* NSObject+ISSLogSupport.m */,
 				27D8144D17FB595800E365B1 /* NSString+ISSStringAdditions.h */,
 				27D8144E17FB595800E365B1 /* NSString+ISSStringAdditions.m */,
 				27D8145117FB5A7D00E365B1 /* UIColor+ISSColorAdditions.h */,
 				27D8145217FB5A7D00E365B1 /* UIColor+ISSColorAdditions.m */,
-				CC3C8B89FA10B0349098BE46 /* ISSRefreshableResource.m */,
-				CC3C8F35FA06B51A007B098C /* ISSRefreshableResource.h */,
-				CC3C86B36E1E4AE2D2E09402 /* NSDictionary+ISSDictionaryAdditions.m */,
-				CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */,
-				CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */,
-				CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */,
-				CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */,
-				CC3C8133205B709D492A7ED4 /* NSAttributedString+ISSAdditions.h */,
-				CC3C83369C7CEF5814FBFAFB /* ISSRuntimeIntrospectionUtils.m */,
-				CC3C88A5E82BB7AA01B2859B /* ISSRuntimeIntrospectionUtils.h */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -450,6 +456,7 @@
 				F6EBAD141768B0AA0053DAFA /* ISSSelectorChain.h in Headers */,
 				F6EBAD161768B0AA0053DAFA /* ISSStyleSheet.h in Headers */,
 				F6EBAD1A1768B0AA0053DAFA /* ISSStyleSheetParser.h in Headers */,
+				8AEE29821B716F26006991D5 /* ISSNestedElementSelector.h in Headers */,
 				F6EBAD1B1768B0AA0053DAFA /* ISSViewBuilder.h in Headers */,
 				F6EBACF81768B0A30053DAFA /* InterfaCSS-Prefix.pch in Headers */,
 				27530C38182AF066000FED8A /* ISSPropertyDeclarations.h in Headers */,
@@ -632,6 +639,7 @@
 				27530C39182AF066000FED8A /* ISSPropertyDeclarations.m in Sources */,
 				27D8145017FB595800E365B1 /* NSString+ISSStringAdditions.m in Sources */,
 				F6EBAD68176B4A240053DAFA /* ISSParcoaStyleSheetParser.m in Sources */,
+				8AEE29831B716F26006991D5 /* ISSNestedElementSelector.m in Sources */,
 				27D8145417FB5A7D00E365B1 /* UIColor+ISSColorAdditions.m in Sources */,
 				CC3C8488DE29A52C150AC041 /* ISSPropertyDeclaration.m in Sources */,
 				CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */,

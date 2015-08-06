@@ -13,6 +13,7 @@
 
 #import "Parcoa+ISSAdditions.h"
 #import "ISSSelector.h"
+#import "ISSNestedElementSelector.h"
 #import "ISSSelectorChain.h"
 #import "ISSPropertyDeclarations.h"
 #import "ISSPropertyDeclaration.h"
@@ -365,17 +366,26 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Remove any dashes from string and convert to lowercase string, before attempting to find matching ISSPropertyDeclaration
     propertyNameString = [[[propertyNameString iss_trim] stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
 
-    // Parse prefix
-    NSString* prefix = nil;
+    // Check for any key path in the property name
+    NSString* prefixKeyPath = nil;
+    NSString* fullKeyPath = nil;
     NSRange dotRange = [propertyNameString rangeOfString:@"." options:NSBackwardsSearch];
     if( dotRange.location != NSNotFound && (dotRange.location+1) < propertyNameString.length ) {
-        prefix = [propertyNameString substringToIndex:dotRange.location];
+        fullKeyPath = propertyNameString;
+        prefixKeyPath = [propertyNameString substringToIndex:dotRange.location];
         propertyNameString = [propertyNameString substringFromIndex:dotRange.location+1];
     }
-
+    
+    // Get ISSPropertyDefinition matching property
     ISSPropertyDefinition* property = propertyNameToProperty[propertyNameString];
-    if( !property && prefix ) property = propertyNameToProperty[[NSString stringWithFormat:@"%@.%@", prefix, propertyNameString]];
-
+    if( !property && prefixKeyPath ) property = propertyNameToProperty[fullKeyPath];
+    
+    // Check if this potentially is a reference to a property in a nested element of the parent element
+    NSString* nestedElementKeyPath = nil;
+    if( prefixKeyPath && !(property.nameIsKeyPath && [property.name iss_isEqualIgnoreCase:fullKeyPath]) ) { // Make sure key path properties (like "layer.cornerRadius") aren't treated as nested element properties
+        nestedElementKeyPath = prefixKeyPath;
+    }
+    
     // Transform parameters
     if( property && parameters ) {
         NSMutableArray* transformedParameters = [[NSMutableArray alloc] init];
@@ -389,7 +399,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         parameters = transformedParameters;
     }
 
-    if( property ) return [[ISSPropertyDeclaration alloc] initWithProperty:property parameters:parameters prefix:prefix];
+    if( property ) return [[ISSPropertyDeclaration alloc] initWithProperty:property parameters:parameters nestedElementKeyPath:nestedElementKeyPath];
     else return nil;
 }
 
@@ -684,7 +694,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
                     id value = [blockSelf parsePropertyValue:components[1] ofType:def.type];
                     if( value ) {
                         // Use standard method in ISSPropertyDefinition to set value (using custom setter block)
-                        [def setValue:value onTarget:attributes andParameters:nil withPrefixKeyPath:nil];
+                        [def setValue:value onTarget:attributes andParameters:nil];
                     } else {
                         ISSLogWarning(@"Unknown attributed string value `%@` for property `%@`", components[1], components[0]);
                     }
@@ -1089,7 +1099,17 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* propertyValueCombined = [[Parcoa sequential:@[quotedString, anythingButControlCharsExceptColon]] concat];
     ParcoaParser* propertyValue = [Parcoa choice:@[propertyValueCombined, quotedString, anythingButControlCharsExceptColon]];
     ParcoaParser* propertyPairParser = [[[anythingButControlChars keepLeft:propertyNameValueSeparator] then:[propertyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
-        return [blockSelf transformPropertyPair:value];
+        ISSPropertyDeclaration* declaration = [blockSelf transformPropertyPair:value];
+        // If this declaration contains a reference to a nested element - return a nested ruleset declaration containing the property declaration, instead of the property declaration itself
+        if( declaration.nestedElementKeyPath ) {
+            ISSSelector* selector = [ISSNestedElementSelector selectorWithNestedElementKeyPath:declaration.nestedElementKeyPath];
+            ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[selector]];
+            ISSSelectorChainsDeclaration* chains = [ISSSelectorChainsDeclaration selectorChainsWithArray:[@[chain] mutableCopy]];
+            chains.properties = [@[declaration]mutableCopy];
+            return chains;
+        } else {
+            return declaration;
+        }
     } name:@"propertyPair"];
 
 

@@ -29,9 +29,7 @@
 NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefinition";
 
 
-@implementation ISSPropertyDefinition {
-    BOOL _prePrefixed;
-}
+@implementation ISSPropertyDefinition 
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type {
     return [self initWithName:ISSAnonymousPropertyDefinitionName aliases:@[] type:type];
@@ -66,36 +64,13 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
         _propertySetterBlock = setterBlock;
         _parameterEnumValues = [parameterEnumValues iss_dictionaryWithLowerCaseKeys];
 
-        _prePrefixed = [_name rangeOfString:@"."].location != NSNotFound; // Check if property name contains a "key path prefix"
+        _nameIsKeyPath = [_name rangeOfString:@"."].location != NSNotFound; // Check if property name contains a "key path prefix"
     }
     return self;
 }
 
 - (BOOL) anonymous {
     return self.name == ISSAnonymousPropertyDefinitionName;
-}
-
-- (id) targetObjectForObject:(id)obj andPrefixKeyPath:(NSString*)prefixKeyPath {
-    if( prefixKeyPath ) {
-        if( _prePrefixed && ([_name rangeOfString:prefixKeyPath options:NSCaseInsensitiveSearch].location == 0) ) {
-            // Use prefix for "prePrefixed" property, only if different than prefix found in _name...
-            return obj;
-        }
-
-        // First, check if prefix key path is a valid selector
-        if( [obj respondsToSelector:NSSelectorFromString(prefixKeyPath)] ) {
-            return [obj valueForKeyPath:prefixKeyPath];
-        } else {
-            // Then attempt to match prefix key path against known prefix key paths, and make sure correct name is used
-            NSString* validPrefix = [InterfaCSS sharedInstance].propertyRegistry.validPrefixKeyPaths[[prefixKeyPath lowercaseString]];
-            if( validPrefix && [obj respondsToSelector:NSSelectorFromString(validPrefix)] ) {
-                return [obj valueForKeyPath:validPrefix];
-            }
-
-            ISSLogDebug(@"Unable to find prefix key path '%@' in %@", prefixKeyPath, obj);
-        }
-    }
-    return obj;
 }
 
 - (void) setValueUsingKVC:(id)value onTarget:(id)obj {
@@ -106,6 +81,9 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
         if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
 
         [obj setValue:value forKeyPath:_name]; // Will throw exception if property doesn't exist
+        if( [obj isKindOfClass:UIView.class]) {
+            NSLog(@"alpha: %f", [obj alpha]);
+        }
     } @catch (NSException* e) {
         ISSLogDebug(@"Unable to set value for property %@ - %@", _name, e);
     }
@@ -114,8 +92,7 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 
 #pragma mark - Public interface
 
-- (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params withPrefixKeyPath:(NSString*)prefixKeyPath {
-    obj = [self targetObjectForObject:obj andPrefixKeyPath:prefixKeyPath];
+- (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params { //withPrefixKeyPath:(NSString*)prefixKeyPath {
     if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
     if( value && value != [NSNull null] ) {
         if( _propertySetterBlock ) {
@@ -141,10 +118,12 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 
 - (NSString*) typeDescription {
     switch(self.type) {
+        case ISSPropertyTypeAttributedString : return @"NSAttributedString";
         case ISSPropertyTypeBool : return @"Boolean";
         case ISSPropertyTypeNumber : return @"Number";
         case ISSPropertyTypeOffset : return @"UIOffset";
         case ISSPropertyTypeRect : return @"CGRect";
+        case ISSPropertyTypeLayout : return @"ISSLayout";
         case ISSPropertyTypeSize : return @"CGSize";
         case ISSPropertyTypePoint : return @"CGPoint";
         case ISSPropertyTypeEdgeInsets : return @"UIEdgeInsets";

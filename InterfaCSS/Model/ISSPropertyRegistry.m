@@ -15,6 +15,7 @@
 #import "ISSPointValue.h"
 #import "ISSRectValue.h"
 #import "ISSUIElementDetails.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 #define S(selName) NSStringFromSelector(@selector(selName))
@@ -90,6 +91,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 @property (nonatomic, strong, readwrite) NSSet* propertyDefinitions;
 @property (nonatomic, strong, readwrite) NSDictionary* validPrefixKeyPaths;
+@property (nonatomic, strong, readwrite) NSDictionary* validPrefixKeyPathsForClass;
 @property (nonatomic, strong, readwrite) NSDictionary* typePropertyDefinitions;
 
 @property (nonatomic, strong) NSDictionary* classesToTypeNames;
@@ -179,6 +181,24 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     self.validPrefixKeyPaths = [temp copy];
 }
 
+- (NSSet*) validPrefixKeyPathsForClass:(Class)clazz {
+    NSString* className = NSStringFromClass(clazz);
+    NSMutableSet* validKeyPathsForClass = self.validPrefixKeyPathsForClass[className];
+    if( !validKeyPathsForClass ) {
+        validKeyPathsForClass = [NSMutableSet set];
+        
+        for(NSString* keyPath in self.validPrefixKeyPaths.allValues) {
+            NSString* validKeyPathForClass = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:keyPath inClass:clazz];
+            if( validKeyPathForClass ) [validKeyPathsForClass addObject:validKeyPathForClass];
+        }
+        
+        NSMutableDictionary* temp = self.validPrefixKeyPathsForClass ? [NSMutableDictionary dictionaryWithDictionary:self.validPrefixKeyPathsForClass] : [NSMutableDictionary dictionary];
+        temp[className] = validKeyPathsForClass;
+        self.validPrefixKeyPathsForClass = temp;
+    }
+    return validKeyPathsForClass;
+}
+
 #if DEBUG == 1
 - (NSString*) propertyDescriptionsForMarkdown {
     NSMutableString* string = [NSMutableString string];
@@ -225,10 +245,12 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+    // Setup default valid nested element names (property prefix key paths)
     self.validPrefixKeyPaths = @{ SLC(layer) : S(layer), SLC(imageView) : S(imageView), SLC(contentView) : S(contentView), SLC(backgroundView) : S(backgroundView),
             SLC(selectedBackgroundView) : S(selectedBackgroundView), SLC(multipleSelectionBackgroundView) : S(multipleSelectionBackgroundView), SLC(titleLabel) : S(titleLabel),
             SLC(textLabel) : S(textLabel), SLC(detailTextLabel) : S(detailTextLabel), SLC(inputView) : S(inputView), SLC(inputAccessoryView) : S(inputAccessoryView),
-            SLC(tableHeaderView) : S(tableHeaderView), SLC(tableFooterView) : S(tableFooterView), SLC(backgroundView) : S(backgroundView)};
+            SLC(tableHeaderView) : S(tableHeaderView), SLC(tableFooterView) : S(tableFooterView), SLC(backgroundView) : S(backgroundView), SLC(customView) : S(customView)};
+    
 
     NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"normalHighlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
             @"highlighted" : @(UIControlStateNormal | UIControlStateHighlighted),

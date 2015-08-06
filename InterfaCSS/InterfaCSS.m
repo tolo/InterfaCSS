@@ -465,54 +465,20 @@ static InterfaCSS* singleton = nil;
     if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
         ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
         [self clearCachedStylesForUIElementDetails:uiElementDetails];
-        uiElementDetails.parentView = view.superview;
+        uiElementDetails.parentElement = view.superview;
     }
 
     [self styleUIElement:uiElementDetails force:force];
 
     if( includeSubViews ) {
-        NSArray* subviews = view.subviews ?: [[NSArray alloc] init];
-        UIView* parentView = nil;
-        // Special case: UIToolbar - add toolbar items to "subview" list
-        if( [view isKindOfClass:UIToolbar.class] ) {
-            UIToolbar* toolbar = (UIToolbar*)view;
-            parentView = toolbar;
-            if( toolbar.items ) subviews = [subviews arrayByAddingObjectsFromArray:toolbar.items];
-        }
-        // Special case: UINavigationBar - add nav bar items to "subview" list
-        else if( [view isKindOfClass:UINavigationBar.class] ) {
-            UINavigationBar* navigationBar = (UINavigationBar*)view;
-            parentView = navigationBar;
-
-            NSMutableArray* additionalSubViews = [NSMutableArray array];
-            for(id item in navigationBar.items) {
-                if( [item isKindOfClass:UINavigationItem.class] ) {
-                    UINavigationItem* navigationItem = (UINavigationItem*)item;
-                    if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
-                    if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
-                    if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
-                    if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];
-                } else {
-                    [additionalSubViews addObject:item];
-                }
-            }
-            subviews = [subviews arrayByAddingObjectsFromArray:additionalSubViews];
-        }
-        // Special case: UITabBar - add tab bar items to "subview" list
-        else if( [view isKindOfClass:UITabBar.class] ) {
-            UITabBar* tabBar = (UITabBar*)view;
-            parentView = tabBar;
-            if( tabBar.items ) subviews = [subviews arrayByAddingObjectsFromArray:tabBar.items];
-        }
+        NSArray* subViews = uiElementDetails.childElementsForElement;
 
         // Process subviews
-        for(id subView in subviews) {
+        for(id subView in subViews) {
             ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
 
-            // If subview isn't view (i.e. UIToolbarItem for instance) - set parent view as super view in ViewProperties
-            if( parentView && ![subView isKindOfClass:UIView.class] ) {
-                if( !subViewDetails.parentView ) subViewDetails.parentView = parentView;
-            }
+            // Make sure parent element reference is correctly set
+            if( !subViewDetails.parentElement ) subViewDetails.parentElement = uiElementDetails.uiElement;
 
             [self applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)subViewDetails includeSubViews:YES force:force];
         }

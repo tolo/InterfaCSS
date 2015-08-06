@@ -19,19 +19,19 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
 
 @implementation ISSPropertyDeclaration
 
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property prefix:(NSString*)prefix {
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property nestedElementKeyPath:(NSString*)nestedElementKeyPath {
     self = [super init];
     if ( self ) {
-        _prefix = prefix;
+        _nestedElementKeyPath = nestedElementKeyPath;
         _property = property;
     }
     return self;
 }
 
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters prefix:(NSString*)prefix {
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath {
     self = [super init];
     if ( self ) {
-        _prefix = prefix;
+        _nestedElementKeyPath = nestedElementKeyPath;
         _property = property;
         _parameters = parameters;
     }
@@ -52,7 +52,7 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
     ISSPropertyDeclaration* decl;
     if( _unrecognizedName ) decl = [[(id)self.class allocWithZone:zone] initWithUnrecognizedProperty:_unrecognizedName];
     else {
-        decl = [[(id)self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters prefix:self.prefix];
+        decl = [[(id) self.class allocWithZone:zone] initWithProperty:self.property parameters:self.parameters nestedElementKeyPath:self.nestedElementKeyPath];
         decl.propertyValue = self.propertyValue;
         decl.lazyPropertyTransformationBlock = self.lazyPropertyTransformationBlock;
     }
@@ -93,7 +93,7 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
         return NO;
     }
 
-    [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters withPrefixKeyPath:self.prefix];
+    [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters];
 
     return YES;
 }
@@ -113,7 +113,7 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
     else if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] &&
-            [NSString iss_string:[object prefix] isEqualToString:self.prefix] ) {
+            [NSString iss_string:[object nestedElementKeyPath] isEqualToString:self.nestedElementKeyPath] ) {
         if( [object parameters] == self.parameters ) return YES;
         else return [[object parameters] isEqualToArray:self.parameters];
     }
