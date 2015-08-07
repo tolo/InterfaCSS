@@ -262,6 +262,9 @@
     root.styleClassISS = @"disabledStylingTest";
     UILabel* label = [[UILabel alloc] init];
     [root addSubview:label];
+    // Note: To ensure that styles are cacheable (and that the element can thus be marked with the "stylingApplied" flag), we need to ensure the view is added to the view hieararchy (i.e. has a window ref)
+    UIWindow* window = [[UIWindow alloc] init];
+    [window addSubview:root];
 
     // Call applyStylingISS and verify that values have been read from CSS
     [root applyStylingISS];
@@ -280,7 +283,7 @@
 
     // Re-enable styling and verify that values revert back to those in CSS
     [root enableStylingISS];
-    [root applyStylingISS];
+    [root applyStylingISS:YES];
     ISSAssertEqualFloats(root.alpha, 0.5, @"Unexpected property value");
     ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 }
