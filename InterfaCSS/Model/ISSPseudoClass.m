@@ -41,6 +41,8 @@ static NSDictionary* stringToPseudoClassType;
 
             @"enabled" : @(ISSPseudoClassTypeStateEnabled),
             @"disabled" : @(ISSPseudoClassTypeStateDisabled),
+            @"selected" : @(ISSPseudoClassTypeStateSelected),
+            @"highlighted" : @(ISSPseudoClassTypeStateHighlighted),
 
             @"nthchild" : @(ISSPseudoClassTypeNthChild),
             @"nthlastchild" : @(ISSPseudoClassTypeNthLastChild),
@@ -75,6 +77,14 @@ static NSDictionary* stringToPseudoClassType;
 
 + (instancetype) pseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType {
     return [[self alloc] initWithA:a b:b type:pseudoClassType];
+}
+
++ (instancetype) pseudoClassWithType:(ISSPseudoClassType)pseudoClassType {
+    return [[self alloc] initWithA:0 b:0 type:pseudoClassType];
+}
+
++ (instancetype) pseudoClassWithTypeString:(NSString*)typeAsString {
+    return [[self alloc] initWithA:0 b:0 type:[self pseudoClassTypeFromString:typeAsString]];
 }
 
 + (ISSPseudoClassType) pseudoClassTypeFromString:(NSString*)typeAsString {
@@ -139,6 +149,12 @@ static NSDictionary* stringToPseudoClassType;
         case ISSPseudoClassTypeStateDisabled: {
             return [uiElement respondsToSelector:@selector(isEnabled)] && ![uiElement isEnabled];
         }
+        case ISSPseudoClassTypeStateSelected: {
+            return [uiElement respondsToSelector:@selector(isSelected)] && [uiElement isSelected];
+        }
+        case ISSPseudoClassTypeStateHighlighted: {
+            return [uiElement respondsToSelector:@selector(isHighlighted)] && [uiElement isHighlighted];
+        }
 
         case ISSPseudoClassTypeNthChild:
         case ISSPseudoClassTypeFirstChild: {
@@ -195,6 +211,8 @@ static NSDictionary* stringToPseudoClassType;
 
         case ISSPseudoClassTypeStateEnabled: return @"enabled";
         case ISSPseudoClassTypeStateDisabled: return @"disabled";
+        case ISSPseudoClassTypeStateSelected: return @"selected";
+        case ISSPseudoClassTypeStateHighlighted: return @"highlighted";
 
         case ISSPseudoClassTypeNthChild: return [NSString stringWithFormat:@"nthchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];
         case ISSPseudoClassTypeNthLastChild: return [NSString stringWithFormat:@"nthlastchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];

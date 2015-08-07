@@ -16,6 +16,7 @@
 @property (nonatomic, readonly) NSString* displayDescription;
 @property (nonatomic, readonly) BOOL hasPseudoClassSelector;
 
++ (instancetype) selectorChainWithSelector:(ISSSelector*)selector;
 + (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents;
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector;

@@ -89,6 +89,10 @@
     return self;
 }
 
++ (instancetype) selectorChainWithSelector:(ISSSelector*)selector {
+    return [self selectorChainWithComponents:@[selector]];
+}
+
 + (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents {
     // Validate selector components
     if( selectorComponents.count % 2 == 1 ) { // Selector chain must always contain odd number of components

@@ -209,11 +209,11 @@
     [self assertDescendantPseudo:labels[3] pseudoClassType:pseudoClassType a:2 b:0 message:@"Descendant even child (fourth) pseudo selector chain must match!"];
 }
 
-- (void) testNthChild {
+- (void) testPseudoClassNthChild {
     [self doTestNthChild:NO];
 }
 
-- (void) testNthChildOfType {
+- (void) testPseudoClassNthChildOfType {
     [self doTestNthChild:YES];
 }
 
@@ -235,15 +235,15 @@
     [self assertDescendantPseudo:labels[0] pseudoClassType:pseudoClassType a:0 b:5 message:@"Descendant nth last child (5) pseudo selector chain must match!"];
 }
 
-- (void) testNthLastChild {
+- (void) testPseudoClassNthLastChild {
     [self doTestNthLastChild:NO];
 }
 
-- (void) testNthLastChildOfType {
+- (void) testPseudoClassNthLastChildOfType {
     [self doTestNthLastChild:YES];
 }
 
-- (void) testEmpty {
+- (void) testPseudoClassEmpty {
     ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:rootView];
     ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
 
@@ -257,6 +257,48 @@
     XCTAssertTrue(![chain matchesElement:viewDetails ignoringPseudoClasses:NO], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
     
     XCTAssertTrue(chain.hasPseudoClassSelector, @"Expected selector chain to report having pseudo class");
+}
+
+- (void) testPseudoClassControlState {
+    UIButton* button = [[UIButton alloc] init];
+    ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:button];
+    
+    ISSPseudoClass* enabledPseudo = [ISSPseudoClass pseudoClassWithTypeString:@"enabled"];
+    ISSPseudoClass* disabledPseudo = [ISSPseudoClass pseudoClassWithTypeString:@"disabled"];
+    ISSPseudoClass* selectedPseudo = [ISSPseudoClass pseudoClassWithTypeString:@"selected"];
+    ISSPseudoClass* highlightedPseudo = [ISSPseudoClass pseudoClassWithTypeString:@"highlighted"];
+    
+    ISSSelectorChain* enabledSelector = [ISSSelectorChain selectorChainWithSelector:[ISSSelector selectorWithType:@"uibutton" styleClass:nil pseudoClasses:@[enabledPseudo]]];
+    ISSSelectorChain* disabledSelector = [ISSSelectorChain selectorChainWithSelector:[ISSSelector selectorWithType:@"uibutton" styleClass:nil pseudoClasses:@[disabledPseudo]]];
+    ISSSelectorChain* selectedSelector = [ISSSelectorChain selectorChainWithSelector:[ISSSelector selectorWithType:@"uibutton" styleClass:nil pseudoClasses:@[selectedPseudo]]];
+    ISSSelectorChain* highlightedSelector = [ISSSelectorChain selectorChainWithSelector:[ISSSelector selectorWithType:@"uibutton" styleClass:nil pseudoClasses:@[highlightedPseudo]]];
+    ISSSelectorChain* selectedHighlightedSelector = [ISSSelectorChain selectorChainWithSelector:[ISSSelector selectorWithType:@"uibutton" styleClass:nil pseudoClasses:@[selectedPseudo, highlightedPseudo]]];
+    
+    // Test disabled
+    button.enabled = NO;
+    XCTAssertTrue([disabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([enabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    
+    // Test enabled
+    button.enabled = YES;
+    XCTAssertTrue([enabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([disabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    
+    // Check negative result for selected and highlighted
+    XCTAssertFalse([selectedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([highlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([selectedHighlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    
+    // Test selected
+    button.selected = YES;
+    XCTAssertTrue([selectedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    
+    // Test selected
+    button.highlighted = YES;
+    XCTAssertTrue([highlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    
+    // Test selected & highlighted (chained)
+    XCTAssertTrue([selectedHighlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
 }
 
 - (void) testWildcardSelectorFirst {
