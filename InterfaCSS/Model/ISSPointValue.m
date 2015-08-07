@@ -60,7 +60,6 @@
 + (CGPoint) windowCenterForView:(UIView*)view {
     UIWindow* window = view.window;
     CGRect bounds;
-    if( !window ) window = [UIApplication sharedApplication].keyWindow;
     if( window ) bounds = window.bounds;
     else bounds = [UIScreen mainScreen].bounds;
     return [self anchorAdjustedCenterPoint:CGPointMake(CGRectGetWidth(bounds)/2.0f, CGRectGetHeight(bounds)/2.0f) forView:view];

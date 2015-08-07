@@ -153,8 +153,8 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
     BOOL isSizeToFit = _type == ISSRectValueTypeParentRelativeSizeToFit;
     if( isSizeToFit ) {
         CGSize size = [view sizeThatFits:CGSizeMake(width, height)];
-        if( size.width < width ) width = size.width;
-        if( size.height < height ) height = size.height;
+        if( size.width > 0 && size.width < width ) width = size.width;
+        if( size.height > 0 && size.height < height ) height = size.height;
     }
 
     CGRect resultingRect = CGRectMake(0, 0, width, height);
@@ -217,7 +217,6 @@ CGFloat const ISSRectValueNoValue = CGFLOAT_MAX;
 
 + (CGRect) windowBoundsForView:(UIView*)view {
     UIWindow* window = view.window;
-    if( !window ) window = [UIApplication sharedApplication].keyWindow;
     if( window ) return window.bounds;
     else return [UIScreen mainScreen].bounds;
 }

@@ -87,7 +87,7 @@
         // In this block it's possible to for instance update any derived styling properties, or override values set during styling.
         //NSLog(@"Did apply styles to mainButton - %lu properties", (unsigned long)styles.count);
     };
-    
+
     // Apply styling only once as startup to mainButtonTop, then disable automatic re-styling, to make it possible do adjust styling manually in code.
     [self.mainButtonTop applyStylingOnceISS];
     
@@ -106,9 +106,7 @@
 #if DEBUG == 1
     [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:self.mainTitleLabel];
 #endif
-    
-    [self.view applyStylingISS];
-    
+
     [self performSelector:@selector(animateSimpleSampleContentView) withObject:nil afterDelay:.0f];
 }
 

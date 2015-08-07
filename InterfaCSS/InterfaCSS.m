@@ -47,7 +47,7 @@ static InterfaCSS* singleton = nil;
 
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
 
-@property (nonatomic, weak) UIWindow* keyWindow;
+@property (nonatomic, strong) NSMapTable* initializedWindows;
 
 @property (nonatomic, strong) NSTimer* timer;
 
@@ -103,12 +103,16 @@ static InterfaCSS* singleton = nil;
         _cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
         _prototypes = [[NSMutableDictionary alloc] init];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        _initializedWindows = [NSMapTable weakToStrongObjectsMapTable];
+
+        NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeKeyNotification object:nil];
+        [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeVisibleNotification object:nil];
+        
 
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-        
-        [self performSelector:@selector(initViewHierarchy) withObject:nil afterDelay:0];
     }
     return self;
 }
@@ -135,12 +139,21 @@ static InterfaCSS* singleton = nil;
         deviceIsRotating = YES;
         [self performSelector:@selector(resetDeviceIsRotatingFlag) withObject:nil afterDelay:0.1];
 
-        if( self.keyWindow ) [self scheduleApplyStyling:self.keyWindow animated:YES];
+        for(UIWindow* window in self.initializedWindows.keyEnumerator) {
+            [self scheduleApplyStyling:window animated:YES];
+        }
     }
 }
 
 - (void) resetDeviceIsRotatingFlag {
     deviceIsRotating = NO;
+}
+
+
+#pragma mark - Window appearance notification
+
+- (void) windowDidBecomeVisible:(NSNotification*)notification {
+    [self initViewHierarchyForWindow:notification.object];
 }
 
 
@@ -206,28 +219,8 @@ static InterfaCSS* singleton = nil;
     return styleSheet;
 }
 
-- (void) updateRefreshableStyleSheet:(ISSStyleSheet*)styleSheet {
-    [styleSheet refresh:^{
-        [self refreshStyling];
-    } parse:self.parser];
-}
 
-
-#pragma mark - Styling
-
-- (BOOL) initViewHierarchy {
-    self.keyWindow = [UIApplication sharedApplication].keyWindow;
-    if( self.keyWindow ) {
-        [self applyStyling:self.keyWindow];
-        return YES;
-    }
-    return NO;
-}
-
-- (void) refreshStyling {
-    [self clearAllCachedStyles];
-    if( self.keyWindow ) [self applyStyling:self.keyWindow];
-}
+#pragma mark - Styling - Style matching and application
 
 - (NSArray*) effectiveStylesForUIElement:(ISSUIElementDetails*)elementDetails force:(BOOL)force {
     // First - get cached declarations stored using weak reference on ISSUIElementDetails object
@@ -320,7 +313,7 @@ static InterfaCSS* singleton = nil;
 }
 
 
-#pragma mark - Styling
+#pragma mark - Styling - Elememt details
 
 - (ISSUIElementDetailsInterfaCSS*) detailsForUIElement:(id)uiElement create:(BOOL)create {
     if( !uiElement ) return nil;
@@ -337,6 +330,9 @@ static InterfaCSS* singleton = nil;
 - (ISSUIElementDetails*) detailsForUIElement:(id)uiElement {
     return [self detailsForUIElement:uiElement create:YES];
 }
+
+
+#pragma mark - Styling - Caching
 
 - (void) clearCachedStylesForUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
@@ -366,6 +362,21 @@ static InterfaCSS* singleton = nil;
     }
 }
 
+
+#pragma mark - Styling - High level style application methods
+
+- (void) initViewHierarchyForView:(UIView*)view {
+    UIWindow* window = view.window;
+    if( window ) [self initViewHierarchyForWindow:window];
+}
+
+- (void) initViewHierarchyForWindow:(UIWindow*)window {
+    if( window && ![self.initializedWindows objectForKey:window] ) {
+        [self.initializedWindows setObject:@(YES) forKey:window];
+        [self applyStyling:window]; // includeSubViews:YES force:YES];
+    }
+}
+
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated {
     [self scheduleApplyStyling:uiElement animated:animated force:NO];
 }
@@ -374,8 +385,8 @@ static InterfaCSS* singleton = nil;
     if( !uiElement ) return;
 
     ISSUIElementDetailsInterfaCSS* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    if( uiElementDetails.stylingDisabled || uiElementDetails.stylingScheduled ) return;
-
+    if( uiElementDetails.stylingAppliedAndDisabled || uiElementDetails.stylingScheduled ) return;
+    
     if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
         [self applyStyling:uiElement includeSubViews:YES force:YES];
     } else {
@@ -425,17 +436,19 @@ static InterfaCSS* singleton = nil;
     if( !uiElementDetails ) return;
 
     // If styling is disabled for element - abort styling of whole sub tre, but not if force is YES
-    if( uiElementDetails.stylingDisabled && !force ) {
+    if( uiElementDetails.stylingAppliedAndDisabled ) {
         ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
         return;
     }
 
     // Make sure view hierarchy is traversed once, before proceeding with styling
-    if( !self.keyWindow && includeSubViews ) {
-        [self initViewHierarchy];
-        if( uiElementDetails.stylingApplied ) { // If styling was applied by initViewHierarchy, we don't need to do it again
-            return;
-        }
+    if( includeSubViews ) {
+        [self initViewHierarchyForView:uiElementDetails.view];
+    }
+
+    // If styling has already been applied (possibly as a result of calling initViewHierarchyForView), we don't need to do it again (unless forcing)
+    if( uiElementDetails.stylingApplied && !force ) {
+        return;
     }
 
     uiElementDetails.stylingScheduled = NO;
@@ -760,6 +773,19 @@ static InterfaCSS* singleton = nil;
     }
 
     return effective;
+}
+
+- (void) refreshStyling {
+    [self clearAllCachedStyles];
+    for(UIWindow* window in self.initializedWindows.keyEnumerator) {
+        [self applyStyling:window];
+    }
+}
+
+- (void) updateRefreshableStyleSheet:(ISSStyleSheet*)styleSheet {
+    [styleSheet refresh:^{
+        [self refreshStyling];
+    } parse:self.parser];
 }
 
 

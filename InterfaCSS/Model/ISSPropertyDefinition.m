@@ -81,9 +81,6 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
         if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
 
         [obj setValue:value forKeyPath:_name]; // Will throw exception if property doesn't exist
-        if( [obj isKindOfClass:UIView.class]) {
-            NSLog(@"alpha: %f", [obj alpha]);
-        }
     } @catch (NSException* e) {
         ISSLogDebug(@"Unable to set value for property %@ - %@", _name, e);
     }

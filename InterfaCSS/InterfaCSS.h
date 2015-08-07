@@ -272,13 +272,13 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 /**
  * Unloads the specified styleSheet.
  * @param styleSheet the stylesheet to unload.
- * @param refreshStyling @p YES if styling on all tracked views should be reset as a result of this call, otherwise @p NO.
+ * @param refreshStyling YES if styling on all tracked views should be reset and reapplied as a result of this call, otherwise NO.
  */
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling;
 
 /**
  * Unloads all loaded stylesheets, effectively resetting the styling of all views.
- * @param refreshStyling @p YES if styling on all tracked views should be reset as a result of this call, otherwise @p NO.
+ * @param refreshStyling YES if styling on all tracked views should be reset and reapplied as a result of this call, otherwise NO.
  */
 - (void) unloadAllStyleSheets:(BOOL)refreshStyling;
 

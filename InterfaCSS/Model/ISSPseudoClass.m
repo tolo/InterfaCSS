@@ -108,11 +108,6 @@ static NSDictionary* stringToPseudoClassType;
             case UIDeviceOrientationPortraitUpsideDown : return UIInterfaceOrientationPortraitUpsideDown;
             default: return UIInterfaceOrientationPortrait;
         }
-    } else if( [UIApplication sharedApplication].keyWindow.rootViewController )  { // ...but if that also fails, fallback to last interface orientation of the root view controller (i.e. if device orientation is face up/down)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        return [UIApplication sharedApplication].keyWindow.rootViewController.interfaceOrientation;
-#pragma GCC diagnostic pop
     } else {
         return UIInterfaceOrientationPortrait;
     }

@@ -80,7 +80,6 @@ static NSDictionary* stringToLayoutGuide;
     UIView* relativeElement = relativeElementDetails.view;
     if( self.isParentRelativeValue ) relativeElement = parentView;
     UIWindow* window = element.window;
-    if( !window ) window = [UIApplication sharedApplication].keyWindow;
     BOOL resolveResult = YES;
     UIEdgeInsets layoutMargins = UIEdgeInsetsZero;
 

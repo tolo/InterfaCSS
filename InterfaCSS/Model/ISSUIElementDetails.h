@@ -55,6 +55,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 @property (nonatomic) BOOL stylingApplied;
 @property (nonatomic) BOOL stylingDisabled;
+@property (nonatomic, readonly) BOOL stylingAppliedAndDisabled;
 
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlock;
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlock;

@@ -173,6 +173,10 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     return self.usingCustomElementStyleIdentity || self.ancestorUsesCustomElementStyleIdentity || self.addedToViewHierarchy;
 }
 
+- (BOOL) stylingAppliedAndDisabled {
+    return self.stylingDisabled && self.stylingApplied;
+}
+
 + (void) resetAllCachedData {
     [[NSNotificationCenter defaultCenter] postNotificationName:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
 }

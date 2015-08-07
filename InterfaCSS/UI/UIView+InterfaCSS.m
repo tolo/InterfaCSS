@@ -196,6 +196,10 @@
     [[InterfaCSS interfaCSS] setStylingEnabled:YES forProperty:propertyName inUIElement:self];
 }
 
+- (BOOL) stylingEnabledForPropertyISS:(NSString*)propertyName {
+    return [[InterfaCSS interfaCSS] isStylingEnabledForProperty:propertyName inUIElement:self];
+}
+
 - (id) subviewWithElementId:(NSString*)elementId {
     return [[InterfaCSS interfaCSS] subviewWithElementId:elementId inView:self];
 }

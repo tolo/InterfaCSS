@@ -157,6 +157,12 @@
 - (void) applyStylingWithAnimationISS;
 
 /**
+ * Clears all cached styling information associated with this view and all its subviews.
+ */
+- (void) clearCachedStylesISS;
+
+
+/**
  * Disables styling of this view, i.e. InterfaCSS will stop applying styling information to this view and it's children, but any styles that
  * have already been applied will remain. This method can for instance be useful for setting initial styles for a view via InterfaCSS, and then take control
  * of the styling manually, without the risk of InterfaCSS overwriting any modified properties.
@@ -167,13 +173,10 @@
 
 /**
  * Re-enables styling of this view.
+ *
+ * @see disableStylingISS
  */
 - (void) enableStylingISS;
-
-/**
- * Clears all cached styling information associated with this view and all its subviews.
- */
-- (void) clearCachedStylesISS;
 
 
 /**
@@ -187,8 +190,18 @@
 
 /**
  * Re-enables styling of a property.
+ * 
+ * @see disableStylingForPropertyISS:
  */
 - (void) enableStylingForPropertyISS:(NSString*)propertyName;
+
+/**
+ * Checks if styling is enabled for a property.
+ *
+ * @see disableStylingForPropertyISS:
+ */
+- (BOOL) stylingEnabledForPropertyISS:(NSString*)propertyName;
+
 
 
 /** Finds a sub view with the specified element identifier. */
