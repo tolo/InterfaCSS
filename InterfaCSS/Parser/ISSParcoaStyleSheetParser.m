@@ -1,4 +1,4 @@
-//
+ //
 //  ISSParcoaStyleSheetParser.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
@@ -464,9 +464,6 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             else return [self transformEnumValue:result.value forProperty:p];
         }
     }
-    else if( p.type == ISSPropertyTypeString ) {
-        return [[propertyValue iss_trimQuotes] iss_stringByReplacingUnicodeSequences];
-    }
     // Other properties
     else {
         id value = [self parsePropertyValue:propertyValue ofType:p.type];
@@ -536,7 +533,22 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 }
 
 
+#pragma mark - Methods existing mainly for testing purposes
+
+- (UIImage*) imageNamed:(NSString*)name { // For testing purposes...
+    return [UIImage imageNamed:name];
+}
+
+- (NSString*) localizedStringWithKey:(NSString*)key {
+    return NSLocalizedString(key, nil);
+}
+
+
 #pragma mark - Misc (property) parsing related
+
+- (NSString*) cleanedStringValue:(NSString*)string {
+    return [[string iss_trimQuotes] iss_stringByReplacingUnicodeSequences];
+}
 
 - (ParcoaParser*) unrecognizedLineParser {
     return [Parcoa iss_parseLineUpToInvalidCharactersInString:@"{}"];
@@ -548,10 +560,6 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     } else {
         return [font fontWithSize:size]; // Doesn't seem to work right in iOS7 (for some fonts anyway...)
     }
-}
-
-- (UIImage*) imageNamed:(NSString*)name { // For testing purposes...
-    return [UIImage imageNamed:name];
 }
 
 - (BOOL) isRelativeValue:(NSString*)value {
@@ -662,6 +670,25 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             propertyNameToProperty[lowerCaseAlias] = p;
         }
     }
+    
+    
+    /** -- String -- **/
+    
+    ParcoaParser* standardStringParser = [ParcoaParser parserWithBlock:^ParcoaResult*(NSString* input) {
+        return [ParcoaResult ok:[self cleanedStringValue:input] residual:nil expected:[ParcoaExpectation unsatisfiable]];
+    } name:@"standardStringParser" summary:@"standardStringParser"];
+    
+    ParcoaParser* cleanedQuotedStringParser = [quotedString transform:^id(id input) {
+        return [self cleanedStringValue:input];
+    } name:@"quotedStringParser"];
+    
+    ParcoaParser* localizedStringParser = [[Parcoa iss_singleParameterFunctionParserWithNames:@[@"localized", @"L"] parameterParser:cleanedQuotedStringParser] transform:^id(id value) {
+        return [self localizedStringWithKey:value];
+    } name:@"localizedStringParser"];
+    
+    ParcoaParser* stringParser = [Parcoa choice:@[localizedStringParser, standardStringParser]];
+
+    typeToParser[@(ISSPropertyTypeString)] = stringParser;
 
 
     /** -- BOOL -- **/
@@ -706,11 +733,14 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return attributes;
     } name:@"attributedStringAttributesParser"];
 
-    ParcoaParser* singleAttributedStringParser = [[Parcoa sequential:@[ [quotedString skipSurroundingSpaces], attributedStringAttributesParser ]] transform:^id(NSArray* values) {
+    ParcoaParser* quotedOrLocalizedStringParser = [Parcoa choice:@[localizedStringParser, cleanedQuotedStringParser]];
+    
+    ParcoaParser* singleAttributedStringParser = [[Parcoa sequential:@[ [quotedOrLocalizedStringParser skipSurroundingSpaces], attributedStringAttributesParser ]] transform:^id(NSArray* values) {
         return [[NSAttributedString alloc] initWithString:[values[0] iss_trimQuotes] attributes:values[1]];
     } name:@"singleAttributedStringParser"];
 
-    ParcoaParser* attributedStringParser = [[Parcoa sepBy1:[singleAttributedStringParser skipSurroundingSpaces] delimiter:comma] transform:^id(NSArray* values) {
+    ParcoaParser* delimeter = [Parcoa choice:@[comma, [Parcoa spaces]]];
+    ParcoaParser* attributedStringParser = [[Parcoa sepBy1:[singleAttributedStringParser skipSurroundingSpaces] delimiter:delimeter] transform:^id(NSArray* values) {
         NSMutableAttributedString* mutableAttributedString = [[NSMutableAttributedString alloc] init];
         for(NSAttributedString* attributedString in values) {
             [mutableAttributedString appendAttributedString:attributedString];

@@ -32,6 +32,10 @@
     return [UIImage imageWithContentsOfFile:path];
 }
 
+- (NSString*) localizedStringWithKey:(NSString*)key {
+    return [NSString stringWithFormat:@"%@.localized", key];
+}
+
 @end
 
 @interface ISSStyleSheetParserTests : XCTestCase
@@ -239,6 +243,13 @@
     XCTAssertEqualObjects(values[0], @"Text:", @"Expected value 'Text:' for property text");
     XCTAssertEqualObjects(values[1], @"Title", @"Expected value 'Title' for property title");
     XCTAssertEqualObjects(values[2], @"Prompt", @"Expected value 'Prompt' for property prompt");
+}
+
+- (void) testLocalizedStringPropertyValue {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"attributedText"] fromStyleClass:@"localizedStrings"];
+    XCTAssertEqualObjects(values[0], @"Text.localized");
+    XCTAssertEqualObjects(values[1], @"Title.localized");
+    XCTAssertEqualObjects([values[2] string], @"text1.localized-text2.localized");
 }
 
 - (void) testOffsetPropertyValue {

@@ -276,6 +276,17 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
 }
 
++ (ParcoaParser*) iss_singleParameterFunctionParserWithNames:(NSArray*)names parameterParser:(ParcoaParser*)parameterParser {
+    NSMutableArray* nameParsers = [NSMutableArray array];
+    for(NSString* name in names) {
+        [nameParsers addObject:[self iss_stringIgnoringCase:name]];
+    }
+    
+    ParcoaParser* parser = [[Parcoa choice:nameParsers] then:[self iss_quickUnichar:'(' skipSpace:YES]];
+    parser = [parser keepRight:parameterParser];
+    return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
+}
+
 + (ParcoaParser*) iss_nameValueSeparator {
     return [ParcoaParser parserWithBlock:^ParcoaResult *(NSString *input) {
         NSUInteger i = 0;

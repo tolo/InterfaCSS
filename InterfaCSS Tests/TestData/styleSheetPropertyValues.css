@@ -28,6 +28,12 @@
     attributedTitle: "title1" (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2);
 }
 
+.localizedStrings {
+    text: L("Text");
+    title: localized('Title');
+    attributedText: L("text1") (font: HelveticaNeue-Medium 12) L("-text2") (font: HelveticaNeue-Medium 12);
+}
+
 .prefixes {
     cornerRadius: 5;
     layer.borderWidth: 10;

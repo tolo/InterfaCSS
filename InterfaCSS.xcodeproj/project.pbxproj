@@ -331,10 +331,10 @@
 				F6EBAD65176B4A240053DAFA /* ISSParcoaStyleSheetParser.h */,
 				F6EBAD66176B4A240053DAFA /* ISSParcoaStyleSheetParser.m */,
 				F6EBAD051768B0AA0053DAFA /* ISSStyleSheetParser.h */,
-				CC3C88B72A3EBA684963C228 /* ISSViewHierarchyParser.m */,
 				CC3C8583C197EBF3BDED28B9 /* ISSViewHierarchyParser.h */,
-				CC3C879DE5B06D2319FA54D8 /* Parcoa+ISSAdditions.m */,
+				CC3C88B72A3EBA684963C228 /* ISSViewHierarchyParser.m */,
 				CC3C87B7069CA9BDCD00825F /* Parcoa+ISSAdditions.h */,
+				CC3C879DE5B06D2319FA54D8 /* Parcoa+ISSAdditions.m */,
 			);
 			path = Parser;
 			sourceTree = "<group>";

@@ -51,6 +51,8 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_singleParameterFunctionParserWithName:(NSString*)name parameterParser:(ParcoaParser*)parameterParser;
 
++ (ParcoaParser*) iss_singleParameterFunctionParserWithNames:(NSArray*)names parameterParser:(ParcoaParser*)parameterParser;
+
 + (ParcoaParser*) iss_nameValueSeparator;
 
 + (ParcoaParser*) iss_parseLineUpToInvalidCharactersInString:(NSString*)invalid;
