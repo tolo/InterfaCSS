@@ -46,7 +46,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @end
 
 @implementation ISSUIElementDetails {
-    __weak UIViewController* _parentViewController;
+    __weak UIViewController* _closestViewController;
 }
 
 #pragma mark - Lifecycle
@@ -55,23 +55,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     self = [super init];
     if (self) {
         _uiElement = uiElement;
-        if( [uiElement isKindOfClass:[UIView class]] ) {
-            UIView* view = (UIView*)uiElement;
-            _parentElement = view.superview;
-        }
-
-        ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-        _canonicalType = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
-        if( !_canonicalType ) _canonicalType = [uiElement class];
-        
-        NSSet* validPrefixPathsForClass = [registry validPrefixKeyPathsForClass:[self.uiElement class]];
-        if( validPrefixPathsForClass.count ) {
-            NSMutableDictionary* validNestedElements = [NSMutableDictionary dictionary];
-            for(NSString* path in validPrefixPathsForClass) {
-                validNestedElements[[path lowercaseString]] = path;
-            }
-            _validNestedElements = validNestedElements;
-        }
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetCachedData) name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
     }
@@ -183,9 +166,12 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (void) resetCachedData {
     // Identity and structure:
+    _canonicalType = nil;
     if( !self.usingCustomElementStyleIdentity ) self.elementStyleIdentityPath = nil;
     self.ancestorUsesCustomElementStyleIdentity = NO;
-    _parentViewController = nil;
+    _closestViewController = nil;
+    _validNestedElements = nil;
+
     // Cached styles:
     self.stylingApplied = NO;
     self.cachedDeclarations = nil;
@@ -195,22 +181,57 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     return [self.uiElement isKindOfClass:UIView.class] ? self.uiElement : nil;
 }
 
+- (id) parentElement {
+    if( !_parentElement ) {
+        if( [_uiElement isKindOfClass:[UIView class]] ) {
+            UIView* view = (UIView*)_uiElement;
+            UIViewController* closestViewController = [self.class closestViewController:view];
+            if( closestViewController.view == view ) {
+                _parentElement = closestViewController;
+            } else {
+                _parentElement = view.superview;
+                _closestViewController = closestViewController;
+            }
+        }
+        else if( [_uiElement isKindOfClass:[UIViewController class]] ) {
+            _parentElement = ((UIViewController*)self.uiElement).view.superview; // User the super view of the view controller root view
+        }
+    }
+    return _parentElement;
+}
+
 - (UIView*) parentView {
     return [self.parentElement isKindOfClass:UIView.class] ? self.parentElement : nil;
 }
 
 - (UIViewController*) parentViewController {
-    if( !_parentViewController ) {
-//        for (UIView* next = self.view.superview; next; next = next.superview) {
-        for (UIView* currentView = self.view; currentView; currentView = currentView.superview) {
-            UIResponder* nextResponder = currentView.nextResponder;
-            if ( [nextResponder isKindOfClass:UIViewController.class] ) {
-                _parentViewController = (UIViewController*)nextResponder;
-                break;
-            }
+    return [self.parentElement isKindOfClass:UIViewController.class] ? self.parentElement : nil;
+}
+
+- (UIViewController*) closestViewController {
+    if( !_closestViewController ) {
+        _closestViewController = [self.class closestViewController:self.view];
+    }
+    return _closestViewController;
+}
+
++ (UIViewController*) closestViewController:(UIView*)view {
+    for (UIView* currentView = view; currentView; currentView = currentView.superview) {
+        UIResponder* nextResponder = currentView.nextResponder;
+        if ( [nextResponder isKindOfClass:UIViewController.class] ) {
+            return (UIViewController*)nextResponder;
         }
     }
-    return _parentViewController;
+    return nil;
+}
+
+- (Class) canonicalType {
+    if( !_canonicalType ) {
+        ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+        _canonicalType = [registry canonicalTypeClassForClass:[self.uiElement class]];
+        if ( !_canonicalType ) _canonicalType = [self.uiElement class];
+    }
+    return _canonicalType;
 }
 
 - (void) setElementId:(NSString*)elementId {
@@ -308,7 +329,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     }
     else if( self.parentView ) {
         ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-        Class uiKitClass = [registry canonicalTypeClassForViewClass:[self.uiElement class]];
+        Class uiKitClass = [registry canonicalTypeClassForClass:[self.uiElement class]];
         for(UIView* v in self.parentView.subviews) {
             if( [v.class isSubclassOfClass:uiKitClass] ) {
                 if( v == self.uiElement ) *position = *count;
@@ -350,6 +371,21 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         return [self.uiElement valueForKeyPath:validKeyPath];
     }
     return nil;
+}
+
+- (NSDictionary*) validNestedElements {
+    if( !_validNestedElements ) {
+        ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
+        NSSet* validPrefixPathsForClass = [registry validPrefixKeyPathsForClass:[self.uiElement class]];
+        NSMutableDictionary* validNestedElements = [NSMutableDictionary dictionary];
+        if( validPrefixPathsForClass.count ) {
+            for(NSString* path in validPrefixPathsForClass) {
+                validNestedElements[[path lowercaseString]] = path;
+            }
+        }
+        _validNestedElements = validNestedElements;
+    }
+    return _validNestedElements;
 }
 
 - (NSArray*) childElementsForElement {

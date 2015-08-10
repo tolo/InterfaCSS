@@ -51,7 +51,7 @@
         if( [type isEqualToString:@"*"] ) wildcardType = YES;
         else {
             ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-            typeClass = [registry canonicalTypeClassForType:type registerIfNotFound:YES];
+            typeClass = [registry canonicalTypeClassForType:type registerIfNotFound:[InterfaCSS interfaCSS].allowAutomaticRegistrationOfCustomTypeSelectorClasses];
         }
     }
 
@@ -59,10 +59,10 @@
         return [[self alloc] initWithType:typeClass wildcardType:wildcardType elementId:elementId styleClass:styleClass pseudoClasses:pseudoClasses];
     } else if( [type iss_hasData] ) {
         if( [InterfaCSS interfaCSS].useLenientSelectorParsing ) {
-            ISSLogWarning(@"Unrecognized type: %@ - using type as style class instead", type);
+            ISSLogWarning(@"Unrecognized type: '%@' - using type as style class instead", type);
             return [[self alloc] initWithType:nil wildcardType:NO elementId:nil styleClass:type pseudoClasses:pseudoClasses];
         } else {
-            ISSLogWarning(@"Unrecognized type: %@", type);
+            ISSLogWarning(@"Unrecognized type: '%@' - Have you perhaps forgotten to register a valid type selector class?", type);
         }
     }  else {
         ISSLogWarning(@"Invalid selector - type and style class missing!");
@@ -105,7 +105,7 @@
 - (NSString*) displayDescription {
     ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
 
-    NSString* typeString = _type ? [registry canonicalTypeForViewClass:_type] : @"";
+    NSString* typeString = _type ? [registry canonicalTypeForClass:_type] : @"";
     if( !_type && _wildcardType ) typeString = @"*";
 
     NSString* idString = @"";

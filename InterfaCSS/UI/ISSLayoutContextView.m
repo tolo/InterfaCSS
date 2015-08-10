@@ -67,7 +67,7 @@
     ISSUIElementDetails* selfDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self];
 
     // Get top and bottom layout guides (thank you Apple)
-    UIViewController* parentViewController = selfDetails.parentViewController;
+    UIViewController* parentViewController = selfDetails.closestViewController;
     id<UILayoutSupport> topLayoutGuide = [parentViewController respondsToSelector:@selector(topLayoutGuide)] ? parentViewController.topLayoutGuide : nil;
     id<UILayoutSupport> bottomLayoutGuide = [parentViewController respondsToSelector:@selector(bottomLayoutGuide)] ? parentViewController.bottomLayoutGuide : nil;
     UIEdgeInsets layoutGuideInsets = UIEdgeInsetsMake(topLayoutGuide.length, 0, bottomLayoutGuide.length, 0);

@@ -478,7 +478,7 @@ static InterfaCSS* singleton = nil;
     if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
         ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
         [self clearCachedStylesForUIElementDetails:uiElementDetails];
-        uiElementDetails.parentElement = view.superview;
+        uiElementDetails.parentElement = nil; // Reset parent element to make sure it's re-evaluated
     }
 
     [self styleUIElement:uiElementDetails force:force];

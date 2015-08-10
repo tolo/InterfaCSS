@@ -18,6 +18,7 @@
 #import "ISSPseudoClass.h"
 #import "ISSUIElementDetails.h"
 #import "UIView+InterfaCSS.h"
+#import "ISSPropertyRegistry.h"
 
 
 @interface MyCustomView : UIView
@@ -37,6 +38,13 @@
 
 @implementation MyCustomView2
 @end
+
+@interface SomeViewController : UIViewController
+@end
+
+@implementation SomeViewController
+@end
+
 
 
 @interface ISSSelectorTests : XCTestCase
@@ -363,6 +371,9 @@
 }
 
 - (void) testUsingNonUIKitClassAsType {
+    // Enable automatic registration of type classes whenever they are encountered in selectors
+    [InterfaCSS sharedInstance].allowAutomaticRegistrationOfCustomTypeSelectorClasses = YES;
+    
     ISSSelector* customClassTypeSelector = [ISSSelector selectorWithType:@"MyCustomView" styleClass:nil pseudoClasses:nil];
     ISSSelectorChain* customClassTypeSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[customClassTypeSelector]];
     
@@ -392,6 +403,50 @@
     elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomViewSubClass];
     
     XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must match other custom class that is sub class of type in custom type selector!");
+}
+
+- (void) testViewControllerAsTypeSelector {
+    // For this test case, we will use manual registration of type classes instead of doing it automatically
+    [InterfaCSS sharedInstance].allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
+    
+    SomeViewController* vc = [[SomeViewController alloc] init];
+
+
+    // Test selector "UIViewController UIView"
+    ISSSelector* viewControllerSelector = [ISSSelector selectorWithType:@"UIViewController" styleClass:nil pseudoClasses:nil];
+    ISSSelector* viewSelector = [ISSSelector selectorWithType:@"UIView" styleClass:nil pseudoClasses:nil];
+    ISSSelectorChain* viewSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[viewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
+    
+    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:vc.view];
+    
+    XCTAssertTrue([viewSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+
+    [elementDetails resetCachedData];
+
+
+    // Test selector "SomeViewController UIView"
+    [[InterfaCSS sharedInstance].propertyRegistry registerCanonicalTypeClass:SomeViewController.class]; // Register SomeViewController as a valid type selector class
+
+    ISSSelector* someViewControllerSelector = [ISSSelector selectorWithType:@"SomeViewController" styleClass:nil pseudoClasses:nil];
+    ISSSelectorChain* someViewControllerSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[someViewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
+    
+    // Check that the view controller matches the selector chain with the newly registered type class:
+    XCTAssertTrue([someViewControllerSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    // Make sure that the "UIViewController" type selector no longer matches "SomeViewController"
+    XCTAssertFalse([viewSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+
+
+    // Test selector "UIView SomeViewController UIView"
+    ISSSelectorChain* someViewControllerSelectorChain2 = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorDescendant), someViewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
+
+    // Selector chain shouldn't match view controller with no super view:
+    XCTAssertFalse([someViewControllerSelectorChain2 matchesElement:elementDetails ignoringPseudoClasses:NO]);
+
+    UIView* superView = [[UIView alloc] init];
+    [superView addSubview:vc.view];
+
+    // When added to super view, selector chanin should match:
+    XCTAssertTrue([someViewControllerSelectorChain2 matchesElement:elementDetails ignoringPseudoClasses:NO]);
 }
 
 @end

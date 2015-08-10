@@ -131,21 +131,21 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     return self.typePropertyDefinitions[@(propertyType)];
 }
 
-- (NSString*) canonicalTypeForViewClass:(Class)viewClass {
-    NSString* type = self.classesToTypeNames[viewClass];
+- (NSString*) canonicalTypeForClass:(Class)clazz {
+    NSString* type = self.classesToTypeNames[clazz];
     if( type ) return type;
     else { // Custom view class or "unsupported" UIKit view class
-        Class superClass = [viewClass superclass];
-        if( superClass && superClass != NSObject.class ) return [self canonicalTypeForViewClass:superClass];
+        Class superClass = [clazz superclass];
+        if( superClass && superClass != NSObject.class ) return [self canonicalTypeForClass:superClass];
         else return nil;
     }
 }
 
-- (Class) canonicalTypeClassForViewClass:(Class)viewClass {
-    if( self.classesToTypeNames[viewClass] ) return viewClass;
+- (Class) canonicalTypeClassForClass:(Class)clazz {
+    if( self.classesToTypeNames[clazz] ) return clazz;
     else { // Custom view class or "unsupported" UIKit view class
-        Class superClass = [viewClass superclass];
-        if( superClass && superClass != NSObject.class ) return [self canonicalTypeClassForViewClass:superClass];
+        Class superClass = [clazz superclass];
+        if( superClass && superClass != NSObject.class ) return [self canonicalTypeClassForClass:superClass];
         else return nil;
     }
 }
@@ -162,23 +162,32 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     Class clazz = self.typeNamesToClasses[uiKitClassName];
     if( !clazz ) {
-        clazz = self.typeNamesToClasses[type]; // If not UIKit class - see if it is a custom class
+        clazz = self.typeNamesToClasses[[type lowercaseString]]; // If not UIKit class - see if it is a custom class (typeNamesToClasses always uses lowecase keys)
     }
     if( !clazz && registerIfNotFound ) {
         // If type doesn't match a registered class name, try to see if the type is a valid class...
         clazz = NSClassFromString(type);
         if( clazz ) {
             // ...and if it is - register it as a canonical type (keep case)
-            NSMutableDictionary* temp = [NSMutableDictionary dictionaryWithDictionary:self.typeNamesToClasses];
-            temp[type] = clazz;
-            self.typeNamesToClasses = [NSDictionary dictionaryWithDictionary:temp];
-            
-            temp = [NSMutableDictionary dictionaryWithDictionary:self.classesToTypeNames];
-            temp[resistanceIsFutile clazz] = type;
-            self.classesToTypeNames = [NSDictionary dictionaryWithDictionary:temp];
+            [self registerCanonicalTypeClass:clazz];
         }
     }
     return clazz;
+}
+
+- (void) registerCanonicalTypeClass:(Class)clazz {
+    NSString* type = [NSStringFromClass(clazz) lowercaseString];
+
+    NSMutableDictionary* temp = [NSMutableDictionary dictionaryWithDictionary:self.typeNamesToClasses];
+    temp[type] = clazz;
+    self.typeNamesToClasses = [NSDictionary dictionaryWithDictionary:temp];
+
+    temp = [NSMutableDictionary dictionaryWithDictionary:self.classesToTypeNames];
+    temp[resistanceIsFutile clazz] = type;
+    self.classesToTypeNames = [NSDictionary dictionaryWithDictionary:temp];
+
+    // Reset all cached data ISSUIElementDetails, since canonical type class may have changed for some elements
+    [ISSUIElementDetails resetAllCachedData];
 }
 
 - (ISSPropertyDefinition*) registerCustomProperty:(NSString*)propertyName propertyType:(ISSPropertyType)propertyType {
@@ -198,6 +207,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSMutableDictionary* temp = [NSMutableDictionary dictionaryWithDictionary:self.validPrefixKeyPaths];
     temp[prefix.lowercaseString] = prefix;
     self.validPrefixKeyPaths = [temp copy];
+
+    // Reset all cached data ISSUIElementDetails, since valid prefix key paths may have changed for some elements
+    [ISSUIElementDetails resetAllCachedData];
 }
 
 - (void) registerValidPrefixKeyPaths:(NSArray*)prefixes {
@@ -206,6 +218,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         if( [prefix iss_hasData] ) temp[prefix.lowercaseString] = prefix;
     }
     self.validPrefixKeyPaths = [temp copy];
+
+    // Reset all cached data ISSUIElementDetails, since valid prefix key paths may have changed for some elements
+    [ISSUIElementDetails resetAllCachedData];
 }
 
 - (NSSet*) validPrefixKeyPathsForClass:(Class)clazz {
@@ -1080,7 +1095,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSMutableDictionary* classesToNames = [[NSMutableDictionary alloc] init];
     NSMutableDictionary* typeNamesToClasses = [[NSMutableDictionary alloc] init];
-    for(Class clazz in self.classProperties.allKeys) {
+
+    // Extend the default set of valid type classes with a few common view controller classes
+    NSArray* validTypeClasses = [self.classProperties.allKeys arrayByAddingObjectsFromArray:@[UIViewController.class, UINavigationController.class, UITabBarController.class, UIPageViewController.class, UITableViewController.class, UICollectionViewController.class]];
+
+    for(Class clazz in validTypeClasses) {  
         NSString* typeName = [[clazz description] lowercaseString];
         classesToNames[resistanceIsFutile clazz] = typeName;
         typeNamesToClasses[typeName] = clazz;

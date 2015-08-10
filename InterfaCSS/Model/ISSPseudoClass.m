@@ -109,8 +109,8 @@ static NSDictionary* stringToPseudoClassType;
 - (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
     UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
 
-    if( elementDetails.parentViewController ) { // First, attempt to use interface orientation of parent view controller...
-        return elementDetails.parentViewController.interfaceOrientation;
+    if( elementDetails.closestViewController ) { // First, attempt to use interface orientation of parent view controller...
+        return elementDetails.closestViewController.interfaceOrientation;
     } else if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) { // ...if not found - fall back to device orientation...
         switch( deviceOrientation ) {
             case UIDeviceOrientationLandscapeLeft : return UIInterfaceOrientationLandscapeRight;

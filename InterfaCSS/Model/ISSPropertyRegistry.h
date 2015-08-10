@@ -22,10 +22,24 @@
 
 - (NSSet*) typePropertyDefinitions:(ISSPropertyType)propertyType;
 
-- (NSString*) canonicalTypeForViewClass:(Class)viewClass;
-- (Class) canonicalTypeClassForViewClass:(Class)viewClass;
-- (Class) canonicalTypeClassForType:(NSString*)type;
+/**
+ * Returns the canonical type class for the given class, i.e. the closest super class that represents a valid type selector. For instance, for all `UIView`
+ * subclasses, this would by default be `UIView`.
+ */
+- (Class) canonicalTypeClassForClass:(Class)clazz;
+- (NSString*) canonicalTypeForClass:(Class)clazz;
 - (Class) canonicalTypeClassForType:(NSString*)type registerIfNotFound:(BOOL)registerIfNotFound;
+- (Class) canonicalTypeClassForType:(NSString*)type;
+
+
+/**
+ * Registers a class for use as a valid type selector in stylesheets. Note: this happens automatically whenever an unknown, but valid, class name is encountered
+ * in a type selector in a stylesheet. This method exist to be able to register all custom canonical type classes before stylesheet parsing occurs, and to also
+ * enable case-insensitive matching of type name -> class.
+ *
+ * @see canonicalTypeClassForClass:
+ */
+- (void) registerCanonicalTypeClass:(Class)clazz;
 
 /**
  * Registers a custom property with the specified name and type, that can then be used in stylesheets.

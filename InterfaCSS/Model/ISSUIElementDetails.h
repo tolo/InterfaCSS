@@ -29,13 +29,14 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @interface ISSUIElementDetails : NSObject<NSCopying>
 
 @property (nonatomic, weak, readonly) id uiElement;
-@property (nonatomic, weak, readonly) UIView* view;
+@property (nonatomic, weak, readonly) UIView* view; // uiElement, if instance of UIView, otherwise nil
 @property (nonatomic, weak) id parentElement;
-@property (nonatomic, weak, readonly) UIView* parentView;
+@property (nonatomic, weak, readonly) UIView* parentView; // parentElement, if instance of UIView, otherwise nil
+
+@property (nonatomic, weak, readonly) UIViewController* parentViewController; // Direct parent view controller of element, i.e. parentElement, if instance of UIViewController, otherwise nil
+@property (nonatomic, weak, readonly) UIViewController* closestViewController; // Closest ancestor view controller
 
 @property (nonatomic, readonly) NSArray* childElementsForElement;
-
-@property (nonatomic, weak, readonly) UIViewController* parentViewController;
 
 @property (nonatomic, strong) NSString* elementId;
 

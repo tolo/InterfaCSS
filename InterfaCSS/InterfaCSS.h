@@ -87,6 +87,16 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 @property (nonatomic) NSTimeInterval processRefreshableStylesheetsLast;
 
+/**
+ * Flag indicating if unknown type selectors should automatically be registered as canonical type classes (i.e. valid type selector classes) when encountered
+ * in a stylesheet. As an alternative to this, consider using `[ISSPropertyRegistry registerCanonicalTypeClass:]`
+ *
+ * Default value of this property is `NO`.
+ * 
+ * @see [ISSPropertyRegistry registerCanonicalTypeClass:]
+ */
+@property (nonatomic) BOOL allowAutomaticRegistrationOfCustomTypeSelectorClasses;
+
 
 #pragma mark - Properties
 
