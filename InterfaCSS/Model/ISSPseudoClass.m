@@ -107,19 +107,22 @@ static NSDictionary* stringToPseudoClassType;
 }
 
 - (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-
-    if( elementDetails.closestViewController ) { // First, attempt to use interface orientation of parent view controller...
-        return elementDetails.closestViewController.interfaceOrientation;
-    } else if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) { // ...if not found - fall back to device orientation...
-        switch( deviceOrientation ) {
-            case UIDeviceOrientationLandscapeLeft : return UIInterfaceOrientationLandscapeRight;
-            case UIDeviceOrientationLandscapeRight : return UIInterfaceOrientationLandscapeLeft;
-            case UIDeviceOrientationPortraitUpsideDown : return UIInterfaceOrientationPortraitUpsideDown;
-            default: return UIInterfaceOrientationPortrait;
+    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+    
+    if( orientation == UIInterfaceOrientationUnknown ) {
+        UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+        if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) { // ...if not found - fall back to device orientation...
+            switch( deviceOrientation ) {
+                case UIDeviceOrientationLandscapeLeft : return UIInterfaceOrientationLandscapeRight;
+                case UIDeviceOrientationLandscapeRight : return UIInterfaceOrientationLandscapeLeft;
+                case UIDeviceOrientationPortraitUpsideDown : return UIInterfaceOrientationPortraitUpsideDown;
+                default: return UIInterfaceOrientationPortrait;
+            }
+        } else {
+            return UIInterfaceOrientationPortrait;
         }
     } else {
-        return UIInterfaceOrientationPortrait;
+        return orientation;
     }
 }
 
