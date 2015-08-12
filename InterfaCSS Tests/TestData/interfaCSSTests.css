@@ -193,3 +193,15 @@ UIBarButtonItem.prefixedPropertyOnNonUIViewClass {
     keyboardType: numberPad;
     returnKeyType: done;
 }
+
+UIView .testSpecificity2 {
+    alpha: 0.75;
+}
+
+#someElementId .testSpecificity1 {
+    alpha: 0.5;
+}
+
+.testSpecificity1 {
+    alpha: 0.25;
+}

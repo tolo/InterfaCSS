@@ -643,4 +643,23 @@
     XCTAssertEqual(UIReturnKeyDone, text.returnKeyType);
 }
 
+- (void) testSimpleSpecificity {
+    UIView* root = [[UIView alloc] init];
+    root.elementIdISS = @"someElementId";
+    UIView* subView = [[UIView alloc] init];
+    [root addSubview:subView];
+    subView.styleClassesISS = [NSSet setWithArray:@[@"testSpecificity1", @"testSpecificity2"]];
+    
+    [subView applyStylingISS];
+    ISSAssertEqualFloats(subView.alpha, 0.25f);
+    
+    [InterfaCSS sharedInstance].useSelectorSpecificity = YES;
+    [[InterfaCSS sharedInstance] refreshStyling];
+    //[[InterfaCSS sharedInstance] logMatchingStyleDeclarationsForUIElement:subView];
+    
+    [subView applyStylingISS];
+    
+    ISSAssertEqualFloats(subView.alpha, 0.5f);
+}
+
 @end

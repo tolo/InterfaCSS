@@ -102,6 +102,16 @@
     return match;
 }
 
+- (NSUInteger) specificity {
+    NSUInteger specificity = 0;
+    if( self.elementId ) specificity += 100;
+    if( self.styleClass ) specificity += 10;
+    if( self.pseudoClasses.count ) specificity += 10 * self.pseudoClasses.count;
+    if( self.type ) specificity += 1;
+    
+    return specificity;
+}
+
 - (NSString*) displayDescription {
     ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
 

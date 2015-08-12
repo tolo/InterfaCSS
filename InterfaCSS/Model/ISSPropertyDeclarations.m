@@ -33,9 +33,28 @@
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
     for(ISSSelectorChain* selectorChain in _selectorChains) {
-        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] )  return YES;
+        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) return YES;
     }
     return NO;
+}
+
+- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+    NSMutableArray* matchingChains = [NSMutableArray array];
+    for(ISSSelectorChain* selectorChain in _selectorChains) {
+        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) {
+            [matchingChains addObject:selectorChain];
+        }
+    }
+    if( matchingChains.count ) return [[ISSPropertyDeclarations alloc] initWithSelectorChains:matchingChains andProperties:self.properties];
+    else return nil;
+}
+
+- (NSUInteger) specificity {
+    NSUInteger specificity = 0;
+    for(ISSSelectorChain* selectorChain in _selectorChains) {
+        specificity += selectorChain.specificity;
+    }
+    return specificity;
 }
 
 - (NSString*) displayDescription:(BOOL)withProperties {

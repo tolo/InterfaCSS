@@ -248,6 +248,15 @@ static InterfaCSS* singleton = nil;
                 [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
             }
         }
+        
+        if( self.useSelectorSpecificity ) {
+            // Sort declarations on specificity
+            [cachedDeclarations sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(ISSPropertyDeclarations* ruleset1, ISSPropertyDeclarations* ruleset2) {
+                if ( ruleset1.specificity > ruleset2.specificity ) return NSOrderedDescending;
+                if ( ruleset1.specificity < ruleset2.specificity ) return NSOrderedAscending;
+                return NSOrderedSame;
+            }];
+        }
 
         // Only add declarations to cache if styles are cacheable for element (i.e. added to the view hierarchy or using custom styling identity)
         if( elementDetails.stylesCacheable ) {
@@ -280,7 +289,7 @@ static InterfaCSS* singleton = nil;
 
         // Set 'stylingApplied' flag only if there are no pseudo classes in declarations, in which case declarations need to be evaluated every time
         if( !hasPseudoClass && elementDetails.stylesCacheable ) {
-            elementDetails.stylingApplied = YES;
+            elementDetails.stylingApplied = YES; // TODO: Consider using additional flag for handling the case with pseudo classes...
         } else {
             ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentityPath);
         }

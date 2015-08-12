@@ -123,6 +123,16 @@
     return [[ISSSelectorChain alloc] initWithComponents:newComponents hasPseudoClassSelector:_hasPseudoClassSelector || selectorChain.hasPseudoClassSelector];
 }
 
+- (NSUInteger) specificity {
+    NSUInteger specificity = 0;
+    for(id selectorComponent in _selectorComponents) {
+        if( [selectorComponent isKindOfClass:ISSSelector.class] ) {
+            specificity += ((ISSSelector*)selectorComponent).specificity;
+        }
+    }
+    return specificity;
+}
+
 - (NSString*) displayDescription {
     NSMutableString* str = [NSMutableString string];
     for(id selectorComponent in _selectorComponents) {
@@ -144,6 +154,13 @@
             }
         }
     }
+    
+    if( [InterfaCSS sharedInstance].useSelectorSpecificity ) {
+        [str appendString:@" (specificity: "];
+        [str appendFormat:@"%d", (int)self.specificity];
+        [str appendString:@")"];
+    }
+    
     return str;
 }
 

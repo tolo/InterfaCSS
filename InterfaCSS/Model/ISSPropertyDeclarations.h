@@ -18,10 +18,12 @@
 @property (nonatomic, readonly) NSArray* properties;
 @property (nonatomic, readonly) NSString* displayDescription;
 @property (nonatomic, readonly) BOOL containsPseudoClassSelector;
+@property (nonatomic, readonly) NSUInteger specificity;
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
+- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
 
 - (NSString*) displayDescription:(BOOL)withProperties;
 

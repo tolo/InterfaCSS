@@ -15,6 +15,7 @@
 @property (nonatomic, readonly) NSArray* selectorComponents;
 @property (nonatomic, readonly) NSString* displayDescription;
 @property (nonatomic, readonly) BOOL hasPseudoClassSelector;
+@property (nonatomic, readonly) NSUInteger specificity;
 
 + (instancetype) selectorChainWithSelector:(ISSSelector*)selector;
 + (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents;

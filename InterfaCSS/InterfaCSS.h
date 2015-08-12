@@ -97,6 +97,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 @property (nonatomic) BOOL allowAutomaticRegistrationOfCustomTypeSelectorClasses;
 
+/**
+ * Enables or disables the use of selector specificity (see http://www.w3.org/TR/css3-selectors/#specificity ) when calculating the effective styles (and order) for an element. Default value of this property is `NO`.
+ */
+@property (nonatomic) BOOL useSelectorSpecificity;
+
 
 #pragma mark - Properties
 
@@ -291,6 +296,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  * @param refreshStyling YES if styling on all tracked views should be reset and reapplied as a result of this call, otherwise NO.
  */
 - (void) unloadAllStyleSheets:(BOOL)refreshStyling;
+
+/**
+ * Clears all cached style information and re-applies styles for all views;
+ */
+- (void) refreshStyling;
 
 
 #pragma mark - Prototypes

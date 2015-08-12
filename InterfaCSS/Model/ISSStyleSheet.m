@@ -54,9 +54,10 @@
 
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
     for(ISSPropertyDeclarations* declarations in _declarations) {
-        if ( [declarations matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) {
-            ISSLogTrace(@"Matching declarations: %@", declarations);
-            [matchingDeclarations addObject:declarations];
+        ISSPropertyDeclarations* matchingDeclarationBlock = [declarations propertyDeclarationsMatchingElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses];
+        if( matchingDeclarationBlock ) {
+            ISSLogTrace(@"Matching declarations: %@", matchingDeclarationBlock);
+            [matchingDeclarations addObject:matchingDeclarationBlock];
         }
     }
     return matchingDeclarations;

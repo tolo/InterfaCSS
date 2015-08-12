@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 @property (nonatomic, readonly) NSString* styleClass;
 @property (nonatomic, readonly) NSArray* pseudoClasses;
 
+@property (nonatomic, readonly) NSUInteger specificity;
+
 @property (nonatomic, readonly) NSString* displayDescription;
 
 + (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId pseudoClasses:(NSArray*)pseudoClasses;
