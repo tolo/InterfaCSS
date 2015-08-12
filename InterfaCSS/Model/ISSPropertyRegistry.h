@@ -14,6 +14,8 @@
 @interface ISSPropertyRegistry : NSObject
 
 @property (nonatomic, strong, readonly) NSSet* propertyDefinitions;
+@property (nonatomic, strong, readonly) NSDictionary* propertyDefinitionsForClass;
+
 @property (nonatomic, strong, readonly) NSDictionary* validPrefixKeyPaths;
 
 - (NSSet*) propertyDefinitionsForType:(ISSPropertyType)propertyType;

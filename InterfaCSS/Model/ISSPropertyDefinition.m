@@ -19,6 +19,7 @@
 #import "NSAttributedString+ISSAdditions.h"
 #import "InterfaCSS.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 @protocol NSValueTransformer
@@ -29,14 +30,18 @@
 NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefinition";
 
 
-@implementation ISSPropertyDefinition 
+@implementation ISSPropertyDefinition
 
 - (id) initAnonymousPropertyDefinitionWithType:(ISSPropertyType)type {
     return [self initWithName:ISSAnonymousPropertyDefinitionName aliases:@[] type:type];
 }
 
 - (id) initWithName:(NSString *)name type:(ISSPropertyType)type {
-    return [self initWithName:name aliases:@[] type:type];
+    return [self initWithName:name aliases:nil type:type];
+}
+
+- (id) initWithName:(NSString *)name type:(ISSPropertyType)type useIntrospection:(BOOL)useIntrospection {
+    return [self initWithName:name aliases:nil type:type enumValues:nil enumBitMaskType:NO setterBlock:nil parameterEnumValues:nil useIntrospection:useIntrospection];
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type {
@@ -44,11 +49,16 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
-    return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:nil parameterEnumValues:nil];
+    return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:nil parameterEnumValues:nil useIntrospection:NO];
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
-          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(PropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
+    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
+    return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:setterBlock parameterEnumValues:parameterEnumValues useIntrospection:NO];
+}
+
+- (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
+          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues useIntrospection:(BOOL)useIntrospection {
     if (self = [super init]) {
         _name = name;
 
@@ -65,6 +75,8 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
         _parameterEnumValues = [parameterEnumValues iss_dictionaryWithLowerCaseKeys];
 
         _nameIsKeyPath = [_name rangeOfString:@"."].location != NSNotFound; // Check if property name contains a "key path prefix"
+        
+        _useIntrospection = useIntrospection;
     }
     return self;
 }
@@ -73,35 +85,43 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
     return self.name == ISSAnonymousPropertyDefinitionName;
 }
 
-- (void) setValueUsingKVC:(id)value onTarget:(id)obj {
+- (BOOL) setValueUsingKVC:(id)value onTarget:(id)obj {
     @try {
         if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
 
         // Check if value can be transformed to NSValue (to be properly set via KVC)
         if( [value respondsToSelector:@selector(transformToNSValue)] ) value = [value transformToNSValue];
 
-        [obj setValue:value forKeyPath:_name]; // Will throw exception if property doesn't exist
+        [obj setValue:value forKeyPath:self.name]; // Will throw exception if property doesn't exist
+        return YES;
     } @catch (NSException* e) {
-        ISSLogDebug(@"Unable to set value for property %@ - %@", _name, e);
+        ISSLogDebug(@"Unable to set value for property %@ - %@", self.name, e);
+        return NO;
     }
 }
 
 
 #pragma mark - Public interface
 
-- (void) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params { //withPrefixKeyPath:(NSString*)prefixKeyPath {
+- (BOOL) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params {
     if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
     if( value && value != [NSNull null] ) {
-        if( _propertySetterBlock ) {
-            _propertySetterBlock(self, obj, value, params);
-        } else {
-            [self setValueUsingKVC:value onTarget:obj];
+        if( self.propertySetterBlock ) {
+            self.propertySetterBlock(self, obj, value, params);
+            return YES;
+        }
+        else if( self.useIntrospection ) {
+            return [ISSRuntimeIntrospectionUtils invokeSetterForProperty:self.name withValue:value inObject:obj];
+        }
+        else {
+            return [self setValueUsingKVC:value onTarget:obj];
         }
     }
+    return NO;
 }
 
 - (BOOL) isParameterizedProperty {
-    return _parameterEnumValues != nil;
+    return self.parameterEnumValues != nil;
 }
 
 - (NSString*) displayDescription {
@@ -109,7 +129,7 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 }
 
 - (NSString*) uniqueTypeDescription {
-    if( self.type == ISSPropertyTypeEnumType ) return [NSString stringWithFormat:@"Enum(%@)", _name];
+    if( self.type == ISSPropertyTypeEnumType ) return [NSString stringWithFormat:@"Enum(%@)", self.name];
     else return [self typeDescription];
 }
 

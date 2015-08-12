@@ -24,4 +24,8 @@
 
 + (NSString*) validKeyPathForCaseInsensitivePath:(NSString*)caseInsensitiveKeyPath inClass:(Class)class;
 
++ (NSInvocation*) findSetterForProperty:(NSString*)propertyName inObject:(id)object;
+
++ (BOOL) invokeSetterForProperty:(NSString*)propertyName withValue:(id)value inObject:(id)object;
+
 @end

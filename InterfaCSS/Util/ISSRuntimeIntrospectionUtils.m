@@ -72,6 +72,19 @@
     }
 }
 
++ (NSString*) customSetterMethodForProperty:(objc_property_t)property {
+    NSString* propertyAttributesDescription = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
+    NSRange range = [propertyAttributesDescription rangeOfString:@",S"];
+    if( range.location != NSNotFound ) {
+        NSInteger setterBeginIndex = range.location + range.length;
+        NSRange searchRange = NSMakeRange(setterBeginIndex, propertyAttributesDescription.length - setterBeginIndex);
+        NSRange nextCommaRange = [propertyAttributesDescription rangeOfString:@"," options:0 range:searchRange];
+        if ( nextCommaRange.location != NSNotFound ) return [propertyAttributesDescription substringWithRange:NSMakeRange(setterBeginIndex, nextCommaRange.location - setterBeginIndex)];
+        else return [propertyAttributesDescription substringWithRange:searchRange];
+    }
+    return nil;
+}
+
 + (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName {
     return [[self propertyNamesForClass:class] containsObject:propertyName];
 }
@@ -104,6 +117,108 @@
     
     if( validatedComponents.count == keyPathComponents.count ) return [validatedComponents componentsJoinedByString:@"."];
     else return nil;
+}
+
++ (NSInvocation*) findSetterForProperty:(NSString*)propertyName inObject:(id)object {
+    if( !object || ![propertyName iss_hasData] ) return nil;
+    
+    objc_property_t property = class_getProperty([object class], [propertyName cStringUsingEncoding:NSUTF8StringEncoding]);
+    NSString* setter = nil;
+    if( property ) {
+        setter = [self customSetterMethodForProperty:property];
+    }
+    if( !setter ) {
+        if( propertyName.length > 1 ) {
+            setter = [NSString stringWithFormat:@"set%@%@:", [[propertyName substringToIndex:1] uppercaseString], [propertyName substringFromIndex:1]];
+        } else {
+            setter = [NSString stringWithFormat:@"set%@:", [[propertyName substringToIndex:1] uppercaseString]];
+        }
+    }
+    
+    if ( setter ) {
+        // TODO: Consider adding some caching...
+        SEL selector = NSSelectorFromString(setter);
+        NSMethodSignature* signature = [[object class] instanceMethodSignatureForSelector:selector];
+        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget:object];
+        [invocation setSelector:selector];
+        return invocation;
+    }
+    return nil;
+}
+
++ (BOOL) invokeSetterForProperty:(NSString*)propertyName withValue:(id)value inObject:(id)object {
+    NSInvocation* invocation = [self findSetterForProperty:propertyName inObject:object];
+    const char* argType = [invocation.methodSignature getArgumentTypeAtIndex:2];
+    
+    void* argValue = nil;
+    
+    if( *argType == *@encode(id) ) {
+        argValue = (__bridge void *)(value);
+    }
+    else if( *argType == *@encode(char) ) {
+        char v = [value charValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(short) ) {
+        short v = [value shortValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(int) ) {
+        int v = [value intValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(long) ) {
+        long v = [value longValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(long long) ) {
+        long long v = [value longLongValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(unsigned char) ) {
+        unsigned char v = [value unsignedCharValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(unsigned short) ) {
+        unsigned short v = [value unsignedShortValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(unsigned int) ) {
+        unsigned int v = [value unsignedIntValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(unsigned long) ) {
+        unsigned long v = [value unsignedLongValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(unsigned long long) ) {
+        unsigned long long v = [value unsignedLongLongValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(float) ) {
+        float v = [value floatValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(double) ) {
+        double v = [value doubleValue];
+        argValue = &v;
+    }
+    else if( *argType == *@encode(BOOL) ) {
+        BOOL v = [value boolValue];
+        argValue = &v;
+    }
+    
+    if( argValue ) {
+        [invocation setArgument:argValue atIndex:2];
+        
+        [invocation invoke];
+        
+        return YES;
+    } else {
+        return NO;
+    }
+        
 }
 
 @end

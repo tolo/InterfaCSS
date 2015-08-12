@@ -10,7 +10,7 @@
 
 @class ISSPropertyDefinition;
 
-typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
+typedef void (^ISSPropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
 
 
 typedef NS_ENUM(NSInteger, ISSPropertyType) {
@@ -52,7 +52,9 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 @property (nonatomic, readonly) NSDictionary* enumValues;
 @property (nonatomic, readonly) BOOL enumBitMaskType;
 
-@property (nonatomic, copy, readonly) PropertySetterBlock propertySetterBlock;
+@property (nonatomic, readonly) BOOL useIntrospection;
+
+@property (nonatomic, copy, readonly) ISSPropertySetterBlock propertySetterBlock;
 
 @property (nonatomic, readonly) BOOL isParameterizedProperty;
 
@@ -68,6 +70,11 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
  * Creates a simple property definition.
  */
 - (id) initWithName:(NSString*)name type:(ISSPropertyType)type;
+
+/**
+ * Creates a simple property definition that optionally can set it's value via introspection (i.e. use declared or default setter method for property), instead of using KVC.
+ */
+- (id) initWithName:(NSString *)name type:(ISSPropertyType)type useIntrospection:(BOOL)useIntrospection;
 
 /**
  * Creates a property definition with an optional number of aliases.
@@ -87,13 +94,22 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
  * To use a custom handling for setting the property value - specify a property setter block in the `setterBlock` parameter.
  */
 - (id) initWithName:(NSString*)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
-          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(PropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues;
+          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues;
+
+/**
+ * Creates a property definition with an optional number of aliases, that optionally can set it's value via introspection (i.e. use declared or default setter method for property), instead of using KVC.
+ * If this is an enum property, specify the enum values in the `enumValues` parameter. If the enum values are of a bit mask type, specify `YES` in the `enumBitMaskType` parameter.
+ * If this is a parameterized property, specify the parameter value transformation dictionary in `parameterEnumValues`.
+ * To use a custom handling for setting the property value - specify a property setter block in the `setterBlock` parameter.
+ */
+- (id) initWithName:(NSString*)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
+    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues useIntrospection:(BOOL)useIntrospection;
 
 
 /**
  * Sets the value of the property represented by this object, on the specified target.
  */
-- (void) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params; // withPrefixKeyPath:(NSString*)prefixKeyPath;
+- (BOOL) setValue:(id)value onTarget:(id)target andParameters:(NSArray*)params; // withPrefixKeyPath:(NSString*)prefixKeyPath;
 
 - (NSComparisonResult) compareByName:(ISSPropertyDefinition*)other;
 

@@ -187,3 +187,9 @@ UIView.disabledStylingTest {
 UIBarButtonItem.prefixedPropertyOnNonUIViewClass {
     customView.alpha: 0.5;
 }
+
+
+.textInputTraits {
+    keyboardType: numberPad;
+    returnKeyType: done;
+}

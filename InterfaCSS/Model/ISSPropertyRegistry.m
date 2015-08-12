@@ -21,6 +21,7 @@
 #define S(selName) NSStringFromSelector(@selector(selName))
 #define SLC(selName) [S(selName) lowercaseString]
 #define resistanceIsFutile (id <NSCopying>)
+#define SetterBlockParamList ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters
 
 
 #pragma mark - Convenience/shorthand functions
@@ -29,7 +30,11 @@ static ISSPropertyDefinition* p(NSString* name, ISSPropertyType type) {
     return [[ISSPropertyDefinition alloc] initWithName:name type:type];
 }
 
-static ISSPropertyDefinition* ps(NSString* name, ISSPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* pi(NSString* name, ISSPropertyType type) {
+    return [[ISSPropertyDefinition alloc] initWithName:name type:type useIntrospection:YES];
+}
+
+static ISSPropertyDefinition* ps(NSString* name, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
                                           enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
 }
@@ -38,13 +43,17 @@ static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISSPropertyTy
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type];
 }
 
-static ISSPropertyDefinition* pas(NSString* name, NSArray* aliases, ISSPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* pas(NSString* name, NSArray* aliases, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
                                           enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
 }
 
 static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:NO];
+}
+
+static ISSPropertyDefinition* pei(NSString* name, NSDictionary* enumValues) {
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:NO setterBlock:nil parameterEnumValues:nil useIntrospection:YES];
 }
 
 static ISSPropertyDefinition* pea(NSString* name, NSArray* aliases, NSDictionary* enumValues) {
@@ -55,16 +64,16 @@ static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
 }
 
-static ISSPropertyDefinition* peos(NSString* name, NSDictionary* enumValues, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* peos(NSString* name, NSDictionary* enumValues, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:setterBlock parameterEnumValues:nil];
 }
 
-static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
                                       enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
 }
 
-static ISSPropertyDefinition* pap(NSString* name, NSArray* aliases, NSDictionary* paramValues, ISSPropertyType type, PropertySetterBlock setterBlock) {
+static ISSPropertyDefinition* pap(NSString* name, NSArray* aliases, NSDictionary* paramValues, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
                                       enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
 }
@@ -96,7 +105,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 @property (nonatomic, strong) NSDictionary* classesToTypeNames;
 @property (nonatomic, strong) NSDictionary* typeNamesToClasses;
-@property (nonatomic, strong) NSDictionary* classProperties;
+@property (nonatomic, strong, readwrite) NSDictionary* propertyDefinitionsForClass;
 
 @end
 
@@ -111,9 +120,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 - (NSSet*) propertyDefinitionsForViewClass:(Class)viewClass {
     NSMutableSet* viewClassProperties = [[NSMutableSet alloc] init];
-    for(Class clazz in self.classProperties.allKeys) {
+    for(Class clazz in self.propertyDefinitionsForClass.allKeys) {
         if( [viewClass isSubclassOfClass:clazz] ) {
-            [viewClassProperties unionSet:self.classProperties[clazz]];
+            [viewClassProperties unionSet:self.propertyDefinitionsForClass[clazz]];
         }
     }
     return viewClassProperties;
@@ -246,7 +255,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSMutableString* string = [NSMutableString string];
 
     NSMutableArray* classes = [[NSMutableArray alloc] init];
-    for(Class clazz in self.classProperties.allKeys) {
+    for(Class clazz in self.propertyDefinitionsForClass.allKeys) {
         if( clazz != UIView.class ) [classes addObject:clazz];
     }
     [classes sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
@@ -257,7 +266,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     for(Class clazz in classes) {
         [string appendFormat:@"\n###%@ \n", [clazz description]];
 
-        NSArray* properties = [self.classProperties[clazz] allObjects];
+        NSArray* properties = [self.propertyDefinitionsForClass[clazz] allObjects];
 
         [string appendString:@"Class | Type | Enum values | Parameter values \n"];
         [string appendString:@"--- | --- | --- | ---\n"];
@@ -376,8 +385,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     });
 
     ISSPropertyDefinition* text = p(S(text), ISSPropertyTypeString);
-
     ISSPropertyDefinition* attributedText = p(S(attributedText), ISSPropertyTypeAttributedString);
+    ISSPropertyDefinition* prompt = p(S(prompt), ISSPropertyTypeString);
+    ISSPropertyDefinition* placeholder = p(S(placeholder), ISSPropertyTypeString);
 
     ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [viewObject isKindOfClass:UIButton.class] ) {
@@ -400,7 +410,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         }
     });
 
-    PropertySetterBlock uiButtonTitleColorBlock = ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+    ISSPropertySetterBlock uiButtonTitleColorBlock = ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
         if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] &&
                 [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
             ISSLogTrace(@"NOT setting titleColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
@@ -694,8 +704,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* resizableTextProperties = [NSSet setWithArray:@[
             p(S(adjustsFontSizeToFitWidth), ISSPropertyTypeBool),
-            p(S(minimumFontSize), ISSPropertyTypeNumber),
-            p(S(minimumScaleFactor), ISSPropertyTypeNumber)
+            p(S(minimumFontSize), ISSPropertyTypeNumber)
     ]];
 
     NSSet* labelProperties = [NSSet setWithArray:@[
@@ -713,7 +722,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(preferredMaxLayoutWidth), ISSPropertyTypeNumber),
             p(S(highlightedTextColor), ISSPropertyTypeColor),
             text,
-            attributedText
+            attributedText,
+            p(S(minimumScaleFactor), ISSPropertyTypeNumber)
     ]];
     labelProperties = [labelProperties setByAddingObjectsFromSet:textProperties];
     labelProperties = [labelProperties setByAddingObjectsFromSet:resizableTextProperties];
@@ -730,38 +740,39 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     allProperties = [allProperties setByAddingObjectsFromSet:progressViewProperties];
 
 
-    NSSet* minimalTextInputProperties = [NSSet setWithArray:@[
-            p(S(autocapitalizationType), ISSPropertyTypeBool),
-            pe(S(autocorrectionType), @{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)}),
-            pe(S(spellCheckingType), @{@"default" : @(UITextSpellCheckingTypeDefault), @"no" : @(UITextSpellCheckingTypeNo), @"yes" : @(UITextSpellCheckingTypeYes)}),
-            pe(S(keyboardType), @{@"default" : @(UIKeyboardTypeDefault), @"alphabet" : @(UIKeyboardTypeAlphabet), @"asciiCapable" : @(UIKeyboardTypeASCIICapable),
+    NSSet* uiTextInputTraitsProperties = [NSSet setWithArray:@[
+            pi(S(autocapitalizationType), ISSPropertyTypeBool),
+            pei(S(autocorrectionType), @{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)}),
+            pi(S(enablesReturnKeyAutomatically), ISSPropertyTypeBool),
+            pei(S(keyboardAppearance), @{@"default" : @(UIKeyboardAppearanceDefault), @"alert" : @(UIKeyboardAppearanceAlert),
+                                        @"dark" : @(UIKeyboardAppearanceDark), @"light" : @(UIKeyboardAppearanceLight)}),
+            pei(S(keyboardType), @{@"default" : @(UIKeyboardTypeDefault), @"alphabet" : @(UIKeyboardTypeAlphabet), @"asciiCapable" : @(UIKeyboardTypeASCIICapable),
                     @"decimalPad" : @(UIKeyboardTypeDecimalPad), @"emailAddress" : @(UIKeyboardTypeEmailAddress), @"namePhonePad" : @(UIKeyboardTypeNamePhonePad),
                     @"numberPad" : @(UIKeyboardTypeNumberPad), @"numbersAndPunctuation" : @(UIKeyboardTypeNumbersAndPunctuation), @"phonePad" : @(UIKeyboardTypePhonePad),
-                    @"twitter" : @(UIKeyboardTypeTwitter), @"URL" : @(UIKeyboardTypeURL), @"webSearch" : @(UIKeyboardTypeWebSearch)})
+                    @"twitter" : @(UIKeyboardTypeTwitter), @"URL" : @(UIKeyboardTypeURL), @"webSearch" : @(UIKeyboardTypeWebSearch)}),
+            pei(S(returnKeyType), @{@"default" : @(UIReturnKeyDefault), @"go" : @(UIReturnKeyGo), @"google" : @(UIReturnKeyGoogle), @"join" : @(UIReturnKeyJoin),
+                                   @"next" : @(UIReturnKeyNext), @"route" : @(UIReturnKeyRoute), @"search" : @(UIReturnKeySearch), @"send" : @(UIReturnKeySend),
+                                   @"yahoo" : @(UIReturnKeyYahoo), @"done" : @(UIReturnKeyDone), @"emergencyCall" : @(UIReturnKeyEmergencyCall)}),
+            pi(@"secureTextEntry", ISSPropertyTypeBool),
+            pei(S(spellCheckingType), @{@"default" : @(UITextSpellCheckingTypeDefault), @"no" : @(UITextSpellCheckingTypeNo), @"yes" : @(UITextSpellCheckingTypeYes)}),
             ]];
 
+    
+    
     NSSet* textInputProperties = [NSSet setWithArray:@[
-            p(S(enablesReturnKeyAutomatically), ISSPropertyTypeBool),
-            pe(S(keyboardAppearance), @{@"default" : @(UIKeyboardAppearanceDefault), @"alert" : @(UIKeyboardAppearanceAlert),
-                    @"dark" : @(UIKeyboardAppearanceDark), @"light" : @(UIKeyboardAppearanceLight)}),
-
-            pe(S(returnKeyType), @{@"default" : @(UIReturnKeyDefault), @"go" : @(UIReturnKeyGo), @"google" : @(UIReturnKeyGoogle), @"join" : @(UIReturnKeyJoin),
-                                                    @"next" : @(UIReturnKeyNext), @"route" : @(UIReturnKeyRoute), @"search" : @(UIReturnKeySearch), @"send" : @(UIReturnKeySend),
-                                                    @"yahoo" : @(UIReturnKeyYahoo), @"done" : @(UIReturnKeyDone), @"emergencyCall" : @(UIReturnKeyEmergencyCall)}),
-            p(@"secureTextEntry", ISSPropertyTypeBool),
             p(S(clearsOnInsertion), ISSPropertyTypeBool),
-            p(S(placeholder), ISSPropertyTypeString),
             text,
             attributedText
         ]];
-    textInputProperties = [textInputProperties setByAddingObjectsFromSet:minimalTextInputProperties];
+    textInputProperties = [textInputProperties setByAddingObjectsFromSet:uiTextInputTraitsProperties];
     allProperties = [allProperties setByAddingObjectsFromSet:textInputProperties];
 
     NSSet* textFieldProperties = [NSSet setWithArray:@[
             p(S(clearsOnBeginEditing), ISSPropertyTypeBool),
             pe(S(borderStyle), @{@"none" : @(UITextBorderStyleNone), @"bezel" : @(UITextBorderStyleBezel), @"line" : @(UITextBorderStyleLine), @"roundedRect" : @(UITextBorderStyleRoundedRect)}),
             p(S(background), ISSPropertyTypeImage),
-            p(S(disabledBackground), ISSPropertyTypeImage)
+            p(S(disabledBackground), ISSPropertyTypeImage),
+            placeholder
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:textFieldProperties];
@@ -895,7 +906,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                                 @"done" : @(UIBarButtonItemStyleDone)}),
             p(S(width), ISSPropertyTypeNumber),
             backgroundImage,
-            pp(@"backgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeNumber, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
                     [viewObject setBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
@@ -909,7 +920,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                     [viewObject setBackButtonBackgroundImage:value forState:state barMetrics:metrics];
                 }
             }),
-            pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeNumber, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackButtonBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
                     [viewObject setBackButtonBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
@@ -980,9 +991,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* searchBarProperties = [NSSet setWithArray:@[
             barStyle,
-            p(S(text), ISSPropertyTypeString),
-            p(S(prompt), ISSPropertyTypeString),
-            p(S(placeholder), ISSPropertyTypeString),
+            text,
+            prompt,
+            placeholder,
             p(S(showsBookmarkButton), ISSPropertyTypeBool),
             p(S(showsCancelButton), ISSPropertyTypeBool),
             p(S(showsSearchResultsButton), ISSPropertyTypeBool),
@@ -1027,14 +1038,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             }),
             p(S(searchFieldBackgroundPositionAdjustment), ISSPropertyTypeOffset),
             p(S(searchTextPositionAdjustment), ISSPropertyTypeOffset),
-            pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeImage, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
+            pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeOffset, ^(ISSPropertyDefinition* p, id viewObject, id value, NSArray* parameters) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
                 if( [viewObject respondsToSelector:@selector(setPositionAdjustment:forSearchBarIcon:)] ) [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
             })
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:searchBarProperties];
-    searchBarProperties = [searchBarProperties setByAddingObjectsFromSet:minimalTextInputProperties];
+    searchBarProperties = [searchBarProperties setByAddingObjectsFromSet:uiTextInputTraitsProperties];
 
 
     NSSet* tabBarProperties = [NSSet setWithArray:@[
@@ -1063,7 +1074,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     self.propertyDefinitions = allProperties;
 
 
-    self.classProperties = @{
+    self.propertyDefinitionsForClass = @{
             resistanceIsFutile UIView.class : viewProperties,
             resistanceIsFutile UIImageView.class : imageViewProperties,
             resistanceIsFutile UIScrollView.class : scrollViewProperties,
@@ -1097,7 +1108,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSMutableDictionary* typeNamesToClasses = [[NSMutableDictionary alloc] init];
 
     // Extend the default set of valid type classes with a few common view controller classes
-    NSArray* validTypeClasses = [self.classProperties.allKeys arrayByAddingObjectsFromArray:@[UIViewController.class, UINavigationController.class, UITabBarController.class, UIPageViewController.class, UITableViewController.class, UICollectionViewController.class]];
+    NSArray* validTypeClasses = [self.propertyDefinitionsForClass.allKeys arrayByAddingObjectsFromArray:@[UIViewController.class, UINavigationController.class, UITabBarController.class, UIPageViewController.class, UITableViewController.class, UICollectionViewController.class]];
 
     for(Class clazz in validTypeClasses) {  
         NSString* typeName = [[clazz description] lowercaseString];

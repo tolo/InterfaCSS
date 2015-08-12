@@ -15,6 +15,10 @@
 #import "ISSViewHierarchyParser.h"
 #import "ISSStyleSheetParser.h"
 #import "ISSRuntimeIntrospectionUtils.h"
+#import "ISSPropertyRegistry.h"
+#import "ISSRectValue.h"
+#import "ISSPointValue.h"
+#import "ISSLayout.h"
 
 
 @interface CustomCollectionViewLayout : UICollectionViewFlowLayout
@@ -595,6 +599,48 @@
     [[InterfaCSS interfaCSS] applyStyling:item];
     
     ISSAssertEqualFloats(item.customView.alpha, 0.5f);
+}
+
+- (void) testSetAllProperties {
+    ISSPropertyRegistry* reg = [InterfaCSS sharedInstance].propertyRegistry;
+    NSDictionary* classDefinitions = reg.propertyDefinitionsForClass;
+    
+    NSDictionary* testValuesForType = @{
+                                        @(ISSPropertyTypeString) : @"kahuna",
+                                        @(ISSPropertyTypeAttributedString) : [[NSAttributedString alloc] initWithString:@"kahuna"],
+                                        @(ISSPropertyTypeBool) : @(YES),
+                                        @(ISSPropertyTypeNumber) : @(1),
+                                        @(ISSPropertyTypeOffset) : [NSValue valueWithUIOffset:UIOffsetMake(1, 1)],
+                                        @(ISSPropertyTypeRect) :  [ISSRectValue rectWithRect:CGRectMake(1, 1, 1, 1)],
+                                        @(ISSPropertyTypeLayout) : [[ISSLayout alloc] init],
+                                        @(ISSPropertyTypeSize) : [NSValue valueWithCGSize:CGSizeMake(1, 1)],
+                                        @(ISSPropertyTypePoint) : [ISSPointValue pointWithPoint:CGPointMake(1, 1)],
+                                        @(ISSPropertyTypeEdgeInsets) : [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(1, 1, 1, 1)],
+                                        @(ISSPropertyTypeColor) : [UIColor blueColor],
+                                        @(ISSPropertyTypeCGColor) : (id)[UIColor blueColor].CGColor,
+                                        @(ISSPropertyTypeTransform) : [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(2, 2)],
+                                        @(ISSPropertyTypeFont) : [UIFont systemFontOfSize:42],
+                                        @(ISSPropertyTypeImage) : [[UIImage alloc] init],
+                                        @(ISSPropertyTypeEnumType) : @(1)
+                                        };
+    
+    for(Class clazz in classDefinitions.allKeys) {
+        NSSet* definitions = (NSSet*)classDefinitions[clazz];
+        id viewObj = [ISSViewBuilder viewOfClass:clazz withId:nil];
+        for(ISSPropertyDefinition* def in definitions) {
+            BOOL result = [def setValue:testValuesForType[@(def.type)] onTarget:viewObj andParameters:nil];
+            XCTAssertTrue(result, "Failed to set property for %@", def);
+        }
+    }
+}
+
+- (void) testtextInputTraitsProperties {
+    UITextField* text = [[UITextField alloc] init];
+    text.styleClassISS = @"textInputTraits";
+    [text applyStylingISS];
+    
+    XCTAssertEqual(UIKeyboardTypeNumberPad, text.keyboardType);
+    XCTAssertEqual(UIReturnKeyDone, text.returnKeyType);
 }
 
 @end
