@@ -4,4 +4,4 @@ before_install:
     - gem install xcpretty --no-rdoc --no-ri --no-document --quiet
     - export LANG=en_US.UTF-8
     - pod install
-script: xcodebuild clean test -workspace InterfaCSS.xcworkspace -scheme UnitTests -destination 'platform=iOS Simulator,name=iPhone Retina (4-inch),OS=7.1' | xcpretty -c && exit ${PIPESTATUS[0]}
+script: xcodebuild clean test -workspace InterfaCSS.xcworkspace -scheme UnitTests -destination 'platform=iOS Simulator,name=iPhone 5' | xcpretty -c && exit ${PIPESTATUS[0]}
