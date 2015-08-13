@@ -53,6 +53,10 @@ static id elementOrNil(NSArray* array, NSUInteger index) {
     return nil;
 }
 
+static float floatAt(NSArray* array, NSUInteger index) {
+    return [array[index] floatValue];
+}
+
 
 /* Helper classes */
 
@@ -129,7 +133,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Common parsers
     ParcoaParser *dot, *hash, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
             *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *anythingButControlCharsExceptColon,
-            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *anyValue, *commentParser, *quotedString;
+            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *numberOrExpressionValue, *anyValue, *commentParser, *quotedString;
 
     NSCharacterSet* validVariableNameSet;
 
@@ -653,6 +657,30 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     }
 }
 
+- (ParcoaParser*) simpleNumericParameterStringWithOptionalPrefix:(NSString*)optionalPrefix {
+    return [self simpleNumericParameterStringWithPrefix:optionalPrefix optionalPrefix:YES];
+}
+
+- (ParcoaParser*) simpleNumericParameterStringWithPrefix:(NSString*)prefix optionalPrefix:(BOOL)optionalPrefix {
+    return [self simpleNumericParameterStringWithPrefixes:@[prefix] optionalPrefix:optionalPrefix];
+}
+
+- (ParcoaParser*) simpleNumericParameterStringWithPrefixes:(NSArray*)prefixes optionalPrefix:(BOOL)optionalPrefix {
+    ParcoaParser* parameterStringWithPrefixParser = [[Parcoa iss_parameterStringWithPrefixes:prefixes] transform:^id(NSArray* parameters) {
+        NSMutableArray* result = [NSMutableArray arrayWithCapacity:parameters.count];
+        for(NSString* param in parameters) {
+            [result addObject:[Parcoa iss_parseMathExpression:param]];
+        }
+        return result;
+    } name:[NSString stringWithFormat:@"simpleNumericParameterStringWithPrefixes(%@)", prefixes]];
+                                                     
+    if( optionalPrefix ) {
+        ParcoaParser* parameterStringParser = [Parcoa sepBy1:numberOrExpressionValue delimiter:[comma skipSurroundingSpaces]];
+        return [Parcoa choice:@[parameterStringWithPrefixParser, parameterStringParser]];
+    } else {
+        return parameterStringWithPrefixParser;
+    }
+}
 
 #pragma mark - Property parsers setup
 
@@ -695,11 +723,11 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* boolValueParser = [identifier transform:^id(id value) {
         return @([value boolValue]);
     } name:@"bool"];
-    typeToParser[@(ISSPropertyTypeBool)] = boolValueParser;
+    typeToParser[@(ISSPropertyTypeBool)] = [Parcoa choice:@[[Parcoa iss_logicalExpressionParser], boolValueParser]];
 
 
     /** -- Number -- **/
-    typeToParser[@(ISSPropertyTypeNumber)] = numberValue;
+    typeToParser[@(ISSPropertyTypeNumber)] = numberOrExpressionValue;
 
 
     /** -- AttributedString -- **/
@@ -834,26 +862,24 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return [ISSRectValue parentRect];
     } name:@"parentRect"];
 
-    ParcoaValueTransform parentInsetTransform = ^id(NSArray* c) {
-        if( c.count == 2 ) return [ISSRectValue parentInsetRectWithSize:CGSizeMake([c[0] floatValue], [c[1] floatValue])];
-        else if( c.count == 4 ) return [ISSRectValue parentInsetRectWithInsets:UIEdgeInsetsMake([c[0] floatValue], [c[1] floatValue], [c[2] floatValue], [c[3] floatValue])];
+    ParcoaParser* parentInsetValueParser = [[self simpleNumericParameterStringWithPrefixes:@[ @"parent", @"superview" ] optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [ISSRectValue parentInsetRectWithSize:CGSizeMake(floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 4 ) return [ISSRectValue parentInsetRectWithInsets:UIEdgeInsetsMake(floatAt(c,0), floatAt(c,1), floatAt(c,2), floatAt(c,3))];
         else return [ISSRectValue zeroRect];
-    };
-    ParcoaParser* parentInsetValueParser = [[Parcoa iss_parameterStringWithPrefixes:@[ @"parent", @"superview" ]] transform:parentInsetTransform name:@"parentRect.inset"];
+    } name:@"parentRect.inset"];
 
     ParcoaParser* windowRectValueParser = [[Parcoa iss_stringIgnoringCase:@"window"] transform:^id(id value) {
         return [ISSRectValue windowRect];
     } name:@"windowRect"];
 
-    ParcoaValueTransform windowInsetTransform = ^id(NSArray* c) {
-        if( c.count == 2 ) return [ISSRectValue windowInsetRectWithSize:CGSizeMake([c[0] floatValue], [c[1] floatValue])];
-        else if( c.count == 4 ) return [ISSRectValue windowInsetRectWithInsets:UIEdgeInsetsMake([c[0] floatValue], [c[1] floatValue], [c[2] floatValue], [c[3] floatValue])];
+    ParcoaParser* windowInsetValueParser = [[self simpleNumericParameterStringWithPrefix:@"window" optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [ISSRectValue windowInsetRectWithSize:CGSizeMake(floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 4 ) return [ISSRectValue windowInsetRectWithInsets:UIEdgeInsetsMake(floatAt(c,0), floatAt(c,1), floatAt(c,2), floatAt(c,3))];
         else return [ISSRectValue zeroRect];
-    };
-    ParcoaParser* windowInsetValueParser = [[Parcoa iss_parameterStringWithPrefix:@"window"] transform:windowInsetTransform name:@"windowRect.inset"];
+    } name:@"windowRect.inset"];
 
-    ParcoaParser* rectValueParser = [[Parcoa iss_parameterStringWithPrefix:@"rect"] transform:^id(NSArray* c) {
-        if( c.count == 4 ) return [ISSRectValue rectWithRect:CGRectMake([c[0] floatValue], [c[1] floatValue], [c[2] floatValue], [c[3] floatValue])];
+    ParcoaParser* rectValueParser = [[self simpleNumericParameterStringWithPrefix:@"rect" optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 4 ) return [ISSRectValue rectWithRect:CGRectMake(floatAt(c,0), floatAt(c,1), floatAt(c,2), floatAt(c,3))];
         else return [ISSRectValue zeroRect];
     } name:@"rect"];
 
@@ -940,19 +966,19 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
 
     /** -- UIOffset -- **/
-    ParcoaParser* offsetValueParser = [[Parcoa iss_parameterStringWithPrefix:@"offset"] transform:^id(NSArray* c) {
-        if( c.count == 2 ) {
-            return [NSValue valueWithUIOffset:UIOffsetMake([c[0] floatValue], [c[1] floatValue])];
-        } else return [NSValue valueWithUIOffset:UIOffsetZero];
+    ParcoaParser* offsetValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"offset"] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [NSValue valueWithUIOffset:UIOffsetMake(floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 1 ) return [NSValue valueWithUIOffset:UIOffsetMake(floatAt(c,0), floatAt(c,0))];
+        else return [NSValue valueWithUIOffset:UIOffsetZero];
     } name:@"offset"];
     typeToParser[@(ISSPropertyTypeOffset)] = offsetValueParser;
 
 
     /** -- CGSize -- **/
-    ParcoaParser* sizeValueParser = [[Parcoa iss_parameterStringWithPrefix:@"size"] transform:^id(NSArray* c) {
-        if( c.count == 2 ) {
-            return [NSValue valueWithCGSize:CGSizeMake([c[0] floatValue], [c[1] floatValue])];
-        } else return [NSValue valueWithCGSize:CGSizeZero];
+    ParcoaParser* sizeValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"size"] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [NSValue valueWithCGSize:CGSizeMake(floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 1 ) return [NSValue valueWithCGSize:CGSizeMake(floatAt(c,0), floatAt(c,0))];
+        else return [NSValue valueWithCGSize:CGSizeZero];
     } name:@"size"];
     typeToParser[@(ISSPropertyTypeSize)] = sizeValueParser;
 
@@ -966,24 +992,23 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return [ISSPointValue parentCenter];
     } name:@"parentCenterPoint"];
 
-    ParcoaValueTransform parentCenterRelativeTransform = ^id(NSArray* c) {
-        if( c.count == 2 ) return [ISSPointValue parentRelativeCenterPointWithPoint:CGPointMake([c[0] floatValue], [c[1] floatValue])];
+    ParcoaParser* parentCenterRelativeValueParser = [[self simpleNumericParameterStringWithPrefixes:@[ @"parent", @"superview" ] optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [ISSPointValue parentRelativeCenterPointWithPoint:CGPointMake(floatAt(c,0), floatAt(c,1))];
         else return [ISSPointValue zeroPoint];
-    };
-    ParcoaParser* parentCenterRelativeValueParser = [[Parcoa iss_parameterStringWithPrefixes:@[ @"parent", @"superview" ]] transform:parentCenterRelativeTransform name:@"parentCenter.relative"];
+    } name:@"parentCenter.relative"];
 
     ParcoaParser* windowCenterPointValueParser = [[Parcoa iss_stringIgnoringCase:@"window"] transform:^id(id value) {
         return [ISSPointValue windowCenter];
     } name:@"windowCenterPoint"];
 
-    ParcoaValueTransform windowCenterRelativeTransform = ^id(NSArray* c) {
-        if( c.count == 2 ) return [ISSPointValue windowRelativeCenterPointWithPoint:CGPointMake([c[0] floatValue], [c[1] floatValue])];
+    ParcoaParser* windowCenterRelativeValueParser = [[self simpleNumericParameterStringWithPrefix:@"window" optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [ISSPointValue windowRelativeCenterPointWithPoint:CGPointMake(floatAt(c,0), floatAt(c,1))];
         else return [ISSPointValue zeroPoint];
-    };
-    ParcoaParser* windowCenterRelativeValueParser = [[Parcoa iss_parameterStringWithPrefix:@"window"] transform:windowCenterRelativeTransform name:@"windowCenter.relative"];
+    } name:@"windowCenter.relative"];
 
-    ParcoaParser* pointValueParser = [[Parcoa iss_parameterStringWithPrefix:@"point"] transform:^id(NSArray* c) {
-        if( c.count == 2 ) return [ISSPointValue pointWithPoint:CGPointMake([c[0] floatValue], [c[1] floatValue])];
+    ParcoaParser* pointValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"point"] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [ISSPointValue pointWithPoint:CGPointMake(floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 1 ) return [ISSPointValue pointWithPoint:CGPointMake(floatAt(c,0), floatAt(c,0))];
         else return [ISSPointValue zeroPoint];
     } name:@"point"];
 
@@ -993,10 +1018,11 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
 
     /** -- UIEdgeInsets -- **/
-    ParcoaParser* insetsValueParser = [[Parcoa iss_parameterStringWithPrefix:@"insets"] transform:^id(NSArray* c) {
-        if( c.count == 4 ) {
-            return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake([c[0] floatValue], [c[1] floatValue], [c[2] floatValue], [c[3] floatValue])];
-        } else return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsZero];
+    ParcoaParser* insetsValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"insets"] transform:^id(NSArray* c) {
+        if( c.count == 4 ) return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(floatAt(c,0), floatAt(c,1), floatAt(c,2), floatAt(c,3))];
+        else if( c.count == 2 ) return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(floatAt(c,0), floatAt(c,1), floatAt(c,0), floatAt(c,1))];
+        else if( c.count == 1 ) return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(floatAt(c,0), floatAt(c,0), floatAt(c,0), floatAt(c,0))];
+        else return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsZero];
     } name:@"insets"];
     typeToParser[@(ISSPropertyTypeEdgeInsets)] = insetsValueParser;
 
@@ -1037,20 +1063,20 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
     /** -- CGAffineTransform -- **/
     // Ex: rotate(90) scale(2,2) translate(100,100);
-    ParcoaParser* rotateValueParser = [[Parcoa iss_parameterStringWithPrefix:@"rotate"] transform:^id(NSArray* values) {
+    ParcoaParser* rotateValueParser = [[self simpleNumericParameterStringWithPrefix:@"rotate" optionalPrefix:NO] transform:^id(NSArray* values) {
             CGFloat angle = [[values firstObject] floatValue];
             angle = ((CGFloat)M_PI * angle / 180.0f);
             return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeRotation(angle)];
         } name:@"rotate"];
-    ParcoaParser* scaleValueParser = [[Parcoa iss_parameterStringWithPrefix:@"scale"] transform:^id(NSArray* c) {
-            if( c.count == 2 ) {
-                return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale([c[0] floatValue], [c[1] floatValue])];
-            } else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
+    ParcoaParser* scaleValueParser = [[self simpleNumericParameterStringWithPrefix:@"scale" optionalPrefix:NO] transform:^id(NSArray* c) {
+            if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(floatAt(c,0), floatAt(c,1))];
+            else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(floatAt(c,0), floatAt(c,0))];
+            else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
         } name:@"scale"];
-    ParcoaParser* translateValueParser = [[Parcoa iss_parameterStringWithPrefix:@"translate"] transform:^id(NSArray* c) {
-            if( c.count == 2 ) {
-                return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation([c[0] floatValue], [c[1] floatValue])];
-            } else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
+    ParcoaParser* translateValueParser = [[self simpleNumericParameterStringWithPrefix:@"translate" optionalPrefix:NO] transform:^id(NSArray* c) {
+            if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(floatAt(c,0), floatAt(c,1))];
+            else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(floatAt(c,0), floatAt(c,0))];
+            else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
         } name:@"translate"];
     ParcoaParser* transformValuesParser = [[Parcoa many:[Parcoa choice:@[rotateValueParser, scaleValueParser, translateValueParser]]] transform:^id(id value) {
         CGAffineTransform transform = CGAffineTransformIdentity;
@@ -1206,7 +1232,9 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             return @([value doubleValue]);
         } name:@"positiveNumber"];
         numberValue = [Parcoa choice:@[negativeNumber, positiveNumber]];
-
+        
+        numberOrExpressionValue = [Parcoa iss_mathExpressionParser];
+        
         ParcoaParser* singleQuote = [Parcoa iss_quickUnichar:'\''];
         ParcoaParser* notSingleQuote = [Parcoa iss_anythingButUnichar:'\'' escapesEnabled:YES];
         ParcoaParser* singleQuotedString = [[[singleQuote keepRight:notSingleQuote] keepLeft:singleQuote] transform:^id(id value) {

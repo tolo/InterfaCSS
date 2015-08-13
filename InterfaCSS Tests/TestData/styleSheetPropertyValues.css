@@ -3,6 +3,8 @@
 @attrColor1: lighten(#ffffff, 0%);
 @attrFont2: HelveticaNeue-Medium 15;
 @attrColor2: rgb(0,0,0);
+@numericalConstant: 42;
+@mathExpressionConstant: 10 ** (3 - 1);
 
 .simple {
     alpha: 1;
@@ -140,6 +142,14 @@
     autoresizingMask: UIViewAutoresizingFlexibleWidth;
     lineBreakMode: NSLineBreakByWordWrapping;
     titleColor(UIControlStateSelected): red;
+}
+
+
+.numericExpressions {
+    hidden: 2 > 1;
+    alpha: 2 * 3 - (2*2.5 + 0.5);
+    cornerRadius: @numericalConstant + @mathExpressionConstant;
+    contentSize: size(@numericalConstant, @mathExpressionConstant);
 }
 
 

@@ -122,37 +122,64 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 }
 
 + (ParcoaParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount {
-    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@":;{}"];
+    NSCharacterSet* characterSet = [[NSMutableCharacterSet characterSetWithCharactersInString:@":;{}"] copy];
     return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
 + (ParcoaParser*) iss_anythingButBasicControlCharsExceptColon:(NSUInteger)minCount {
-    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@";{}"];
+    NSCharacterSet* characterSet = [[NSMutableCharacterSet characterSetWithCharactersInString:@";{}"] copy];
     return [self iss_takeUntilInSet:characterSet minCount:minCount];
 }
 
 + (ParcoaParser*) iss_anythingButWhiteSpaceAndExtendedControlChars:(NSUInteger)minCount {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@",:;{}()"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    return [self iss_takeUntilInSet:characterSet minCount:minCount];
+    return [self iss_takeUntilInSet:[characterSet copy] minCount:minCount];
 }
 
 + (NSCharacterSet*) iss_validInitialIdentifierCharacterCharsSet {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-_"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet letterCharacterSet]];
-    return characterSet;
+    return [characterSet copy];
 }
 
 + (NSCharacterSet*) iss_validIdentifierCharsSet {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-_"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
-    return characterSet;
+    return [characterSet copy];
 }
 
 + (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount {
     NSCharacterSet* characterSet = [self iss_validIdentifierCharsSet];
     ParcoaParser* firstCharParser = [Parcoa satisfy:[Parcoa inCharacterSet:[self iss_validInitialIdentifierCharacterCharsSet] setName:@"validInitialIdentifierCharacterCharsSet"]]; // First identifier char must not be digit...
     return [[firstCharParser then:[self iss_takeUntilInSet:[characterSet invertedSet] minCount:minCount - 1]] concat];
+}
+
++ (NSCharacterSet*) iss_mathExpressionCharsSet {
+    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"+-*/%^=≠<>≤≥|&!()."];
+    [characterSet formUnionWithCharacterSet:[NSCharacterSet decimalDigitCharacterSet]];
+    [characterSet formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
+    return [characterSet copy];
+}
+
++ (ParcoaParser*) iss_logicalExpressionParser {
+    NSCharacterSet* invertedCharacterSet = [[self iss_mathExpressionCharsSet] invertedSet];
+    return [[self iss_takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value) {
+        NSPredicate* expr = [NSPredicate predicateWithFormat:value];
+        return @([expr evaluateWithObject:nil]);
+    } name:@"logicalExpressionParser"];
+}
+
++ (ParcoaParser*) iss_mathExpressionParser {
+    NSCharacterSet* invertedCharacterSet = [[self iss_mathExpressionCharsSet] invertedSet];
+    return [[self iss_takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value) {
+        return [self iss_parseMathExpression:value];
+    } name:@"mathExpressionParser"];
+}
+
++ (id) iss_parseMathExpression:(NSString*)value {
+    NSExpression* expr = [NSExpression expressionWithFormat:value];
+    return [expr expressionValueWithObject:nil context:nil];
 }
 
 + (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser {

@@ -575,6 +575,23 @@
     XCTAssertEqualObjects([values[2] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
 }
 
+- (void) testNumericExpressions {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"hidden", @"alpha", @"cornerRadius", @"contentSize"] fromStyleClass:@"numericExpressions" getDeclarations:YES];
+    
+    [values[0] transformValueIfNeeded];
+    XCTAssertEqualObjects([values[0] propertyValue], @(YES));
+    
+    [values[1] transformValueIfNeeded];
+    XCTAssertEqualObjects([values[1] propertyValue], @(0.5));
+    
+    [values[2] transformValueIfNeeded];
+    XCTAssertEqualObjects([values[2] propertyValue], @(142));
+    
+    [values[3] transformValueIfNeeded];
+    CGSize size = [[values[3] propertyValue] CGSizeValue];
+    XCTAssertTrue(CGSizeEqualToSize(size, CGSizeMake(42, 100)));
+}
+
 - (void) testISSLayoutParentRelative {
     ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative1"] firstObject];
 

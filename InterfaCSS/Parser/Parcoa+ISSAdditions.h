@@ -37,6 +37,12 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount;
 
++ (ParcoaParser*) iss_logicalExpressionParser;
+
++ (ParcoaParser*) iss_mathExpressionParser;
+
++ (id) iss_parseMathExpression:(NSString*)value;
+
 + (ParcoaParser*) iss_safeDictionary:(ParcoaParser*)parser;
 
 + (ParcoaParser*) iss_safeArray:(ParcoaParser*)parser;
