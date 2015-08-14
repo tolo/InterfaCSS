@@ -52,9 +52,19 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
     return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:nil parameterEnumValues:nil useIntrospection:NO];
 }
 
+// Deprecated
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
-    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
-    return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:setterBlock parameterEnumValues:parameterEnumValues useIntrospection:NO];
+    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(PropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues {
+    
+    ISSPropertySetterBlock issPropertySetterBlock = nil;
+    if( setterBlock ) {
+        issPropertySetterBlock = ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
+            setterBlock(property, viewObject, value, parameters);
+            return YES;
+        };
+    }
+    
+    return [self initWithName:name aliases:aliases type:type enumValues:enumValues enumBitMaskType:enumBitMaskType setterBlock:issPropertySetterBlock parameterEnumValues:parameterEnumValues useIntrospection:NO];
 }
 
 - (id) initWithName:(NSString *)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
@@ -106,16 +116,21 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
 - (BOOL) setValue:(id)value onTarget:(id)obj andParameters:(NSArray*)params {
     if( [value isKindOfClass:ISSLazyValue.class] ) value = [value evaluateWithParameter:obj];
     if( value && value != [NSNull null] ) {
+        BOOL result;
         if( self.propertySetterBlock ) {
-            self.propertySetterBlock(self, obj, value, params);
-            return YES;
+            result = self.propertySetterBlock(self, obj, value, params);
         }
         else if( self.useIntrospection ) {
-            return [ISSRuntimeIntrospectionUtils invokeSetterForProperty:self.name withValue:value inObject:obj];
+            result = [ISSRuntimeIntrospectionUtils invokeSetterForProperty:self.name withValue:value inObject:obj];
         }
         else {
-            return [self setValueUsingKVC:value onTarget:obj];
+            result = [self setValueUsingKVC:value onTarget:obj];
         }
+        // If property couldn't be set - try overridden definition, if available
+        if( !result && self.overriddenDefinition ) {
+            return [self.overriddenDefinition setValue:value onTarget:obj andParameters:params];
+        }
+        return result;
     }
     return NO;
 }

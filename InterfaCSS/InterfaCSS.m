@@ -76,34 +76,41 @@ static InterfaCSS* singleton = nil;
 }
 
 + (void) clearResetAndUnload {
-    singleton.parser = nil;
-    [singleton.styleSheets removeAllObjects];
-    [singleton.styleSheetsVariables removeAllObjects];
-    [singleton.prototypes removeAllObjects];
-
     [singleton clearAllCachedStyles];
-
+    
     [singleton disableAutoRefreshTimer];
+    
+    setupForInitialState(singleton);
 }
 
 - (id) init {
     @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, use +[InterfaCSS interfaCSS] instead!" userInfo:nil]);
 }
 
+static void setupForInitialState(InterfaCSS* interfaCSS) {
+    interfaCSS->_preventOverwriteOfAttributedTextAttributes = NO;
+    interfaCSS->_useLenientSelectorParsing = NO;
+    interfaCSS->_stylesheetAutoRefreshInterval = 5.0;
+    interfaCSS->_processRefreshableStylesheetsLast = YES;
+    interfaCSS->_allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
+    interfaCSS->_useSelectorSpecificity = NO;
+    
+    interfaCSS->_parser = nil;
+    
+    interfaCSS->_propertyRegistry = [[ISSPropertyRegistry alloc] init];
+    
+    interfaCSS->_styleSheets = [[NSMutableArray alloc] init];
+    interfaCSS->_styleSheetsVariables = [[NSMutableDictionary alloc] init];
+    
+    interfaCSS->_cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
+    interfaCSS->_prototypes = [[NSMutableDictionary alloc] init];
+    
+    interfaCSS->_initializedWindows = [NSMapTable weakToStrongObjectsMapTable];
+}
+
 - (id) initInternal {
     if( (self = [super init]) ) {
-        _stylesheetAutoRefreshInterval = 5.0;
-        _processRefreshableStylesheetsLast = YES;
-
-        _propertyRegistry = [[ISSPropertyRegistry alloc] init];
-
-        _styleSheets = [[NSMutableArray alloc] init];
-        _styleSheetsVariables = [[NSMutableDictionary alloc] init];
-
-        _cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
-        _prototypes = [[NSMutableDictionary alloc] init];
-
-        _initializedWindows = [NSMapTable weakToStrongObjectsMapTable];
+        setupForInitialState(self);
 
         NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];

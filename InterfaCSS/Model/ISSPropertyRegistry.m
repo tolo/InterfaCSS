@@ -36,7 +36,7 @@ static ISSPropertyDefinition* pi(NSString* name, ISSPropertyType type) {
 
 static ISSPropertyDefinition* ps(NSString* name, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
-                                          enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
+                                          enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil useIntrospection:NO];
 }
 
 static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISSPropertyType type) {
@@ -45,7 +45,7 @@ static ISSPropertyDefinition* pa(NSString* name, NSArray* aliases, ISSPropertyTy
 
 static ISSPropertyDefinition* pas(NSString* name, NSArray* aliases, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
-                                          enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil];
+                                          enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:nil useIntrospection:NO];
 }
 
 static ISSPropertyDefinition* pe(NSString* name, NSDictionary* enumValues) {
@@ -65,30 +65,34 @@ static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
 }
 
 static ISSPropertyDefinition* peos(NSString* name, NSDictionary* enumValues, ISSPropertySetterBlock setterBlock) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:setterBlock parameterEnumValues:nil];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:setterBlock parameterEnumValues:nil useIntrospection:NO];
 }
 
 static ISSPropertyDefinition* pp(NSString* name, NSDictionary* paramValues, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:type enumValues:nil
-                                      enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
+                                      enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues useIntrospection:NO];
 }
 
 static ISSPropertyDefinition* pap(NSString* name, NSArray* aliases, NSDictionary* paramValues, ISSPropertyType type, ISSPropertySetterBlock setterBlock) {
     return [[ISSPropertyDefinition alloc] initWithName:name aliases:aliases type:type enumValues:nil
-                                      enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues];
+                                      enumBitMaskType:NO setterBlock:setterBlock parameterEnumValues:paramValues useIntrospection:NO];
 }
 
-static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters, NSString* attrName) {
+static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters, NSString* attrName) {
     UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
     NSMutableDictionary* attrs = nil;
     if( [viewObject respondsToSelector:@selector(scopeBarButtonTitleTextAttributesForState:)] ) attrs = [NSMutableDictionary dictionaryWithDictionary:[viewObject scopeBarButtonTitleTextAttributesForState:state]];
     else if( [viewObject respondsToSelector:@selector(titleTextAttributesForState:)] ) attrs = [NSMutableDictionary dictionaryWithDictionary:[viewObject titleTextAttributesForState:state]];
     else if( [viewObject respondsToSelector:@selector(titleTextAttributes)] ) attrs = [NSMutableDictionary dictionaryWithDictionary:[viewObject titleTextAttributes]];
 
+    BOOL success = YES;
     attrs[attrName] = value;
     if( [viewObject isKindOfClass:UISearchBar.class] ) [viewObject setScopeBarButtonTitleTextAttributes:attrs forState:state];
     else if( [viewObject respondsToSelector:@selector(setTitleTextAttributes:forState:)] ) [viewObject setTitleTextAttributes:attrs forState:state];
     else if( [viewObject respondsToSelector:@selector(setTitleTextAttributes:)] ) [viewObject setTitleTextAttributes:attrs];
+    else success = NO;
+
+    return success;
 }
 
 
@@ -201,13 +205,37 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 - (ISSPropertyDefinition*) registerCustomProperty:(NSString*)propertyName propertyType:(ISSPropertyType)propertyType {
     ISSPropertyDefinition* propertyDefinition = [[ISSPropertyDefinition alloc] initWithName:propertyName type:propertyType];
-    self.propertyDefinitions = [self.propertyDefinitions setByAddingObject:propertyDefinition];
+    [self registerCustomProperty:propertyDefinition];
     return propertyDefinition;
 }
 
 - (void) registerCustomProperty:(ISSPropertyDefinition*)propertyDefinition {
     if( propertyDefinition ) {
-        self.propertyDefinitions = [self.propertyDefinitions setByAddingObject:propertyDefinition];
+        ISSPropertyDefinition* existingDefinition = [self.propertyDefinitions member:propertyDefinition];
+        propertyDefinition.overriddenDefinition = existingDefinition;
+        
+        NSMutableSet* updatedPropertyDefinitions = [NSMutableSet setWithSet:self.propertyDefinitions];
+        if( existingDefinition ) {
+            [updatedPropertyDefinitions removeObject:existingDefinition]; // Remove any existing definition, to allow it to be replaced
+        }
+        [updatedPropertyDefinitions addObject:propertyDefinition];
+        self.propertyDefinitions = [updatedPropertyDefinitions copy];
+        
+        // Update propertyDefinitionsForClass - TODO: Review storage for property defs...
+        NSMutableDictionary* updatedPropertyDefinitionsForClass = [NSMutableDictionary dictionaryWithDictionary:self.propertyDefinitionsForClass];
+        for(Class clazz in self.propertyDefinitionsForClass.allKeys) {
+            NSSet* typeProperties = self.propertyDefinitionsForClass[clazz];
+            
+            if( [typeProperties containsObject:propertyDefinition] ) {
+                NSMutableSet* updatedTypeProperties = [NSMutableSet setWithSet:typeProperties];
+                if( existingDefinition ) {
+                    [updatedTypeProperties removeObject:existingDefinition]; // Remove any existing definition, to allow it to be replaced
+                }
+                [updatedTypeProperties addObject:propertyDefinition];
+                updatedPropertyDefinitionsForClass[resistanceIsFutile(clazz)] = [updatedTypeProperties copy];
+            }
+        }
+        self.propertyDefinitionsForClass = [updatedPropertyDefinitionsForClass copy];
     }
 }
 
@@ -326,13 +354,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     [barMetricsPositionAndControlStateParameters addEntriesFromDictionary:barPositionParameters];
 
 
-    // Common properties:
+#pragma mark - Common properties
 
     ISSPropertyDefinition* backgroundImage = pp(S(backgroundImage), barMetricsPositionAndControlStateParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         UIBarPosition position = parameters.count > 0 ? (UIBarPosition)[parameters[0] unsignedIntegerValue] : UIBarPositionAny;
         UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
 
+        BOOL success = YES;
         if( [viewObject respondsToSelector:@selector(setBackgroundImage:forBarPosition:barMetrics:)] ) {
             [viewObject setBackgroundImage:value forBarPosition:position barMetrics:metrics];
         } else if( [viewObject respondsToSelector:@selector(setBackgroundImage:forState:barMetrics:)] ) {
@@ -345,43 +374,62 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             [viewObject setBackgroundImage:value forBarMetrics:metrics];
         } else if( [viewObject respondsToSelector:@selector(setBackgroundImage:)] ) {
             [viewObject setBackgroundImage:value];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* image = pp(S(image), controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
+        BOOL success = YES;
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setImage:forState:)] ) {
             [viewObject setImage:value forState:state];
-        } if( [viewObject respondsToSelector:@selector(setImage:)] ) {
+        } else if( [viewObject respondsToSelector:@selector(setImage:)] ) {
             [viewObject setImage:value];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* shadowImage = pp(S(shadowImage), barPositionParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
+        BOOL success = YES;
         if( [viewObject respondsToSelector:@selector(setShadowImage:forToolbarPosition:)] ) {
             UIBarPosition position = parameters.count > 0 ? (UIBarPosition) [parameters[0] unsignedIntegerValue] : UIBarPositionAny;
             [viewObject setShadowImage:value forToolbarPosition:position];
         } else if( [viewObject respondsToSelector:@selector(setShadowImage:)] ) {
             [viewObject setShadowImage:value];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* title = pp(S(title), controlStateParametersValues, ISSPropertyTypeString, ^(SetterBlockParamList) {
+        BOOL success = YES;
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setTitle:forState:)] ) {
             [viewObject setTitle:value forState:state];
         } else if( [viewObject respondsToSelector:@selector(setTitle:)] ) {
             [viewObject setTitle:value];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* attributedTitle = pp(S(attributedTitle), controlStateParametersValues, ISSPropertyTypeAttributedString, ^(SetterBlockParamList) {
+        BOOL success = YES;
         UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
         if( [viewObject respondsToSelector:@selector(setAttributedTitle:forState:)] ) {
             [viewObject setAttributedTitle:value forState:state];
         } else if( [viewObject respondsToSelector:@selector(setAttributedTitle:)] ) {
             [viewObject setAttributedTitle:value];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* text = p(S(text), ISSPropertyTypeString);
@@ -406,23 +454,28 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             }
         }
         else {
-            setTitleTextAttributes(viewObject, value, parameters, NSFontAttributeName);
+            return setTitleTextAttributes(viewObject, value, parameters, NSFontAttributeName);
         }
+        
+        return YES;
     });
 
     ISSPropertySetterBlock uiButtonTitleColorBlock = ^(SetterBlockParamList) {
+        BOOL success = YES;
         if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] &&
                 [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
             ISSLogTrace(@"NOT setting titleColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
         } else {
             UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
             if ( [viewObject respondsToSelector:@selector(setTitleColor:forState:)] ) [viewObject setTitleColor:value forState:state];
+            else success = NO;
         }
+        return success;
     };
     ISSPropertyDefinition* textColor = pp(S(textColor), controlStateParametersValues, ISSPropertyTypeColor, ^(SetterBlockParamList) {
         if( [viewObject isKindOfClass:UIButton.class] ) {
             // Let textColor be titleColor for UIButton...
-            uiButtonTitleColorBlock(p, viewObject, value, parameters);
+            return uiButtonTitleColorBlock(p, viewObject, value, parameters);
         }
         else if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
             if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
@@ -431,9 +484,10 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             } else {
                 [viewObject setTextColor:value];
             }
+            return YES;
         }
         else {
-            setTitleTextAttributes(viewObject, value, parameters, NSForegroundColorAttributeName);
+            return setTitleTextAttributes(viewObject, value, parameters, NSForegroundColorAttributeName);
         }
     });
 
@@ -443,8 +497,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowColor:)] ) {
             [[viewObject layer] setShadowColor:[value CGColor]]; // UIView
         } else {
-            setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
+            return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
         }
+        return YES;
     });
 
     ISSPropertyDefinition* shadowOffset = pap(@"layer.shadowOffset", @[@"shadowoffset"], controlStateParametersValues, ISSPropertyTypeSize, ^(SetterBlockParamList) {
@@ -453,8 +508,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowOffset:)] ) {
             [[viewObject layer] setShadowOffset:[value CGSizeValue]];
         } else {
-            setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
+            return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
         }
+        return YES;
     });
 
     ISSPropertyDefinition* barTintColor = p(S(barTintColor), ISSPropertyTypeColor);
@@ -464,56 +520,129 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ISSPropertyDefinition* translucent = p(@"translucent", ISSPropertyTypeBool);
 
     ISSPropertyDefinition* titlePositionAdjustment = pp(S(titlePositionAdjustment), barMetricsParameters, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
+        BOOL success = YES;
         if( [viewObject respondsToSelector:@selector(setTitlePositionAdjustment:forBarMetrics:)] ) {
             UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
             [viewObject setTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
         } else if( [viewObject respondsToSelector:@selector(setTitlePositionAdjustment:)] ) {
             [viewObject setTitlePositionAdjustment:[value UIOffsetValue]];
+        } else {
+            success = NO;
         }
+        return success;
     });
 
     ISSPropertyDefinition* allowsSelection = p(S(allowsSelection), ISSPropertyTypeBool);
 
     ISSPropertyDefinition* allowsMultipleSelection = p(S(allowsMultipleSelection), ISSPropertyTypeBool);
+    
+    ISSPropertyDefinition* dividerImage = pp(@"dividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
+        UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
+        UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
+        if( [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:)] ) {
+            UIBarMetrics metrics = parameters.count > 2 ? (UIBarMetrics)[parameters[2] integerValue] : UIBarMetricsDefault;
+            [viewObject setDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState barMetrics:metrics];
+            return YES;
+        } else if( [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:)] ) {
+            [viewObject setDividerImage:value forLeftSegmentState:(UIControlState)[parameters[0] unsignedIntegerValue] rightSegmentState:(UIControlState)[parameters[1] unsignedIntegerValue]];
+            return YES;
+        }
+        return NO;
+    });
 
+    
+#pragma mark - Setter blocks for UIView property definitions
+    
+    ISSPropertySetterBlock autoresizingMaskBlock = ^(SetterBlockParamList) {
+        if( [viewObject isKindOfClass:UIView.class] ) {
+            UIView* v = viewObject;
+            // If frame is not set - set it to parent or screen bounds before setting the autoresizing mask
+            if( CGRectIsEmpty(v.frame) ) {
+                if( v.superview ) v.frame = v.superview.bounds;
+                else v.frame = [UIScreen mainScreen].bounds;
+            }
+            v.autoresizingMask = (UIViewAutoresizing)[value unsignedIntegerValue];
+            return YES;
+        } else {
+            return NO;
+        }
+    };
+    
+    ISSPropertySetterBlock boundsBlock = ^(SetterBlockParamList) {
+        if( [viewObject isKindOfClass:UIView.class] ) {
+            UIView* v = viewObject;
+            v.bounds = [value rectForView:v];
+            return YES;
+        } else {
+            return NO;
+        }
+    };
+    
+    ISSPropertySetterBlock centerBlock = ^(SetterBlockParamList) { // Value is ISSPointValue
+        if( [viewObject isKindOfClass:UIView.class] ) {
+            UIView* v = viewObject;
+            // Handle case when attempting to set center point on transformed view
+            CATransform3D t3d = v.layer.transform;
+            CGAffineTransform t = v.transform;
+            v.transform = CGAffineTransformIdentity;
+            v.layer.transform = CATransform3DIdentity;
+            v.center = [value pointForView:v];
+            v.transform = t;
+            v.layer.transform = t3d;
+            return YES;
+        } else {
+            return NO;
+        }
+    };
+    
+    ISSPropertySetterBlock frameBlock = ^(SetterBlockParamList) { // Value is ISSRectValue
+        if( [viewObject isKindOfClass:UIView.class] ) {
+            UIView* v = viewObject;
+            // Handle case when attempting to set frame on transformed view
+            CATransform3D t3d = v.layer.transform;
+            CGAffineTransform t = v.transform;
+            v.transform = CGAffineTransformIdentity;
+            v.layer.transform = CATransform3DIdentity;
+            v.frame = [value rectForView:v];
+            v.transform = t;
+            v.layer.transform = t3d;
+            return YES;
+        } else {
+            return NO;
+        }
+    };
+    
+    ISSPropertySetterBlock anchorPointBlock = ^(SetterBlockParamList) {
+        if( [viewObject isKindOfClass:UIView.class] ) {
+            UIView* v = viewObject;
+            // Make sure original position is maintained when adjusting anchorPoint
+            CGPoint initialOrigin = v.frame.origin;
+            v.layer.anchorPoint = [value point];
+            CGPoint delta = CGPointMake(v.frame.origin.x - initialOrigin.x, v.frame.origin.y - initialOrigin.y);
+            v.center = CGPointMake (v.center.x - delta.x, v.center.y - delta.y);
+            return YES;
+        } else {
+            return NO;
+        }
+    };
+    
+    ISSPropertySetterBlock layoutBlock = ^(SetterBlockParamList) {
+        ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:viewObject];
+        details.layout = value;
+        return YES;
+    };
+    
+#pragma mark - UIView
 
     NSSet* viewProperties = [NSSet setWithArray:@[
             p(S(alpha), ISSPropertyTypeNumber),
             p(S(autoresizesSubviews), ISSPropertyTypeBool),
             peos(S(autoresizingMask), @{ @"none" : @(UIViewAutoresizingNone), @"width" : @(UIViewAutoresizingFlexibleWidth), @"height" : @(UIViewAutoresizingFlexibleHeight),
                                     @"bottom" : @(UIViewAutoresizingFlexibleBottomMargin), @"top" : @(UIViewAutoresizingFlexibleTopMargin),
-                                    @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"right" : @(UIViewAutoresizingFlexibleRightMargin)} ,
-                    ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
-                if( [viewObject isKindOfClass:UIView.class] ) {
-                    UIView* v = viewObject;
-                    // If frame is not set - set it to parent or screen bounds before setting the autoresizing mask
-                    if( CGRectIsEmpty(v.frame) ) {
-                        if( v.superview ) v.frame = v.superview.bounds;
-                        else v.frame = [UIScreen mainScreen].bounds;
-                    }
-                    v.autoresizingMask = (UIViewAutoresizing)[value unsignedIntegerValue];
-                }
-            }),
+                                    @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"right" : @(UIViewAutoresizingFlexibleRightMargin)}, autoresizingMaskBlock),
             p(S(backgroundColor), ISSPropertyTypeColor),
-            ps(S(bounds), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
-                if( [viewObject isKindOfClass:UIView.class] ) {
-                    UIView* v = viewObject;
-                    v.bounds = [value rectForView:v];
-                }
-            }),
-            ps(S(center), ISSPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) {
-                if( [viewObject isKindOfClass:UIView.class] ) {
-                    UIView* v = viewObject;
-                    // Handle case when attempting to set center point on transformed view
-                    CATransform3D t3d = v.layer.transform;
-                    CGAffineTransform t = v.transform;
-                    v.transform = CGAffineTransformIdentity;
-                    v.layer.transform = CATransform3DIdentity;
-                    v.center = [value pointForView:v];
-                    v.transform = t;
-                    v.layer.transform = t3d;
-                }
-            }),
+            ps(S(bounds), ISSPropertyTypeRect, boundsBlock),
+            ps(S(center), ISSPropertyTypePoint, centerBlock),
             p(S(clearsContextBeforeDrawing), ISSPropertyTypeBool),
             p(S(clipsToBounds), ISSPropertyTypeBool),
             pe(S(contentMode), @{@"scaleToFill" : @(UIViewContentModeScaleToFill), @"scaleAspectFit" : @(UIViewContentModeScaleAspectFit),
@@ -523,37 +652,13 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ),
             p(S(contentScaleFactor), ISSPropertyTypeNumber),
             p(@"exclusiveTouch", ISSPropertyTypeBool),
-            ps(S(frame), ISSPropertyTypeRect, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSRectValue
-                if( [viewObject isKindOfClass:UIView.class] ) {
-                    UIView* v = viewObject;
-                    // Handle case when attempting to set frame on transformed view
-                    CATransform3D t3d = v.layer.transform;
-                    CGAffineTransform t = v.transform;
-                    v.transform = CGAffineTransformIdentity;
-                    v.layer.transform = CATransform3DIdentity;
-                    v.frame = [value rectForView:v];
-                    v.transform = t;
-                    v.layer.transform = t3d;
-                }
-            }),
+            ps(S(frame), ISSPropertyTypeRect, frameBlock),
             p(@"hidden", ISSPropertyTypeBool),
-            pas(@"layer.anchorPoint", @[@"anchorPoint"], ISSPropertyTypePoint, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSPointValue
-                if( [viewObject isKindOfClass:UIView.class] ) {
-                    UIView* v = viewObject;
-                    // Make sure original position is maintained when adjusting anchorPoint
-                    CGPoint initialOrigin = v.frame.origin;
-                    v.layer.anchorPoint = [value point];
-                    CGPoint delta = CGPointMake(v.frame.origin.x - initialOrigin.x, v.frame.origin.y - initialOrigin.y);
-                    v.center = CGPointMake (v.center.x - delta.x, v.center.y - delta.y);
-                }
-            }),
+            pas(@"layer.anchorPoint", @[@"anchorPoint"], ISSPropertyTypePoint, anchorPointBlock),
             pa(@"layer.cornerRadius", @[@"cornerradius"], ISSPropertyTypeNumber),
             pa(@"layer.borderColor", @[@"bordercolor"], ISSPropertyTypeCGColor),
             pa(@"layer.borderWidth", @[@"borderwidth"], ISSPropertyTypeNumber),
-            ps(S(layout), ISSPropertyTypeLayout, ^(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters) { // Value is ISSLayout
-                ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:viewObject];
-                details.layout = value;
-            }),
+            ps(S(layout), ISSPropertyTypeLayout, layoutBlock),
             p(@"layoutMargins", ISSPropertyTypeEdgeInsets),
             p(@"multipleTouchEnabled", ISSPropertyTypeBool),
             p(@"opaque", ISSPropertyTypeBool),
@@ -568,6 +673,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     NSSet* allProperties = viewProperties;
 
+    
+#pragma mark - UIControl
 
     NSSet* controlProperties = [NSSet setWithArray:@[
             p(@"enabled", ISSPropertyTypeBool),
@@ -580,6 +687,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:controlProperties];
 
+    
+#pragma mark - UIScrollView
 
     NSSet* scrollViewProperties = [NSSet setWithArray:@[
             p(S(contentOffset), ISSPropertyTypePoint),
@@ -606,6 +715,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:scrollViewProperties];
 
+    
+#pragma mark - UITableView
+    
     NSSet* tableViewProperties = [NSSet setWithArray:@[
             p(S(rowHeight), ISSPropertyTypeNumber),
             p(S(sectionHeaderHeight), ISSPropertyTypeNumber),
@@ -628,9 +740,11 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     allProperties = [allProperties setByAddingObjectsFromSet:tableViewProperties];
 
 
+#pragma mark - UIWebView
+    
     NSDictionary* dataDetectorTypesValues = @{@"all" : @(UIDataDetectorTypeAll), @"none" : @(UIDataDetectorTypeNone), @"address" : @(UIDataDetectorTypeAddress),
                         @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)};
-
+    
     NSSet* webViewProperties = [NSSet setWithArray:@[
             p(S(scalesPageToFit), ISSPropertyTypeBool),
             pe(S(dataDetectorTypes), dataDetectorTypesValues),
@@ -647,6 +761,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:webViewProperties];
 
+    
+#pragma mark - UICollectionView
 
     NSSet* collectionViewProperties = [NSSet setWithArray:@[
             allowsSelection,
@@ -664,6 +780,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     allProperties = [allProperties setByAddingObjectsFromSet:collectionViewProperties];
 
 
+#pragma mark - UIActivityIndicatiorView
+    
     NSSet* activityIndicatorProperties = [NSSet setWithArray:@[
             pe(S(activityIndicatorViewStyle), @{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)}),
             p(S(color), ISSPropertyTypeColor),
@@ -671,6 +789,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:activityIndicatorProperties];
 
+    
+#pragma mark - UIButton
 
     NSSet* buttonProperties = [NSSet setWithArray:@[
             p(S(showsTouchWhenHighlighted), ISSPropertyTypeBool),
@@ -685,10 +805,14 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pp(@"titleColor", controlStateParametersValues, ISSPropertyTypeColor, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setTitleColor:forState:)] ) [viewObject setTitleColor:value forState:state];
+                else return NO;
+                return YES;
             }),
             pp(@"titleShadowColor", controlStateParametersValues, ISSPropertyTypeColor, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setTitleShadowColor:forState:)] ) [viewObject setTitleShadowColor:value forState:state];
+                else return NO;
+                return YES;
             }),
             image,
             backgroundImage
@@ -696,6 +820,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     allProperties = [allProperties setByAddingObjectsFromSet:buttonProperties];
 
 
+#pragma mark - UILabel
+    
     NSSet* textProperties = [NSSet setWithArray:@[
             font,
             textColor,
@@ -706,6 +832,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(adjustsFontSizeToFitWidth), ISSPropertyTypeBool),
             p(S(minimumFontSize), ISSPropertyTypeNumber)
     ]];
+    
 
     NSSet* labelProperties = [NSSet setWithArray:@[
             pe(S(baselineAdjustment), @{@"none" : @(UIBaselineAdjustmentNone), @"alignBaselines" : @(UIBaselineAdjustmentAlignBaselines),
@@ -729,6 +856,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     labelProperties = [labelProperties setByAddingObjectsFromSet:resizableTextProperties];
     allProperties = [allProperties setByAddingObjectsFromSet:labelProperties];
 
+    
+#pragma mark - UIProgressView
 
     NSSet* progressViewProperties = [NSSet setWithArray:@[
             p(S(progressTintColor), ISSPropertyTypeColor),
@@ -739,6 +868,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:progressViewProperties];
 
+    
+#pragma mark - UITextInputTraits
 
     NSSet* uiTextInputTraitsProperties = [NSSet setWithArray:@[
             pi(S(autocapitalizationType), ISSPropertyTypeBool),
@@ -758,6 +889,7 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             ]];
 
     
+#pragma mark - UITextField
     
     NSSet* textInputProperties = [NSSet setWithArray:@[
             p(S(clearsOnInsertion), ISSPropertyTypeBool),
@@ -781,6 +913,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     textFieldProperties = [textFieldProperties setByAddingObjectsFromSet:textInputProperties];
     textFieldProperties = [textFieldProperties setByAddingObjectsFromSet:resizableTextProperties];
 
+    
+#pragma mark - UITextView
 
     NSSet* textViewProperties = [NSSet setWithArray:@[
             p(S(allowsEditingTextAttributes), ISSPropertyTypeBool),
@@ -795,6 +929,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     textViewProperties = [textViewProperties setByAddingObjectsFromSet:textProperties];
     textViewProperties = [textViewProperties setByAddingObjectsFromSet:textInputProperties];
 
+    
+#pragma mark - UIImageView
 
     NSSet*imageViewProperties = [NSSet setWithArray:@[
             image,
@@ -802,6 +938,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         ]];
     allProperties = [allProperties setByAddingObjectsFromSet:imageViewProperties];
 
+    
+#pragma mark - UISwitch
 
     NSSet* switchProperties = [NSSet setWithArray:@[
             p(S(onTintColor), ISSPropertyTypeColor),
@@ -812,6 +950,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     allProperties = [allProperties setByAddingObjectsFromSet:switchProperties];
 
+    
+#pragma mark - UISlider
 
     NSSet* sliderProperties = [NSSet setWithArray:@[
             p(S(minimumValueImage), ISSPropertyTypeImage),
@@ -822,19 +962,27 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pp(@"maximumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setMaximumTrackImage:forState:)] ) [viewObject setMaximumTrackImage:value forState:state];
+                else return NO;
+                return YES;
             }),
             pp(@"minimumTrackImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setMinimumTrackImage:forState:)] ) [viewObject setMinimumTrackImage:value forState:state];
+                else return NO;
+                return YES;
             }),
             pp(@"thumbImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setThumbImage:forState:)] ) [viewObject setThumbImage:value forState:state];
+                else return NO;
+                return YES;
             }),
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:sliderProperties];
-
+    
+    
+#pragma mark - UIStepper
 
     NSSet* stepperProperties = [NSSet setWithArray:@[
             p(@"continuous", ISSPropertyTypeBool),
@@ -847,20 +995,22 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pp(@"decrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setDecrementImage:forState:)] ) [viewObject setDecrementImage:value forState:state];
+                else return NO;
+                return YES;
             }),
             pp(@"incrementImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setIncrementImage:forState:)] ) [viewObject setIncrementImage:value forState:state];
+                else return NO;
+                return YES;
             }),
-            pp(@"dividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
-                if( parameters.count > 1 && [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:)] ) {
-                    [viewObject setDividerImage:value forLeftSegmentState:(UIControlState)[parameters[0] unsignedIntegerValue] rightSegmentState:(UIControlState)[parameters[1] unsignedIntegerValue]];
-                }
-            })
+            dividerImage
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:stepperProperties];
 
+    
+#pragma mark - UISegmentedControl
 
     NSSet* statefulTitleTextAttributes = [NSSet setWithArray:@[
             font,
@@ -875,25 +1025,22 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(@"momentary", ISSPropertyTypeBool),
             backgroundImage,
             pp(@"contentPositionAdjustment", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
-                if( parameters.count > 0 && [viewObject respondsToSelector:@selector(setContentPositionAdjustment:forSegmentType:barMetrics:)] ) {
-                    UISegmentedControlSegment segment = parameters.count > 0 ? (UISegmentedControlSegment)[parameters[0] integerValue] : UISegmentedControlSegmentAny;
-                    UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
+                UISegmentedControlSegment segment = parameters.count > 0 ? (UISegmentedControlSegment)[parameters[0] integerValue] : UISegmentedControlSegmentAny;
+                UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics)[parameters[1] integerValue] : UIBarMetricsDefault;
+                if( [viewObject respondsToSelector:@selector(setContentPositionAdjustment:forSegmentType:barMetrics:)] ) {
                     [viewObject setContentPositionAdjustment:[value UIOffsetValue] forSegmentType:segment barMetrics:metrics];
+                    return YES;
                 }
+                return NO;
             }),
-            pp(@"dividerImage", barMetricsSegmentAndControlStateParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
-                if( parameters.count > 1 && [viewObject respondsToSelector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:)] ) {
-                    UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                    UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
-                    UIBarMetrics metrics = parameters.count > 2 ? (UIBarMetrics)[parameters[2] integerValue] : UIBarMetricsDefault;
-                    [viewObject setDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState barMetrics:metrics];
-                }
-            }),
+            dividerImage
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:segmentedControlProperties];
     segmentedControlProperties = [segmentedControlProperties setByAddingObjectsFromSet:statefulTitleTextAttributes];
 
+    
+#pragma mark - UIBarButtonItem
 
     NSSet* barButtonProperties = [NSSet setWithArray:@[
             p(@"enabled", ISSPropertyTypeBool),
@@ -910,7 +1057,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
                     [viewObject setBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                    return YES;
                 }
+                return NO;
             }),
             titlePositionAdjustment,
             pp(@"backButtonBackgroundImage", barMetricsAndControlStateParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
@@ -918,25 +1067,33 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics) [parameters[1] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackButtonBackgroundImage:forState:barMetrics:)] ) {
                     [viewObject setBackButtonBackgroundImage:value forState:state barMetrics:metrics];
+                    return YES;
                 }
+                return NO;
             }),
             pp(@"backButtonBackgroundVerticalPositionAdjustment", barMetricsParameters, ISSPropertyTypeNumber, ^(SetterBlockParamList) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackButtonBackgroundVerticalPositionAdjustment:forBarMetrics:)] ) {
                     [viewObject setBackButtonBackgroundVerticalPositionAdjustment:[value floatValue] forBarMetrics:metrics];
+                    return YES;
                 }
+                return NO;
             }),
             pp(@"backButtonTitlePositionAdjustment", barMetricsParameters, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
                 UIBarMetrics metrics = parameters.count > 0 ? (UIBarMetrics) [parameters[0] integerValue] : UIBarMetricsDefault;
                 if( [viewObject respondsToSelector:@selector(setBackButtonTitlePositionAdjustment:forBarMetrics:)] ) {
                     [viewObject setBackButtonTitlePositionAdjustment:[value UIOffsetValue] forBarMetrics:metrics];
+                    return YES;
                 }
+                return NO;
             }),
     ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:barButtonProperties];
     barButtonProperties = [barButtonProperties setByAddingObjectsFromSet:statefulTitleTextAttributes];
 
+    
+#pragma mark - UITableViewCell
 
     NSDictionary* accessoryTypes = @{@"none" : @(UITableViewCellAccessoryNone), @"checkmark" : @(UITableViewCellAccessoryCheckmark), @"detailButton" : @(UITableViewCellAccessoryDetailButton),
                         @"disclosureButton" : @(UITableViewCellAccessoryDetailDisclosureButton), @"disclosureIndicator" : @(UITableViewCellAccessoryDisclosureIndicator)};
@@ -958,6 +1115,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     allProperties = [allProperties setByAddingObjectsFromSet:tableViewCellProperties];
 
+    
+#pragma mark - UIToolbar
 
     NSSet* toolbarProperties = [NSSet setWithArray:@[
             barStyle,
@@ -969,6 +1128,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     allProperties = [allProperties setByAddingObjectsFromSet:toolbarProperties];
 
+    
+#pragma mark - UINavigationBar
 
     NSSet* navigationBarProperties = [NSSet setWithArray:@[
             barStyle,
@@ -983,6 +1144,8 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     allProperties = [allProperties setByAddingObjectsFromSet:navigationBarProperties];
     navigationBarProperties = [navigationBarProperties setByAddingObjectsFromSet:statefulTitleTextAttributes];
 
+    
+#pragma mark - UISearchBar
 
     NSDictionary* searchBarIconParameters = @{@"iconBookmark" : @(UISearchBarIconBookmark), @"iconClear" : @(UISearchBarIconClear),
                     @"iconResultsList" : @(UISearchBarIconResultsList), @"iconSearch" : @(UISearchBarIconSearch)};
@@ -1006,47 +1169,67 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             backgroundImage,
             pp(@"searchFieldBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                if( [viewObject respondsToSelector:@selector(setSearchFieldBackgroundImage:forState:)] ) [viewObject setSearchFieldBackgroundImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setSearchFieldBackgroundImage:forState:)] ) {
+                    [viewObject setSearchFieldBackgroundImage:value forState:state];
+                    return YES;
+                }
+                return NO;
             }),
             pp(@"imageForSearchBarIcon", statefulSearchBarIconParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
                 UIControlState state = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
-                if( [viewObject respondsToSelector:@selector(setImage:forSearchBarIcon:state:)] ) [viewObject setImage:value forSearchBarIcon:icon state:state];
+                if( [viewObject respondsToSelector:@selector(setImage:forSearchBarIcon:state:)] ) {
+                    [viewObject setImage:value forSearchBarIcon:icon state:state];
+                    return YES;
+                }
+                return NO;
             }),
             pp(@"scopeBarButtonBackgroundImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
-                if( [viewObject respondsToSelector:@selector(setScopeBarButtonBackgroundImage:forState:)] ) [viewObject setScopeBarButtonBackgroundImage:value forState:state];
+                if( [viewObject respondsToSelector:@selector(setScopeBarButtonBackgroundImage:forState:)] ) {
+                    [viewObject setScopeBarButtonBackgroundImage:value forState:state];
+                    return YES;
+                }
+                return NO;
             }),
             pp(@"scopeBarButtonDividerImage", controlStateParametersValues, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState leftState = parameters.count > 0 ? (UIControlState)[parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIControlState rightState = parameters.count > 1 ? (UIControlState)[parameters[1] unsignedIntegerValue] : UIControlStateNormal;
                 if( [viewObject respondsToSelector:@selector(setScopeBarButtonDividerImage:forLeftSegmentState:rightSegmentState:)] ) {
                     [viewObject setScopeBarButtonDividerImage:value forLeftSegmentState:leftState rightSegmentState:rightState];
+                    return YES;
                 }
+                return NO;
             }),
             pp(@"scopeBarButtonTitleFont", controlStateParametersValues, ISSPropertyTypeFont, ^(SetterBlockParamList) {
-                setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
+                return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
             }),
             pp(@"scopeBarButtonTitleTextColor", controlStateParametersValues, ISSPropertyTypeColor, ^(SetterBlockParamList) {
-                setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextColor);
+                return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextColor);
             }),
             pp(@"scopeBarButtonTitleShadowColor", controlStateParametersValues, ISSPropertyTypeColor, ^(SetterBlockParamList) {
-                setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
+                return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
             }),
             pp(@"scopeBarButtonTitleShadowOffset", controlStateParametersValues, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
-                setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
+                return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
             }),
             p(S(searchFieldBackgroundPositionAdjustment), ISSPropertyTypeOffset),
             p(S(searchTextPositionAdjustment), ISSPropertyTypeOffset),
             pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
                 UISearchBarIcon icon = parameters.count > 0 ? (UISearchBarIcon)[parameters[0] integerValue] : UISearchBarIconSearch;
-                if( [viewObject respondsToSelector:@selector(setPositionAdjustment:forSearchBarIcon:)] ) [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
+                if( [viewObject respondsToSelector:@selector(setPositionAdjustment:forSearchBarIcon:)] ) {
+                    [viewObject setPositionAdjustment:[value UIOffsetValue] forSearchBarIcon:icon];
+                    return YES;
+                }
+                return NO;
             })
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:searchBarProperties];
     searchBarProperties = [searchBarProperties setByAddingObjectsFromSet:uiTextInputTraitsProperties];
 
+    
+#pragma mark - UITabBar
 
     NSSet* tabBarProperties = [NSSet setWithArray:@[
             barTintColor,
@@ -1063,6 +1246,9 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     allProperties = [allProperties setByAddingObjectsFromSet:tabBarProperties];
 
+    
+#pragma mark - UITabBarItem
+    
     NSSet* tabBarItemProperties = [NSSet setWithArray:@[
             p(S(selectedImage), ISSPropertyTypeImage),
             titlePositionAdjustment,
@@ -1125,47 +1311,61 @@ static void setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSSet* attributedStringProperties = [NSSet setWithArray:@[
         ps(@"font", ISSPropertyTypeFont, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSFontAttributeName] = value;
+            return YES;
         }),
         ps(@"backgroundColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSBackgroundColorAttributeName] = value;
+            return YES;
         }),
         pas(@"foregroundColor", @[@"color"], ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSForegroundColorAttributeName] = value;
+            return YES;
         }),
         ps(@"ligature", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSLigatureAttributeName] = value;
+            return YES;
         }),
         ps(@"kern", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSKernAttributeName] = value;
+            return YES;
         }),
         ps(@"strikethroughStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSStrikethroughStyleAttributeName] = value;
+            return YES;
         }),
         ps(@"underlineStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSUnderlineStyleAttributeName] = value;
+            return YES;
         }),
         ps(@"strokeColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSStrokeColorAttributeName] = value;
+            return YES;
         }),
         ps(@"strokeWidth", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSStrokeWidthAttributeName] = value;
+            return YES;
         }),
         // TODO: NSShadowAttributeName
         // TODO: NSTextEffectAttributeName
         ps(@"baselineOffset", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSBaselineOffsetAttributeName] = value;
+            return YES;
         }),
         ps(@"underlineColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSUnderlineColorAttributeName] = value;
+            return YES;
         }),
         ps(@"strikethroughColor", ISSPropertyTypeColor, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSStrikethroughColorAttributeName] = value;
+            return YES;
         }),
         ps(@"obliqueness", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSObliquenessAttributeName] = value;
+            return YES;
         }),
         ps(@"expansion", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSExpansionAttributeName] = value;
+            return YES;
         })
         // TODO: NSWritingDirectionAttributeName
     ]];

@@ -93,9 +93,7 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
         return NO;
     }
 
-    [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters];
-
-    return YES;
+    return [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters];
 }
 
 

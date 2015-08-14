@@ -79,13 +79,17 @@
 
 @implementation InterfaCSSTests
 
-- (void) setUp {
-    [super setUp];
++ (void) loadDefaultStylesheet {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"interfaCSSTests" ofType:@"css"];
     [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path];
 }
 
-- (void) tearDown {
++ (void) setUp {
+    [super setUp];
+    [self loadDefaultStylesheet];
+}
+
++ (void) tearDown {
     [super tearDown];
     [InterfaCSS clearResetAndUnload];
 }
@@ -660,6 +664,34 @@
     [subView applyStylingISS];
     
     ISSAssertEqualFloats(subView.alpha, 0.5f);
+}
+
+- (void) testOverridePropertyDefinitionAndFallback {
+    [InterfaCSS clearResetAndUnload]; // Need to reset again, to make sure property registration takes
+    
+    ISSPropertyDefinition* def = [[ISSPropertyDefinition alloc] initWithName:@"text" aliases:nil type:ISSPropertyTypeString enumValues:nil enumBitMaskType:NO setterBlock:^BOOL(ISSPropertyDefinition *property, id viewObject, id value, NSArray *parameters) {
+        if( [viewObject tag] == 123 ) {
+            [viewObject setText:[value uppercaseString]];
+            return YES;
+        }
+        return NO;
+    } parameterEnumValues:nil useIntrospection:NO];
+    
+    [[InterfaCSS sharedInstance].propertyRegistry registerCustomProperty:def];
+    
+    [self.class loadDefaultStylesheet];
+    
+    
+    UILabel* label = [[UILabel alloc] init];
+    label.tag = 123;
+
+    label.styleClassISS = @"overridePropertyDefinitionStyle";
+    [label applyStylingISS];
+    XCTAssertEqualObjects(@"MONDAY", label.text);
+    
+    label.tag = 0;
+    [label applyStylingISS:YES];
+    XCTAssertEqualObjects(@"Monday", label.text);
 }
 
 @end

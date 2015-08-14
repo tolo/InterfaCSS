@@ -38,6 +38,10 @@
 
 @end
 
+
+static ISSParcoaStyleSheetTestParser* defaultParser;
+
+
 @interface ISSStyleSheetParserTests : XCTestCase
 
 @end
@@ -50,16 +54,13 @@
 + (void) setUp {
     [super setUp];
     //NSLog(@"%@", [ISSPropertyDefinition propertyDescriptionsForMarkdown]);
+    
+    defaultParser = [[ISSParcoaStyleSheetTestParser alloc] init];
 }
 
 - (void) setUp {
     [super setUp];
-
-    parser = [[ISSParcoaStyleSheetTestParser alloc] init];
-}
-
-- (void) tearDown {
-    [super tearDown];
+    parser = defaultParser;
 }
 
 

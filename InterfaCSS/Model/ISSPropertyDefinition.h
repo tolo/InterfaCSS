@@ -10,7 +10,10 @@
 
 @class ISSPropertyDefinition;
 
-typedef void (^ISSPropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
+/** @deprecated */
+typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
+
+typedef BOOL (^ISSPropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id value, NSArray* parameters);
 
 
 typedef NS_ENUM(NSInteger, ISSPropertyType) {
@@ -60,6 +63,8 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
+@property (nonatomic, strong) ISSPropertyDefinition* overriddenDefinition;
+
 
 /**
  * Creates a temporary, anonymous, property definition.
@@ -92,9 +97,11 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
  * If this is an enum property, specify the enum values in the `enumValues` parameter. If the enum values are of a bit mask type, specify `YES` in the `enumBitMaskType` parameter.
  * If this is a parameterized property, specify the parameter value transformation dictionary in `parameterEnumValues`.
  * To use a custom handling for setting the property value - specify a property setter block in the `setterBlock` parameter.
+ *
+ * @deprecated due to deprecation of setter block type.
  */
 - (id) initWithName:(NSString*)name aliases:(NSArray*)aliases type:(ISSPropertyType)type enumValues:(NSDictionary*)enumValues
-          enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(ISSPropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues;
+    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(PropertySetterBlock)setterBlock parameterEnumValues:(NSDictionary*)parameterEnumValues;
 
 /**
  * Creates a property definition with an optional number of aliases, that optionally can set it's value via introspection (i.e. use declared or default setter method for property), instead of using KVC.

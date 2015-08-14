@@ -205,3 +205,8 @@ UIView .testSpecificity2 {
 .testSpecificity1 {
     alpha: 0.25;
 }
+
+
+.overridePropertyDefinitionStyle {
+    text: "Monday";
+}
