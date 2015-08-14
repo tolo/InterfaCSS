@@ -177,10 +177,15 @@ UIView.disabledStylingTest {
 .typeSelectorAndPrefixedPropertyTest {
     UILabel {
         font: GillSans 1;
+        titleLabel.alpha: 1;
     }
 
     UIButton {
         titleLabel.font: GillSans 2;
+    }
+    
+    .someOtherSelector, UIButton.testNestedProperty, .anotherSelector {
+        titleLabel.alpha: 0.5;
     }
 }
 
@@ -210,3 +215,4 @@ UIView .testSpecificity2 {
 .overridePropertyDefinitionStyle {
     text: "Monday";
 }
+

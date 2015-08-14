@@ -37,7 +37,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentityPath;
 @property (nonatomic, strong) NSString* elementStyleIdentity;
 
-@property (nonatomic, strong) NSDictionary* validNestedElements;
+@property (nonatomic, strong, readwrite) NSDictionary* validNestedElements;
 
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
 

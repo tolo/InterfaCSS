@@ -231,7 +231,10 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
 
 - (void) testNumberPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"alpha"];
-    XCTAssertEqualObjects(value, @YES, @"Expected value '1' for property alpha");
+    ISSAssertEqualFloats([value floatValue], 0.33f, @"Expected value '0.33' for property alpha");
+    
+    value = [self getSimplePropertyValueWithName:@"cornerRadius"];
+    XCTAssertEqualObjects(value, @(5), @"Expected value '5' for property alpha");
 }
 
 - (void) testBooleanPropertyValue {

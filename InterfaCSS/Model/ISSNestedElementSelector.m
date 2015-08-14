@@ -24,7 +24,9 @@
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
-    NSString* validParentKeyPath = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:self.nestedElementKeyPath inClass:[elementDetails.parentElement class]];
+    ISSUIElementDetails* parentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:elementDetails.parentElement];
+    NSString* validParentKeyPath = parentDetails.validNestedElements[self.nestedElementKeyPath];
+    
     if( validParentKeyPath ) {
         return [elementDetails.parentElement valueForKey:validParentKeyPath] == elementDetails.uiElement;
     } else {

@@ -37,6 +37,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @property (nonatomic, weak, readonly) UIViewController* closestViewController; // Closest ancestor view controller
 
 @property (nonatomic, readonly) NSArray* childElementsForElement;
+@property (nonatomic, readonly) NSDictionary* validNestedElements;
 
 @property (nonatomic, strong) NSString* elementId;
 

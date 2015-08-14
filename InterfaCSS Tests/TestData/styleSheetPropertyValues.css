@@ -7,7 +7,8 @@
 @mathExpressionConstant: 10 ** (3 - 1);
 
 .simple {
-    alpha: 1;
+    alpha: 0.33;
+    layer.cornerRadius: 5;
     autoresizingMask: width height left right top bottom;
     clipsToBounds: YES;
     contentMode: bottomRight;

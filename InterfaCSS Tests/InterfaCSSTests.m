@@ -589,11 +589,13 @@
     view.styleClassISS = @"typeSelectorAndPrefixedPropertyTest";
     
     UIButton* btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.styleClassISS = @"testNestedProperty";
     [view addSubview:btn];
     
     [btn applyStylingISS];
     
     XCTAssertEqualObjects(btn.titleLabel.font, [UIFont fontWithName:@"GillSans" size:2]);
+    ISSAssertEqualFloats(btn.titleLabel.alpha, 0.5f);
 }
 
 - (void) testPrefixedPropertyOnNonUIViewClass {

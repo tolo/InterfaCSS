@@ -12,7 +12,13 @@
 #import <objc/runtime.h>
 
 
+static NSCache* propertyNamesWithClassForClassCache;
+
 @implementation ISSRuntimeIntrospectionUtils
+
++ (void) load {
+    propertyNamesWithClassForClassCache = [[NSCache alloc] init];
+}
 
 + (SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz {
     unsigned int c = 0;
@@ -39,27 +45,38 @@
     return [NSSet setWithArray:[self propertyNamesWithClassForClass:class].allKeys];
 }
 
-+ (NSMutableDictionary*) propertyNamesWithClassForClass:(Class)class {
++ (NSDictionary*) propertyNamesWithClassForClass:(Class)class {
     if( !class || class == NSObject.class || class == [NSNull null] ) return nil;
-
-    // Get superclass properties first
-    NSMutableDictionary* propertyNamesAndClasses = [self propertyNamesWithClassForClass:[class superclass]] ?: [NSMutableDictionary dictionary];
     
-    // Then add the properties of this class
-    unsigned int outCount = 0;
-    objc_property_t* properties = class_copyPropertyList(class, &outCount);
-    for (unsigned int i=0; i<outCount; i++) {
-        objc_property_t property = properties[i];
-        const char* name = property_getName(property);
-        if( name ) {
-            NSString* propertyName = [NSString stringWithUTF8String:name];
-            Class propertyClass = [self classOfProperty:property] ?: [NSNull null];
-            propertyNamesAndClasses[propertyName] = propertyClass;
+    NSMutableDictionary* propertyNamesAndClasses = [propertyNamesWithClassForClassCache objectForKey:class];
+    if( !propertyNamesAndClasses ) {
+        // Add the properties of this class
+        propertyNamesAndClasses = [NSMutableDictionary dictionary];
+        unsigned int outCount = 0;
+        objc_property_t* properties = class_copyPropertyList(class, &outCount);
+        for (unsigned int i=0; i<outCount; i++) {
+            objc_property_t property = properties[i];
+            const char* name = property_getName(property);
+            if( name ) {
+                NSString* propertyName = [NSString stringWithUTF8String:name];
+                id propertyClass = (id)[self classOfProperty:property] ?: [NSNull null];
+                propertyNamesAndClasses[propertyName] = propertyClass;
+            }
         }
-    }
-    free(properties);
+        free(properties);
 
-    return propertyNamesAndClasses;
+        // Add to cache
+        [propertyNamesWithClassForClassCache setObject:propertyNamesAndClasses forKey:class];
+    }
+
+    // Get superclass properties
+    NSDictionary* superClassPropertyNamesAndClasses = [self propertyNamesWithClassForClass:[class superclass]] ?: [NSMutableDictionary dictionary];
+
+    // Combine super class properties with the properties of this class and return
+    NSMutableDictionary* combinedPropertyNamesAndClasses = superClassPropertyNamesAndClasses ? [NSMutableDictionary dictionaryWithDictionary:superClassPropertyNamesAndClasses] : [NSMutableDictionary dictionary];
+    [combinedPropertyNamesAndClasses addEntriesFromDictionary:propertyNamesAndClasses];
+
+    return combinedPropertyNamesAndClasses;
 }
 
 + (Class) classOfProperty:(objc_property_t)property {
@@ -90,9 +107,9 @@
 }
 
 + (NSArray*) actualPropertyNameAndClassForCaseInsensitiveName:(NSString*)caseInsensitivePropertyName inClass:(Class)class {
-    NSMutableDictionary* propertyNamesAndClassses = [self propertyNamesWithClassForClass:class];
-    for(NSString* name in propertyNamesAndClassses.allKeys) {
-        if( [name iss_isEqualIgnoreCase:caseInsensitivePropertyName] ) return @[name, propertyNamesAndClassses[name]];
+    NSDictionary* propertyNamesAndClasses = [self propertyNamesWithClassForClass:class];
+    for(NSString* name in propertyNamesAndClasses.allKeys) {
+        if( [name iss_isEqualIgnoreCase:caseInsensitivePropertyName] ) return @[name, propertyNamesAndClasses[name]];
     }
     return nil;
 }
@@ -218,7 +235,24 @@
     } else {
         return NO;
     }
-        
+}
+
++ (BOOL) klaatuVerataNikto:(Class)clazz selector:(SEL)originalSelector replacement:(IMP)replacement originalPointer:(IMP*)originalPointer {
+    if( !originalPointer || !replacement ) return NO;
+    
+    Method originalMethod = class_getInstanceMethod(clazz, originalSelector);
+    IMP originalMethodImpl = nil;
+    if( originalMethod ) {
+        const char* methodTypes = method_getTypeEncoding(originalMethod);
+        originalMethodImpl = class_replaceMethod(clazz, originalSelector, replacement, methodTypes);
+        if( !originalMethodImpl ) {
+            originalMethodImpl = method_getImplementation(originalMethod);
+        }
+    }
+    
+    if( originalMethodImpl ) *originalPointer = originalMethodImpl;
+    
+    return originalMethodImpl != nil;
 }
 
 @end
