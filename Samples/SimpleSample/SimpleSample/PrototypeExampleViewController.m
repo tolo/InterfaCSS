@@ -13,6 +13,7 @@
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UITableView+InterfaCSS.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
+#import <InterfaCSS/ISSStyleSheet.h>
 
 
 @interface PrototypeExampleCell : UITableViewCell
@@ -65,13 +66,14 @@
 }
 
 - (void) loadView {
-    // To prevent a lot of up front loading when application starts, loading of a stylesheet can be postponed until it's actually needed
-    [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"prototypeExample.css"];
+    // To prevent a lot of up front loading when application starts, loading of a stylesheet can be postponed until it's actually needed.
+    // Additionally, a scope can be attached to the stylesheet, to limit styles to only be processed while in a particular view controller for instance
+    ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:self.class];
+    [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"prototypeExample.css" withScope:scope];
     
-    // Load the complete view hierachy for this view controller from the view definition file 'views.xml'
+    // Load the complete view hierarchy for this view controller from the view definition file 'views.xml'
     self.view = [ISSViewBuilder loadViewHierarchyFromMainBundleFile:@"views.xml" fileOwner:self];
     
-    self.mainTitleLabel.text = @"Prototype Example";
     [self.mainTitleBtn setTitle:@"Sample button" forState:UIControlStateNormal];
 }
 

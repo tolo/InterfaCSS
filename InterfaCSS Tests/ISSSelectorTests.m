@@ -19,6 +19,7 @@
 #import "ISSUIElementDetails.h"
 #import "UIView+InterfaCSS.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSStylingContext.h"
 
 
 @interface MyCustomView : UIView
@@ -97,10 +98,10 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
  
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must match!");
+    XCTAssertTrue([descendantChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Descendant selector chain must match!");
     
     ISSSelectorChain* childChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorChild childPseudoClass:nil];
-    XCTAssertFalse([childChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Child selector chain must NOT match!");
+    XCTAssertFalse([childChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Child selector chain must NOT match!");
     
     XCTAssertFalse(childChain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -116,7 +117,7 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertFalse([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must NOT match label with other parent!");
+    XCTAssertFalse([descendantChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Descendant selector chain must NOT match label with other parent!");
 }
 
 - (void) testChildAndDescendant {
@@ -126,10 +127,10 @@
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Descendant selector chain must match!");
+    XCTAssertTrue([descendantChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Descendant selector chain must match!");
     
     ISSSelectorChain* childChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorChild childPseudoClass:nil];
-    XCTAssertTrue([childChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Child selector chain must match!");
+    XCTAssertTrue([childChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Child selector chain must match!");
     
     XCTAssertFalse(childChain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -154,11 +155,11 @@
     ISSSelector* labelSelector = [ISSSelector selectorWithType:@"uilabel" styleClass:@"labelClass" pseudoClasses:nil];
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[buttonSelector, @(ISSSelectorCombinatorAdjacentSibling), labelSelector]];
     
-    if( adjacent ) XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Adjacent sibling selector chain must match!");
-    else XCTAssertFalse([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Adjacent sibling selector chain must NOT match!");
+    if( adjacent ) XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Adjacent sibling selector chain must match!");
+    else XCTAssertFalse([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Adjacent sibling selector chain must NOT match!");
     
     chain = [ISSSelectorChain selectorChainWithComponents:@[buttonSelector, @(ISSSelectorCombinatorGeneralSibling), labelSelector]];
-    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"General sibling selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"General sibling selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -176,7 +177,7 @@
     ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:a b:b type:pseudoClassType];
 
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:pseudo];
-    XCTAssertTrue([descendantChain matchesElement:labelDetails ignoringPseudoClasses:NO], @"%@", message);
+    XCTAssertTrue([descendantChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"%@", message);
     XCTAssertTrue(descendantChain.hasPseudoClassSelector, @"Expected selector chain to report having pseudo class");
 }
 
@@ -259,10 +260,10 @@
 
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[parentSelector]];
 
-    XCTAssertTrue([chain matchesElement:viewDetails ignoringPseudoClasses:NO], @"Empty structural pseudo class selector must match empty root view!");
+    XCTAssertTrue([chain matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Empty structural pseudo class selector must match empty root view!");
 
     [rootView addSubview:[[UIButton alloc] init]];
-    XCTAssertTrue(![chain matchesElement:viewDetails ignoringPseudoClasses:NO], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
+    XCTAssertTrue(![chain matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Empty structural pseudo class selector must NOT match root view that contains subviews!");
     
     XCTAssertTrue(chain.hasPseudoClassSelector, @"Expected selector chain to report having pseudo class");
 }
@@ -284,29 +285,29 @@
     
     // Test disabled
     button.enabled = NO;
-    XCTAssertTrue([disabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
-    XCTAssertFalse([enabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([disabledSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
+    XCTAssertFalse([enabledSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
     
     // Test enabled
     button.enabled = YES;
-    XCTAssertTrue([enabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
-    XCTAssertFalse([disabledSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([enabledSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
+    XCTAssertFalse([disabledSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
     
     // Check negative result for selected and highlighted
-    XCTAssertFalse([selectedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
-    XCTAssertFalse([highlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
-    XCTAssertFalse([selectedHighlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([selectedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
+    XCTAssertFalse([highlightedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
+    XCTAssertFalse([selectedHighlightedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
     
     // Test selected
     button.selected = YES;
-    XCTAssertTrue([selectedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([selectedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
     
     // Test selected
     button.highlighted = YES;
-    XCTAssertTrue([highlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([highlightedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
     
     // Test selected & highlighted (chained)
-    XCTAssertTrue([selectedHighlightedSelector matchesElement:viewDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([selectedHighlightedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
 }
 
 - (void) testWildcardSelectorFirst {
@@ -319,7 +320,7 @@
     [label addStyleClassISS:@"childClass"];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Wildcard selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -336,7 +337,7 @@
     [label addStyleClassISS:@"childClass"];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Wildcard selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -350,7 +351,7 @@
     [rootView addSubview:label];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Wildcard selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -365,7 +366,7 @@
     [rootView addSubview:label];
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([chain matchesElement:labelDetails ignoringPseudoClasses:NO], @"Wildcard selector chain must match!");
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Wildcard selector chain must match!");
     
     XCTAssertFalse(chain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
 }
@@ -381,19 +382,19 @@
     MyCustomView* myCustomView = [[MyCustomView alloc] init];
     ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomView];
     
-    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must match custom class!");
+    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]], @"Custom type selector chain must match custom class!");
     
     // Verify that custom type selector does NOT match UIView
     UIView* randomView = [[UIView alloc] init];
     elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:randomView];
     
-    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must NOT match standard UIView!");
+    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]], @"Custom type selector chain must NOT match standard UIView!");
     
     // Verify that custom type selector does NOT match other custom class
     MyCustomView2* myCustomView2 = [[MyCustomView2 alloc] init];
     elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomView2];
     
-    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must NOT match other custom class!");
+    XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]], @"Custom type selector chain must NOT match other custom class!");
     
     // Verify that custom type selector does match other custom class that is subclass of first class (create the selector and selector chain again, to make sure multiple occurances of the same custom type selector works)
     customClassTypeSelector = [ISSSelector selectorWithType:@"MyCustomView" styleClass:nil pseudoClasses:nil];
@@ -402,7 +403,7 @@
     MyCustomViewSubClass* myCustomViewSubClass = [[MyCustomViewSubClass alloc] init];
     elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:myCustomViewSubClass];
     
-    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO], @"Custom type selector chain must match other custom class that is sub class of type in custom type selector!");
+    XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]], @"Custom type selector chain must match other custom class that is sub class of type in custom type selector!");
 }
 
 - (void) testViewControllerAsTypeSelector {
@@ -419,7 +420,7 @@
     
     ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:vc.view];
     
-    XCTAssertTrue([viewSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([viewSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]]);
 
     [elementDetails resetCachedData];
 
@@ -431,22 +432,37 @@
     ISSSelectorChain* someViewControllerSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[someViewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
     
     // Check that the view controller matches the selector chain with the newly registered type class:
-    XCTAssertTrue([someViewControllerSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([someViewControllerSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]]);
     // Make sure that the "UIViewController" type selector no longer matches "SomeViewController"
-    XCTAssertFalse([viewSelectorChain matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([viewSelectorChain matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]]);
 
 
     // Test selector "UIView SomeViewController UIView"
     ISSSelectorChain* someViewControllerSelectorChain2 = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorDescendant), someViewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
 
     // Selector chain shouldn't match view controller with no super view:
-    XCTAssertFalse([someViewControllerSelectorChain2 matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    XCTAssertFalse([someViewControllerSelectorChain2 matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]]);
 
     UIView* superView = [[UIView alloc] init];
     [superView addSubview:vc.view];
 
     // When added to super view, selector chanin should match:
-    XCTAssertTrue([someViewControllerSelectorChain2 matchesElement:elementDetails ignoringPseudoClasses:NO]);
+    XCTAssertTrue([someViewControllerSelectorChain2 matchesElement:elementDetails stylingContext:[[ISSStylingContext alloc] init]]);
+}
+
+- (void) testSelectorChainPartialMatch {
+    UILabel* label = [[UILabel alloc] init];
+    
+    ISSSelector* viewSelector = [ISSSelector selectorWithType:@"UIView" styleClass:nil pseudoClasses:nil];
+    ISSSelector* labelSelector = [ISSSelector selectorWithType:@"UILabel" styleClass:nil pseudoClasses:nil];
+    ISSSelectorChain* selectorChain = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorDescendant), labelSelector]];
+    
+    ISSStylingContext* context = [[ISSStylingContext alloc] init];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    BOOL result = [selectorChain matchesElement:elementDetails stylingContext:context];
+    
+    XCTAssertEqual(result, NO);
+    XCTAssertEqual(context.containsPartiallyMatchedDeclarations, YES);
 }
 
 @end

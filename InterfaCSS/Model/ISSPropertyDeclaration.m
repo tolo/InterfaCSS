@@ -62,6 +62,9 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
 
 #pragma mark - Public interface
 
+- (BOOL) dynamicValue {
+    return self.property.supportsDynamicValue;
+}
 
 - (BOOL) transformValueIfNeeded {
     if( self.lazyPropertyTransformationBlock ) {

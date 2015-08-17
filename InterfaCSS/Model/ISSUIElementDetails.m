@@ -34,10 +34,19 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 @interface ISSUIElementDetails ()
 
+@property (nonatomic, weak, readwrite) UIView* parentView;
+
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentityPath;
 @property (nonatomic, strong) NSString* elementStyleIdentity;
 
 @property (nonatomic, strong, readwrite) NSDictionary* validNestedElements;
+
+@property (nonatomic, weak, readwrite) UIViewController* closestViewController;
+
+@property (nonatomic, readwrite) BOOL ancestorHasElementId;
+@property (nonatomic, readwrite) BOOL ancestorUsesCustomElementStyleIdentity;
+
+@property (nonatomic, strong, readwrite) NSSet* disabledProperties;
 
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
 
@@ -45,9 +54,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 @end
 
-@implementation ISSUIElementDetails {
-    __weak UIViewController* _closestViewController;
-}
+@implementation ISSUIElementDetails
 
 #pragma mark - Lifecycle
 
@@ -55,6 +62,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     self = [super init];
     if (self) {
         _uiElement = uiElement;
+        [self parentElement]; // Make sure weak reference to super view is set directly
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetCachedData) name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
     }
@@ -69,30 +77,39 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 #pragma mark - NSCopying
 
 - (id) copyWithZone:(NSZone*)zone {
-    ISSUIElementDetails* copy = [[(id)self.class allocWithZone:zone] init];
-    copy->_uiElement = self->_uiElement;
+    ISSUIElementDetails* copy = [[(id)self.class allocWithZone:zone] initWithUIElement:self->_uiElement];
     copy->_parentElement = self->_parentElement;
-
+    
+    copy->_closestViewController = self->_closestViewController; // Calculated and cached property - avoid calculation on copy
+    
+    copy->_validNestedElements = _validNestedElements; // Calculated and cached property - avoid calculation on copy
+    
     copy.elementId = self.elementId;
-
-    copy.canonicalType = self.canonicalType;
-    copy.styleClasses = self.styleClasses;
+    
+    copy.layout = self.layout;
 
     copy.elementStyleIdentity = self.elementStyleIdentity;
     copy.elementStyleIdentityPath = self.elementStyleIdentityPath;
-    copy.usingCustomElementStyleIdentity = self.usingCustomElementStyleIdentity;
+    copy.ancestorHasElementId = self.ancestorHasElementId;
+    copy.customElementStyleIdentity = self.customElementStyleIdentity;
     copy.ancestorUsesCustomElementStyleIdentity = self.ancestorUsesCustomElementStyleIdentity;
 
     copy.cachedDeclarations = self.cachedDeclarations;
+    
+    copy.canonicalType = self.canonicalType;
+    copy.styleClasses = self.styleClasses;
 
     copy.stylingApplied = self.stylingApplied;
     copy.stylingDisabled = self.stylingDisabled;
+    copy.stylesContainPseudoClassesOrDynamicProperties = self.stylesContainPseudoClassesOrDynamicProperties;
 
     copy.willApplyStylingBlock = self.willApplyStylingBlock;
     copy.didApplyStylingBlock = self.didApplyStylingBlock;
 
+    copy.disabledProperties = self.disabledProperties;
+    
     copy.additionalDetails = self.additionalDetails;
-
+    
     copy.prototypes = self.prototypes;
 
     return copy;
@@ -108,11 +125,13 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 }
 
 - (void) updateElementStyleIdentity {
-    if( self.usingCustomElementStyleIdentity ) return;
-
-    if( self.elementId ) {
-        self.elementStyleIdentity = self.elementId;
-    } else if( self.styleClasses ) {
+    if( self.customElementStyleIdentity ) {
+        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"@%@", self.customElementStyleIdentity]; // Prefix custom style id with @
+    }
+    else if( self.elementId ) {
+        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"#%@", self.elementId]; // Prefix element id with #
+    }
+    else if( self.styleClasses ) {
         NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
             return [obj1 compare:obj2];
         }];
@@ -121,60 +140,80 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         [str appendString:[styleClasses componentsJoinedByString:@","]];
         [str appendString:@"]"];
         self.elementStyleIdentity = [str copy];
-    } else {
+    }
+    else {
         self.elementStyleIdentity = NSStringFromClass(self.canonicalType);
     }
 }
 
-+ (void) buildElementStyleIdentityPath:(NSMutableString*)identityPath element:(ISSUIElementDetails*)element ancestorUsesCustomElementStyleIdentity:(BOOL*)ancestorUsesCustomElementStyleIdentity {
+- (void) updateElementStyleIdentityPath {
     // Update style identity of element, if needed
-    if( !element.elementStyleIdentity ) {
-        [element updateElementStyleIdentity];
-    }
+    [self elementStyleIdentity];
+    
+    if( self.elementId || self.customElementStyleIdentity ) return; // If element uses element Id, or custom style id, elementStyleIdentityPath will have been set by call above, and will only contain the element Id itself
 
-    if( element.parentElement && !element.usingCustomElementStyleIdentity ) {
-        [self buildElementStyleIdentityPath:identityPath element:[[InterfaCSS interfaCSS] detailsForUIElement:element.parentElement] ancestorUsesCustomElementStyleIdentity:ancestorUsesCustomElementStyleIdentity];
-    }
-    if( identityPath.length ) [identityPath appendString:@" "];
-
-    if( element.usingCustomElementStyleIdentity ) {
-        [identityPath appendString:element.elementStyleIdentityPath];
-        *ancestorUsesCustomElementStyleIdentity = YES;
-    } else {
-        [identityPath appendString:element.elementStyleIdentity];
-    }
+    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self.parentElement];
+    NSString* parentStyleIdentityPath = parentDetails.elementStyleIdentityPath;
+    // Check if an ancestor has an element id (i.e. style identity path will contain #someParentElementId) - this information will be used to determine if styles can be cacheable or not
+    self.ancestorHasElementId = [parentStyleIdentityPath hasPrefix:@"#"] || [parentStyleIdentityPath rangeOfString:@" #"].location != NSNotFound;
+    self.ancestorUsesCustomElementStyleIdentity = [parentStyleIdentityPath hasPrefix:@"@"] || [parentStyleIdentityPath rangeOfString:@" @"].location != NSNotFound;
+    
+    // Concatenate parent elementStyleIdentityPath of parent with the elementStyleIdentity of this element, separated by a space:
+    if( parentStyleIdentityPath ) self.elementStyleIdentityPath = [NSString stringWithFormat:@"%@ %@", parentDetails.elementStyleIdentityPath, self.elementStyleIdentity];
+    else self.elementStyleIdentityPath = self.elementStyleIdentity;
 }
 
 
 #pragma mark - Public interface
+
+- (void) setLayout:(ISSLayout*)layout {
+    _layout = layout;
+    
+    // Whenever layout is changed, make sure layout is executed for closest parent ISSLayoutContextView
+    UIView* layoutContextView = [self findParent:self.parentView ofClass:ISSLayoutContextView.class];
+    [layoutContextView setNeedsLayout];
+}
 
 - (BOOL) addedToViewHierarchy {
     return self.parentView.window || (self.parentView.class == UIWindow.class) || (self.view.class == UIWindow.class);
 }
 
 - (BOOL) stylesCacheable {
-    return self.usingCustomElementStyleIdentity || self.ancestorUsesCustomElementStyleIdentity || self.addedToViewHierarchy;
+    return (self.elementId != nil) || self.ancestorHasElementId
+        || (self.customElementStyleIdentity != nil)  || self.ancestorUsesCustomElementStyleIdentity
+        || self.addedToViewHierarchy;
 }
 
 - (BOOL) stylingAppliedAndDisabled {
     return self.stylingDisabled && self.stylingApplied;
 }
 
+- (BOOL) stylingAppliedAndStatic {
+    return self.stylingApplied && !self.stylesContainPseudoClassesOrDynamicProperties;
+}
+
 + (void) resetAllCachedData {
     [[NSNotificationCenter defaultCenter] postNotificationName:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
+}
+
+- (void) resetCachedViewHierarchyRelatedData {
+    if( !self.elementId && !self.customElementStyleIdentity ) self.elementStyleIdentityPath = nil; // Reset style identity path, but only if this element doesn't use an element id
+    self.ancestorHasElementId = NO;
+    self.ancestorUsesCustomElementStyleIdentity = NO;
+    _closestViewController = nil;
 }
 
 - (void) resetCachedData {
     // Identity and structure:
     _canonicalType = nil;
-    if( !self.usingCustomElementStyleIdentity ) self.elementStyleIdentityPath = nil;
-    self.ancestorUsesCustomElementStyleIdentity = NO;
-    _closestViewController = nil;
+    
+    [self resetCachedViewHierarchyRelatedData];
+
     _validNestedElements = nil;
 
     // Cached styles:
     self.stylingApplied = NO;
-    self.cachedDeclarations = nil;
+    self.cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
 }
 
 - (UIView*) view {
@@ -185,11 +224,12 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     if( !_parentElement ) {
         if( [_uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)_uiElement;
+            _parentView = view.superview; // Update cached parentView reference
             UIViewController* closestViewController = [self.class closestViewController:view];
             if( closestViewController.view == view ) {
                 _parentElement = closestViewController;
             } else {
-                _parentElement = view.superview;
+                _parentElement = _parentView; // In case parent element is view - _parentElement is the same as _parentView
                 _closestViewController = closestViewController;
             }
         }
@@ -198,10 +238,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         }
     }
     return _parentElement;
-}
-
-- (UIView*) parentView {
-    return [self.parentElement isKindOfClass:UIView.class] ? self.parentElement : nil;
 }
 
 - (UIViewController*) parentViewController {
@@ -245,28 +281,22 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 }
 
 - (void) setCustomElementStyleIdentity:(NSString*)customElementStyleIdentity {
-    self.usingCustomElementStyleIdentity = customElementStyleIdentity != nil;
-    _elementStyleIdentity = _elementStyleIdentityPath = customElementStyleIdentity;
+    _customElementStyleIdentity = customElementStyleIdentity;
+    _elementStyleIdentityPath = _elementStyleIdentity = nil; // Reset style identity to force refresh
+}
+
+- (NSString*) elementStyleIdentity {
+    if( !_elementStyleIdentity ) {
+        [self updateElementStyleIdentity];
+    }
+    return _elementStyleIdentity;
 }
 
 - (NSString*) elementStyleIdentityPath {
-    NSString* path = _elementStyleIdentityPath;
-    if( !path ) {
-        // Build style identity path:
-        NSMutableString* identityPath = [NSMutableString string];
-        BOOL ancestorUsesCustomElementStyleIdentity = NO;
-        [self.class buildElementStyleIdentityPath:identityPath element:self ancestorUsesCustomElementStyleIdentity:&ancestorUsesCustomElementStyleIdentity];
-        self.ancestorUsesCustomElementStyleIdentity = ancestorUsesCustomElementStyleIdentity;
-        path = [identityPath copy];
-        if( self.parentElement && (ancestorUsesCustomElementStyleIdentity || self.parentView.window) ) {
-            _elementStyleIdentityPath = path;
-        }
+    if( !_elementStyleIdentityPath ) {
+        [self updateElementStyleIdentityPath];
     }
-    return path;
-}
-
-- (BOOL) elementStyleIdentityPathResolved {
-    return _elementStyleIdentityPath != nil;
+    return _elementStyleIdentityPath;
 }
 
 - (NSMutableDictionary*) additionalDetails {

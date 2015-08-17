@@ -72,6 +72,13 @@
 @end
 
 
+@interface CustomViewController : UIViewController
+@end
+
+@implementation CustomViewController
+@end
+
+
 
 @interface InterfaCSSTests : XCTestCase
 
@@ -275,7 +282,7 @@
     [window addSubview:root];
 
     // Call applyStylingISS and verify that values have been read from CSS
-    [root applyStylingISS];
+    [window applyStylingISS]; // Note: we need to initiate styling from window, to ensure it's marked as initialized
     ISSAssertEqualFloats(root.alpha, 0.5, @"Unexpected property value");
     ISSAssertEqualFloats(label.alpha, 0.5, @"Unexpected property value");
 
@@ -337,7 +344,6 @@
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     XCTAssertFalse(details.stylesCacheable, @"Expected styles to be NOT cacheable");
-    XCTAssertFalse(details.elementStyleIdentityPathResolved, @"Expected style identity to be NOT resolved");
     
     UIWindow* window = [[UIWindow alloc] init];
     [window addSubview:view];
@@ -352,7 +358,6 @@
     
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:view];
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperView {
@@ -364,7 +369,6 @@
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testElementStyleCachingUsingCustomStylingIdentityOnSuperViewSetLater {
@@ -378,16 +382,14 @@
     ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
     
     view.customStylingIdentityISS = @"custom";
     
     details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
     
-    XCTAssertTrue([details.elementStyleIdentityPath hasPrefix:@"custom"], @"Expected styles identity to begin with custom style identity of parent");
+    XCTAssertTrue([details.elementStyleIdentityPath hasPrefix:@"@custom"], @"Expected styles identity to begin with custom style identity of parent");
 
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
-    XCTAssertTrue(details.elementStyleIdentityPathResolved, @"Expected style identity to be resolved");
 }
 
 - (void) testLoadViewDefinitionFile {
@@ -574,6 +576,7 @@
     UIView* v4 = [ISSViewBuilder viewWithId:@"layoutElement4"];
     [view addSubview:v4];
     
+    [view applyStylingISS];
     [view setNeedsLayout];
     [view layoutIfNeeded];
     
@@ -694,6 +697,64 @@
     label.tag = 0;
     [label applyStylingISS:YES];
     XCTAssertEqualObjects(@"Monday", label.text);
+}
+
+- (void) testStyleSheetScoping {
+    UIViewController* root = [[UIViewController alloc] init];
+    UILabel* rootLabel = [ISSViewBuilder labelWithStyle:@"scopeTest"];
+    [root.view addSubview:rootLabel];
+    
+    CustomViewController* custom = [[CustomViewController alloc] init];
+    UILabel* customLabel = [ISSViewBuilder labelWithStyle:@"scopeTest"];
+    [custom.view addSubview:customLabel];
+    custom.view.elementIdISS = @"custom";
+    [root addChildViewController:custom];
+    [root.view addSubview:custom.view];
+    
+    UIViewController* leaf = [[UIViewController alloc] init];
+    UILabel* leafLabel = [ISSViewBuilder labelWithStyle:@"scopeTest"];
+    [leaf.view addSubview:leafLabel];
+    [custom addChildViewController:leaf];
+    [custom.view addSubview:leaf.view];
+    
+    
+    // Load stylesheet with a scope that limits it to only CustomViewContoller
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"scopedStyles" ofType:@"css"];
+    ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:CustomViewController.class];
+    ISSStyleSheet* stylesheet = [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path withScope:scope];
+    
+    [root.view applyStylingISS];
+    
+    ISSAssertEqualFloats(1.0, rootLabel.alpha);
+    ISSAssertEqualFloats(0.5, customLabel.alpha);
+    ISSAssertEqualFloats(1.0, leafLabel.alpha);
+    
+    // Change scope to CustomViewContoller and below
+    stylesheet.scope = [ISSStyleSheetScope scopeWithViewControllerClass:CustomViewController.class includeChildViewControllers:YES];
+    [root.view clearCachedStylesISS]; // Clear cached styles...
+    [root.view applyStylingISS]; // ...and re-apply styling
+    
+    ISSAssertEqualFloats(1.0, rootLabel.alpha);
+    ISSAssertEqualFloats(0.5, customLabel.alpha);
+    ISSAssertEqualFloats(0.5, leafLabel.alpha);
+    
+    // Clear scope
+    stylesheet.scope = nil;
+    [root.view clearCachedStylesISS]; // Clear cached styles...
+    [root.view applyStylingISS]; // ...and re-apply styling
+    
+    ISSAssertEqualFloats(0.5, rootLabel.alpha);
+    ISSAssertEqualFloats(0.5, customLabel.alpha);
+    ISSAssertEqualFloats(0.5, leafLabel.alpha);
+    
+    // Change scope to element "custom" and below
+    stylesheet.scope = [ISSStyleSheetScope scopeWithElementId:@"custom"];
+    [root.view clearCachedStylesISS]; // Clear cached styles...
+    [root.view applyStylingISS]; // ...and re-apply styling
+    
+    ISSAssertEqualFloats(1.0, rootLabel.alpha);
+    ISSAssertEqualFloats(0.5, customLabel.alpha);
+    ISSAssertEqualFloats(0.5, leafLabel.alpha);
 }
 
 @end

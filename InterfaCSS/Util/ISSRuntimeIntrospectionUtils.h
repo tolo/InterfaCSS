@@ -12,6 +12,8 @@
 
 @interface ISSRuntimeIntrospectionUtils : NSObject
 
++ (void) clearCaches;
+
 + (SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz;
 
 + (void) invokeSingleObjectArgumentSelector:(SEL)selector inObject:(id)object parameter:(id)parameter;

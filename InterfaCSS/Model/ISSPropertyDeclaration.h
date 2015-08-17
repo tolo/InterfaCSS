@@ -25,6 +25,7 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
 @property (nonatomic, readonly) NSString* unrecognizedName;
 @property (nonatomic, strong) id propertyValue;
 @property (nonatomic, copy) ISSLazyValueBlock lazyPropertyTransformationBlock;
+@property (nonatomic, readonly) BOOL dynamicValue; // Indicates weather the value of this property may be dynamic, i.e. may need to be re-evaluated every time styles are applied
 
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property nestedElementKeyPath:(NSString*)nestedElementKeyPath;
 - (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath;

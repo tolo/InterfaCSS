@@ -9,6 +9,8 @@
 
 @class ISSSelector;
 @class ISSUIElementDetails;
+@class ISSStylingContext;
+
 
 @interface ISSSelectorChain : NSObject<NSCopying>
 
@@ -23,6 +25,6 @@
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector;
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain;
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 @end

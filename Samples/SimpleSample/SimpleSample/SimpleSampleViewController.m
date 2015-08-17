@@ -50,7 +50,7 @@
     // Construct the view hierachy for this view controller using ISSViewBuilder
     self.view = [ISSViewBuilder rootViewWithStyle:@"simpleSampleMainView" andSubViews:^{
         return @[
-          self.mainTitleLabel = [ISSViewBuilder labelWithId:@"mainTitleLabel"],
+          self.mainTitleLabel = [ISSViewBuilder labelWithStyle:@"mainTitleLabel"],
           self.mainTitleButton = [ISSViewBuilder buttonWithStyle:@"mainTitleButton"],
           self.simpleSampleContentView = [ISSViewBuilder viewWithStyle:@"simpleSampleContentView" andSubViews:^{ return @[
                 self.contentTitleLabel = [ISSViewBuilder labelWithStyle:@"simpleSampleContentTitleLabel"],
@@ -67,16 +67,14 @@
     
     [self.mainButton addTarget:self action:@selector(touchedButton:event:) forControlEvents:UIControlEventAllTouchEvents];
 
-    // NOTE: Uncomment below to disable styling of cornerRadius
+    // NOTE: Uncomment below to disable styling of cornerRadius (just to test what disabling a property feels like)
     //[self.mainButton disableStylingForPropertyISS:@"cornerRadius"];
     
-    //self.mainTitleLabel.text = @"Simple Sample Main";
-    self.mainTitleLabel.tag = 123;
     [self.mainTitleButton setTitle:@"Sample button" forState:UIControlStateNormal];
     
     self.contentTitleLabel.text = @"Content Main";
     self.contentSubtitleLabel.text = @"Content Sub";
-    
+
     // Setup notification blocks to get notified when styles are applied to mainButton
     self.mainButton.willApplyStylingBlockISS = ^(NSArray* styles) {
         // Use this block to for instance override which style properties are allowed to be set at the moment.
@@ -113,12 +111,12 @@
 - (void) viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-    [self.simpleSampleContentView removeStyleClassISS:@"simpleSampleContentViewAtRest"];
+    [self.simpleSampleContentView removeStyleClassISS:@"simpleSampleContentViewAtRest" scheduleStyling:NO];
 }
 
 - (void) animateSimpleSampleContentView {
     [UIView animateWithDuration:1.0f delay:.0f usingSpringWithDamping:0.25 initialSpringVelocity:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
-        [self.simpleSampleContentView addStyleClassISS:@"simpleSampleContentViewAtRest"];
+        [self.simpleSampleContentView addStyleClassISS:@"simpleSampleContentViewAtRest" scheduleStyling:NO];
         [self.simpleSampleContentView applyStylingISS];
     } completion:nil];
 }

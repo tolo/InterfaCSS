@@ -216,3 +216,7 @@ UIView .testSpecificity2 {
     text: "Monday";
 }
 
+UILabel.scopeTest {
+    alpha: 1.0;
+}
+

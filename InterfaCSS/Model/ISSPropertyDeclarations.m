@@ -11,6 +11,9 @@
 
 #import "ISSSelectorChain.h"
 #import "ISSUIElementDetails.h"
+#import "ISSStylingContext.h"
+#import "ISSPropertyDeclaration.h"
+
 
 @implementation ISSPropertyDeclarations
 
@@ -23,25 +26,36 @@
         _properties = properties;
         for(ISSSelectorChain* chain in selectorChains) {
             if( chain.hasPseudoClassSelector ) {
-                _containsPseudoClassSelector = YES;
+                _containsPseudoClassSelector = _containsPseudoClassSelectorOrDynamicProperties = YES;
                 break;
+            }
+        }
+        if( !_containsPseudoClassSelectorOrDynamicProperties ) {
+            for(ISSPropertyDeclaration* decl in properties) {
+                if( decl.dynamicValue ) {
+                    _containsPseudoClassSelectorOrDynamicProperties = YES;
+                    break;
+                }
             }
         }
     }
     return self;
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     for(ISSSelectorChain* selectorChain in _selectorChains) {
-        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) return YES;
+        if ( [selectorChain matchesElement:elementDetails stylingContext:stylingContext] ) return YES;
     }
     return NO;
 }
 
-- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
-    NSMutableArray* matchingChains = [NSMutableArray array];
+- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
+    NSMutableArray* matchingChains = self.containsPseudoClassSelector ? [NSMutableArray array] : nil;
     for(ISSSelectorChain* selectorChain in _selectorChains) {
-        if ( [selectorChain matchesElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses] ) {
+        if ( [selectorChain matchesElement:elementDetails stylingContext:stylingContext] ) {
+            if( !self.containsPseudoClassSelector ) {
+                return self; // If this style sheet declarations block doesn't contain any pseudo classes - return the declarations object itself directly when first selector chain match is found (since no additional matching needs to be done)
+            }
             [matchingChains addObject:selectorChain];
         }
     }

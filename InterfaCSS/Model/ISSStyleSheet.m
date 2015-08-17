@@ -14,6 +14,73 @@
 #import "NSObject+ISSLogSupport.h"
 #import "ISSUIElementDetails.h"
 #import "NSMutableArray+ISSAdditions.h"
+#import "InterfaCSS.h"
+#import "ISSStylingContext.h"
+
+
+@implementation ISSStyleSheetScope {
+    ISSStyleSheetScopeMatcher _matcher;
+}
+
++ (ISSStyleSheetScope*) scopeWithElementId:(NSString*)elementId {
+    return [[self alloc] initWithMatcher:^(ISSUIElementDetails* elementDetails) {
+        if( [elementDetails.elementId isEqualToString:elementId] ) return YES;
+        else {
+            return (BOOL)([[InterfaCSS sharedInstance] superviewWithElementId:elementId inView:elementDetails.uiElement] != nil);
+        }
+    }];
+}
+
++ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass {
+    return [self scopeWithViewControllerClass:viewControllerClass includeChildViewControllers:NO];
+}
+
++ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass includeChildViewControllers:(BOOL)includeChildViewControllers {
+    return [[self alloc] initWithMatcher:^(ISSUIElementDetails* elementDetails) {
+        UIViewController* parent = elementDetails.closestViewController;
+        while(parent != nil) {
+            if( [parent isKindOfClass:viewControllerClass] ) return YES;
+            else if( !includeChildViewControllers ) return NO;
+            parent = parent.parentViewController;
+        }
+        return NO;
+    }];
+}
+
++ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses {
+    return [self scopeWithViewControllerClasses:viewControllerClasses includeChildViewControllers:NO];
+}
+
++ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses includeChildViewControllers:(BOOL)includeChildViewControllers {
+    return [[self alloc] initWithMatcher:^(ISSUIElementDetails* elementDetails) {
+        UIViewController* parent = elementDetails.closestViewController;
+        while(parent != nil) {
+            for(Class clazz in viewControllerClasses) {
+                if( [parent isKindOfClass:clazz] ) return YES;
+            }
+            if( !includeChildViewControllers ) return NO;
+            parent = parent.parentViewController;
+        }
+        return NO;
+    }];
+}
+
++ (ISSStyleSheetScope*) scopeWithMatcher:(ISSStyleSheetScopeMatcher)matcher {
+    return [[self alloc] initWithMatcher:matcher ];
+}
+
+- (instancetype) initWithMatcher:(ISSStyleSheetScopeMatcher)matcher {
+    if( self = [super init] ) {
+        _matcher = matcher;
+    }
+    return self;
+}
+
+- (BOOL) elementInScope:(ISSUIElementDetails*)elementDetails {
+    return _matcher(elementDetails);
+}
+
+@end
 
 
 @implementation ISSStyleSheet {
@@ -25,39 +92,34 @@
 }
 
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable {
+        return [self initWithStyleSheetURL:styleSheetURL declarations:declarations refreshable:refreshable scope:nil];
+}
+
+- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable scope:(ISSStyleSheetScope*)scope {
    if ( (self = [super init]) ) {
        _styleSheetURL = styleSheetURL;
        _declarations = declarations;
        _refreshable = refreshable;
        _active = YES;
+       _scope = scope;
    }
    return self;
 }
 
-- (NSArray*) stylesForElement:(ISSUIElementDetails*)elementDetails {
-    NSMutableArray* styles = [[NSMutableArray alloc] init];
-
-    ISSLogTrace(@"Getting styles for %@:", elementDetails.uiElement);
-
-    for(ISSPropertyDeclarations* declarations in _declarations) {
-        if ( [declarations matchesElement:elementDetails ignoringPseudoClasses:NO] ) {
-            ISSLogTrace(@"Matching declarations: %@", declarations);
-            [styles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
-        }
-    }
-
-    return styles;
-}
-
-- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     ISSLogTrace(@"Getting matching declarations for %@:", elementDetails.uiElement);
 
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
-    for(ISSPropertyDeclarations* declarations in _declarations) {
-        ISSPropertyDeclarations* matchingDeclarationBlock = [declarations propertyDeclarationsMatchingElement:elementDetails ignoringPseudoClasses:ignorePseudoClasses];
-        if( matchingDeclarationBlock ) {
-            ISSLogTrace(@"Matching declarations: %@", matchingDeclarationBlock);
-            [matchingDeclarations addObject:matchingDeclarationBlock];
+
+    if( self.scope && ![self.scope elementInScope:elementDetails] ) {
+        ISSLogTrace(@"Element not in scope - skipping: %@", elementDetails.uiElement);
+    } else {
+        for (ISSPropertyDeclarations* declarations in _declarations) {
+            ISSPropertyDeclarations* matchingDeclarationBlock = [declarations propertyDeclarationsMatchingElement:elementDetails stylingContext:stylingContext];
+            if ( matchingDeclarationBlock ) {
+                ISSLogTrace(@"Matching declarations: %@", matchingDeclarationBlock);
+                [matchingDeclarations addObject:matchingDeclarationBlock];
+            }
         }
     }
     return matchingDeclarations;

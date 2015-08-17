@@ -34,6 +34,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @property (nonatomic, weak, readonly) UIView* parentView; // parentElement, if instance of UIView, otherwise nil
 
 @property (nonatomic, weak, readonly) UIViewController* parentViewController; // Direct parent view controller of element, i.e. parentElement, if instance of UIViewController, otherwise nil
+
 @property (nonatomic, weak, readonly) UIViewController* closestViewController; // Closest ancestor view controller
 
 @property (nonatomic, readonly) NSArray* childElementsForElement;
@@ -47,17 +48,21 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @property (nonatomic, readonly) BOOL stylesCacheable;
 
 @property (nonatomic, strong, readonly) NSString* elementStyleIdentityPath;
-@property (nonatomic, readonly) BOOL elementStyleIdentityPathResolved;
+@property (nonatomic, readonly) BOOL ancestorHasElementId;
+@property (nonatomic, strong) NSString* customElementStyleIdentity;
+@property (nonatomic, readonly) BOOL ancestorUsesCustomElementStyleIdentity;
+
 @property (nonatomic, weak) NSMutableArray* cachedDeclarations; // Optimization for quick access to cached declarations
-@property (nonatomic) BOOL usingCustomElementStyleIdentity;
-@property (nonatomic) BOOL ancestorUsesCustomElementStyleIdentity;
+@property (nonatomic) BOOL stylesFullyResolved;
 
 @property (nonatomic, weak) Class canonicalType;
 @property (nonatomic, strong) NSSet* styleClasses;
 
-@property (nonatomic) BOOL stylingApplied;
+@property (nonatomic) BOOL stylingApplied; // Indicates if styles have been applied to element
 @property (nonatomic) BOOL stylingDisabled;
 @property (nonatomic, readonly) BOOL stylingAppliedAndDisabled;
+@property (nonatomic) BOOL stylesContainPseudoClassesOrDynamicProperties;
+@property (nonatomic, readonly) BOOL stylingAppliedAndStatic; // If YES, Indicates that styles have been applied to element and that there are no pseudo classes
 
 @property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlock;
 @property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlock;
@@ -72,9 +77,8 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 - (id) initWithUIElement:(id)uiElement;
 
 + (void) resetAllCachedData;
+- (void) resetCachedViewHierarchyRelatedData;
 - (void) resetCachedData;
-
-- (void) setCustomElementStyleIdentity:(NSString*)identityPath;
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count;
 

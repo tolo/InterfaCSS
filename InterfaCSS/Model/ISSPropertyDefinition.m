@@ -169,6 +169,10 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
     }
 }
 
+- (BOOL) supportsDynamicValue {
+    return self.type == ISSPropertyTypeRect || self.type == ISSPropertyTypePoint; // i.e. value could be relative rect or relative point
+}
+
 - (NSComparisonResult) compareByName:(ISSPropertyDefinition*)other {
     return [self.name compare:other.name];
 }

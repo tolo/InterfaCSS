@@ -9,7 +9,9 @@
 #import "ISSLayout.h"
 
 
-@implementation ISSLayoutContextView
+@implementation ISSLayoutContextView {
+    BOOL didLayoutOnce;
+}
 
 - (void) setupSubviewDetailsWithLayouts:(NSMutableArray*)subviewsDetails andResolvedElements:(NSMutableDictionary*)resolvedElements forView:(UIView*)view {
     ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
@@ -61,22 +63,27 @@
     return unresolved;
 }
 
+- (void) didMoveToSuperview {
+    [super didMoveToSuperview];
+    if( !self.superview ) didLayoutOnce = NO;
+}
+
 - (void) layoutSubviews {
     [super layoutSubviews];
 
     ISSUIElementDetails* selfDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self];
+    
+    if( !didLayoutOnce ) { // Make sure styling is applied before proceeding (this is not just important for ISSLayout, but for the use of relative ISSRectValue objects as well)
+        [self applyStylingISS];
+        didLayoutOnce = YES;
+    }
 
     // Get top and bottom layout guides (thank you Apple)
     UIViewController* parentViewController = selfDetails.closestViewController;
     id<UILayoutSupport> topLayoutGuide = [parentViewController respondsToSelector:@selector(topLayoutGuide)] ? parentViewController.topLayoutGuide : nil;
     id<UILayoutSupport> bottomLayoutGuide = [parentViewController respondsToSelector:@selector(bottomLayoutGuide)] ? parentViewController.bottomLayoutGuide : nil;
     UIEdgeInsets layoutGuideInsets = UIEdgeInsetsMake(topLayoutGuide.length, 0, bottomLayoutGuide.length, 0);
-
-    // Make sure styling is applied before proceeding
-    if( !selfDetails.stylingApplied ) {
-        [[InterfaCSS interfaCSS] applyStyling:self];
-    }
-
+    
     // Gather up details for all views with layouts, and setup mappings of elementId to element details
     NSMutableArray* unresolvedElementDetails = [NSMutableArray array];
     NSMutableDictionary* resolvedElements = [NSMutableDictionary dictionary];

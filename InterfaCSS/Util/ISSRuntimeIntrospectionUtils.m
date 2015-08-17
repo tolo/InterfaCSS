@@ -20,6 +20,10 @@ static NSCache* propertyNamesWithClassForClassCache;
     propertyNamesWithClassForClassCache = [[NSCache alloc] init];
 }
 
++ (void) clearCaches {
+    [propertyNamesWithClassForClassCache removeAllObjects];
+}
+
 + (SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz {
     unsigned int c = 0;
     Method* methods = class_copyMethodList(object_getClass(clazz), &c);

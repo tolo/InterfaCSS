@@ -25,7 +25,10 @@
 		27DDFCAF18B0CC3C00C4A6A1 /* libInterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1714F5683B008E647E /* libInterfaCSS.a */; };
 		27DDFCB118B0E3D100C4A6A1 /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */; };
 		27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */; };
+		8A3F37741B80F3F000E988AE /* ISSStylingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A3F37721B80F3F000E988AE /* ISSStylingContext.h */; };
+		8A3F37751B80F3F000E988AE /* ISSStylingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A3F37731B80F3F000E988AE /* ISSStylingContext.m */; };
 		8AA5A3B61B7091FD00D577D4 /* libPods-InterfaCSS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */; };
+		8AD84FEC1B7E5E0200ED6570 /* scopedStyles.css in Resources */ = {isa = PBXBuildFile; fileRef = 8AD84FEB1B7E5E0200ED6570 /* scopedStyles.css */; };
 		8AEE29821B716F26006991D5 /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE29801B716F26006991D5 /* ISSNestedElementSelector.h */; };
 		8AEE29831B716F26006991D5 /* ISSNestedElementSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE29811B716F26006991D5 /* ISSNestedElementSelector.m */; };
 		CC3C70618808A0BBFDE1FC57 /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C760FC88F143ACF541BB0 /* ISSDateUtils.m */; };
@@ -135,7 +138,10 @@
 		27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetPropertyValues.css; sourceTree = "<group>"; };
 		27DDFCB218B0E3F900C4A6A1 /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
 		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		8A3F37721B80F3F000E988AE /* ISSStylingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingContext.h; sourceTree = "<group>"; };
+		8A3F37731B80F3F000E988AE /* ISSStylingContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingContext.m; sourceTree = "<group>"; };
 		8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/../build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
+		8AD84FEB1B7E5E0200ED6570 /* scopedStyles.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = scopedStyles.css; sourceTree = "<group>"; };
 		8AEE29801B716F26006991D5 /* ISSNestedElementSelector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSNestedElementSelector.h; sourceTree = "<group>"; };
 		8AEE29811B716F26006991D5 /* ISSNestedElementSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSNestedElementSelector.m; sourceTree = "<group>"; };
 		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -273,6 +279,7 @@
 				27CD793A18EA0429002FC343 /* interfaCSSTests-variables.css */,
 				27DDFCB018B0E3D100C4A6A1 /* styleSheetPropertyValues.css */,
 				CC3C8682A0ABFB4C0090E2E9 /* styleSheetWithBadData.css */,
+				8AD84FEB1B7E5E0200ED6570 /* scopedStyles.css */,
 			);
 			path = TestData;
 			sourceTree = "<group>";
@@ -317,6 +324,8 @@
 				F6EBACFF1768B0AA0053DAFA /* ISSSelectorChain.m */,
 				F6EBAD001768B0AA0053DAFA /* ISSStyleSheet.h */,
 				F6EBAD011768B0AA0053DAFA /* ISSStyleSheet.m */,
+				8A3F37721B80F3F000E988AE /* ISSStylingContext.h */,
+				8A3F37731B80F3F000E988AE /* ISSStylingContext.m */,
 				CC3C8D883AC61B4BA8763604 /* ISSUIElementDetails.h */,
 				CC3C83FFBC650611AEFB8E9A /* ISSUIElementDetails.m */,
 				CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */,
@@ -472,6 +481,7 @@
 				CC3C86F76E4550E615FE1D55 /* ISSRectValue.h in Headers */,
 				CC3C8BB140D67BE4C31BE8C3 /* ISSPointValue.h in Headers */,
 				CC3C839E88395CA0DFE8FAF0 /* ISSRootView.h in Headers */,
+				8A3F37741B80F3F000E988AE /* ISSStylingContext.h in Headers */,
 				F6EBAD1D1768B0AA0053DAFA /* UIView+InterfaCSS.h in Headers */,
 				F6EBAD211768B0AA0053DAFA /* NSObject+ISSLogSupport.h in Headers */,
 				F6EBAD67176B4A240053DAFA /* ISSParcoaStyleSheetParser.h in Headers */,
@@ -570,6 +580,7 @@
 			files = (
 				2785E26618A8DCBB001D1104 /* InfoPlist.strings in Resources */,
 				270AD5EE19F79E1F004A649B /* viewDefinitionTest.xml in Resources */,
+				8AD84FEC1B7E5E0200ED6570 /* scopedStyles.css in Resources */,
 				27CD793918E9FF24002FC343 /* interfaCSSTests.css in Resources */,
 				27DDFCB318B0E3F900C4A6A1 /* styleSheetStructure.css in Resources */,
 				27CD793B18EA0429002FC343 /* interfaCSSTests-variables.css in Resources */,
@@ -653,6 +664,7 @@
 				CC3C87A92A71F2E634A7C75F /* ISSRootView.m in Sources */,
 				CC3C89A1198640F73C58E683 /* ISSLazyValue.m in Sources */,
 				CC3C874ED81C2E3E03B301B1 /* Parcoa+ISSAdditions.m in Sources */,
+				8A3F37751B80F3F000E988AE /* ISSStylingContext.m in Sources */,
 				CC3C830B6FC858F906CC2223 /* NSDictionary+ISSDictionaryAdditions.m in Sources */,
 				CC3C89672A2F3A3E2ADD6F7C /* ISSPseudoClass.m in Sources */,
 				CC3C8E0E5C8D5C97C3A91E54 /* ISSUIElementDetails.m in Sources */,

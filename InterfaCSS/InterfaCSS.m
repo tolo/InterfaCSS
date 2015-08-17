@@ -19,6 +19,7 @@
 #import "NSMutableArray+ISSAdditions.h"
 #import "ISSPropertyRegistry.h"
 #import "ISSRuntimeIntrospectionUtils.h"
+#import "ISSStylingContext.h"
 
 
 typedef id (^ISSViewHierarchyVisitorBlock)(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop);
@@ -75,6 +76,27 @@ static InterfaCSS* singleton = nil;
     return singleton;
 }
 
+static void setupForInitialState(InterfaCSS* interfaCSS) {
+    interfaCSS->_preventOverwriteOfAttributedTextAttributes = NO;
+    interfaCSS->_useLenientSelectorParsing = NO;
+    interfaCSS->_stylesheetAutoRefreshInterval = 5.0;
+    interfaCSS->_processRefreshableStylesheetsLast = YES;
+    interfaCSS->_allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
+    interfaCSS->_useSelectorSpecificity = NO;
+
+    interfaCSS->_parser = nil;
+
+    interfaCSS->_propertyRegistry = [[ISSPropertyRegistry alloc] init];
+
+    interfaCSS->_styleSheets = [[NSMutableArray alloc] init];
+    interfaCSS->_styleSheetsVariables = [[NSMutableDictionary alloc] init];
+
+    interfaCSS->_cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
+    interfaCSS->_prototypes = [[NSMutableDictionary alloc] init];
+
+    interfaCSS->_initializedWindows = [NSMapTable weakToStrongObjectsMapTable];
+}
+
 + (void) clearResetAndUnload {
     [singleton clearAllCachedStyles];
     
@@ -87,27 +109,6 @@ static InterfaCSS* singleton = nil;
     @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, use +[InterfaCSS interfaCSS] instead!" userInfo:nil]);
 }
 
-static void setupForInitialState(InterfaCSS* interfaCSS) {
-    interfaCSS->_preventOverwriteOfAttributedTextAttributes = NO;
-    interfaCSS->_useLenientSelectorParsing = NO;
-    interfaCSS->_stylesheetAutoRefreshInterval = 5.0;
-    interfaCSS->_processRefreshableStylesheetsLast = YES;
-    interfaCSS->_allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
-    interfaCSS->_useSelectorSpecificity = NO;
-    
-    interfaCSS->_parser = nil;
-    
-    interfaCSS->_propertyRegistry = [[ISSPropertyRegistry alloc] init];
-    
-    interfaCSS->_styleSheets = [[NSMutableArray alloc] init];
-    interfaCSS->_styleSheetsVariables = [[NSMutableDictionary alloc] init];
-    
-    interfaCSS->_cachedStyleDeclarationsForElements = [NSMapTable weakToStrongObjectsMapTable];
-    interfaCSS->_prototypes = [[NSMutableDictionary alloc] init];
-    
-    interfaCSS->_initializedWindows = [NSMapTable weakToStrongObjectsMapTable];
-}
-
 - (id) initInternal {
     if( (self = [super init]) ) {
         setupForInitialState(self);
@@ -118,7 +119,6 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeKeyNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeVisibleNotification object:nil];
         
-
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     }
     return self;
@@ -195,12 +195,13 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     return _parser;
 }
 
-- (ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFile {
+- (ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFile withScope:(ISSStyleSheetScope*)scope {
     ISSStyleSheet* styleSheet = nil;
 
     for(ISSStyleSheet* existingStyleSheet in self.styleSheets) {
         if( [existingStyleSheet.styleSheetURL isEqual:styleSheetFile] ) {
             ISSLogDebug(@"Stylesheet %@ already loaded", styleSheetFile);
+            if( scope ) existingStyleSheet.scope = scope;
             return existingStyleSheet;
         }
     }
@@ -214,10 +215,10 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         ISSLogDebug(@"Loaded stylesheet '%@' in %g seconds", [styleSheetFile lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
 
         if( declarations ) {
-            styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile declarations:declarations];
+            styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile declarations:declarations refreshable:NO scope:scope];
             [self.styleSheets addObject:styleSheet];
 
-            [self refreshStyling];
+            [self refreshStylingForStyleSheet:styleSheet];
         }
     } else {
         ISSLogWarning(@"Error loading stylesheet data from '%@' - %@", styleSheetFile, error);
@@ -233,7 +234,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     // First - get cached declarations stored using weak reference on ISSUIElementDetails object
     NSMutableArray* cachedDeclarations = elementDetails.cachedDeclarations;
 
-    // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes )
+    // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes)
     // This makes it possible to reuse identical style information in sibling elements for instance.
     if( !cachedDeclarations ) {
         cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
@@ -243,30 +244,40 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     if ( !cachedDeclarations ) {
         ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentityPath);
 
-        elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been clear, to make sure element is re-styled
+        elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been cleared, to make sure element is re-styled
 
         // Otherwise - build styles
         cachedDeclarations = [[NSMutableArray alloc] init];
-
+        
+        // Perform full stylesheet scan to get matching style classes, but ignore pseudo classes at this stage
+        ISSStylingContext* stylingContext = [ISSStylingContext contextIgnoringPseudoClasses];
         for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
-            // Find all matching (or potentially matching) style declarations
-            NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:YES];
+            // Find all matching (or potentially matching, i.e. pseudo class) style declarations
+            NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails stylingContext:stylingContext];
             if ( styleSheetDeclarations ) {
                 [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
             }
         }
         
+        if( stylingContext.containsPartiallyMatchedDeclarations ) ISSLogTrace(@"Found %d matching declarations, and at least one partially matching declaration, for '%@'.", cachedDeclarations.count, elementDetails.elementStyleIdentityPath);
+        else ISSLogTrace(@"Found %d matching declarations for '%@'", cachedDeclarations.count, elementDetails.elementStyleIdentityPath);
+        
+        // If selector specificity is enabled...
         if( self.useSelectorSpecificity ) {
-            // Sort declarations on specificity
+            // ...sort declarations on specificity
             [cachedDeclarations sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(ISSPropertyDeclarations* ruleset1, ISSPropertyDeclarations* ruleset2) {
                 if ( ruleset1.specificity > ruleset2.specificity ) return NSOrderedDescending;
                 if ( ruleset1.specificity < ruleset2.specificity ) return NSOrderedAscending;
                 return NSOrderedSame;
             }];
         }
-
-        // Only add declarations to cache if styles are cacheable for element (i.e. added to the view hierarchy or using custom styling identity)
-        if( elementDetails.stylesCacheable ) {
+        
+        // If there are no style declarations that only partially matches the element - consider the styles fully resolved for the element
+        elementDetails.stylesFullyResolved = !stylingContext.containsPartiallyMatchedDeclarations;
+        
+        // Only add declarations to cache if styles are cacheable for element (i.e. either added to window, or part of a view hierachy that has an root element with an element Id), or,
+        // if there were no styles that would match if the element was placed under a different parent (i.e. partial matches)
+        if( elementDetails.stylesCacheable || elementDetails.stylesFullyResolved ) {
             [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentityPath];
             elementDetails.cachedDeclarations = cachedDeclarations;
         } else {
@@ -276,27 +287,30 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         ISSLogTrace(@"Cached declarations exists for '%@'", elementDetails.elementStyleIdentityPath);
     }
 
-    if( !force && elementDetails.stylingApplied ) {
+    if( !force && elementDetails.stylingAppliedAndStatic ) { // Current styling information has already been applied, and declarations contain no pseudo classes
         ISSLogTrace(@"Styles aleady applied for '%@'", elementDetails.elementStyleIdentityPath);
-        return nil; // Current styling information has already been applied
-    } else {
+        return nil;
+    } else { // Styling information has not been applied, or declarations contains pseudo classes (in which case we need to re-evaluate the styles every time styling is initiated), or is forced
         ISSLogTrace(@"Processing style declarations for '%@'", elementDetails.elementStyleIdentityPath);
-
+        
         // Process declarations to see which styles currently match
-        BOOL hasPseudoClass = NO;
+        BOOL hasPseudoClassOrDynamicProperty = NO;
+        ISSStylingContext* stylingContext = [[ISSStylingContext alloc] init];
         NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
         for (ISSPropertyDeclarations* declarations in cachedDeclarations) {
             // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
-            if ( !declarations.containsPseudoClassSelector || [declarations matchesElement:elementDetails ignoringPseudoClasses:NO] ) {
+            if ( !declarations.containsPseudoClassSelector || [declarations matchesElement:elementDetails stylingContext:stylingContext] ) {
                 [viewStyles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
             }
 
-            hasPseudoClass = hasPseudoClass || declarations.containsPseudoClassSelector;
+            hasPseudoClassOrDynamicProperty = hasPseudoClassOrDynamicProperty || declarations.containsPseudoClassSelectorOrDynamicProperties;
         }
+        elementDetails.stylesContainPseudoClassesOrDynamicProperties = hasPseudoClassOrDynamicProperty; // Record in elementDetails if declarations contain pseudo classes or dynamic properties
 
-        // Set 'stylingApplied' flag only if there are no pseudo classes in declarations, in which case declarations need to be evaluated every time
-        if( !hasPseudoClass && elementDetails.stylesCacheable ) {
-            elementDetails.stylingApplied = YES; // TODO: Consider using additional flag for handling the case with pseudo classes...
+        // Set 'stylingApplied' flag to indicate that styles have been fully applied, but only if element is part of a defined view
+        // hierarchy (i.e. either added to window, or part of a view hierachy that has an root element with an element Id)
+        if( elementDetails.stylesCacheable || elementDetails.stylesFullyResolved ) {
+            elementDetails.stylingApplied = YES;
         } else {
             ISSLogTrace(@"Cannot mark element '%@' as styled", elementDetails.elementStyleIdentityPath);
         }
@@ -351,21 +365,42 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 #pragma mark - Styling - Caching
 
 - (void) clearCachedStylesForUIElement:(id)uiElement {
+    [self clearCachedStylesForUIElement:uiElement includeSubViews:YES];
+}
+
+- (void) clearCachedStylesForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:NO];
+}
+
+- (void) clearCachedStylesIfNeededForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:YES];
 }
 
 - (void) clearCachedStylesForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedStylesOnlyIfNeeded:NO];
+}
+
+- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
     if( !uiElementDetails ) return;
 
-    ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails.elementStyleIdentityPath);
+    // If styles information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
+    if( clearCachedStylesOnlyIfNeeded && !uiElementDetails.stylesFullyResolved ) {
+        ISSLogTrace(@"Partially clearing cached information for '%@'", uiElementDetails);
+        [uiElementDetails resetCachedViewHierarchyRelatedData]; // ...only reset information directly related to the position of the element in the view hierarchy
+    } else {
+        ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails);
+        [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
+        [uiElementDetails resetCachedData];
+    }
 
-    [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
-    [uiElementDetails resetCachedData];
-
-    UIView* view = uiElementDetails.view;
-    for(UIView* subView in view.subviews) {
-        [self clearCachedStylesForUIElement:subView];
+    if( includeSubViews ) {
+        NSArray* subViews = uiElementDetails.childElementsForElement;
+        for (UIView* subView in subViews) {
+            ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView create:NO];
+            [self clearCachedInformationForUIElementDetails:subViewDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
+        }
     }
 }
 
@@ -389,7 +424,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) initViewHierarchyForWindow:(UIWindow*)window {
     if( window && ![self.initializedWindows objectForKey:window] ) {
         [self.initializedWindows setObject:@(YES) forKey:window];
-        [self applyStyling:window]; // includeSubViews:YES force:YES];
+        [self scheduleApplyStyling:window animated:NO]; // Delay styling a bit, since deviceOrientationChanged will probably be called directly after this
     }
 }
 
@@ -399,12 +434,12 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
     if( !uiElement ) return;
-
-    ISSUIElementDetailsInterfaCSS* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
+    
+    ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement]; // Create details if not found, to ensure stylingScheduled is set correctly
     if( uiElementDetails.stylingAppliedAndDisabled || uiElementDetails.stylingScheduled ) return;
     
     if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
-        [self applyStyling:uiElement includeSubViews:YES force:YES];
+        [self applyStyling:uiElement includeSubViews:YES];
     } else {
         uiElementDetails.stylingScheduled = YES; // Flag reset in [applyStyling:includeSubViews:force:]
 
@@ -450,24 +485,12 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 // Main styling method (element details version)
 - (void) applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     if( !uiElementDetails ) return;
-
-    // If styling is disabled for element - abort styling of whole sub tre, but not if force is YES
+    
+    // If styling is disabled for element (but has been displayed once) - abort styling of whole sub tre
     if( uiElementDetails.stylingAppliedAndDisabled ) {
         ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
         return;
     }
-
-    // Make sure view hierarchy is traversed once, before proceeding with styling
-    if( includeSubViews ) {
-        [self initViewHierarchyForView:uiElementDetails.view];
-    }
-
-    // If styling has already been applied (possibly as a result of calling initViewHierarchyForView), we don't need to do it again (unless forcing)
-    if( uiElementDetails.stylingApplied && !force ) {
-        return;
-    }
-
-    uiElementDetails.stylingScheduled = NO;
 
     if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
         @try {
@@ -485,15 +508,16 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
 }
 
-// Internal styling method - should only be called by -[applyStyling:includeSubViews:].
+// Internal styling method ("inner") - should only be called by -[doApplyStylingInternal:includeSubViews:force:].
 - (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
 
     // Reset cached styles if superview has changed (but not if using custom styling identity)
     UIView* view = uiElementDetails.view;
-    if( view && view.superview != uiElementDetails.parentView && !uiElementDetails.usingCustomElementStyleIdentity ) {
-        ISSLogTrace(@"Superview of %@ has changed - resetting cached styles", view);
-        [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    if( view && view.superview != uiElementDetails.parentView ) {
+        ISSLogTrace(@"Superview of %@ has changed - resetting cached view hierarchy related information", view);
+        // Clear cached styles - but only if needed (i.e. not already fully resolved)
+        [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedStylesOnlyIfNeeded:YES];
         uiElementDetails.parentElement = nil; // Reset parent element to make sure it's re-evaluated
     }
 
@@ -587,6 +611,19 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 
+#pragma mark - Element ID
+
+- (void) setElementId:(NSString*)elementId forUIElement:(id)uiElement {
+    ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
+    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    uiElementDetails.elementId = elementId;
+}
+
+- (NSString*) elementIdForUIElement:(id)uiElement {
+    return [self detailsForUIElement:uiElement].elementId;
+}
+
+
 #pragma mark - Additional styling control
 
 - (void) setWillApplyStylingBlock:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock forUIElement:(id)uiElement {
@@ -608,11 +645,11 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     [self clearCachedStylesForUIElementDetails:uiElementDetails];
-    [uiElementDetails setCustomElementStyleIdentity:customStylingIdentity];
+    uiElementDetails.customElementStyleIdentity = customStylingIdentity;
 }
 
 - (NSString*) customStylingIdentityForUIElement:(id)uiElement {
-    return [self detailsForUIElement:uiElement].elementStyleIdentityPath;
+    return [self detailsForUIElement:uiElement].customElementStyleIdentity;
 }
 
 - (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
@@ -642,27 +679,54 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     return ![uiElementDetails hasDisabledProperty:property];
 }
 
-- (id) visitViewHierarchyFromView:(UIView*)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
+- (id) visitViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
     BOOL stop = NO;
     return [self visitViewHierarchyFromView:view visitorBlock:visitorBlock stop:&stop];
 }
 
-- (id) visitViewHierarchyFromView:(UIView*)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
+- (id) visitViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
     ISSUIElementDetails* details = [self detailsForUIElement:view create:NO];
     id result = visitorBlock(view, details, stop);
     if( *stop ) return result;
 
     // Drill down
-    for(UIView* subview in view.subviews) {
+    for(UIView* subview in details.childElementsForElement) {
         result = [self visitViewHierarchyFromView:subview visitorBlock:visitorBlock stop:stop];
         if( *stop ) return result;
     }
     return nil;
 }
 
-- (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view {
+- (id) visitReversedViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
+    BOOL stop = NO;
+    return [self visitReversedViewHierarchyFromView:view visitorBlock:visitorBlock stop:&stop];
+}
+
+- (id) visitReversedViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
+    if( view == nil ) return nil;
+    
+    ISSUIElementDetails* details = [self detailsForUIElement:view create:NO];
+
+    id result = visitorBlock(view, details, stop);
+    if( *stop ) return result;
+
+    // Move up
+    return [self visitReversedViewHierarchyFromView:details.parentElement visitorBlock:visitorBlock stop:stop];
+}
+
+- (id) subviewWithElementId:(NSString*)elementId inView:(id)view {
     return [self visitViewHierarchyFromView:view visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
-        if( [elementDetails.elementId isEqualToString:elementId] ) {
+        if( viewObject != view && [elementDetails.elementId isEqualToString:elementId] ) {
+            *stop = YES;
+            return viewObject;
+        }
+        return nil;
+    }];
+}
+
+- (id) superviewWithElementId:(NSString*)elementId inView:(id)view {
+    return [self visitReversedViewHierarchyFromView:view visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
+        if( viewObject != view && [elementDetails.elementId isEqualToString:elementId] ) {
             *stop = YES;
             return viewObject;
         }
@@ -728,13 +792,36 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
 }
 
+- (ISSUIElementDetails*) firstChildElementMatchingScope:(ISSStyleSheetScope*)scope inElement:(ISSUIElementDetails*)elementDetails {
+    if( [scope elementInScope:elementDetails] ) return elementDetails;
+    
+    NSArray* subViews = elementDetails.childElementsForElement;
+    for (UIView* subView in subViews) {
+        ISSUIElementDetails* v = [self firstChildElementMatchingScope:scope inElement:[self detailsForUIElement:subView]];
+        if( v ) return v;
+    }
+    return nil;
+}
+
+- (ISSUIElementDetails*) firstElementMatchingScope:(ISSStyleSheetScope*)scope {
+    for(UIWindow* window in self.initializedWindows.keyEnumerator) {
+        ISSUIElementDetails* v = [self firstChildElementMatchingScope:scope inElement:[self detailsForUIElement:window]];
+        if( v ) return v;
+    }
+    return nil;
+}
+
 
 #pragma mark - Stylesheets
 
 - (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName {
+    return [self loadStyleSheetFromMainBundleFile:styleSheetFileName withScope:nil];
+}
+
+- (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(ISSStyleSheetScope*)scope {
     NSURL* url = [[NSBundle mainBundle] URLForResource:styleSheetFileName withExtension:nil];
     if( url ) {
-        return [self loadStyleSheetFromFileURL:url];
+        return [self loadStyleSheetFromFileURL:url withScope:scope];
     } else {
         ISSLogWarning(@"Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName);
         return nil;
@@ -742,8 +829,12 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath {
+    return [self loadStyleSheetFromFile:styleSheetFilePath withScope:nil];
+}
+
+- (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope {
     if( [[NSFileManager defaultManager] fileExistsAtPath:styleSheetFilePath] ) {
-        return [self loadStyleSheetFromFileURL:[NSURL fileURLWithPath:styleSheetFilePath]];
+        return [self loadStyleSheetFromFileURL:[NSURL fileURLWithPath:styleSheetFilePath] withScope:scope];
     } else {
         ISSLogWarning(@"Unable to load stylesheet '%@' - file not found!", styleSheetFilePath);
         return nil;
@@ -751,7 +842,11 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetURL {
-    ISSStyleSheet* styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetURL declarations:nil refreshable:YES];
+    return [self loadRefreshableStyleSheetFromURL:styleSheetURL withScope:nil];
+}
+
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetURL withScope:(ISSStyleSheetScope*)scope {
+    ISSStyleSheet* styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetURL declarations:nil refreshable:YES scope:scope];
     [self.styleSheets addObject:styleSheet];
     [self updateRefreshableStyleSheet:styleSheet];
     [self enableAutoRefreshTimer];
@@ -760,7 +855,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
     [self.styleSheets removeObject:styleSheet];
-    if( refreshStyling ) [self refreshStyling];
+    if( refreshStyling ) [self refreshStylingForStyleSheet:styleSheet];
     else [self clearAllCachedStyles];
 }
 
@@ -798,9 +893,22 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
 }
 
+- (void) refreshStylingForStyleSheet:(ISSStyleSheet*)styleSheet {
+    if( styleSheet.scope ) [self refreshStylingForScope:styleSheet.scope];
+    else [self refreshStyling];
+}
+
+- (void) refreshStylingForScope:(ISSStyleSheetScope*)scope {
+    ISSUIElementDetails* firstElementMatchingScope = [self firstElementMatchingScope:scope];
+    if( firstElementMatchingScope ) {
+        [self clearCachedStylesForUIElement:firstElementMatchingScope];
+        [self applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)firstElementMatchingScope includeSubViews:YES force:NO];
+    }
+}
+
 - (void) updateRefreshableStyleSheet:(ISSStyleSheet*)styleSheet {
     [styleSheet refresh:^{
-        [self refreshStyling];
+        [self refreshStylingForStyleSheet:styleSheet];
     } parse:self.parser];
 }
 
@@ -836,8 +944,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;
+    ISSStylingContext* stylingContext = [[ISSStylingContext alloc] init];
     for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
-        NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails ignoringPseudoClasses:NO] mutableCopy];
+        NSMutableArray* matchingDeclarations = [[styleSheet declarationsMatchingElement:elementDetails stylingContext:stylingContext] mutableCopy];
         if( matchingDeclarations.count ) {
             [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {
                 NSMutableArray* chainsCopy = [((ISSPropertyDeclarations*)declarationObj).selectorChains mutableCopy];

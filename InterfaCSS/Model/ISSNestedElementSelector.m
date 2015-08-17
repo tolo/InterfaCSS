@@ -1,9 +1,10 @@
 //
 //  ISSNestedElementSelector.m
-//  InterfaCSS
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by PMB on 2015-08-05.
-//  Copyright (c) 2015 Leafnode AB. All rights reserved.
+//  Created by Tobias Löfstrand on 2015-08-05.
+//  Copyright (c) 2015 Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
 #import "ISSNestedElementSelector.h"
@@ -23,7 +24,7 @@
     return self.elementId;
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     ISSUIElementDetails* parentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:elementDetails.parentElement];
     NSString* validParentKeyPath = parentDetails.validNestedElements[self.nestedElementKeyPath];
     

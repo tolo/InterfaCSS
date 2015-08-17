@@ -8,6 +8,8 @@
 //
 
 @class ISSUIElementDetails;
+@class ISSStylingContext;
+
 
 /**
  * Represents a declaration block (or rule set) in a stylesheet.
@@ -18,12 +20,13 @@
 @property (nonatomic, readonly) NSArray* properties;
 @property (nonatomic, readonly) NSString* displayDescription;
 @property (nonatomic, readonly) BOOL containsPseudoClassSelector;
+@property (nonatomic, readonly) BOOL containsPseudoClassSelectorOrDynamicProperties;
 @property (nonatomic, readonly) NSUInteger specificity;
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties;
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
-- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 - (NSString*) displayDescription:(BOOL)withProperties;
 

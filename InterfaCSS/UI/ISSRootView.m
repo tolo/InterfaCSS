@@ -12,6 +12,7 @@
 #import "UIView+InterfaCSS.h"
 #import "ISSRectValue.h"
 
+
 @implementation ISSRootView
 
 - (void) commonInitWithView:(UIView*)view {
@@ -49,22 +50,20 @@
 }
 
 - (void) setFrame:(CGRect)frame {
-    BOOL force = !CGRectEqualToRect(self.frame, frame);
+    BOOL frameModified = !CGRectEqualToRect(self.frame, frame);
     [super setFrame:frame];
     _wrappedRootView.frame = self.bounds;
-    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO force:force];
+    if( frameModified ) [self scheduleApplyStylingISS]; // Note: This is only really needed if element contains relative ISSRectValue/ISSPointValue
 }
 
 - (void) didMoveToSuperview {
     [super didMoveToSuperview];
-    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
-    [self scheduleApplyStylingISS];
+    if( self.superview ) [self scheduleApplyStylingISS];
 }
 
 - (void) didMoveToWindow {
     [super didMoveToWindow];
-    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
-    [self scheduleApplyStylingISS];
+    if( self.window ) [self applyStylingISS];
 }
 
 @end

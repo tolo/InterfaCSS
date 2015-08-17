@@ -161,6 +161,11 @@
  */
 - (void) clearCachedStylesISS;
 
+/**
+ * Clears all cached styling information associated with this view and (optionally) all its subviews.
+ */
+- (void) clearCachedStylesISS:(BOOL)includeSubViews;
+
 
 /**
  * Disables styling of this view, i.e. InterfaCSS will stop applying styling information to this view and it's children, but any styles that

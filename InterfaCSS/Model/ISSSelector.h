@@ -9,6 +9,8 @@
 
 @class ISSPseudoClass;
 @class ISSUIElementDetails;
+@class ISSStylingContext;
+
 
 typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
     ISSSelectorCombinatorDescendant,
@@ -32,6 +34,6 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 + (instancetype) selectorWithType:(NSString*)type styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses;
 + (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses;
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses;
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 @end

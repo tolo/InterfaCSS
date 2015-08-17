@@ -124,9 +124,19 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 #pragma mark - Styling
 
 /**
- * Clears cached styles.
+ * Clears cached styles, along with other cached information related to UI elements.
  */
 - (void) clearCachedStylesForUIElement:(id)uiElement;
+
+/**
+ * Clears all cached style information (along with other cached information) for the specified element and (optionally) its subviews, but does not initiate re-styling.
+ */
+- (void) clearCachedStylesForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews;
+
+/**
+ * Clears all cached style information (along with other cached information), if needed, for the specified element and (optionally) its subviews, but does not initiate re-styling.
+ */
+- (void) clearCachedStylesIfNeededForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
 /**
  * Schedules styling of the specified UI object.
@@ -202,6 +212,23 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement;
 
 
+#pragma mark - Element id
+
+/**
+ * Sets the unique element identifier to be associated with the specified element.
+ *
+ * Note: Setting an element id also affects how style information is cached for the specified element, and its decendants. More precicely, when using an element id, 
+ * styling identities (effectively the cache key for the styling information) can be calculated more effectively, since the element id can be used as starting point 
+ * for the view hierarchy "path" that styling identities consist of. This also means that it's imporant to keep element ids unique.
+ */
+- (void) setElementId:(NSString*)elementId forUIElement:(id)uiElement;
+
+/**
+ * Gets the unique element identifier associated with the specified element.
+ */
+- (NSString*) elementIdForUIElement:(id)uiElement;
+
+
 #pragma mark - Additional styling control
 
 /**
@@ -261,7 +288,9 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (BOOL) isStylingEnabledForProperty:(NSString*)propertyName inUIElement:(id)uiElement;
 
 /** Finds a sub view with the specified element identifier. */
-- (id) subviewWithElementId:(NSString*)elementId inView:(UIView*)view;
+- (id) subviewWithElementId:(NSString*)elementId inView:(id)view;
+/** Finds a super view with the specified element identifier. */
+- (id) superviewWithElementId:(NSString*)elementId inView:(id)view;
 
 - (void) autoPopulatePropertiesInViewHierarchyFromView:(UIView*)view inOwner:(id)owner;
 
@@ -272,17 +301,20 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  * Loads a stylesheet from the main bundle.
  */
 - (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName;
+- (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(ISSStyleSheetScope*)scope;
 
 /**
  * Loads a stylesheet from file.
  */
 - (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath;
+- (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
 
 /**
  * Loads an auto-refreshable stylesheet from a URL.
  * Note: Refreshable stylesheets are only intended for use during development, and not in production.
  */
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL withScope:(ISSStyleSheetScope*)scope;
 
 /**
  * Unloads the specified styleSheet.
@@ -298,9 +330,14 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) unloadAllStyleSheets:(BOOL)refreshStyling;
 
 /**
- * Clears all cached style information and re-applies styles for all views;
+ * Clears all cached style information and re-applies styles for all views.
  */
 - (void) refreshStyling;
+
+/**
+ * Clears all cached style information, but does not initiate re-styling.
+ */
+- (void) clearAllCachedStyles;
 
 
 #pragma mark - Prototypes

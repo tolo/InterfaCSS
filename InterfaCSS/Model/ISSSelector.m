@@ -15,6 +15,8 @@
 #import "ISSPseudoClass.h"
 #import "ISSUIElementDetails.h"
 #import "ISSPropertyRegistry.h"
+#import "ISSStylingContext.h"
+
 
 @implementation ISSSelector {
     BOOL _wildcardType;
@@ -74,7 +76,7 @@
     return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType elementId:self.elementId styleClass:self.styleClass pseudoClasses:self.pseudoClasses];
 }
 
-- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails ignoringPseudoClasses:(BOOL)ignorePseudoClasses {
+- (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     // TYPE
     BOOL match = !self.type || _wildcardType;
     if( !match ) {
@@ -92,7 +94,7 @@
     }
 
     // PSEUDO CLASS
-    if( !ignorePseudoClasses && match && self.pseudoClasses.count ) {
+    if( !stylingContext.ignorePseudoClasses && match && self.pseudoClasses.count ) {
         for(ISSPseudoClass* pseudoClass in self.pseudoClasses) {
             match = [pseudoClass matchesElement:elementDetails];
             if( !match ) break;
@@ -135,11 +137,7 @@
         }
     }
 
-//    return [NSString stringWithFormat:@"%@%@%@%@", typeString, idString, classString, pseudoClassSuffix];
-
-    if ( typeString && _styleClass ) return [NSString stringWithFormat:@"%@%@.%@%@", typeString, idString, _styleClass, pseudoClassSuffix];
-    else if ( typeString ) return [NSString stringWithFormat:@"%@%@%@", typeString, idString, pseudoClassSuffix];
-    else return [NSString stringWithFormat:@"%@.%@%@", idString, _styleClass, pseudoClassSuffix];
+    return [NSString stringWithFormat:@"%@%@%@%@", typeString, idString, classString, pseudoClassSuffix];
 }
 
 

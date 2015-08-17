@@ -12,9 +12,41 @@
 #import "NSString+ISSStringAdditions.h"
 #import "ISSPropertyRegistry.h"
 #import "ISSUIElementDetails.h"
+#import "ISSRuntimeIntrospectionUtils.h"
 
 
 @implementation UIView (InterfaCSS)
+
+#ifdef ENABLE_INTERFACSS_VIEW_SWIZZLING
+#pragma mark - Klaatu Verata Nikto
+
+static void iss_didMoveToSuperview(id self, SEL _cmd);
+static void (*iss_originalDidMoveToSuperview)(id self, SEL _cmd);
+
+static void iss_didMoveToSuperview(id self, SEL _cmd) {
+    iss_originalDidMoveToSuperview(self, _cmd);
+    if( self.superview ) [self scheduleApplyStylingISS];
+}
+
+static void iss_didMoveToWindow(id self, SEL _cmd);
+static void (*iss_originalDidMoveToWindow)(id self, SEL _cmd);
+
+static void iss_didMoveToWindow(id self, SEL _cmd) {
+    iss_originalDidMoveToWindow(self, _cmd);
+    if( self.window ) [self applyStylingISS];
+}
+
++ (void) load {
+    if( ![self isSubclassOfClass:ISSRootView.class] ) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(didMoveToSuperview) replacement:(IMP)iss_didMoveToSuperview originalPointer:(IMP*)&iss_originalDidMoveToSuperview];
+            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(didMoveToWindow) replacement:(IMP)iss_didMoveToWindow originalPointer:(IMP*)&iss_originalDidMoveToWindow];
+        });
+    }
+}
+#endif
+
 
 #pragma mark - Properties
 
@@ -60,11 +92,11 @@
 }
 
 - (NSString*) elementIdISS {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId;
+    return [[InterfaCSS interfaCSS] elementIdForUIElement:self];
 }
 
 - (void) setElementIdISS:(NSString*)elementIdISS {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].elementId = elementIdISS;
+    [[InterfaCSS interfaCSS] setElementId:elementIdISS forUIElement:self];
 }
 
 - (ISSLayout*) layoutISS {
@@ -186,6 +218,10 @@
 
 - (void) clearCachedStylesISS {
     [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
+}
+
+- (void) clearCachedStylesISS:(BOOL)includeSubViews {
+    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self includeSubViews:includeSubViews];
 }
 
 - (void) disableStylingForPropertyISS:(NSString*)propertyName {
