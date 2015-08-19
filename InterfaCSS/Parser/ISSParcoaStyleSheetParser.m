@@ -837,7 +837,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     }
 
     // Parse ISSLayout
-    ParcoaParser* layoutParserAttributeSeparator = [[[Parcoa optional:[Parcoa spaces]] then:[Parcoa choice:@[dot, comma]]] then:[Parcoa optional:[Parcoa spaces]]];
+    ParcoaParser* layoutParserAttributeSeparator = [Parcoa choice:@[[dot skipSurroundingSpaces], [comma skipSurroundingSpaces], [Parcoa spaces]]];
     ParcoaParser* layoutParser = [[[Parcoa choice:layoutAttributeValueParsers] sepBy:layoutParserAttributeSeparator] transform:^id(id values) {
         ISSLayout* layout = [[ISSLayout alloc] init];
         for(id value in (NSArray*)values) {
