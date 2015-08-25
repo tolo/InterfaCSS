@@ -17,31 +17,34 @@
 
 @implementation UIView (InterfaCSS)
 
-#ifdef ENABLE_INTERFACSS_VIEW_SWIZZLING
+#if ENABLE_INTERFACSS_VIEW_SWIZZLING == 1
 #pragma mark - Klaatu Verata Nikto
 
-static void iss_didMoveToSuperview(id self, SEL _cmd);
-static void (*iss_originalDidMoveToSuperview)(id self, SEL _cmd);
+static void (*iss_originalWillMoveToWindow)(id self, SEL _cmd, UIWindow* newWindow);
 
-static void iss_didMoveToSuperview(id self, SEL _cmd) {
-    iss_originalDidMoveToSuperview(self, _cmd);
-    if( self.superview ) [self scheduleApplyStylingISS];
+static void iss_willMoveToWindowIntercepted(id self, SEL _cmd, UIWindow* newWindow) {
+    iss_originalWillMoveToWindow(self, _cmd, newWindow);
+    if( newWindow ) {
+        [self scheduleApplyStylingIfNeededISS]; // Only schedule styling if a parent hasn't already scheduled it
+    }
 }
 
-static void iss_didMoveToWindow(id self, SEL _cmd);
+
 static void (*iss_originalDidMoveToWindow)(id self, SEL _cmd);
 
-static void iss_didMoveToWindow(id self, SEL _cmd) {
+static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
     iss_originalDidMoveToWindow(self, _cmd);
-    if( self.window ) [self applyStylingISS];
+    if( ((UIView*)self).window ) {
+        [self applyStylingIfScheduledISS]; // Apply styling if scheduled, and if a parent hasn't scheduled styling
+    }
 }
 
 + (void) load {
     if( ![self isSubclassOfClass:ISSRootView.class] ) {
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(didMoveToSuperview) replacement:(IMP)iss_didMoveToSuperview originalPointer:(IMP*)&iss_originalDidMoveToSuperview];
-            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(didMoveToWindow) replacement:(IMP)iss_didMoveToWindow originalPointer:(IMP*)&iss_originalDidMoveToWindow];
+            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(willMoveToWindow:) replacement:(IMP)iss_willMoveToWindowIntercepted originalPointer:(IMP*)&iss_originalWillMoveToWindow];
+            [ISSRuntimeIntrospectionUtils klaatuVerataNikto:self selector:@selector(didMoveToWindow) replacement:(IMP)iss_didMoveToWindowIntercepted originalPointer:(IMP*)&iss_originalDidMoveToWindow];
         });
     }
 }
@@ -114,12 +117,20 @@ static void iss_didMoveToWindow(id self, SEL _cmd) {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO];
 }
 
+- (void) scheduleApplyStylingIfNeededISS {
+    [[InterfaCSS interfaCSS] scheduleApplyStylingIfNeeded:self animated:NO force:NO];
+}
+
 - (void) cancelScheduledApplyStylingISS {
     [[InterfaCSS interfaCSS] cancelScheduledApplyStyling:self];
 }
 
 - (void) scheduleApplyStylingISS:(BOOL)animated {
     [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:animated];
+}
+
+- (void) scheduleApplyStylingWithAnimationISS {
+    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:YES];
 }
 
 - (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated {
@@ -177,12 +188,20 @@ static void iss_didMoveToWindow(id self, SEL _cmd) {
     return NO;
 }
 
+- (void) applyStylingISS:(BOOL)force includeSubViews:(BOOL)includeSubViews {
+    [[InterfaCSS interfaCSS] applyStyling:self includeSubViews:includeSubViews force:force];
+}
+
 - (void) applyStylingISS:(BOOL)force {
-    [[InterfaCSS interfaCSS] applyStyling:self includeSubViews:YES force:force];
+    [self applyStylingISS:force includeSubViews:YES];
 }
 
 - (void) applyStylingISS {
-    [self applyStylingISS:NO];
+    [self applyStylingISS:NO includeSubViews:YES];
+}
+
+- (void) applyStylingIfScheduledISS {
+    [[InterfaCSS interfaCSS] applyStylingIfScheduled:self];
 }
 
 - (void) applyStylingOnceISS {
@@ -191,13 +210,8 @@ static void iss_didMoveToWindow(id self, SEL _cmd) {
     [self disableStylingISS];
 }
 
-- (void) applyStylingWithAnimationISS:(BOOL)invalidateStyles {
-    if( invalidateStyles ) [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
-    [[InterfaCSS interfaCSS] applyStylingWithAnimation:self];
-}
-
 - (void) applyStylingWithAnimationISS {
-    [self applyStylingWithAnimationISS:NO];
+    [[InterfaCSS interfaCSS] applyStylingWithAnimation:self];
 }
 
 - (void) disableStylingISS {

@@ -144,6 +144,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated;
 
 /**
+ * Schedules styling of the specified UI object, but only if it hasn't already been scheduled for an ancestor element.
+ */
+- (void) scheduleApplyStylingIfNeeded:(id)uiElement animated:(BOOL)animated force:(BOOL)force;
+
+/**
  * Schedules styling of the specified UI object.
  */
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force;
@@ -154,34 +159,41 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (void) cancelScheduledApplyStyling:(id)uiElement;
 
 /**
- * Applies styling of the specified UI object.
+ * Applies styling of the specified UI object and also all its children.
  */
 - (void) applyStyling:(id)uiElement;
 
 /**
- * Applies styling of the specified UI object.
+ * Applies styling of the specified UI object and optionally also all its children.
  */
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
 /**
- * Applies styling of the specified UI object.
+ * Applies styling of the specified UI object and optionally also all its children.
  */
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force;
 
 /**
- * Applies styling of the specified UI object in an animation block.
+ * Applies styling of the specified UI object, and also all its children, in an animation block.
  */
 - (void) applyStylingWithAnimation:(id)uiElement;
 
 /**
- * Applies styling of the specified UI object in an animation block.
+ * Applies styling of the specified UI object, and optionally also all its children, in an animation block.
  */
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
 /**
- * Applies styling of the specified UI object in an animation block.
+ * Applies styling of the specified UI object, and optionally also all its children, in an animation block.
  */
 - (void) applyStylingWithAnimation:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force;
+
+/**
+ * Applies styling of the specified UI object and also all its children, but only if styling has already been scheduled (i.e. one of the scheduleApplyStyling methods has been 
+ * called - this is for instance done automatically whenever new style classes are added etc), and only if a parent element hasn't scheduled styling, in which case styling will
+ * be applied to this element shortly anyway.
+ */
+- (void) applyStylingIfScheduled:(id)uiElement;
 
 
 #pragma mark - Style classes

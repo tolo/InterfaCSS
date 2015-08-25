@@ -390,8 +390,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         nestedElementKeyPath = prefixKeyPath;
     }
     
-    // Transform parameters
-    if( property && parameters ) {
+    // Transform parameters enum values
+    if( property.parameterEnumValues && parameters ) {
         NSMutableArray* transformedParameters = [[NSMutableArray alloc] init];
         for(NSUInteger i=0; i<parameters.count; i++) { // Transform parameters to enum values
             NSString* param = [parameters[i] iss_trim];

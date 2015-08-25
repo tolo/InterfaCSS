@@ -125,25 +125,32 @@
 - (void) scheduleApplyStylingISS;
 
 /**
+ * Schedules an asynchronous re-styling of this view, but only if it hasn't already been scheduled for an ancestor element.
+ */
+- (void) scheduleApplyStylingIfNeededISS;
+
+/**
  * Cancel previously scheduled styling of this view.
  */
 - (void) cancelScheduledApplyStylingISS;
 
 /**
- * Schedules an asynchronous re-styling of this view. The re-styling will be performed within an animation block.
+ * Schedules an asynchronous re-styling of this view. If `animated` is `YES`, the re-styling will be performed within an animation block.
+ *
+ * @deprecated Replaced by scheduleApplyStylingWithAnimationISS
  */
 - (void) scheduleApplyStylingISS:(BOOL)animated;
 
+/**
+ * Schedules an asynchronous re-styling of this view. The re-styling will be performed within an animation block.
+ */
+- (void) scheduleApplyStylingWithAnimationISS;
+
 
 /**
- * Applies styling to this view, if not already applied.
+ * Applies styling to this view and its subviews, if not already applied.
  */
 - (void) applyStylingISS;
-
-/**
- * Applies styling once to this view and then disables further styling. Call `enabledStylingISS` to re-enable styling.
- */
-- (void) applyStylingOnceISS;
 
 /**
  * Applies styling to this view. If `force` is `YES`, styling will always be applied (i.e. properties will be set), otherwise styling will only
@@ -152,9 +159,27 @@
 - (void) applyStylingISS:(BOOL)force;
 
 /**
- * Applies styling to this view within an animation block.
+ * Applies styling to this view and optionally also its subviews. If `force` is `YES`, styling will always be applied (i.e. properties will be set), otherwise styling will only
+ * be applied if not already applied.
+ */
+- (void) applyStylingISS:(BOOL)force includeSubViews:(BOOL)includeSubViews;
+
+/**
+ * Applies styling once to this view and then disables further styling. Call `enabledStylingISS` to re-enable styling.
+ */
+- (void) applyStylingOnceISS;
+
+/**
+ * Applies styling to this view and its subviews within an animation block.
  */
 - (void) applyStylingWithAnimationISS;
+
+/**
+ * Applies styling to this view and its subviews, but only if styling has already been scheduled (i.e. one of the scheduleApplyStyling methods has been
+ * called - this is for instance done automatically whenever new style classes are added etc), and only if a parent element hasn't scheduled styling, in which case styling will
+ * be applied to this element shortly anyway.
+ */
+- (void) applyStylingIfScheduledISS;
 
 /**
  * Clears all cached styling information associated with this view and all its subviews.

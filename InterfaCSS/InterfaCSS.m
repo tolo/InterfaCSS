@@ -428,8 +428,25 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
 }
 
+- (BOOL) elementHasScheduledStyling:(id)element {
+    while( element ) {
+        ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:element];
+        if( details.stylingScheduled ) return YES;
+        else element = details.parentElement;
+    }
+    return NO;
+}
+
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated {
     [self scheduleApplyStyling:uiElement animated:animated force:NO];
+}
+
+- (void) scheduleApplyStylingIfNeeded:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
+    ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
+    
+    if( ![self elementHasScheduledStyling:details.parentElement] ) {
+        [self scheduleApplyStyling:uiElement animated:animated force:force];
+    }
 }
 
 - (void) scheduleApplyStyling:(id)uiElement animated:(BOOL)animated force:(BOOL)force {
@@ -464,6 +481,19 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) applyStylingWithForce:(id)uiElement {
     [self applyStyling:uiElement includeSubViews:YES force:YES];
+}
+
+- (void) applyStylingIfScheduled:(id)uiElement {
+    if( !uiElement ) return;
+    
+    ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement];
+    if( [self elementHasScheduledStyling:uiElementDetails.parentElement] ) {
+        return; // Parent has scheduled styling
+    }
+    
+    if( uiElementDetails.stylingScheduled ) {
+        [self applyStylingWithDetails:uiElementDetails includeSubViews:YES force:NO];
+    }
 }
 
 - (void) applyStyling:(id)uiElement {
@@ -792,6 +822,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
 }
 
+
+#pragma mark - Stylesheets
+
 - (ISSUIElementDetails*) firstChildElementMatchingScope:(ISSStyleSheetScope*)scope inElement:(ISSUIElementDetails*)elementDetails {
     if( [scope elementInScope:elementDetails] ) return elementDetails;
     
@@ -810,9 +843,6 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     }
     return nil;
 }
-
-
-#pragma mark - Stylesheets
 
 - (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName {
     return [self loadStyleSheetFromMainBundleFile:styleSheetFileName withScope:nil];
