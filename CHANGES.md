@@ -1,6 +1,28 @@
 #Changes
 
 
+##Version 1.1
+
+### New features & changes
+* Added support for scoping stylesheets to specific view controllers (for instance).
+* Added support for string localization, by using the format L("string") or localized("string").
+* Made styleClassISS property `IBInspectable`.
+* Performance updates related to styling.
+* Added support for W3C style selector specificity for determining the order in which style declarations should be processed. This feature can be enabled using the flag `useSelectorSpecificity`.
+* Added support for overriding and/or extending already registered property definitions ([issue 28](https://github.com/tolo/InterfaCSS/issues/28), requested by @tbrannam). Also added new property setter block type (`ISSPropertySetterBlock`) that returns a `BOOL`, and deprecated the old one (without the ISS prefix).
+* Added support for "selected" and "highlighted" pseudo class selectors ([issue 32](https://github.com/tolo/InterfaCSS/issues/36), requested by @tbrannam).
+* Added support for using mathematical expressions in most places where numbers are used in stylesheets ([issue 35](https://github.com/tolo/InterfaCSS/issues/35), requested by @TadeasKriz).
+* Added support for using custom types as selectors ([issue 36](https://github.com/tolo/InterfaCSS/issues/36), requested by @TadeasKriz).
+* Added support for shorthand versions of type creators in stylesheets, i.e. making it possible to use fewer arguments ([issue 37](https://github.com/tolo/InterfaCSS/issues/37), requested by @TadeasKriz). Also added support for making "function" prefix (i.e. `point` etc) optional, and making it possible to just use the argument list directly (i.e. `10, 20`).
+* Added support for using view controller classes as type selectors ([issue 42](https://github.com/tolo/InterfaCSS/issues/42), requested by @TadeasKriz).
+
+### Bug fixes
+* Fixed issue with using InterfaCSS in an extension target ([issue 33](https://github.com/tolo/InterfaCSS/issues/33), reported by @killobatt).
+* Changed the way how setting properties on nested elements (via prefix key paths) in stylesheets works, primarily to solve the problem with this not working in all cases. Resolves issue [issue 39](https://github.com/tolo/InterfaCSS/issues/39), reported by @TadeasKriz.
+* Added support to use introspection for getting setter method for property, as an alternative to using KVC for setting property values. This resolves [issue 43](https://github.com/tolo/InterfaCSS/issues/43), reported by @TadeasKriz (problem with setting properties defined in UITextInputTraits).
+
+
+
 ##Version 1.0.1
 
 ### Bug fixes
@@ -10,7 +32,7 @@
 ##Version 1.0.0
 
 ### New features & changes
-* Added ISSLayout - a lightweight and flexible layout system. 
+* Added ISSLayout - a lightweight and flexible layout system.
 * Added HelloISSLayout sample code.
 * Updated ISSViewBuilder with methods that take elementId parameter.
 
@@ -28,7 +50,7 @@
 * Added support for specifying the collection view layout class (via the `layoutClass` attribute) when creating collection views in a view definition file (fixes [issue 10](https://github.com/tolo/InterfaCSS/issues/10), reported by @tbrannam).
 * Added method `elementNameToViewClass` to `ISSViewHierarchyParser`, to make it possible for subclasses to override mapping of tag name to view class.
 * Added support for horizontal and vertical centering of rect values, by using the value `auto` in insets (e.g. left(auto).right(auto)`).
-* Added pseudo classes for user interface idiom (`pad` & `phone`) and size classes (`regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`) (fixes [issue 18](https://github.com/tolo/InterfaCSS/issues/18), reported by @tbrannam). 
+* Added pseudo classes for user interface idiom (`pad` & `phone`) and size classes (`regularWidth`, `compactWidth`, `regularHeight`, `compactHeight`) (fixes [issue 18](https://github.com/tolo/InterfaCSS/issues/18), reported by @tbrannam).
 * Added support for chaining pseudo classes (fixes [issue 18](https://github.com/tolo/InterfaCSS/issues/18), reported by @tbrannam).
 * Simplified handling of view related styling data (ISSUIElementDetails) by using associated objects.
 
@@ -42,8 +64,8 @@
 ### New features & changes
 * Added support for attributed string properties (`attributedText` in `UILabel`, `UITextField` and `UITextView`, and `attributedTitle` in `UIButton`).
 * Added support for opting out of scheduled styling when adding and removing style classes (via `UIView (InterfaCSS)` category).
-* Updates to xml view definition file parsing (ISSViewHierarchyParser): 
-    * Added support for `impl` attribute for specifying a custom implementation class. 
+* Updates to xml view definition file parsing (ISSViewHierarchyParser):
+    * Added support for `impl` attribute for specifying a custom implementation class.
     * Added support for registering (the iOS6 way) UITableViewCell and UICollectionViewCell classes in the parent UITableView/UICollectionView.
 * Added support for associating a view with an element identifier, both though`UIView+InterfaCSS` and the xml view definition file (`id` attribute).
 * Added support for setting properties on `UICollectionViewFlowLayout`.
@@ -71,8 +93,8 @@
 ##Version 0.9.10
 
 ### New features & changes
-* Added support for processing refreshable stylesheets after normal stylesheets (`processRefreshableStylesheetsLast`) 
-* Added support for setting interval at which refreshable stylesheets are refreshed (`stylesheetAutoRefreshInterval`) 
+* Added support for processing refreshable stylesheets after normal stylesheets (`processRefreshableStylesheetsLast`)
+* Added support for setting interval at which refreshable stylesheets are refreshed (`stylesheetAutoRefreshInterval`)
 * Updated error handing for loading of refreshable stylesheets.
 * Added support for registering custom stylesheet properties, by exposing an instance of `ISSPropertyRegistry` through the property `propertyRegistry` in `InterfaCSS`.
 * Updated handling of data associated with styled elements to make it more robust (and to workaround issue when styling SpriteKit nodes: http://openradar.io/18494241).
@@ -81,7 +103,7 @@
 
 ### Bug fixes
 * Fixed bug in replacement of unicode escape sequences (`[NSString iss_stringByReplacingUnicodeSequences]`).
- 
+
 
 ##Version 0.9.9
 
