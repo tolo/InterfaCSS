@@ -13,7 +13,7 @@ Everyone loves a beautifully designed app with a consistent UI, and getting ther
 
 
 ### Simple yet powerful styling
-InterfaCSS uses an easy to understand styling [***syntax***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format) that is based on the the familiar ***`CSS`*** styling language used on the web (augmented with some *Sass/Less*-like features, such as *nested declarations* and *variables*), which means that you (and your designer) will probably feel right at home. InterfaCSS supports a [rich selector syntax](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format) (*type*, *class* and *element id* selectors, *selector combinators*, *pseudo classes*, etc) and property names are what you expect them to be - i.e. the same as in `UIKit`, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [***more***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
+InterfaCSS uses an easy to understand styling [***syntax***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format) that is based on the the familiar ***`CSS`*** styling language used on the web (augmented with some *Sass/Less*-like features, such as *nested declarations* and *variables*), which means that you (and your designer) will probably feel right at home. InterfaCSS supports a rich selector syntax (*type*, *class* and *element id* selectors, *selector combinators*, *pseudo classes*, etc) and property names are what you expect them to be - i.e. the same as in `UIKit`, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [***more***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
 
 ```css
 #helloWorldButton {
@@ -52,7 +52,7 @@ BraveNewViewController UITableViewCell UIButton.mySpecialButton {
 
 
 ### Flexible layouts, the easy way
-InterfaCSS lets you define [layouts](#layout) based on values relative to other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.
+InterfaCSS lets you define ***[layouts](https://github.com/tolo/InterfaCSS/wiki/Using-InterfaCSS#layout-of-views)*** based on values that depend on the position and size of other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.
 
 ```css
 #view1 {
@@ -64,7 +64,7 @@ InterfaCSS lets you define [layouts](#layout) based on values relative to other 
 }
 ```
 
-In addition, using a [view builder](#viewsetup), setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course) - simply define your UI in an XML file or do it in code, by using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h).
+In addition, using a ***[view builder](https://github.com/tolo/InterfaCSS/wiki/Using-InterfaCSS#creating-a-view-hierarchy)***, setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files (but you can still use them just fine with InterfaCSS if you want of course) - simply define your UI in an XML file or do it in code, by using [`ISSViewBuilder`](InterfaCSS/UI/ISSViewBuilder.h).
 
 *XML:*
 ```xml
