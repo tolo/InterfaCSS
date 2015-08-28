@@ -14,6 +14,7 @@
 * Added support for using mathematical expressions in most places where numbers are used in stylesheets ([issue 35](https://github.com/tolo/InterfaCSS/issues/35), requested by @TadeasKriz).
 * Added support for using custom types as selectors ([issue 36](https://github.com/tolo/InterfaCSS/issues/36), requested by @TadeasKriz).
 * Added support for shorthand versions of type creators in stylesheets, i.e. making it possible to use fewer arguments ([issue 37](https://github.com/tolo/InterfaCSS/issues/37), requested by @TadeasKriz). Also added support for making "function" prefix (i.e. `point` etc) optional, and making it possible to just use the argument list directly (i.e. `10, 20`).
+* Added support for using file monitoring instead of polling, when using auto reloadable stylesheets on the local filesystem ([issue 38](https://github.com/tolo/InterfaCSS/issues/38), requested by @TadeasKriz).
 * Added support for using view controller classes as type selectors ([issue 42](https://github.com/tolo/InterfaCSS/issues/42), requested by @TadeasKriz).
 
 ### Bug fixes
