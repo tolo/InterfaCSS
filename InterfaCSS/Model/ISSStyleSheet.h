@@ -67,6 +67,6 @@ typedef BOOL (^ISSStyleSheetScopeMatcher)(ISSUIElementDetails* elementDetails);
 
 - (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
-- (void) refresh:(void (^)(void))completionHandler parse:(id<ISSStyleSheetParser>)styleSheetParser;
+- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler;
 
 @end

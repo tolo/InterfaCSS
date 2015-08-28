@@ -27,8 +27,12 @@
     
     // When developing your app, consider using an auto refreshable stylesheet that is loaded from a web server (or perhaps a cloud service like Dropbox,
     // Sugarsync etc) or the local file system.
-//#if DEBUG == 1
+//#if DEBUG
+//#if TARGET_IPHONE_SIMULATOR
+//    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromLocalFile:@"/Users/user/Documents/myprettystyles.css"];
+//#else
 //    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:[NSURL URLWithString:@"http://someserver/myprettystyles.css"]];
+//#endif
 //#endif
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];

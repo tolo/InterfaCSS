@@ -179,7 +179,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) autoRefreshTimerTick {
     for(ISSStyleSheet* styleSheet in self.styleSheets) {
-        if( styleSheet.refreshable && styleSheet.active ) { // Attempt to get updated stylesheet
+        if( styleSheet.refreshable && styleSheet.active && !styleSheet.usingLocalFileChangeMonitoring ) { // Attempt to get updated stylesheet
             [self updateRefreshableStyleSheet:styleSheet];
         }
     }
@@ -212,7 +212,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     if( styleSheetData ) {
         NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
         NSMutableArray* declarations = [self.parser parse:styleSheetData];
-        ISSLogDebug(@"Loaded stylesheet '%@' in %g seconds", [styleSheetFile lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+        ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [styleSheetFile lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
 
         if( declarations ) {
             styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile declarations:declarations refreshable:NO scope:scope];
@@ -879,8 +879,29 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     ISSStyleSheet* styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetURL declarations:nil refreshable:YES scope:scope];
     [self.styleSheets addObject:styleSheet];
     [self updateRefreshableStyleSheet:styleSheet];
-    [self enableAutoRefreshTimer];
+    
+    BOOL usingFileMonitoring = NO;
+    if( styleSheetURL.isFileURL ) { // If local file URL - attempt to use file monitoring instead of polling
+        __weak InterfaCSS* weakSelf = self;
+        [styleSheet startMonitoringLocalFileChanges:^(ISSRefreshableResource* refreshed) {
+            [weakSelf updateRefreshableStyleSheet:styleSheet];
+        }];
+        usingFileMonitoring = styleSheet.usingLocalFileChangeMonitoring;
+    }
+    
+    if( !usingFileMonitoring ) {
+        [self enableAutoRefreshTimer];
+    }
+    
     return styleSheet;
+}
+
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath {
+    return [self loadRefreshableStyleSheetFromURL:[NSURL fileURLWithPath:styleSheetFilePath]];
+}
+
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope {
+    return [self loadRefreshableStyleSheetFromURL:[NSURL fileURLWithPath:styleSheetFilePath] withScope:scope];
 }
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
@@ -937,9 +958,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (void) updateRefreshableStyleSheet:(ISSStyleSheet*)styleSheet {
-    [styleSheet refresh:^{
+    [styleSheet refreshStylesheetWithCompletionHandler:^{
         [self refreshStylingForStyleSheet:styleSheet];
-    } parse:self.parser];
+    }];
 }
 
 

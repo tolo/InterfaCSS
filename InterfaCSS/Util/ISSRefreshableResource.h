@@ -9,8 +9,18 @@
 
 #import <Foundation/Foundation.h>
 
+
 @interface ISSRefreshableResource : NSObject
 
-- (void) refresh:(NSURL*)url completionHandler:(void (^)(NSString*))completionHandler;
+@property (nonatomic, readonly) NSURL* resourceURL;
+@property (nonatomic, readonly) BOOL usingLocalFileChangeMonitoring;
+
+
+- (instancetype) initWithURL:(NSURL*)url;
+
+- (void) startMonitoringLocalFileChanges:(void (^)(ISSRefreshableResource*))callbackBlock;
+- (void) endMonitoringLocalFileChanges;
+
+- (void) refreshWithCompletionHandler:(void (^)(NSString*))completionHandler;
 
 @end

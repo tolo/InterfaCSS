@@ -78,7 +78,7 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 @property (nonatomic) BOOL useLenientSelectorParsing;
 
 /**
- * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds.
+ * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds. Note: this is only use for stylesheets loaded from a remote URL.
  */
 @property (nonatomic) NSTimeInterval stylesheetAutoRefreshInterval;
 
@@ -316,17 +316,24 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(ISSStyleSheetScope*)scope;
 
 /**
- * Loads a stylesheet from file.
+ * Loads a stylesheet from an absolute file path.
  */
 - (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath;
 - (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
 
 /**
- * Loads an auto-refreshable stylesheet from a URL.
+ * Loads an auto-refreshable stylesheet from a URL (both file and http URLs are supported).
  * Note: Refreshable stylesheets are only intended for use during development, and not in production.
  */
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL withScope:(ISSStyleSheetScope*)scope;
+
+/**
+ * Loads an auto-refreshable stylesheet from a local file path, and starts monitoring the file for changes.
+ * Note: Refreshable stylesheets are only intended for use during development, and not in production.
+ */
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
+- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
 
 /**
  * Unloads the specified styleSheet.

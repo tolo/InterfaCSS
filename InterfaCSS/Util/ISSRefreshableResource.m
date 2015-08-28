@@ -17,7 +17,64 @@
 @implementation ISSRefreshableResource {
     NSDate* _lastModified;
     NSString* _eTag;
-    NSTimeInterval lastErrorTime;
+    NSTimeInterval _lastErrorTime;
+    dispatch_source_t _fileChangeSource;
+}
+
+- (instancetype) initWithURL:(NSURL*)url {
+    if( (self = [super init]) ) {
+        _resourceURL = url;
+    }
+    return self;
+}
+
+- (void) dealloc {
+    [self endMonitoringLocalFileChanges];
+}
+
+- (BOOL) usingLocalFileChangeMonitoring {
+    return _fileChangeSource != nil;
+}
+
+- (void) endMonitoringLocalFileChanges {
+    if( _fileChangeSource ) dispatch_source_cancel(_fileChangeSource);
+    _fileChangeSource = nil;
+}
+
+- (void) startMonitoringLocalFileChanges:(void (^)(ISSRefreshableResource*))callbackBlock {
+    if( self.usingLocalFileChangeMonitoring ) {
+        [self endMonitoringLocalFileChanges];
+    }
+    
+    int fd = open([self.resourceURL.path fileSystemRepresentation], O_EVTONLY);
+    
+    if( fd < 0 ) {
+        ISSLogWarning(@"Unable to monitor '%@' for changes", self.resourceURL);
+        return;
+    }
+    
+    _fileChangeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE, fd, DISPATCH_VNODE_WRITE | DISPATCH_VNODE_DELETE, DISPATCH_TARGET_QUEUE_DEFAULT);
+    
+    __weak ISSRefreshableResource* weakSelf = self;
+    dispatch_source_set_event_handler(_fileChangeSource, ^() {
+        unsigned long const data = dispatch_source_get_data(_fileChangeSource);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if( data & DISPATCH_VNODE_WRITE ) {
+                callbackBlock(weakSelf);
+            } else if( data & DISPATCH_VNODE_DELETE ) {
+                [weakSelf endMonitoringLocalFileChanges];
+                [weakSelf iss_logWarning:@"'%@' deleted - file monitoring aborted", weakSelf.resourceURL];
+            }
+        });
+    });
+    
+    dispatch_source_set_cancel_handler(_fileChangeSource, ^(){
+        close(fd);
+    });
+    
+    dispatch_resume(_fileChangeSource);
+    
+    ISSLogDebug(@"Started monitoring '%@' for changes", self.resourceURL);
 }
 
 - (NSDate*) parseLastModifiedFromResponse:(NSHTTPURLResponse*)response {
@@ -27,15 +84,15 @@
 }
 
 - (BOOL) hasErrorOccurred {
-    return lastErrorTime != 0;
+    return _lastErrorTime != 0;
 }
 
 - (void) resetErrorOccurred {
-    lastErrorTime = 0;
+    _lastErrorTime = 0;
 }
 
 - (void) errorOccurred {
-    lastErrorTime = [NSDate timeIntervalSinceReferenceDate];
+    _lastErrorTime = [NSDate timeIntervalSinceReferenceDate];
 }
 
 - (void) performHeadRequest:(NSMutableURLRequest*)request completionHandler:(void (^)(NSString*))completionHandler {
@@ -119,26 +176,26 @@
        }];
 }
 
-- (void) refresh:(NSURL*)url completionHandler:(void (^)(NSString*))completionHandler {
+- (void) refreshWithCompletionHandler:(void (^)(NSString*))completionHandler {
     if( self.hasErrorOccurred ) {
         NSTimeInterval refreshIntervalDuringError = [InterfaCSS interfaCSS].stylesheetAutoRefreshInterval * 3;
-        if( ([NSDate timeIntervalSinceReferenceDate] - lastErrorTime) < refreshIntervalDuringError ) return;
+        if( ([NSDate timeIntervalSinceReferenceDate] - _lastErrorTime) < refreshIntervalDuringError ) return;
     }
 
-    if( url.isFileURL ) {
+    if( self.resourceURL.isFileURL ) {
         NSFileManager* fm = [NSFileManager defaultManager];
-        NSDictionary* attrs = [fm attributesOfItemAtPath:url.path error:nil];
+        NSDictionary* attrs = [fm attributesOfItemAtPath:self.resourceURL.path error:nil];
         NSDate* date;
         if (attrs != nil) {
             date = (NSDate*)attrs[NSFileModificationDate];
             if( !date ) date = (NSDate*)attrs[NSFileCreationDate];
         }
         if( !_lastModified || ![_lastModified isEqualToDate:date] ) {
-            completionHandler([[NSString alloc] initWithContentsOfFile:url.path usedEncoding:nil error:nil]);
+            completionHandler([[NSString alloc] initWithContentsOfFile:self.resourceURL.path usedEncoding:nil error:nil]);
             _lastModified = date;
         }
     } else {
-        NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+        NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.resourceURL];
         [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
         if( _lastModified ) [request setValue:[ISSDateUtils formatHttpDate:_lastModified] forHTTPHeaderField:@"If-Modified-Since"];
         if( _eTag ) [request setValue:_eTag forHTTPHeaderField:@"If-None-Match"];

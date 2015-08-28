@@ -87,6 +87,9 @@
     NSArray* _declarations;
 }
 
+
+#pragma mark - Lifecycle
+
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations {
     return [self initWithStyleSheetURL:styleSheetURL declarations:declarations refreshable:NO];
 }
@@ -96,8 +99,7 @@
 }
 
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable scope:(ISSStyleSheetScope*)scope {
-   if ( (self = [super init]) ) {
-       _styleSheetURL = styleSheetURL;
+   if ( (self = [super initWithURL:styleSheetURL]) ) {
        _declarations = declarations;
        _refreshable = refreshable;
        _active = YES;
@@ -105,6 +107,16 @@
    }
    return self;
 }
+
+
+#pragma mark - Properties
+
+- (NSURL*) styleSheetURL {
+    return self.resourceURL;
+}
+
+
+#pragma mark - Matching
 
 - (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     ISSLogTrace(@"Getting matching declarations for %@:", elementDetails.uiElement);
@@ -128,15 +140,25 @@
 
 #pragma mark - Refreshable stylesheet methods
 
-- (void) refresh:(void (^)(void))completionHandler parse:(id<ISSStyleSheetParser>)styleSheetParser {
-    [super refresh:self.styleSheetURL completionHandler:^(NSString* responseString) {
-        NSMutableArray* declarations = [styleSheetParser parse:responseString];
+- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler {
+    [super refreshWithCompletionHandler:^(NSString* responseString) {
+        NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+        NSMutableArray* declarations = [[InterfaCSS sharedInstance].parser parse:responseString];
         if( declarations ) {
+            if( _declarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+            else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+            
             _declarations = declarations;
             completionHandler();
         } else {
             ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
         }
+    }];
+}
+
+- (void) refreshWithCompletionHandler:(void (^)(NSString*))completionHandler {
+    [self refreshStylesheetWithCompletionHandler:^{
+        completionHandler(nil);
     }];
 }
 
