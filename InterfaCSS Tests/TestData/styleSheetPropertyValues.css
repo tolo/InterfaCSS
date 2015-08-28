@@ -28,7 +28,7 @@
     shadowColor: red;
     transform: rotate(10) scale(20,30) translate(40,50);
     attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: rgb(0,0,255), color: darken(#000000, 0%), baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);
-    attributedTitle: "title1" (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2);
+    attributedTitle: "title1 " (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2);
 }
 
 .localizedStrings {

@@ -764,7 +764,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* quotedOrLocalizedStringParser = [Parcoa choice:@[localizedStringParser, cleanedQuotedStringParser]];
     
     ParcoaParser* singleAttributedStringParser = [[Parcoa sequential:@[ [quotedOrLocalizedStringParser skipSurroundingSpaces], attributedStringAttributesParser ]] transform:^id(NSArray* values) {
-        return [[NSAttributedString alloc] initWithString:[values[0] iss_trimQuotes] attributes:values[1]];
+        return [[NSAttributedString alloc] initWithString:values[0] attributes:values[1]];
     } name:@"singleAttributedStringParser"];
 
     ParcoaParser* delimeter = [Parcoa choice:@[comma, [Parcoa spaces]]];

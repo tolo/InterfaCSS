@@ -496,13 +496,13 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
                              NSForegroundColorAttributeName: [UIColor iss_colorWithHexString:@"ffffff"],
                              };
     
-    NSDictionary* attrs2 = [value attributesAtIndex:6 effectiveRange:nil];
+    NSDictionary* attrs2 = [value attributesAtIndex:7 effectiveRange:nil];
     NSDictionary* attrs2e = @{
                              NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:15],
                              NSForegroundColorAttributeName: [UIColor iss_colorWithHexString:@"000000"],
                              };
     
-    XCTAssertEqualObjects([value string], @"title1title2");
+    XCTAssertEqualObjects([value string], @"title1 title2");
     XCTAssertEqualObjects(attrs1, attrs1e);
     XCTAssertEqualObjects(attrs2, attrs2e);
 }
