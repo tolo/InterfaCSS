@@ -81,7 +81,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     interfaCSS->_useLenientSelectorParsing = NO;
     interfaCSS->_stylesheetAutoRefreshInterval = 5.0;
     interfaCSS->_processRefreshableStylesheetsLast = YES;
-    interfaCSS->_allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
+    interfaCSS->_allowAutomaticRegistrationOfCustomTypeSelectorClasses = YES;
     interfaCSS->_useSelectorSpecificity = NO;
 
     interfaCSS->_parser = nil;

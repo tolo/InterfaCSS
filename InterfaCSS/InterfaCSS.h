@@ -91,7 +91,7 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  * Flag indicating if unknown type selectors should automatically be registered as canonical type classes (i.e. valid type selector classes) when encountered
  * in a stylesheet. As an alternative to this, consider using `[ISSPropertyRegistry registerCanonicalTypeClass:]`
  *
- * Default value of this property is `NO`.
+ * Default value of this property is `YES`.
  * 
  * @see [ISSPropertyRegistry registerCanonicalTypeClass:]
  */
