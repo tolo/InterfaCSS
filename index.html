@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>InterfaCSS by tolo</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>InterfaCSS</h1>
+        <h2>CSS based styling and layout for iOS</h2>
+        <a href="https://github.com/tolo/InterfaCSS" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <blockquote>
+<p><em>What if you could style and layout your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like the web?</em>   </p>
+</blockquote>
+
+<h1>
+<a id="welcome-to-interfacss" class="anchor" href="#welcome-to-interfacss" aria-hidden="true"><span class="octicon octicon-link"></span></a>Welcome to InterfaCSS</h1>
+
+<h2>
+<a id="simple-yet-powerful-styling" class="anchor" href="#simple-yet-powerful-styling" aria-hidden="true"><span class="octicon octicon-link"></span></a>Simple yet powerful styling</h2>
+
+<p>InterfaCSS uses an easy to understand styling <a href="https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format"><strong><em>syntax</em></strong></a> that is based on the the familiar <strong><em>CSS</em></strong> styling language used on the web (augmented with some <em>Sass/Less</em>-like features, such as <em>nested declarations</em> and <em>variables</em>), which means that you (and your designer) will probably feel right at home.</p>
+
+<div class="highlight highlight-css"><pre><span class="pl-e">.standardButton</span> {
+   <span class="pl-c1">background</span>C<span class="pl-c1">olor</span>: image(<span class="pl-s"><span class="pl-pds">"</span>patternImageAsColor.png<span class="pl-pds">"</span></span>);
+   <span class="pl-c1">border</span>W<span class="pl-c1">idth</span>: <span class="pl-c1">3</span>;
+   <span class="pl-c1">border</span>C<span class="pl-c1">olor</span>: fadeout(<span class="pl-id">magenta</span>, <span class="pl-c1">75<span class="pl-k">%</span></span>);
+   <span class="pl-c1">corner</span>R<span class="pl-c1">adius</span>: @numberVariable;
+}
+
+<span class="pl-e">#helloWorldView</span> {
+   <span class="pl-c1">background</span>C<span class="pl-c1">olor</span>: gradient(darken(<span class="pl-id">magenta</span>, <span class="pl-c1">50<span class="pl-k">%</span></span>), <span class="pl-c1">#e4e1e6</span>);
+
+    .<span class="pl-c1">standard</span>B<span class="pl-c1">utton</span> {
+      <span class="pl-c1">attributed</span>T<span class="pl-c1">ext</span>: <span class="pl-s"><span class="pl-pds">"</span>Hello <span class="pl-pds">"</span></span> (foregroundColor: <span class="pl-c1">yellow</span>), <span class="pl-s"><span class="pl-pds">"</span>World<span class="pl-pds">"</span></span> (foregroundColor: <span class="pl-c1">#0000ff</span>);
+      <span class="pl-c1"><span class="pl-c1">transform</span></span>: rotate(<span class="pl-c1">15</span>);
+   }
+}
+
+BraveNewViewController UITableViewCell <span class="pl-e">.standardButton</span>:landscape {
+    <span class="pl-c1">title</span>C<span class="pl-c1">olor</span>: <span class="pl-c1">#7e00ff</span>;
+    <span class="pl-c1">title</span>C<span class="pl-c1">olor</span>(<span class="pl-c1">selected</span>): <span class="pl-c1">#ff6d10</span>;
+}</pre></div>
+
+<h2>
+<a id="flexible-layouts-the-easy-way" class="anchor" href="#flexible-layouts-the-easy-way" aria-hidden="true"><span class="octicon octicon-link"></span></a>Flexible layouts, the easy way</h2>
+
+<p>InterfaCSS lets you define <a href="https://github.com/tolo/InterfaCSS/wiki/Using-InterfaCSS#layout-of-views">layouts</a> based on values that depend on the position and size of other elements. Layouts are expressed directly in the stylesheet file, and the format is very easy to understand.</p>
+
+<div class="highlight highlight-css"><pre><span class="pl-e">#view1</span> {
+    <span class="pl-c1">layout</span>: size(<span class="pl-c1">25</span>, <span class="pl-c1">25</span>), <span class="pl-c1">left</span>(parent.leftMargin), <span class="pl-c1">top</span>(parent.topMargin);
+}
+
+<span class="pl-e">#view2</span> {
+    <span class="pl-c1">layout</span>: size(view<span class="pl-c1">1</span>, view<span class="pl-c1">1</span>), <span class="pl-c1">left</span>(view<span class="pl-c1">1</span>.<span class="pl-c1">right</span> + <span class="pl-c1">10</span>), <span class="pl-c1">top</span>(view<span class="pl-c1">1</span>.<span class="pl-c1">top</span>);
+}</pre></div>
+
+<p>In addition, using a <a href="https://github.com/tolo/InterfaCSS/wiki/Using-InterfaCSS#creating-a-view-hierarchy">view builder</a>, setting up the UI in your view controllers is a breeze - gone are the days of writing tedious UI setup code or fiddling with unwieldy xib-files or storyboards (but you can still use them just fine with InterfaCSS if you want of course) - simply define your UI in an XML file or do it in code, by using <a href="InterfaCSS/UI/ISSViewBuilder.h"><code>ISSViewBuilder</code></a>.</p>
+
+<p><em>XML:</em></p>
+
+<div class="highlight highlight-xml"><pre>&lt;<span class="pl-ent">view</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>rootView<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">view</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>view1<span class="pl-pds">"</span></span>/&gt;
+    &lt;<span class="pl-ent">view</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>view2<span class="pl-pds">"</span></span> <span class="pl-e">layout</span>=<span class="pl-s"><span class="pl-pds">"</span>size(view1, view1), left(view1.right + 10), top(view1.top)<span class="pl-pds">"</span></span>/&gt; <span class="pl-c">&lt;!-- It's possible to define layouts here as well --&gt;</span>
+&lt;/<span class="pl-ent">view</span>&gt;</pre></div>
+
+<p><em>In code (Swift):</em></p>
+
+<div class="highlight highlight-Swift"><pre><span class="pl-k">self</span><span class="pl-k">.</span>view <span class="pl-k">=</span> ISSViewBuilder<span class="pl-k">.</span>rootViewWithId(<span class="pl-s"><span class="pl-pds">"</span>rootView<span class="pl-pds">"</span></span>, withOwner: <span class="pl-k">self</span>, andSubViews: {
+    <span class="pl-k">return</span> [
+        ISSViewBuilder<span class="pl-k">.</span>viewWithId(<span class="pl-s"><span class="pl-pds">"</span>view1<span class="pl-pds">"</span></span>),
+        ISSViewBuilder<span class="pl-k">.</span>viewWithId(<span class="pl-s"><span class="pl-pds">"</span>view2<span class="pl-pds">"</span></span>),
+    ];
+})</pre></div>
+
+<h2>
+<a id="stylesheets---standard-scoped-live" class="anchor" href="#stylesheets---standard-scoped-live" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stylesheets - standard, scoped, <em>"live"</em>
+</h2>
+
+<p>Use as many stylesheets as you find appropriate in your app. If you want, you can also limit the scope of a stylesheet, to make sure it's only used in specific view controllers for instance.</p>
+
+<div class="highlight highlight-objective-c"><pre>ISSStyleSheetScope* scope = [ISSStyleSheetScope <span class="pl-c1">scopeWithViewControllerClass:</span>BraveNewViewController.class];
+[[InterfaCSS <span class="pl-c1">sharedInstance</span>] <span class="pl-c1">loadStyleSheetFromMainBundleFile:</span><span class="pl-s"><span class="pl-pds">@"</span>stylesForOnePartOfTheApp.css<span class="pl-pds">"</span></span> <span class="pl-c1">withScope:</span>scope];</pre></div>
+
+<p>For development, you can also load "live", auto-refreshable stylesheets, which can be very useful to avoid those pesky <code>compile</code>/<code>deploy</code>/<code>launch</code>/<code>returnToWhereYouWere</code>-cycles when you are fine-tuning your styles. Auto-refreshable stylesheets can either be loaded from a <strong><em>local file</em></strong> (that will be monitored for changes) or from a file located on a <strong><em>remote (HTTP) server</em></strong> (that will be polled at regular intervals).</p>
+
+<div class="highlight highlight-objective-c"><pre>   [[InterfaCSS <span class="pl-c1">interfaCSS</span>] <span class="pl-c1">loadRefreshableStyleSheetFromURL:</span>
+       [<span class="pl-c1">NSURL</span> <span class="pl-c1">URLWithString:</span><span class="pl-s"><span class="pl-pds">@"</span>http://www.mygroovycloudprovider.com/user/directory/mymyDazzlingStyles.css<span class="pl-pds">"</span></span>]];</pre></div>
+
+<h2>
+<a id="and-theres-more---much-much-more" class="anchor" href="#and-theres-more---much-much-more" aria-hidden="true"><span class="octicon octicon-link"></span></a>And there's more - much, much more</h2>
+
+<p>Checkout the <a href="https://github.com/tolo/InterfaCSS">GitHub page</a> and <a href="https://github.com/tolo/InterfaCSS/wiki">Wiki</a></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/tolo/InterfaCSS/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/tolo/InterfaCSS/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/tolo/InterfaCSS"></a> is maintained by <a href="https://github.com/tolo">tolo</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
