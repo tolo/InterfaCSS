@@ -9,6 +9,7 @@
 * Made styleClassISS property `IBInspectable`.
 * Performance updates related to styling.
 * Added support for W3C style selector specificity for determining the order in which style declarations should be processed. This feature can be enabled using the flag `useSelectorSpecificity`.
+* Added pseudo class `root`, which matches if an element is the root view of a view controller.
 * Added support for overriding and/or extending already registered property definitions ([issue 28](https://github.com/tolo/InterfaCSS/issues/28), requested by @tbrannam). Also added new property setter block type (`ISSPropertySetterBlock`) that returns a `BOOL`, and deprecated the old one (without the ISS prefix).
 * Added support for "selected" and "highlighted" pseudo class selectors ([issue 32](https://github.com/tolo/InterfaCSS/issues/36), requested by @tbrannam).
 * Added support for using mathematical expressions in most places where numbers are used in stylesheets ([issue 35](https://github.com/tolo/InterfaCSS/issues/35), requested by @TadeasKriz).
