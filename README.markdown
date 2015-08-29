@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/tolo/InterfaCSS.svg?branch=master)](https://travis-ci.org/tolo/InterfaCSS)
 
 
-Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way you could style and layout your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like on the web?
+> Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way you could style and layout your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like on the web?
 
 
 
@@ -13,7 +13,7 @@ Everyone loves a beautifully designed app with a consistent UI, and getting ther
 
 
 ### Simple yet powerful styling
-InterfaCSS uses an easy to understand styling [***syntax***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format) that is based on the the familiar ***`CSS`*** styling language used on the web (augmented with some *Sass/Less*-like features, such as *nested declarations* and *variables*), which means that you (and your designer) will probably feel right at home. InterfaCSS supports a rich selector syntax (*type*, *class* and *element id* selectors, *selector combinators*, *pseudo classes*, etc) and property names are what you expect them to be - i.e. the same as in `UIKit`, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [***more***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
+InterfaCSS uses an easy to understand styling [***syntax***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format) that is based on the the familiar ***CSS*** styling language used on the web (augmented with some *Sass/Less*-like features, such as *nested declarations* and *variables*), which means that you (and your designer) will probably feel right at home. InterfaCSS supports a rich selector syntax (*type*, *class* and *element id* selectors, *selector combinators*, *pseudo classes*, etc) and property names are what you expect them to be - i.e. the same as in `UIKit`, and you can set things like *fonts, colors, images, transform, insets, offsets, rects, enums* and much, much [***more***](https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference).
 
 ```css
 #helloWorldButton {
@@ -89,14 +89,14 @@ self.view = ISSViewBuilder.rootViewWithId("rootView", withOwner: self, andSubVie
 Styling isn't something you just do at startup of course - you can easily modify the styling any time by using methods defined in the category [`UIView+InterfaCSS.h`](InterfaCSS/UI/UIView+InterfaCSS.h), for example:
 
 ```objective-c
-  self.view.styleClassISS = @"groovyStyle anotherGroovyStyle"; // Supports multiple style classes separated by whitespace - TIP: This property is also IBInspectable
+self.view.styleClassISS = @"groovyStyle anotherGroovyStyle"; // Supports multiple style classes separated by whitespace - TIP: This property is also IBInspectable
 ```
 ```objective-c
-  self.view.elementIdISS = @"groovyElement"; // To uniquely style a specific element
+self.view.elementIdISS = @"groovyElement"; // To uniquely style a specific element
 ```
 ```objective-c
-  [self.view addStyleClassISS:@"anEvenMoreGroovyStyle"];
-  [self.view removeStyleClassISS:@"anEvenMoreGroovyStyle"];
+[self.view addStyleClassISS:@"anEvenMoreGroovyStyle"];
+[self.view removeStyleClassISS:@"anEvenMoreGroovyStyle"];
 ```
 
 Read more about how styling is applied on the ***[Using InterfaCSS](https://github.com/tolo/InterfaCSS/wiki/Using-InterfaCSS)*** wiki page.
@@ -107,7 +107,7 @@ Read more about how styling is applied on the ***[Using InterfaCSS](https://gith
 For larger apps, it's usually a good idea to split up the styles on different stylesheet files - perhaps you want one for variables, one for common styles, and several stylesheets for different parts of the application for instance. You can also attach a *scope* when loading stylesheet (*version 1.1*), to make sure the styles it in are only processed for views under a particular view controller (for instance).
 
 ```objective-c
-ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:self.class];
+ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:BraveNewViewController.class];
 [[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"stylesForOnePartOfTheApp.css" withScope:scope];
 ```
 
@@ -115,12 +115,11 @@ ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:sel
 To make development simpler and faster, try using an auto-refreshable stylesheet (in addition to your standard stylesheets) - load an auto-refreshable stylesheet from a (file/web) URL, launch your app on a device or in the sim, and watch how the UI updates itself before your very eyes, without having to wait for those frustrating `compile`/`deploy`/`launch`/`returnToWhereYouWere`-cycles. Note though that this feature is only intended for use during development. Checkout the snippet below for an example on how you add refreshable stylesheets (in your app delegate for instance). Also, checkout the properties `stylesheetAutoRefreshInterval` and `processRefreshableStylesheetsLast` in `InterfaCSS`, for more control over how refreshable stylesheets are managed.
 
 ```objective-c
-    /* For local (simulator) use, you can for instance load the actual css file used in your project as an auto-refreshable stylesheet: */
-    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
-        [NSURL URLWithString:@"file:///Users/username/myCoolXcodeProject/myDazzlingStyles.css"]];
-    /* Or if you want to be able to run on a device, you can for instance simply upload the file to your cloud provider of choice: */
-    [[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
-        [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/myDazzlingStyles.css"]];
+/* For local (simulator) use, you can for instance load the actual css file used in your project as an auto-refreshable stylesheet: */
+[[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromLocalFile:@"/Users/username/myCoolXcodeProject/myDazzlingStyles.css"];
+/* Or if you want to be able to run on a device, you can for instance simply upload the file to your cloud provider of choice: */
+[[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
+   [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/user/directory/mymyDazzlingStyles.css"]];
 ```
 
 
