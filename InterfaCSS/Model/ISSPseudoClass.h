@@ -34,6 +34,7 @@ typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
     ISSPseudoClassTypeStateHighlighted,
 
     // Structural
+    ISSPseudoClassTypeRoot,
     ISSPseudoClassTypeNthChild,
     ISSPseudoClassTypeNthLastChild,
     ISSPseudoClassTypeOnlyChild,

@@ -44,6 +44,7 @@ static NSDictionary* stringToPseudoClassType;
             @"selected" : @(ISSPseudoClassTypeStateSelected),
             @"highlighted" : @(ISSPseudoClassTypeStateHighlighted),
 
+            @"root" : @(ISSPseudoClassTypeRoot),
             @"nthchild" : @(ISSPseudoClassTypeNthChild),
             @"nthlastchild" : @(ISSPseudoClassTypeNthLastChild),
             @"onlychild" : @(ISSPseudoClassTypeOnlyChild),
@@ -159,6 +160,9 @@ static NSDictionary* stringToPseudoClassType;
             return [uiElement respondsToSelector:@selector(isHighlighted)] && [uiElement isHighlighted];
         }
 
+        case ISSPseudoClassTypeRoot: {
+            return elementDetails.parentViewController != nil;
+        }
         case ISSPseudoClassTypeNthChild:
         case ISSPseudoClassTypeFirstChild: {
             if( elementDetails.parentView ) return [self matchesIndex:[elementDetails.parentView.subviews indexOfObject:uiElement] count:elementDetails.parentView.subviews.count reverse:NO];
@@ -217,6 +221,7 @@ static NSDictionary* stringToPseudoClassType;
         case ISSPseudoClassTypeStateSelected: return @"selected";
         case ISSPseudoClassTypeStateHighlighted: return @"highlighted";
 
+        case ISSPseudoClassTypeRoot: return @"root";
         case ISSPseudoClassTypeNthChild: return [NSString stringWithFormat:@"nthchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];
         case ISSPseudoClassTypeNthLastChild: return [NSString stringWithFormat:@"nthlastchild(%ldn%@%ld)", (long)_a, bSign, (long)_b];
         case ISSPseudoClassTypeOnlyChild: return @"onlychild";
