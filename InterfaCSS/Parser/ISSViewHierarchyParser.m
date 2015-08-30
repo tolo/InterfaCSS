@@ -207,6 +207,7 @@ static NSDictionary* tagToClass;
         // "property":
         else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeProperty] ) {
             propertyName = value;
+            implicitPropertyName = NO;
             canonicalAttributes[ISSViewDefinitionFileAttributeProperty] = value;
         }
         // "layout" or "ISSLayout":
@@ -217,7 +218,6 @@ static NSDictionary* tagToClass;
         // "prototype":
         else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributePrototype] ) {
             prototypeName = value;
-            implicitPropertyName = NO;
             canonicalAttributes[ISSViewDefinitionFileAttributePrototype] = value;
         }
         // "propertyScope" or "scope":
@@ -297,7 +297,7 @@ static NSDictionary* tagToClass;
     } else {
         currentViewObject = viewBuilderBlock(parent);
         if( [propertyName iss_hasData] ) {
-            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:self.fileOwner silent:!implicitPropertyName];
+            [self.class setViewObjectPropertyValue:currentViewObject withName:propertyName inParent:parent orFileOwner:self.fileOwner silent:implicitPropertyName];
         }
         if( addSubview ) [self.addViewAsSubView addObject:currentViewObject];
     }
