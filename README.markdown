@@ -30,7 +30,7 @@ InterfaCSS uses an easy to understand styling [***syntax***](https://github.com/
 
 
 ### InterfaCSS can get you [DRY](http://en.wikipedia.org/wiki/Don't_repeat_yourself)
-We all hate to duplicate code, so why should styling be any different? Sure, `UIAppearance` can help you in a *(very)* limited way, but would you still want to write (and read) things like this:
+We all hate to duplicate code, so why should styling be any different? Sure, `UIAppearance` provides some help, but would you still want to write (and read) things like this:
 
 ```objective-c
 [[UIButton appearanceWhenContainedIn:UITableViewCell.class, nil] setTitleColor:
@@ -44,7 +44,7 @@ UITableViewCell UIButton {
     titleColor(selected): #ff6d10;
 }
 
-/* Or maybe like this, if you wanted to be even more specific: */
+/* Or what if you actually needed a bit more fine-grained control: */
 BraveNewViewController UITableViewCell UIButton.mySpecialButton {
     titleColor(selected): #ff6d10;
 }
