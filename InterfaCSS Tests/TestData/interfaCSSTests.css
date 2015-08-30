@@ -172,6 +172,9 @@ UIView.disabledStylingTest {
 #layoutElement4 {
     layout: size(100, 100), left(layoutElement3), top(layoutElement1);
 }
+#layoutElement5 {
+    layout: left(parent.left + 100), right(parent.right - 100), top(parent.top + 50), bottom(parent.bottom - 50);
+}
 
 
 .typeSelectorAndPrefixedPropertyTest {

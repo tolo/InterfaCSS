@@ -575,6 +575,8 @@
     [view addSubview:v3];
     UIView* v4 = [ISSViewBuilder viewWithId:@"layoutElement4"];
     [view addSubview:v4];
+    UIView* v5 = [ISSViewBuilder viewWithId:@"layoutElement5"];
+    [view addSubview:v5];
     
     [view applyStylingISS];
     [view setNeedsLayout];
@@ -582,9 +584,12 @@
     
     XCTAssertEqualObjects(NSStringFromCGRect(v1.frame), NSStringFromCGRect(CGRectMake(10, 10, 100, 100)));
     XCTAssertEqualObjects(NSStringFromCGRect(v2.frame), NSStringFromCGRect(CGRectMake(110, 110, 100, 100)));
+    
     // layoutElement3 and layoutElement4 have cyclic dependencies and should remain unresolved
     XCTAssertEqualObjects(NSStringFromCGRect(v3.frame), NSStringFromCGRect(CGRectZero));
     XCTAssertEqualObjects(NSStringFromCGRect(v4.frame), NSStringFromCGRect(CGRectZero));
+    
+    XCTAssertEqualObjects(NSStringFromCGRect(v5.frame), NSStringFromCGRect(CGRectMake(100, 50, 300, 400)));
 }
 
 - (void) testPrefixedPropertyOverrideOfTypeProperty {

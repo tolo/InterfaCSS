@@ -283,30 +283,30 @@ static NSDictionary* stringToLayoutGuide;
     switch(attribute) {
         case ISSLayoutAttributeTop:
         case ISSLayoutAttributeTopMargin: {
-            if( attribute == ISSLayoutAttributeTop ) rect->origin.y = value;
-            else rect->origin.y = value - view.layoutMargins.top; // Offset with margin
-            if( autoHeight ) rect->size.height -= value;
+            if( attribute == ISSLayoutAttributeTop ) rect->origin.y += value;
+            else rect->origin.y += value - view.layoutMargins.top; // Offset with margin
+            if( autoHeight ) rect->size.height -= value; // When using auto height, decrease height with "top inset"
             break;
         }
         case ISSLayoutAttributeLeft:
         case ISSLayoutAttributeLeftMargin: {
-            if( attribute == ISSLayoutAttributeLeft ) rect->origin.x = value;
-            else rect->origin.x = value - view.layoutMargins.left; // Offset with margin
-            if( autoWidth ) rect->size.width -= value;
+            if( attribute == ISSLayoutAttributeLeft ) rect->origin.x += value;
+            else rect->origin.x += value - view.layoutMargins.left; // Offset with margin
+            if( autoWidth ) rect->size.width -= value; // When using auto width, decrease width with "left inset"
             break;
         }
         case ISSLayoutAttributeBottom:
         case ISSLayoutAttributeBottomMargin: {
-            if( attribute == ISSLayoutAttributeBottom ) rect->origin.y = value - rect->size.height;
-            else rect->origin.y = value - rect->size.height + view.layoutMargins.bottom; // Offset with margin
-            if( autoHeight ) rect->size.height -= value;
+            if( attribute == ISSLayoutAttributeBottom ) rect->origin.y += value - rect->size.height;
+            else rect->origin.y += value - rect->size.height + view.layoutMargins.bottom; // Offset with margin
+            if( autoHeight ) rect->size.height -= view.superview.bounds.size.height - value; // When using auto height, decrease height with "bottom inset" (i.e. distance from superview bottom edge)
             break;
         }
         case ISSLayoutAttributeRight:
         case ISSLayoutAttributeRightMargin: {
-            if( attribute == ISSLayoutAttributeRight ) rect->origin.x = value - rect->size.width;
-            else rect->origin.x = value - rect->size.width + view.layoutMargins.right; // Offset with margin
-            if( autoWidth ) rect->size.width -= value;
+            if( attribute == ISSLayoutAttributeRight ) rect->origin.x += value - rect->size.width;
+            else rect->origin.x += value - rect->size.width + view.layoutMargins.right; // Offset with margin
+            if( autoWidth ) rect->size.width -= view.superview.bounds.size.width - value; // When using auto width, decrease width with "left inset" (i.e. distance from superview rigth edge)
             break;
         }
         case ISSLayoutAttributeCenterX: {
@@ -331,10 +331,23 @@ static NSDictionary* stringToLayoutGuide;
     ISSLayoutAttributeValue* widthAttributeValue = self.attributeValues[@(ISSLayoutAttributeWidth)];
     ISSLayoutAttributeValue* heightAttributeValue = self.attributeValues[@(ISSLayoutAttributeHeight)];
     BOOL usingAutoWidth = widthAttributeValue == nil;
+    BOOL useIntrinsicWidth = YES;
     BOOL usingAutoHeight = heightAttributeValue == nil;
+    BOOL useIntrinsicHeight = YES;
+    
+    // If both left and right attributes have been specified - let the width be derived from those values (i.e. don't use intrinsic width)
+    if( (self.attributeValues[@(ISSLayoutAttributeLeft)] || self.attributeValues[@(ISSLayoutAttributeLeftMargin)]) &&
+       (self.attributeValues[@(ISSLayoutAttributeRight)] || self.attributeValues[@(ISSLayoutAttributeRightMargin)]) ) {
+        useIntrinsicWidth = NO;
+    }
+    // If both top and bottom attributes have been specified - let the height be derived from those values (i.e. don't use intrinsic width)
+    if( (self.attributeValues[@(ISSLayoutAttributeTop)] || self.attributeValues[@(ISSLayoutAttributeTopMargin)]) &&
+       (self.attributeValues[@(ISSLayoutAttributeBottom)] || self.attributeValues[@(ISSLayoutAttributeBottomMargin)]) ) {
+        useIntrinsicHeight = NO;
+    }
     
     if( usingAutoWidth ) {
-        if( intrinsicSize.width != UIViewNoIntrinsicMetric ) { // If no width layout value has been specified, but an intrinsic content width is available - use that
+        if( useIntrinsicWidth && intrinsicSize.width != UIViewNoIntrinsicMetric ) { // If no width layout value has been specified, but an intrinsic content width is available - use that
             resolvedRect.size.width = intrinsicSize.width;
             usingAutoWidth = NO;
         }
@@ -343,7 +356,7 @@ static NSDictionary* stringToLayoutGuide;
         if( !didResolve ) return NO;
     }
     if( usingAutoHeight ) {
-        if( intrinsicSize.height != UIViewNoIntrinsicMetric ) { // If no height layout value has been specified, but an intrinsic content height is available - use that
+        if( useIntrinsicHeight && intrinsicSize.height != UIViewNoIntrinsicMetric ) { // If no height layout value has been specified, but an intrinsic content height is available - use that
             resolvedRect.size.height = intrinsicSize.height;
             usingAutoHeight = NO;
         }
