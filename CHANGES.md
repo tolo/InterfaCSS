@@ -1,6 +1,15 @@
 #Changes
 
 
+
+##Version 1.1.1
+
+### Bug fixes
+* Removed incorrect warning logging in view definition file parser (ISSViewHierarchyParser).  
+* Fixed error in ISSLayout with how width/height was calculated when using simultaneous left & right / top & bottom attributes.   
+
+
+
 ##Version 1.1
 
 ### New features & changes
