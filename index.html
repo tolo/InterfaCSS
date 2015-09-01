@@ -20,7 +20,7 @@
     <header>
       <div class="inner">
         <h1>InterfaCSS</h1>
-        <h2>CSS based styling and layout for iOS</h2>
+        <h2>The CSS-inspired styling and layout framework for iOS</h2>
         <a href="https://github.com/tolo/InterfaCSS" class="button"><small>View project on</small> GitHub</a>
       </div>
     </header>
@@ -29,7 +29,7 @@
       <div class="inner clearfix">
         <section id="main-content">
           <blockquote>
-<p><em>What if you could style and layout your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like the web?</em>   </p>
+<p><em>What if you could do</em> <strong><em>styling</em></strong>, <strong><em>theming</em></strong> <em>and</em> <strong><em>layout</em></strong> <em>in your app in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like the web?</em></p>
 </blockquote>
 
 <h1>
@@ -38,7 +38,9 @@
 <h2>
 <a id="simple-yet-powerful-styling" class="anchor" href="#simple-yet-powerful-styling" aria-hidden="true"><span class="octicon octicon-link"></span></a>Simple yet powerful styling</h2>
 
-<p>InterfaCSS uses an easy to understand styling <a href="https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format"><strong><em>syntax</em></strong></a> that is based on the the familiar <strong><em>CSS</em></strong> styling language used on the web (augmented with some <em>Sass/Less</em>-like features, such as <em>nested declarations</em> and <em>variables</em>), which means that you (and your designer) will probably feel right at home.</p>
+<p>InterfaCSS is a lightweight framework that makes it easy to create reusable styles (or even themes) for your iOS applications, by separating out all the styling information into easily digestible stylesheet files.</p>
+
+<p>InterfaCSS uses an easy to understand styling <a href="https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format"><strong><em>syntax</em></strong></a> that is based on the the familiar <strong><em>CSS</em></strong> styling language used on the web (augmented with some <em>Sass/Less</em>-like features, such as <em>nested declarations</em> and <em>variables</em>), which means that you (and your designer) will probably feel right at home. The syntax is incredibly rich - both when it comes to what kind of selectors you can use and what kind of properties you can set.</p>
 
 <div class="highlight highlight-css"><pre><span class="pl-e">.standardButton</span> {
    <span class="pl-c1">background</span>C<span class="pl-c1">olor</span>: image(<span class="pl-s"><span class="pl-pds">"</span>patternImageAsColor.png<span class="pl-pds">"</span></span>);
@@ -60,6 +62,20 @@ BraveNewViewController UITableViewCell <span class="pl-e">.standardButton</span>
     <span class="pl-c1">title</span>C<span class="pl-c1">olor</span>: <span class="pl-c1">#7e00ff</span>;
     <span class="pl-c1">title</span>C<span class="pl-c1">olor</span>(<span class="pl-c1">selected</span>): <span class="pl-c1">#ff6d10</span>;
 }</pre></div>
+
+<h2>
+<a id="stylesheets---standard-scoped-or-live" class="anchor" href="#stylesheets---standard-scoped-or-live" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stylesheets - standard, scoped or <em>"live"</em>
+</h2>
+
+<p>Use as many stylesheets as you find appropriate in your app - (<strong><em>theming</em></strong> is easily accomplished by using multiple stylesheet files). If you want, you can also limit the scope of a stylesheet, to make sure it's only used in specific view controllers for instance.</p>
+
+<div class="highlight highlight-objective-c"><pre>ISSStyleSheetScope* scope = [ISSStyleSheetScope <span class="pl-c1">scopeWithViewControllerClass:</span>BraveNewViewController.class];
+[[InterfaCSS <span class="pl-c1">sharedInstance</span>] <span class="pl-c1">loadStyleSheetFromMainBundleFile:</span><span class="pl-s"><span class="pl-pds">@"</span>stylesForOnePartOfTheApp.css<span class="pl-pds">"</span></span> <span class="pl-c1">withScope:</span>scope];</pre></div>
+
+<p>For development, you can also load "live", auto-refreshable stylesheets, which can be very useful to avoid those pesky <code>compile</code>/<code>deploy</code>/<code>launch</code>/<code>returnToWhereYouWere</code>-cycles when you are fine-tuning your styles. Auto-refreshable stylesheets can either be loaded from a <strong><em>local file</em></strong> (that will be monitored for changes) or from a file located on a <strong><em>remote (HTTP) server</em></strong> (that will be polled at regular intervals).</p>
+
+<div class="highlight highlight-objective-c"><pre>   [[InterfaCSS <span class="pl-c1">interfaCSS</span>] <span class="pl-c1">loadRefreshableStyleSheetFromURL:</span>
+       [<span class="pl-c1">NSURL</span> <span class="pl-c1">URLWithString:</span><span class="pl-s"><span class="pl-pds">@"</span>http://www.mygroovycloudprovider.com/user/directory/mymyDazzlingStyles.css<span class="pl-pds">"</span></span>]];</pre></div>
 
 <h2>
 <a id="flexible-layouts-the-easy-way" class="anchor" href="#flexible-layouts-the-easy-way" aria-hidden="true"><span class="octicon octicon-link"></span></a>Flexible layouts, the easy way</h2>
@@ -91,20 +107,6 @@ BraveNewViewController UITableViewCell <span class="pl-e">.standardButton</span>
         ISSViewBuilder<span class="pl-k">.</span>viewWithId(<span class="pl-s"><span class="pl-pds">"</span>view2<span class="pl-pds">"</span></span>),
     ];
 })</pre></div>
-
-<h2>
-<a id="stylesheets---standard-scoped-live" class="anchor" href="#stylesheets---standard-scoped-live" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stylesheets - standard, scoped, <em>"live"</em>
-</h2>
-
-<p>Use as many stylesheets as you find appropriate in your app. If you want, you can also limit the scope of a stylesheet, to make sure it's only used in specific view controllers for instance.</p>
-
-<div class="highlight highlight-objective-c"><pre>ISSStyleSheetScope* scope = [ISSStyleSheetScope <span class="pl-c1">scopeWithViewControllerClass:</span>BraveNewViewController.class];
-[[InterfaCSS <span class="pl-c1">sharedInstance</span>] <span class="pl-c1">loadStyleSheetFromMainBundleFile:</span><span class="pl-s"><span class="pl-pds">@"</span>stylesForOnePartOfTheApp.css<span class="pl-pds">"</span></span> <span class="pl-c1">withScope:</span>scope];</pre></div>
-
-<p>For development, you can also load "live", auto-refreshable stylesheets, which can be very useful to avoid those pesky <code>compile</code>/<code>deploy</code>/<code>launch</code>/<code>returnToWhereYouWere</code>-cycles when you are fine-tuning your styles. Auto-refreshable stylesheets can either be loaded from a <strong><em>local file</em></strong> (that will be monitored for changes) or from a file located on a <strong><em>remote (HTTP) server</em></strong> (that will be polled at regular intervals).</p>
-
-<div class="highlight highlight-objective-c"><pre>   [[InterfaCSS <span class="pl-c1">interfaCSS</span>] <span class="pl-c1">loadRefreshableStyleSheetFromURL:</span>
-       [<span class="pl-c1">NSURL</span> <span class="pl-c1">URLWithString:</span><span class="pl-s"><span class="pl-pds">@"</span>http://www.mygroovycloudprovider.com/user/directory/mymyDazzlingStyles.css<span class="pl-pds">"</span></span>]];</pre></div>
 
 <h2>
 <a id="and-theres-more---much-much-more" class="anchor" href="#and-theres-more---much-much-more" aria-hidden="true"><span class="octicon octicon-link"></span></a>And there's more - much, much more</h2>
