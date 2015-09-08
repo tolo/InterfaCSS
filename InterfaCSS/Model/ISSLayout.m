@@ -94,9 +94,11 @@ static NSDictionary* stringToLayoutGuide;
     }
     // Layout guide relative value:
     else if( self.isLayoutGuideValue ) {
-        rect = UIEdgeInsetsInsetRect(window.bounds, layoutGuideInsets);
-        // Convert the window rect to the coordinate system of the parent view of the current element
-        rect = [window convertRect:rect toView:parentView];
+        UIView* viewControllerView = element.elementDetailsISS.closestViewController.view;
+        if( !viewControllerView ) viewControllerView = window;
+        rect = UIEdgeInsetsInsetRect(viewControllerView.bounds, layoutGuideInsets);
+        // Convert the view controller root view rect to the coordinate system of the parent view of the current element
+        rect = [viewControllerView convertRect:rect toView:parentView];
     }
     // Value relative to other element:
     else if( relativeElementDetails && parentView ) {
@@ -297,16 +299,24 @@ static NSDictionary* stringToLayoutGuide;
         }
         case ISSLayoutAttributeBottom:
         case ISSLayoutAttributeBottomMargin: {
-            if( attribute == ISSLayoutAttributeBottom ) rect->origin.y += value - rect->size.height;
-            else rect->origin.y += value - rect->size.height + view.layoutMargins.bottom; // Offset with margin
-            if( autoHeight ) rect->size.height -= view.superview.bounds.size.height - value; // When using auto height, decrease height with "bottom inset" (i.e. distance from superview bottom edge)
+            if( autoHeight ) {
+                rect->size.height -= view.superview.bounds.size.height - value; // When using auto height, decrease height with "bottom inset" (i.e. distance from superview bottom edge)
+                if( attribute == ISSLayoutAttributeBottomMargin ) rect->size.height += view.layoutMargins.bottom; // Offset with margin
+            } else {
+                if( attribute == ISSLayoutAttributeBottom ) rect->origin.y += value - rect->size.height;
+                else rect->origin.y += value - rect->size.height + view.layoutMargins.bottom; // Offset with margin
+            }
             break;
         }
         case ISSLayoutAttributeRight:
         case ISSLayoutAttributeRightMargin: {
-            if( attribute == ISSLayoutAttributeRight ) rect->origin.x += value - rect->size.width;
-            else rect->origin.x += value - rect->size.width + view.layoutMargins.right; // Offset with margin
-            if( autoWidth ) rect->size.width -= view.superview.bounds.size.width - value; // When using auto width, decrease width with "left inset" (i.e. distance from superview rigth edge)
+            if( autoWidth ) {
+                rect->size.width -= view.superview.bounds.size.width - value; // When using auto width, decrease width with "right inset" (i.e. distance from superview rigth edge)
+                if( attribute == ISSLayoutAttributeRightMargin ) rect->size.width += view.layoutMargins.right; // Offset with margin
+            } else {
+                if( attribute == ISSLayoutAttributeRight ) rect->origin.x += value - rect->size.width;
+                else rect->origin.x += value - rect->size.width + view.layoutMargins.right; // Offset with margin
+            }
             break;
         }
         case ISSLayoutAttributeCenterX: {
