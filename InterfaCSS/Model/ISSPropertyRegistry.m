@@ -179,7 +179,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     }
     if( !clazz && registerIfNotFound ) {
         // If type doesn't match a registered class name, try to see if the type is a valid class...
-        clazz = NSClassFromString(type);
+        clazz = [ISSRuntimeIntrospectionUtils classWithName:type];
         if( clazz ) {
             // ...and if it is - register it as a canonical type (keep case)
             [self registerCanonicalTypeClass:clazz];

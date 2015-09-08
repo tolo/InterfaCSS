@@ -122,7 +122,12 @@ static NSDictionary* tagToClass;
 - (Class) elementNameToViewClass:(NSString*)elementName {
     NSString* lcElementName = [elementName lowercaseString];
     if ( [lcElementName hasPrefix:@"ui"] ) lcElementName = [lcElementName substringFromIndex:2];
-    return (Class)tagToClass[lcElementName];
+    Class viewClass = (Class)tagToClass[lcElementName];
+    if( !viewClass )  {
+        // Fallback - use element name as viewClass
+        viewClass = [ISSRuntimeIntrospectionUtils classWithName:elementName];
+    }
+    return viewClass;
 }
 
 
@@ -232,12 +237,12 @@ static NSDictionary* tagToClass;
         }
         // "impl" or "implementation":
         else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeImplementationClass] || [key iss_isEqualIgnoreCase:@"impl"] ) {
-            viewClass =  NSClassFromString(value);
+            viewClass =  [ISSRuntimeIntrospectionUtils classWithName:value];
             canonicalAttributes[ISSViewDefinitionFileAttributeImplementationClass] = value;
         }
         // "layoutClass":
         else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeCollectionViewLayoutClass] ) {
-            collectionViewLayoutClass =  NSClassFromString(value);
+            collectionViewLayoutClass = [ISSRuntimeIntrospectionUtils classWithName:value];
             canonicalAttributes[ISSViewDefinitionFileAttributeCollectionViewLayoutClass] = value;
         }
         else {
@@ -250,11 +255,8 @@ static NSDictionary* tagToClass;
 
     // Set viewClass if not specified by impl attribute
     viewClass = viewClass ?: [self elementNameToViewClass:elementName];
-    if( !viewClass )  {
-        // Fallback - use element name as viewClass
-        viewClass = NSClassFromString(elementName);
-    }
-    viewClass = viewClass ?: UIView.class;
+    viewClass = viewClass ?: UIView.class; // If class not found - fall back to UIView
+    
     // If this is the root view, make it an ISSRootView instead of UIView (if not using a root wrapper view)
     if( !self.rootView && !self.wrapRoot && [viewClass isEqual:UIView.class] ) {
         viewClass = ISSRootView.class;

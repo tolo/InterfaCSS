@@ -87,7 +87,7 @@ static NSCache* propertyNamesWithClassForClassCache;
     NSString* propertyAttributesDescription = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
     NSArray* splitPropertyAttributes = [propertyAttributesDescription componentsSeparatedByString:@"\""];
     if ( [propertyAttributesDescription hasPrefix:@"T@"] && [splitPropertyAttributes count] > 1 ) {
-        return NSClassFromString([splitPropertyAttributes objectAtIndex:1]);
+        return [self classWithName:splitPropertyAttributes[1]];
     } else {
         return nil;
     }
@@ -241,6 +241,15 @@ static NSCache* propertyNamesWithClassForClassCache;
     } else {
         return NO;
     }
+}
+
++ (Class) classWithName:(NSString*)className {
+    Class clazz = NSClassFromString(className);
+    if( !clazz ) { // If direct match not found, check if it's a Swift class name
+        NSString* appName = [[[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString*)kCFBundleNameKey] stringByReplacingOccurrencesOfString:@" " withString:@"_"];
+        clazz = NSClassFromString([NSString stringWithFormat:@"%@.%@", appName, className]);
+    }
+    return clazz;
 }
 
 + (BOOL) klaatuVerataNikto:(Class)clazz selector:(SEL)originalSelector replacement:(IMP)replacement originalPointer:(IMP*)originalPointer {
