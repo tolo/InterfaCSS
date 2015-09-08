@@ -18,6 +18,10 @@
 #import "ISSStylingContext.h"
 
 
+NSString* const ISSStyleSheetRefreshedNotification = @"ISSStyleSheetRefreshedNotification";
+NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshFailedNotification";
+
+
 @implementation ISSStyleSheetScope {
     ISSStyleSheetScopeMatcher _matcher;
 }
@@ -141,24 +145,32 @@
 #pragma mark - Refreshable stylesheet methods
 
 - (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler {
-    [super refreshWithCompletionHandler:^(NSString* responseString) {
-        NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-        NSMutableArray* declarations = [[InterfaCSS sharedInstance].parser parse:responseString];
-        if( declarations ) {
-            if( _declarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
-            else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+    [super refreshWithCompletionHandler:^(BOOL success, NSString* responseString, NSError* error) {
+        if( success ) {
+            NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+            NSMutableArray* declarations = [[InterfaCSS sharedInstance].parser parse:responseString];
+            if( declarations ) {
+                BOOL hasDeclarations = _declarations != nil;
+                _declarations = declarations;
+
+                if( hasDeclarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+                else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+
+                completionHandler();
+            } else {
+                ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
+            }
             
-            _declarations = declarations;
-            completionHandler();
+            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshedNotification object:self];
         } else {
-            ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
+            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshFailedNotification object:self];
         }
     }];
 }
 
-- (void) refreshWithCompletionHandler:(void (^)(NSString*))completionHandler {
+- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     [self refreshStylesheetWithCompletionHandler:^{
-        completionHandler(nil);
+        completionHandler(YES, nil, nil);
     }];
 }
 

@@ -78,7 +78,7 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 @property (nonatomic) BOOL useLenientSelectorParsing;
 
 /**
- * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds. Note: this is only use for stylesheets loaded from a remote URL.
+ * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds. If value is set to <= 0, automatic refresh is disabled. Note: this is only use for stylesheets loaded from a remote URL.
  */
 @property (nonatomic) NSTimeInterval stylesheetAutoRefreshInterval;
 
@@ -334,6 +334,12 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
  */
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
+
+/** Reloads all (remote) refreshable stylesheets. */
+- (void) reloadRefreshableStyleSheets;
+
+/** Reloads a refreshable stylesheet. */
+- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet;
 
 /**
  * Unloads the specified styleSheet.

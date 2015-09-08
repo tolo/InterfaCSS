@@ -18,6 +18,10 @@
 
 typedef BOOL (^ISSStyleSheetScopeMatcher)(ISSUIElementDetails* elementDetails);
 
+extern NSString* const ISSStyleSheetRefreshedNotification;
+extern NSString* const ISSStyleSheetRefreshFailedNotification;
+
+
 
 /**
  * Class representing a scope for limiting to which views styles in a stylesheet should be applied.

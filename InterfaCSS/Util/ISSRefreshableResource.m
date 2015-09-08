@@ -14,6 +14,9 @@
 #import "InterfaCSS.h"
 
 
+NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableResource";
+
+
 @implementation ISSRefreshableResource {
     NSDate* _lastModified;
     NSString* _eTag;
@@ -88,14 +91,16 @@
 }
 
 - (void) resetErrorOccurred {
+    _lastError = nil;
     _lastErrorTime = 0;
 }
 
-- (void) errorOccurred {
+- (void) errorOccurred:(NSError*)error {
+    _lastError = error;
     _lastErrorTime = [NSDate timeIntervalSinceReferenceDate];
 }
 
-- (void) performHeadRequest:(NSMutableURLRequest*)request completionHandler:(void (^)(NSString*))completionHandler {
+- (void) performHeadRequest:(NSMutableURLRequest*)request completionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     [request setHTTPMethod:@"HEAD"];
 
     [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
@@ -109,30 +114,36 @@
                 NSDate* updatedLastModified = [self parseLastModifiedFromResponse:httpURLResponse];
                 BOOL lastModifiedModified = _lastModified != nil && ![_lastModified isEqualToDate:updatedLastModified];
                 if( eTagModified || lastModifiedModified ) { // In case server didn't honor etag/last modified
-                    ISSLogDebug(@"Remote stylesheet modified - executing get request");
+                    ISSLogDebug(@"Remote resource modified - executing get request");
                     [self performGetRequest:request completionHandler:completionHandler];
                 } else {
-                    ISSLogTrace(@"Remote stylesheet NOT modified - %@/%@, %@/%@", _eTag, updatedETag, _lastModified, updatedLastModified);
+                    ISSLogTrace(@"Remote resource NOT modified - %@/%@, %@/%@", _eTag, updatedETag, _lastModified, updatedLastModified);
                 }
             } else if( 304 == httpURLResponse.statusCode ) {
-                ISSLogTrace(@"Remote stylesheet not modified");
+                ISSLogTrace(@"Remote resource not modified");
             } else {
-                if( self.hasErrorOccurred ) ISSLogTrace(@"Unable to verify if remote stylesheet is modified - got HTTP response code %d", httpURLResponse.statusCode);
-                else ISSLogDebug(@"Unable to verify if remote stylesheet is modified - got HTTP response code %d", httpURLResponse.statusCode);
+                error = [NSError errorWithDomain:ISSRefreshableResourceErrorDomain code:1001 userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Unable to verify if remote resource is modified - got HTTP response code %ld", (long)httpURLResponse.statusCode]}];
+                if( self.hasErrorOccurred ) ISSLogTrace(error.localizedDescription);
+                else ISSLogDebug(error.localizedDescription);
                 signalErrorOccurred = YES;
             }
         } else {
-            if( self.hasErrorOccurred ) ISSLogTrace(@"Error verifying if remote stylesheet is modified - %@", error);
-            else ISSLogDebug(@"Error verifying if remote stylesheet is modified - %@", error);
+            if( self.hasErrorOccurred ) ISSLogTrace(@"Error verifying if remote resource is modified - %@", error);
+            else ISSLogDebug(@"Error verifying if remote resource is modified - %@", error);
             signalErrorOccurred = YES;
         }
 
-        if( signalErrorOccurred ) [self errorOccurred];
+        if( signalErrorOccurred ) {
+            [self errorOccurred:error];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionHandler(NO, nil, error);
+            });
+        }
         else [self resetErrorOccurred];
     }];
 }
 
-- (void) performGetRequest:(NSMutableURLRequest*)request completionHandler:(void (^)(NSString*))completionHandler {
+- (void) performGetRequest:(NSMutableURLRequest*)request completionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     [request setHTTPMethod:@"GET"];
 
     [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
@@ -141,7 +152,7 @@
            if ( error == nil ) {
                NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
                if( 200 == httpURLResponse.statusCode ) {
-                   ISSLogDebug(@"Remote stylesheet downloaded - parsing response data");
+                   ISSLogDebug(@"Remote resource downloaded - parsing response data");
                    _eTag = httpURLResponse.allHeaderFields[@"ETag"];
                    _lastModified = [self parseLastModifiedFromResponse:httpURLResponse];
 
@@ -156,27 +167,33 @@
                    NSString* responseString = [[NSString alloc] initWithData:data encoding:encoding];
 
                    dispatch_async(dispatch_get_main_queue(), ^{
-                       completionHandler(responseString);
+                       completionHandler(YES, responseString, nil);
                    });
                } else if( 304 == httpURLResponse.statusCode ) {
-                   ISSLogTrace(@"Remote stylesheet not modified");
+                   ISSLogTrace(@"Remote resource not modified");
                } else {
-                   if( self.hasErrorOccurred ) ISSLogTrace(@"Unable to download remote stylesheet - got HTTP response code %d", httpURLResponse.statusCode);
-                   else ISSLogDebug(@"Unable to download remote stylesheet - got HTTP response code %d", httpURLResponse.statusCode);
+                   error = [NSError errorWithDomain:ISSRefreshableResourceErrorDomain code:1002 userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Unable to download remote resource- got HTTP response code %ld", (long)httpURLResponse.statusCode]}];
+                   if( self.hasErrorOccurred ) ISSLogTrace(error.localizedDescription);
+                   else ISSLogDebug(error.localizedDescription);
                    signalErrorOccurred = YES;
                }
            } else {
-               if( self.hasErrorOccurred ) ISSLogTrace(@"Error downloading stylesheet - %@", error);
-               else ISSLogDebug(@"Error downloading stylesheet - %@", error);
+               if( self.hasErrorOccurred ) ISSLogTrace(@"Error downloading resource - %@", error);
+               else ISSLogDebug(@"Error downloading resource - %@", error);
                signalErrorOccurred = YES;
            }
 
-           if( signalErrorOccurred ) [self errorOccurred];
+           if( signalErrorOccurred ) {
+               [self errorOccurred:error];
+               dispatch_async(dispatch_get_main_queue(), ^{
+                   completionHandler(NO, nil, error);
+               });
+           }
            else [self resetErrorOccurred];
        }];
 }
 
-- (void) refreshWithCompletionHandler:(void (^)(NSString*))completionHandler {
+- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     if( self.hasErrorOccurred ) {
         NSTimeInterval refreshIntervalDuringError = [InterfaCSS interfaCSS].stylesheetAutoRefreshInterval * 3;
         if( ([NSDate timeIntervalSinceReferenceDate] - _lastErrorTime) < refreshIntervalDuringError ) return;
@@ -191,7 +208,7 @@
             if( !date ) date = (NSDate*)attrs[NSFileCreationDate];
         }
         if( !_lastModified || ![_lastModified isEqualToDate:date] ) {
-            completionHandler([[NSString alloc] initWithContentsOfFile:self.resourceURL.path usedEncoding:nil error:nil]);
+            completionHandler(YES, [[NSString alloc] initWithContentsOfFile:self.resourceURL.path usedEncoding:nil error:nil], nil);
             _lastModified = date;
         }
     } else {
@@ -203,6 +220,10 @@
         if( _lastModified || _eTag ) [self performHeadRequest:request completionHandler:completionHandler];
         else [self performGetRequest:request completionHandler:completionHandler];
     }
+}
+
+- (NSString*) description {
+    return [NSString stringWithFormat:@"ISSRefreshableResource[%@]", self.resourceURL.lastPathComponent];
 }
 
 @end
