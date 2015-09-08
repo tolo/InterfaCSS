@@ -328,7 +328,8 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     self.validPrefixKeyPaths = @{ SLC(imageView) : S(imageView), SLC(contentView) : S(contentView), SLC(backgroundView) : S(backgroundView),
             SLC(selectedBackgroundView) : S(selectedBackgroundView), SLC(multipleSelectionBackgroundView) : S(multipleSelectionBackgroundView), SLC(titleLabel) : S(titleLabel),
             SLC(textLabel) : S(textLabel), SLC(detailTextLabel) : S(detailTextLabel), SLC(inputView) : S(inputView), SLC(inputAccessoryView) : S(inputAccessoryView),
-            SLC(tableHeaderView) : S(tableHeaderView), SLC(tableFooterView) : S(tableFooterView), SLC(backgroundView) : S(backgroundView), SLC(customView) : S(customView)};
+            SLC(tableHeaderView) : S(tableHeaderView), SLC(tableFooterView) : S(tableFooterView), SLC(backgroundView) : S(backgroundView), SLC(customView) : S(customView),
+            SLC(leftView) : S(leftView), SLC(rightView) : S(rightView)};
     
 
     NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"normalHighlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
@@ -902,13 +903,17 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         ]];
     textInputProperties = [textInputProperties setByAddingObjectsFromSet:uiTextInputTraitsProperties];
     allProperties = [allProperties setByAddingObjectsFromSet:textInputProperties];
+    
+    NSDictionary* viewModeEnums = @{@"never" : @(UITextFieldViewModeNever), @"always" : @(UITextFieldViewModeAlways), @"unlessEditing" : @(UITextFieldViewModeUnlessEditing), @"whileEditing" : @(UITextFieldViewModeWhileEditing)};
 
     NSSet* textFieldProperties = [NSSet setWithArray:@[
             p(S(clearsOnBeginEditing), ISSPropertyTypeBool),
             pe(S(borderStyle), @{@"none" : @(UITextBorderStyleNone), @"bezel" : @(UITextBorderStyleBezel), @"line" : @(UITextBorderStyleLine), @"roundedRect" : @(UITextBorderStyleRoundedRect)}),
             p(S(background), ISSPropertyTypeImage),
             p(S(disabledBackground), ISSPropertyTypeImage),
-            placeholder
+            placeholder,
+            pei(S(leftViewMode), viewModeEnums),
+            pei(S(rightViewMode), viewModeEnums)
         ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:textFieldProperties];
