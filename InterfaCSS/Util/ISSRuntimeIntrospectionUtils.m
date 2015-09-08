@@ -160,10 +160,12 @@ static NSCache* propertyNamesWithClassForClassCache;
         // TODO: Consider adding some caching...
         SEL selector = NSSelectorFromString(setter);
         NSMethodSignature* signature = [[object class] instanceMethodSignatureForSelector:selector];
-        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setTarget:object];
-        [invocation setSelector:selector];
-        return invocation;
+        if( signature ) {
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:object];
+            [invocation setSelector:selector];
+            return invocation;
+        }
     }
     return nil;
 }
