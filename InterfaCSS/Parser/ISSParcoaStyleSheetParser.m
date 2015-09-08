@@ -795,7 +795,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* constantOnlyValue = [numberValue skipSurroundingSpaces];
 
     ParcoaParser* elementAttribute = [[dot keepRight:identifier] skipSurroundingSpaces];
-    ParcoaParser* elementId = [Parcoa choice:@[identifier, quotedIdentifier]];
+    ParcoaParser* elementIdWithPrefix = [[Parcoa iss_quickUnichar:'#'] keepRight:identifier];
+    ParcoaParser* elementId = [Parcoa choice:@[identifier, quotedIdentifier, elementIdWithPrefix]];
 
 
     // A.attr [* 1.5] [+/- 0.5]
