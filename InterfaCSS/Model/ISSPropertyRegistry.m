@@ -790,7 +790,12 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSSet* activityIndicatorProperties = [NSSet setWithArray:@[
             pe(S(activityIndicatorViewStyle), @{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)}),
             p(S(color), ISSPropertyTypeColor),
-            p(S(hidesWhenStopped), ISSPropertyTypeBool)
+            p(S(hidesWhenStopped), ISSPropertyTypeBool),
+            ps(@"animating", ISSPropertyTypeBool, ^(SetterBlockParamList) {
+                if( value ) [viewObject startAnimating];
+                else [viewObject stopAnimating];
+                return YES;
+            })
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:activityIndicatorProperties];
 
