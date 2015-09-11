@@ -704,4 +704,9 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     XCTAssertEqualObjects(parsedLayout, layout);
 }
 
+- (void) testNestedVariable {
+    id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"nestedVariableClass"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont fontWithName:@"GillSans" size:42]);
+}
+
 @end

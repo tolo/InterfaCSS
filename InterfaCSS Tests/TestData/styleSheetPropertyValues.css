@@ -6,6 +6,10 @@
 @numericalConstant: 42;
 @mathExpressionConstant: 10 ** (3 - 1);
 
+@fontNameVariable: "GillSans";
+@fontSizeVariable: 42;
+@nestedVariable: @fontNameVariable @fontSizeVariable;
+
 .simple {
     alpha: 0.33;
     layer.cornerRadius: 5;
@@ -189,4 +193,9 @@
 }
 .layoutImplicitAttributes5 {
     layout: size(elementFoo, 2 * elementFoo + 100), bottomRight(elementFoo, elementFoo);
+}
+
+
+.nestedVariableClass {
+    font: @nestedVariable;
 }

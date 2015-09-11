@@ -432,6 +432,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             }
             if( variableValue ) {
                 variableValue = [variableValue iss_trimQuotes];
+                variableValue = [self replaceVariableReferences:variableValue]; // Resolve nested variables
 
                 // Replace variable occurrence in propertyValue string with variableValue string
                 propertyValue = [propertyValue stringByReplacingCharactersInRange:NSMakeRange(atRange.location, variableNameRange.length+1)
