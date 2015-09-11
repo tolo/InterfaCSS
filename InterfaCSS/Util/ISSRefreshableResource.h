@@ -29,6 +29,6 @@ typedef void (^ISSRefreshableResourceLoadCompletionBlock)(BOOL success, NSString
 - (void) startMonitoringLocalFileChanges:(void (^)(ISSRefreshableResource*))callbackBlock;
 - (void) endMonitoringLocalFileChanges;
 
-- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler;
+- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler force:(BOOL)force;
 
 @end

@@ -193,7 +193,7 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
        }];
 }
 
-- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
+- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler force:(BOOL)force {
     if( self.hasErrorOccurred ) {
         NSTimeInterval refreshIntervalDuringError = [InterfaCSS interfaCSS].stylesheetAutoRefreshInterval * 3;
         if( ([NSDate timeIntervalSinceReferenceDate] - _lastErrorTime) < refreshIntervalDuringError ) return;
@@ -207,17 +207,19 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
             date = (NSDate*)attrs[NSFileModificationDate];
             if( !date ) date = (NSDate*)attrs[NSFileCreationDate];
         }
-        if( !_lastModified || ![_lastModified isEqualToDate:date] ) {
+        if( force || !_lastModified || ![_lastModified isEqualToDate:date] ) {
             completionHandler(YES, [[NSString alloc] initWithContentsOfFile:self.resourceURL.path usedEncoding:nil error:nil], nil);
             _lastModified = date;
         }
     } else {
         NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.resourceURL];
         [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
-        if( _lastModified ) [request setValue:[ISSDateUtils formatHttpDate:_lastModified] forHTTPHeaderField:@"If-Modified-Since"];
-        if( _eTag ) [request setValue:_eTag forHTTPHeaderField:@"If-None-Match"];
+        if( !force ) {
+            if( _lastModified ) [request setValue:[ISSDateUtils formatHttpDate:_lastModified] forHTTPHeaderField:@"If-Modified-Since"];
+            if( _eTag ) [request setValue:_eTag forHTTPHeaderField:@"If-None-Match"];
+        }
 
-        if( _lastModified || _eTag ) [self performHeadRequest:request completionHandler:completionHandler];
+        if( !force && (_lastModified || _eTag) ) [self performHeadRequest:request completionHandler:completionHandler];
         else [self performGetRequest:request completionHandler:completionHandler];
     }
 }

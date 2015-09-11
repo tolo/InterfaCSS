@@ -189,7 +189,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (void) autoRefreshTimerTick {
-    [self reloadRefreshableStyleSheets];
+    [self reloadRefreshableStyleSheets:NO];
 }
 
 
@@ -885,13 +885,13 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetURL withScope:(ISSStyleSheetScope*)scope {
     ISSStyleSheet* styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetURL declarations:nil refreshable:YES scope:scope];
     [self.styleSheets addObject:styleSheet];
-    [self reloadRefreshableStyleSheet:styleSheet];
+    [self reloadRefreshableStyleSheet:styleSheet force:NO];
     
     BOOL usingFileMonitoring = NO;
     if( styleSheetURL.isFileURL ) { // If local file URL - attempt to use file monitoring instead of polling
         __weak InterfaCSS* weakSelf = self;
         [styleSheet startMonitoringLocalFileChanges:^(ISSRefreshableResource* refreshed) {
-            [weakSelf reloadRefreshableStyleSheet:styleSheet];
+            [weakSelf reloadRefreshableStyleSheet:styleSheet force:YES];
         }];
         usingFileMonitoring = styleSheet.usingLocalFileChangeMonitoring;
     }
@@ -911,18 +911,18 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     return [self loadRefreshableStyleSheetFromURL:[NSURL fileURLWithPath:styleSheetFilePath] withScope:scope];
 }
 
-- (void) reloadRefreshableStyleSheets {
+- (void) reloadRefreshableStyleSheets:(BOOL)force {
     for(ISSStyleSheet* styleSheet in self.styleSheets) {
         if( styleSheet.refreshable && styleSheet.active && !styleSheet.usingLocalFileChangeMonitoring ) { // Attempt to get updated stylesheet
-            [self reloadRefreshableStyleSheet:styleSheet];
+            [self reloadRefreshableStyleSheet:styleSheet force:force];
         }
     }
 }
 
-- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet {
+- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet force:(BOOL)force {
     [styleSheet refreshStylesheetWithCompletionHandler:^{
         [self refreshStylingForStyleSheet:styleSheet];
-    }];
+    } force:force];
 }
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {

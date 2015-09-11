@@ -335,11 +335,11 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclaration
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
 - (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
 
-/** Reloads all (remote) refreshable stylesheets. */
-- (void) reloadRefreshableStyleSheets;
+/** Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified. */
+- (void) reloadRefreshableStyleSheets:(BOOL)force;
 
-/** Reloads a refreshable stylesheet. */
-- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet;
+/** Reloads a refreshable stylesheet. If force is `YES`, the stylesheet will be reloaded even if is hasn't been modified. */
+- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet force:(BOOL)force;
 
 /**
  * Unloads the specified styleSheet.

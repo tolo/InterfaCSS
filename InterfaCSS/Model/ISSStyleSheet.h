@@ -71,6 +71,6 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 
 - (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
-- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler;
+- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force;
 
 @end

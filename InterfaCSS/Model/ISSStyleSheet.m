@@ -144,7 +144,7 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
 #pragma mark - Refreshable stylesheet methods
 
-- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler {
+- (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force {
     [super refreshWithCompletionHandler:^(BOOL success, NSString* responseString, NSError* error) {
         if( success ) {
             NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
@@ -165,13 +165,13 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
         } else {
             [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshFailedNotification object:self];
         }
-    }];
+    } force:force];
 }
 
-- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
+- (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler force:(BOOL)force {
     [self refreshStylesheetWithCompletionHandler:^{
         completionHandler(YES, nil, nil);
-    }];
+    } force:force];
 }
 
 
