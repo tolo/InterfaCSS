@@ -44,6 +44,7 @@
 }
 
 - (void) setWrappedRootView:(UIView*)wrappedRootView {
+    if( wrappedRootView == _wrappedRootView ) return;
     [_wrappedRootView removeFromSuperview];
     _wrappedRootView = wrappedRootView;
     if( _wrappedRootView ) [self addSubview:_wrappedRootView];
