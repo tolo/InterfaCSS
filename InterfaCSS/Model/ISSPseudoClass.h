@@ -17,8 +17,19 @@ typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
     ISSPseudoClassTypeInterfaceOrientationPortrait,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpright,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown,
+
+    // Device
     ISSPseudoClassTypeUserInterfaceIdiomPad,
     ISSPseudoClassTypeUserInterfaceIdiomPhone,
+    ISSPseudoClassTypeMinOSVersion,
+    ISSPseudoClassTypeMaxOSVersion,
+    ISSPseudoClassTypeDeviceModel,
+    ISSPseudoClassTypeScreenWidth,
+    ISSPseudoClassTypeScreenWidthLessThan,
+    ISSPseudoClassTypeScreenWidthGreaterThan,
+    ISSPseudoClassTypeScreenHeight,
+    ISSPseudoClassTypeScreenHeightLessThan,
+    ISSPseudoClassTypeScreenHeightGreaterThan,
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
     ISSPseudoClassTypeHorizontalSizeClassRegular,
@@ -52,10 +63,12 @@ typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
-- (instancetype) initWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType;
-+ (instancetype) pseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType;
+- (instancetype) initStructuralPseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType;
++ (instancetype) structuralPseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType;
 + (instancetype) pseudoClassWithType:(ISSPseudoClassType)pseudoClassType;
++ (instancetype) pseudoClassWithType:(ISSPseudoClassType)pseudoClassType andParameter:(NSString*)parameter;
 + (instancetype) pseudoClassWithTypeString:(NSString*)typeAsString;
++ (instancetype) pseudoClassWithTypeString:(NSString*)typeAsString andParameter:(NSString*)parameter;
 
 + (ISSPseudoClassType) pseudoClassTypeFromString:(NSString*)typeAsString;
 

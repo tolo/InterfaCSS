@@ -57,6 +57,10 @@ uiview:onlychild {
     alpha: 0.666;
 }
 
+uiview:minOSVersion(8.4) {
+    alpha: 0.666;
+}
+
 uiview#identifier.class1:onlychild {
     alpha: 0.666;
 }

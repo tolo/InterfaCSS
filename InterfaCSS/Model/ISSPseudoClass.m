@@ -10,6 +10,8 @@
 #import "ISSPseudoClass.h"
 
 #import "ISSUIElementDetails.h"
+#import "UIDevice+ISSAdditions.h"
+
 
 static NSDictionary* stringToPseudoClassType;
 
@@ -17,6 +19,7 @@ static NSDictionary* stringToPseudoClassType;
  * See http://www.w3.org/TR/selectors/#structural-pseudos for a description of the a & p parameters.
  */
 @implementation ISSPseudoClass {
+    NSString* _parameter;
     NSInteger _a, _b;
     ISSPseudoClassType _pseudoClassType;
 }
@@ -32,6 +35,17 @@ static NSDictionary* stringToPseudoClassType;
 
             @"pad" : @(ISSPseudoClassTypeUserInterfaceIdiomPad),
             @"phone" : @(ISSPseudoClassTypeUserInterfaceIdiomPhone),
+
+            @"minosversion" : @(ISSPseudoClassTypeMinOSVersion),
+            @"maxosversion" : @(ISSPseudoClassTypeMaxOSVersion),
+            @"devicemodel" : @(ISSPseudoClassTypeDeviceModel),
+            @"screenwidth" : @(ISSPseudoClassTypeScreenWidth),
+            @"screenwidthlessthan" : @(ISSPseudoClassTypeScreenWidthLessThan),
+            @"screenwidthgreaterthan" : @(ISSPseudoClassTypeScreenWidthGreaterThan),
+            @"screenheight" : @(ISSPseudoClassTypeScreenHeight),
+            @"screenheightlessthan" : @(ISSPseudoClassTypeScreenHeightLessThan),
+            @"screenheightgreaterthan" : @(ISSPseudoClassTypeScreenHeightGreaterThan),
+
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
             @"regularwidth" : @(ISSPseudoClassTypeHorizontalSizeClassRegular),
             @"compactwidth" : @(ISSPseudoClassTypeHorizontalSizeClassCompact),
@@ -59,9 +73,8 @@ static NSDictionary* stringToPseudoClassType;
     };
 }
 
-- (instancetype) initWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType {
-    self = [super init];
-    if ( self ) {
+- (instancetype) initStructuralPseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType {
+    if ( self = [super init] ) {
         if( (pseudoClassType == ISSPseudoClassTypeFirstChild) || (pseudoClassType == ISSPseudoClassTypeLastChild) ||
             (pseudoClassType == ISSPseudoClassTypeFirstOfType) || (pseudoClassType == ISSPseudoClassTypeLastOfType) ) {
             _a = 0;
@@ -76,19 +89,36 @@ static NSDictionary* stringToPseudoClassType;
     return self;
 }
 
-+ (instancetype) pseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType {
-    return [[self alloc] initWithA:a b:b type:pseudoClassType];
+- (instancetype) initPseudoClassWithParameter:(NSString*)parameter type:(ISSPseudoClassType)pseudoClassType {
+    if ( self = [self initStructuralPseudoClassWithA:0 b:0 type:pseudoClassType] ) {
+        if( pseudoClassType == ISSPseudoClassTypeDeviceModel ) _parameter = [_parameter lowercaseString];
+        else _parameter = parameter;
+    }
+    return self;
+}
+
++ (instancetype) structuralPseudoClassWithA:(NSInteger)a b:(NSInteger)b type:(ISSPseudoClassType)pseudoClassType {
+    return [[self alloc] initStructuralPseudoClassWithA:a b:b type:pseudoClassType];
+}
+
++ (instancetype) pseudoClassWithType:(ISSPseudoClassType)pseudoClassType andParameter:(NSString*)parameter {
+    return [[self alloc] initPseudoClassWithParameter:parameter type:pseudoClassType];
 }
 
 + (instancetype) pseudoClassWithType:(ISSPseudoClassType)pseudoClassType {
-    return [[self alloc] initWithA:0 b:0 type:pseudoClassType];
+    return [[self alloc] initStructuralPseudoClassWithA:0 b:0 type:pseudoClassType];
 }
 
 + (instancetype) pseudoClassWithTypeString:(NSString*)typeAsString {
-    return [[self alloc] initWithA:0 b:0 type:[self pseudoClassTypeFromString:typeAsString]];
+    return [[self alloc] initStructuralPseudoClassWithA:0 b:0 type:[self pseudoClassTypeFromString:typeAsString]];
+}
+
++ (instancetype) pseudoClassWithTypeString:(NSString*)typeAsString andParameter:(NSString*)parameter {
+    return [self pseudoClassWithType:[self pseudoClassTypeFromString:typeAsString] andParameter:parameter];
 }
 
 + (ISSPseudoClassType) pseudoClassTypeFromString:(NSString*)typeAsString {
+    typeAsString = [typeAsString stringByReplacingOccurrencesOfString:@"-" withString:@""];
     NSNumber* b = typeAsString ? stringToPseudoClassType[typeAsString.lowercaseString] : nil;
     if( b ) return (ISSPseudoClassType)b.integerValue;
     else @throw([NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Invalid enum class type: %@", typeAsString] userInfo:nil]);
@@ -139,6 +169,34 @@ static NSDictionary* stringToPseudoClassType;
 
         case ISSPseudoClassTypeUserInterfaceIdiomPad: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
         case ISSPseudoClassTypeUserInterfaceIdiomPhone: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
+        case ISSPseudoClassTypeMinOSVersion: {
+            return [UIDevice iss_versionGreaterOrEqualTo:_parameter];
+        }
+        case ISSPseudoClassTypeMaxOSVersion: {
+            return [UIDevice iss_versionLessOrEqualTo:_parameter];
+        }
+        case ISSPseudoClassTypeDeviceModel: {
+            return [[UIDevice iss_deviceModelId] hasPrefix:_parameter];
+        }
+        case ISSPseudoClassTypeScreenWidth: {
+            return [UIScreen mainScreen].bounds.size.width == [_parameter floatValue];
+        }
+        case ISSPseudoClassTypeScreenWidthLessThan: {
+            return [UIScreen mainScreen].bounds.size.width < [_parameter floatValue];
+        }
+        case ISSPseudoClassTypeScreenWidthGreaterThan: {
+            return [UIScreen mainScreen].bounds.size.width > [_parameter floatValue];
+        }
+        case ISSPseudoClassTypeScreenHeight: {
+            return [UIScreen mainScreen].bounds.size.height == [_parameter floatValue];
+        }
+        case ISSPseudoClassTypeScreenHeightLessThan: {
+            return [UIScreen mainScreen].bounds.size.height < [_parameter floatValue];
+        }
+        case ISSPseudoClassTypeScreenHeightGreaterThan: {
+            return [UIScreen mainScreen].bounds.size.height > [_parameter floatValue];
+        }
+
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
         case ISSPseudoClassTypeHorizontalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
@@ -198,6 +256,7 @@ static NSDictionary* stringToPseudoClassType;
 
 - (NSString*) displayDescription {
     NSString* bSign = _b < 0 ? @"-" : @"+";
+
     switch( _pseudoClassType ) {
         case ISSPseudoClassTypeInterfaceOrientationLandscape: return @"landscape";
         case ISSPseudoClassTypeInterfaceOrientationLandscapeLeft: return @"landscapeLeft";
@@ -208,6 +267,16 @@ static NSDictionary* stringToPseudoClassType;
 
         case ISSPseudoClassTypeUserInterfaceIdiomPad: return @"pad";
         case ISSPseudoClassTypeUserInterfaceIdiomPhone: return @"phone";
+
+        case ISSPseudoClassTypeMinOSVersion: return [NSString stringWithFormat:@"minosversion(%@)", _parameter];
+        case ISSPseudoClassTypeMaxOSVersion: return [NSString stringWithFormat:@"maxosversion(%@)", _parameter];
+        case ISSPseudoClassTypeDeviceModel: return [NSString stringWithFormat:@"devicemodel(%@)", _parameter];
+        case ISSPseudoClassTypeScreenWidth: return [NSString stringWithFormat:@"screenwidth(%@)", _parameter];
+        case ISSPseudoClassTypeScreenWidthLessThan: return [NSString stringWithFormat:@"screenwidthlessthan(%@)", _parameter];
+        case ISSPseudoClassTypeScreenWidthGreaterThan: return [NSString stringWithFormat:@"screenwidthgreaterthan(%@)", _parameter];
+        case ISSPseudoClassTypeScreenHeight: return [NSString stringWithFormat:@"screenheight(%@)", _parameter];
+        case ISSPseudoClassTypeScreenHeightLessThan: return [NSString stringWithFormat:@"screenheightlessthan(%@)", _parameter];
+        case ISSPseudoClassTypeScreenHeightGreaterThan: return [NSString stringWithFormat:@"screenheightgreaterthan(%@)", _parameter];
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
         case ISSPseudoClassTypeHorizontalSizeClassRegular: return @"regularwidth";

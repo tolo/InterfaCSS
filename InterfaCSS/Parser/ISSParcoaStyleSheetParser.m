@@ -1307,23 +1307,43 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             return @[@2, @1];
         } name:@"pseudoClassParameterOdd"];
         
-        ParcoaParser* pseudoClassParameterParsers = [Parcoa choice:@[pseudoClassParameterParserFull, pseudoClassParameterParserAN, pseudoClassParameterParserEven, pseudoClassParameterParserOdd]];
+        ParcoaParser* structuralPseudoClassParameterParsers = [Parcoa choice:@[pseudoClassParameterParserFull, pseudoClassParameterParserAN, pseudoClassParameterParserEven, pseudoClassParameterParserOdd]];
+        ParcoaParser* pseudoClassParameterParser = [[Parcoa sequential:@[openParen, [Parcoa spaces], [Parcoa choice:@[quotedString, anyName]], [Parcoa spaces], closeParen]] transform:^id(id value) {
+            return [elementOrNil(value, 2) iss_trimQuotes];
+        } name:@"pseudoClassParameterParser"];
 
-        ParcoaParser* pseudoClassSelector = [[[Parcoa sequential:@[colon, identifier, [Parcoa optional:pseudoClassParameterParsers] ]] transform:^id(id value) {
+        ParcoaParser* parameterizedPseudoClassSelector = [[Parcoa sequential:@[colon, identifier, [Parcoa choice:@[structuralPseudoClassParameterParsers, pseudoClassParameterParser]]]] transform:^id(id value) {
             NSString* pseudoClassName = elementOrNil(value, 1) ?: @"";
-            pseudoClassName = [pseudoClassName stringByReplacingOccurrencesOfString:@"-" withString:@""];
-            NSArray* p = elementOrNil(value, 2) ?: @[@1, @0];
-            NSInteger a = [p[0] integerValue];
-            NSInteger b = [p[1] integerValue];
+            id pseudoClassParameters = elementOrNil(value, 2);
 
             @try {
                 ISSPseudoClassType pseudoClassType = [ISSPseudoClass pseudoClassTypeFromString:pseudoClassName];
-                return [ISSPseudoClass pseudoClassWithA:a b:b type:pseudoClassType];
+                
+                if( [pseudoClassParameters isKindOfClass:NSArray.class] ) {
+                    NSArray* p = pseudoClassParameters;
+                    NSInteger a = [p[0] integerValue];
+                    NSInteger b = [p[1] integerValue];
+                    return [ISSPseudoClass structuralPseudoClassWithA:a b:b type:pseudoClassType];
+                } else {
+                    return [ISSPseudoClass pseudoClassWithType:pseudoClassType andParameter:pseudoClassParameters];
+                }
             } @catch (NSException* e) {
                 ISSLogWarning(@"Invalid pseudo class: %@", pseudoClassName);
                 return [NSNull null];
             }
-        } name:@"pseudoClass"] many];
+        } name:@"parameterizedPseudoClassSelector"];
+
+        ParcoaParser* simplePseudoClassSelector = [[colon keepRight:identifier] transform:^id(id value) {
+            NSString* pseudoClassName = value;
+            @try {
+                return [ISSPseudoClass pseudoClassWithTypeString:pseudoClassName];
+            } @catch (NSException* e) {
+                ISSLogWarning(@"Invalid pseudo class: %@", pseudoClassName);
+                return [NSNull null];
+            }
+        } name:@"simplePseudoClassSelector"];
+
+        ParcoaParser* pseudoClassSelector = [[Parcoa choice:@[ parameterizedPseudoClassSelector, simplePseudoClassSelector ]] many];
 
 
         /* Actual selectors parsers: */

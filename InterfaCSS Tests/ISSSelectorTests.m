@@ -174,7 +174,7 @@
 
 - (void) assertDescendantPseudo:(UILabel*)label pseudoClassType:(ISSPseudoClassType)pseudoClassType a:(NSInteger)a b:(NSInteger)b message:(NSString*)message {
     ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:label];
-    ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:a b:b type:pseudoClassType];
+    ISSPseudoClass* pseudo = [ISSPseudoClass structuralPseudoClassWithA:a b:b type:pseudoClassType];
 
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"uilabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:pseudo];
     XCTAssertTrue([descendantChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"%@", message);
@@ -254,7 +254,7 @@
 
 - (void) testPseudoClassEmpty {
     ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:rootView];
-    ISSPseudoClass* pseudo = [ISSPseudoClass pseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
+    ISSPseudoClass* pseudo = [ISSPseudoClass structuralPseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
 
     ISSSelector* parentSelector = [ISSSelector selectorWithType:@"uiview" styleClass:@"parentClass" pseudoClasses:@[pseudo]];
 
@@ -308,6 +308,82 @@
     
     // Test selected & highlighted (chained)
     XCTAssertTrue([selectedHighlightedSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]]);
+}
+
+- (void) testPseudoClassOSVersion {
+    NSString* currentSystemVersion = [UIDevice currentDevice].systemVersion;
+    NSString* majorVersion = [currentSystemVersion componentsSeparatedByString:@"."][0];
+    NSString* previousVersion = [NSString stringWithFormat:@"%d", (int)[majorVersion integerValue] - 1];
+    NSString* nextVersion = [NSString stringWithFormat:@"%d", (int)[majorVersion integerValue] + 1];
+    
+    UIView* randomView = [[UIView alloc] init];
+    ISSUIElementDetails* randomViewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:randomView];
+    
+    ISSPseudoClass* osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"minOSVersion" andParameter:currentSystemVersion];
+    XCTAssertTrue([osVersionPseudoClass matchesElement:randomViewDetails]);
+    osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"minOSVersion" andParameter:previousVersion];
+    XCTAssertTrue([osVersionPseudoClass matchesElement:randomViewDetails]);
+    osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"minOSVersion" andParameter:nextVersion];
+    XCTAssertFalse([osVersionPseudoClass matchesElement:randomViewDetails]);
+    
+    osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"maxOSVersion" andParameter:currentSystemVersion];
+    XCTAssertTrue([osVersionPseudoClass matchesElement:randomViewDetails]);
+    osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"maxOSVersion" andParameter:previousVersion];
+    XCTAssertFalse([osVersionPseudoClass matchesElement:randomViewDetails]);
+    osVersionPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"maxOSVersion" andParameter:nextVersion];
+    XCTAssertTrue([osVersionPseudoClass matchesElement:randomViewDetails]);
+}
+
+- (void) testPseudoClassScreenWidth {
+    CGFloat width = [UIScreen mainScreen].bounds.size.width;
+    NSString* narrower = [NSString stringWithFormat:@"%f", width - 1];
+    NSString* wider = [NSString stringWithFormat:@"%f", width + 1];
+    
+    UIView* randomView = [[UIView alloc] init];
+    ISSUIElementDetails* randomViewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:randomView];
+    
+    ISSPseudoClass* widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidth" andParameter:[NSString stringWithFormat:@"%f", width]];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidth" andParameter:narrower];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidth" andParameter:wider];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidthLessThan" andParameter:wider];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidthLessThan" andParameter:narrower];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidthGreaterThan" andParameter:narrower];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenWidthGreaterThan" andParameter:wider];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+}
+
+- (void) testPseudoClassScreenHeight {
+    CGFloat height = [UIScreen mainScreen].bounds.size.height;
+    NSString* shorter = [NSString stringWithFormat:@"%f", height - 1];
+    NSString* taller = [NSString stringWithFormat:@"%f", height + 1];
+    
+    UIView* randomView = [[UIView alloc] init];
+    ISSUIElementDetails* randomViewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:randomView];
+    
+    ISSPseudoClass* widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeight" andParameter:[NSString stringWithFormat:@"%f", height]];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeight" andParameter:shorter];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeight" andParameter:taller];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeightLessThan" andParameter:taller];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeightLessThan" andParameter:shorter];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
+    
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeightGreaterThan" andParameter:shorter];
+    XCTAssertTrue([widthPseudoClass matchesElement:randomViewDetails]);
+    widthPseudoClass = [ISSPseudoClass pseudoClassWithTypeString:@"screenHeightGreaterThan" andParameter:taller];
+    XCTAssertFalse([widthPseudoClass matchesElement:randomViewDetails]);
 }
 
 - (void) testWildcardSelectorFirst {

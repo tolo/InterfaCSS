@@ -199,7 +199,7 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @"uilabel#identity.class1", @"#identity.class1", @".class1",
                                                                             @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
-                                                                            @"uiview:onlychild", @"uiview#identifier.class1:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
+                                                                            @"uiview:onlychild", @"uiview:minosversion(8.4)", @"uiview#identifier.class1:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
                                                                             @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
     
     for (ISSPropertyDeclarations* d in result) {
