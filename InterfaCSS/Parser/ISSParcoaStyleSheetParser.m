@@ -27,8 +27,8 @@
 #import "ISSPropertyRegistry.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSLayout.h"
-#import "ISSDownloadableResource.h"
 #import "ISSRemoteFont.h"
+#import "ISSDownloadableResource.h"
 
 
 /* Helper functions */
