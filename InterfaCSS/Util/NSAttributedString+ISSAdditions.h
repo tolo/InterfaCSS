@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Leafnode AB. All rights reserved.
 //
 
-
 #import <Foundation/Foundation.h>
 
 @interface NSAttributedString (ISSAdditions)

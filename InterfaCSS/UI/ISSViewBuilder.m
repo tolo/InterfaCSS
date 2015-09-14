@@ -241,6 +241,7 @@
     return [self setupView:[(UITableView*)[clazz alloc] initWithFrame:CGRectZero style:tableViewStyle] withStyleClass:styleClass andSubViews:subViewBlock];
 }
 
+#if TARGET_OS_TV == 0
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass {
     return [self setupView:[[UIWebView alloc] init] withStyleClass:styleClass];
 }
@@ -256,6 +257,7 @@
 + (UIWebView*) webViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock {
     return [self setupView:[[UIWebView alloc] init] withId:elementId andStyleClass:styleClass andSubViews:subViewBlock];
 }
+#endif
 
 
 #pragma mark - Components
@@ -300,6 +302,7 @@
     return [self setupView:[[UIProgressView alloc] init] withId:elementId andStyleClass:nil];
 }
 
+#if TARGET_OS_TV == 0
 + (UISlider*) sliderWithStyle:(NSString*)styleClass {
     return [self setupView:[[UISlider alloc] init] withStyleClass:styleClass];
 }
@@ -323,6 +326,7 @@
 + (UISwitch*) switchWithId:(NSString*)elementId {
     return [self setupView:[[UIStepper alloc] init] withId:elementId andStyleClass:nil];
 }
+#endif
 
 + (UITextField*) textFieldWithStyle:(NSString*)styleClass {
     return [self setupView:[[UITextField alloc] init] withStyleClass:styleClass];

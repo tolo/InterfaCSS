@@ -26,15 +26,20 @@ static NSDictionary* stringToPseudoClassType;
 
 + (void) initialize {
     stringToPseudoClassType = @{
+#if TARGET_OS_TV == 0
             @"landscape" : @(ISSPseudoClassTypeInterfaceOrientationLandscape),
             @"landscapeleft": @(ISSPseudoClassTypeInterfaceOrientationLandscapeLeft),
             @"landscaperight" : @(ISSPseudoClassTypeInterfaceOrientationLandscapeRight),
             @"portrait" : @(ISSPseudoClassTypeInterfaceOrientationPortrait),
             @"portraitupright" : @(ISSPseudoClassTypeInterfaceOrientationPortraitUpright),
             @"portraitupsidedown" : @(ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown),
+#endif
 
             @"pad" : @(ISSPseudoClassTypeUserInterfaceIdiomPad),
             @"phone" : @(ISSPseudoClassTypeUserInterfaceIdiomPhone),
+#if TARGET_OS_TV == 1
+            @"tv" : @(ISSPseudoClassTypeUserInterfaceIdiomTV),
+#endif
 
             @"minosversion" : @(ISSPseudoClassTypeMinOSVersion),
             @"maxosversion" : @(ISSPseudoClassTypeMaxOSVersion),
@@ -137,6 +142,7 @@ static NSDictionary* stringToPseudoClassType;
     return NO;
 }
 
+#if TARGET_OS_TV == 0
 - (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
     UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
     
@@ -156,19 +162,25 @@ static NSDictionary* stringToPseudoClassType;
         return orientation;
     }
 }
+#endif
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
     id uiElement = elementDetails.uiElement;
     switch( _pseudoClassType ) {
+#if TARGET_OS_TV == 0
         case ISSPseudoClassTypeInterfaceOrientationLandscape: return UIInterfaceOrientationIsLandscape([self currentInterfaceOrientationForDevice:elementDetails]);
         case ISSPseudoClassTypeInterfaceOrientationLandscapeLeft: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeLeft;
         case ISSPseudoClassTypeInterfaceOrientationLandscapeRight: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeRight;
         case ISSPseudoClassTypeInterfaceOrientationPortrait: return UIInterfaceOrientationIsPortrait([self currentInterfaceOrientationForDevice:elementDetails]);
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationPortrait;
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationPortraitUpsideDown;
+#endif
 
         case ISSPseudoClassTypeUserInterfaceIdiomPad: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
         case ISSPseudoClassTypeUserInterfaceIdiomPhone: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
+#if TARGET_OS_TV == 1
+        case ISSPseudoClassTypeUserInterfaceIdiomTV: return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomTV;
+#endif
         case ISSPseudoClassTypeMinOSVersion: {
             return [UIDevice iss_versionGreaterOrEqualTo:_parameter];
         }
@@ -258,15 +270,20 @@ static NSDictionary* stringToPseudoClassType;
     NSString* bSign = _b < 0 ? @"-" : @"+";
 
     switch( _pseudoClassType ) {
+#if TARGET_OS_TV == 0
         case ISSPseudoClassTypeInterfaceOrientationLandscape: return @"landscape";
         case ISSPseudoClassTypeInterfaceOrientationLandscapeLeft: return @"landscapeLeft";
         case ISSPseudoClassTypeInterfaceOrientationLandscapeRight: return @"landscapeRight";
         case ISSPseudoClassTypeInterfaceOrientationPortrait: return @"portrait";
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpright: return @"portraitUpright";
         case ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown: return @"portraitUpsideDown";
+#endif
 
         case ISSPseudoClassTypeUserInterfaceIdiomPad: return @"pad";
         case ISSPseudoClassTypeUserInterfaceIdiomPhone: return @"phone";
+#if TARGET_OS_TV == 1
+        case ISSPseudoClassTypeUserInterfaceIdiomTV: return @"tv";
+#endif
 
         case ISSPseudoClassTypeMinOSVersion: return [NSString stringWithFormat:@"minosversion(%@)", _parameter];
         case ISSPseudoClassTypeMaxOSVersion: return [NSString stringWithFormat:@"maxosversion(%@)", _parameter];

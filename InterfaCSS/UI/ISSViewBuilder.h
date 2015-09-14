@@ -7,6 +7,9 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
 #import "ISSRootView.h" // Import this here to avoid users having to import this file as well when using methods like rootViewWithStyle...
 
 /** Deprecated */
@@ -188,7 +191,7 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UITableView` with the specified implementation class, element id and style class, and adds the subviews from the specified `SubViewBlock`. */
 + (UITableView*) tableViewOfClass:(Class)clazz withId:(NSString*)elementId andStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
 
-
+#if TARGET_OS_TV == 0
 /** Builds a `UIWebView` with the specified style class. */
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass;
 /** Builds a `UIWebView` with the specified element id. */
@@ -198,7 +201,7 @@ typedef NSArray* (^SubViewBlock)();
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 /** Builds a `UIWebView` with the specified element id and style class, and adds the subviews from the specified `SubViewBlock`. */
 + (UIWebView*) webViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
-
+#endif
 
 /** Builds a `UIActivityIndicatorView` with the specified style class. */
 + (UIActivityIndicatorView*) activityIndicatorViewWithStyle:(NSString*)styleClass;
@@ -225,6 +228,7 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UIProgressView` with the specified element id. */
 + (UIProgressView*) progressViewWithId:(NSString*)elementId;
 
+#if TARGET_OS_TV == 0
 /** Builds a `UISlider` with the specified style class. */
 + (UISlider*) sliderWithStyle:(NSString*)styleClass;
 /** Builds a `UISlider` with the specified element id. */
@@ -239,6 +243,7 @@ typedef NSArray* (^SubViewBlock)();
 + (UISwitch*) switchWithStyle:(NSString*)styleClass;
 /** Builds a `UISwitch` with the specified element id. */
 + (UISwitch*) switchWithId:(NSString*)elementId;
+#endif
 
 /** Builds a `UITextField` with the specified style class. */
 + (UITextField*) textFieldWithStyle:(NSString*)styleClass;

@@ -57,16 +57,20 @@ static NSDictionary* tagToClass;
         @"scrollview": UIScrollView.class,
         @"tableview": UITableView.class,
         @"view": UIView.class,
+#if TARGET_OS_TV == 0
         @"webview": UIWebView.class,
+#endif
         // Components:
         @"activityindicator": UIActivityIndicatorView.class,
         @"button": UIButton.class,
         @"collectionviewcell": UICollectionViewCell.class,
         @"label": UILabel.class,
         @"progressview": UIProgressView.class,
+#if TARGET_OS_TV == 0
         @"slider": UISlider.class,
         @"stepper": UIStepper.class,
         @"switch": UISwitch.class,
+#endif
         @"textfield": UITextField.class,
         @"textview": UITextView.class,
         @"tableviewcell": UITableViewCell.class

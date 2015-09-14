@@ -6,6 +6,9 @@
 //  Copyright (c) 2014 Leafnode AB. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
 
 @interface UIView (ISSPrototypeReusableView)
 

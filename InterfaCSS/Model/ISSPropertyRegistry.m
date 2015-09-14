@@ -498,7 +498,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowColor:)] ) {
             [[viewObject layer] setShadowColor:[value CGColor]]; // UIView
         } else {
-            return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowColor);
+            return setTitleTextAttributes(viewObject, value, parameters, NSShadowAttributeName);
         }
         return YES;
     });
@@ -509,14 +509,16 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
         } else if( [viewObject respondsToSelector:@selector(layer)] && [[viewObject layer] respondsToSelector:@selector(setShadowOffset:)] ) {
             [[viewObject layer] setShadowOffset:[value CGSizeValue]];
         } else {
-            return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
+            return setTitleTextAttributes(viewObject, value, parameters, NSShadowAttributeName);
         }
         return YES;
     });
 
     ISSPropertyDefinition* barTintColor = p(S(barTintColor), ISSPropertyTypeColor);
 
+#if TARGET_OS_TV == 0
     ISSPropertyDefinition* barStyle = pe(S(barStyle), @{@"default" : @(UIBarStyleDefault), @"black" : @(UIBarStyleBlack), @"blackOpaque" : @(UIBarStyleBlackOpaque), @"blackTranslucent" : @(UIBarStyleBlackTranslucent)});
+#endif
 
     ISSPropertyDefinition* translucent = p(@"translucent", ISSPropertyTypeBool);
 
@@ -739,7 +741,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             p(S(sectionIndexColor), ISSPropertyTypeColor),
             p(S(sectionIndexBackgroundColor), ISSPropertyTypeColor),
             p(S(sectionIndexTrackingBackgroundColor), ISSPropertyTypeColor),
+#if TARGET_OS_TV == 0
             pe(S(separatorStyle), @{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine), @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)}),
+#endif
             p(S(separatorColor), ISSPropertyTypeColor)
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:tableViewProperties];
@@ -747,22 +751,26 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
 #pragma mark - UIWebView
     
+#if TARGET_OS_TV == 0
     NSDictionary* dataDetectorTypesValues = @{@"all" : @(UIDataDetectorTypeAll), @"none" : @(UIDataDetectorTypeNone), @"address" : @(UIDataDetectorTypeAddress),
                         @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)};
+#endif
     
     NSSet* webViewProperties = [NSSet setWithArray:@[
             p(S(scalesPageToFit), ISSPropertyTypeBool),
-            pe(S(dataDetectorTypes), dataDetectorTypesValues),
             p(S(allowsInlineMediaPlayback), ISSPropertyTypeBool),
-            p(S(mediaPlaybackRequiresUserAction), ISSPropertyTypeBool),
-            p(S(mediaPlaybackAllowsAirPlay), ISSPropertyTypeBool),
             p(S(suppressesIncrementalRendering), ISSPropertyTypeBool),
             p(S(keyboardDisplayRequiresUserAction), ISSPropertyTypeBool),
-            pe(S(paginationMode), @{@"unpaginated" : @(UIWebPaginationModeUnpaginated), @"lefttoright" : @(UIWebPaginationModeLeftToRight),
-                    @"toptobottom" : @(UIWebPaginationModeTopToBottom), @"bottomtotop" : @(UIWebPaginationModeBottomToTop), @"righttoleft" : @(UIWebPaginationModeRightToLeft)}),
-            pe(S(paginationBreakingMode), @{@"page" : @(UIWebPaginationBreakingModePage), @"column" : @(UIWebPaginationBreakingModeColumn)}),
             p(S(pageLength), ISSPropertyTypeNumber),
             p(S(gapBetweenPages), ISSPropertyTypeNumber),
+#if TARGET_OS_TV == 0
+            pe(S(dataDetectorTypes), dataDetectorTypesValues),
+            p(S(mediaPlaybackRequiresUserAction), ISSPropertyTypeBool),
+            p(S(mediaPlaybackAllowsAirPlay), ISSPropertyTypeBool),
+            pe(S(paginationMode), @{@"unpaginated" : @(UIWebPaginationModeUnpaginated), @"lefttoright" : @(UIWebPaginationModeLeftToRight),
+                                    @"toptobottom" : @(UIWebPaginationModeTopToBottom), @"bottomtotop" : @(UIWebPaginationModeBottomToTop), @"righttoleft" : @(UIWebPaginationModeRightToLeft)}),
+            pe(S(paginationBreakingMode), @{@"page" : @(UIWebPaginationBreakingModePage), @"column" : @(UIWebPaginationBreakingModeColumn)})
+#endif
     ]];
     allProperties = [allProperties setByAddingObjectsFromSet:webViewProperties];
 
@@ -788,7 +796,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 #pragma mark - UIActivityIndicatiorView
     
     NSSet* activityIndicatorProperties = [NSSet setWithArray:@[
+#if TARGET_OS_TV == 0
             pe(S(activityIndicatorViewStyle), @{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)}),
+#endif
             p(S(color), ISSPropertyTypeColor),
             p(S(hidesWhenStopped), ISSPropertyTypeBool),
             ps(@"animating", ISSPropertyTypeBool, ^(SetterBlockParamList) {
@@ -872,7 +882,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     NSSet* progressViewProperties = [NSSet setWithArray:@[
             p(S(progressTintColor), ISSPropertyTypeColor),
             p(S(progressImage), ISSPropertyTypeImage),
+#if TARGET_OS_TV == 0
             pe(S(progressViewStyle), @{@"default" : @(UIProgressViewStyleDefault), @"bar" : @(UIProgressViewStyleBar)}),
+#endif
             p(S(trackTintColor), ISSPropertyTypeColor),
             p(S(trackImage), ISSPropertyTypeImage),
     ]];
@@ -932,7 +944,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 
     NSSet* textViewProperties = [NSSet setWithArray:@[
             p(S(allowsEditingTextAttributes), ISSPropertyTypeBool),
+#if TARGET_OS_TV == 0
             peo(S(dataDetectorTypes), dataDetectorTypesValues),
+#endif
             p(@"editable", ISSPropertyTypeBool),
             p(@"selectable", ISSPropertyTypeBool),
             p(S(textContainerInset), ISSPropertyTypeEdgeInsets)
@@ -1076,6 +1090,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 return NO;
             }),
             titlePositionAdjustment,
+#if TARGET_OS_TV == 0
             pp(@"backButtonBackgroundImage", barMetricsAndControlStateParameters, ISSPropertyTypeImage, ^(SetterBlockParamList) {
                 UIControlState state = parameters.count > 0 ? (UIControlState) [parameters[0] unsignedIntegerValue] : UIControlStateNormal;
                 UIBarMetrics metrics = parameters.count > 1 ? (UIBarMetrics) [parameters[1] integerValue] : UIBarMetricsDefault;
@@ -1101,6 +1116,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 }
                 return NO;
             }),
+#endif
     ]];
 
     allProperties = [allProperties setByAddingObjectsFromSet:barButtonProperties];
@@ -1109,8 +1125,10 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     
 #pragma mark - UITableViewCell
 
+#if TARGET_OS_TV == 0
     NSDictionary* accessoryTypes = @{@"none" : @(UITableViewCellAccessoryNone), @"checkmark" : @(UITableViewCellAccessoryCheckmark), @"detailButton" : @(UITableViewCellAccessoryDetailButton),
                         @"disclosureButton" : @(UITableViewCellAccessoryDetailDisclosureButton), @"disclosureIndicator" : @(UITableViewCellAccessoryDisclosureIndicator)};
+#endif
 
     NSSet* tableViewCellProperties = [NSSet setWithArray:@[
             pe(S(selectionStyle), @{@"none" : @(UITableViewCellSelectionStyleNone), @"default" : @(UITableViewCellSelectionStyleDefault), @"blue" : @(UITableViewCellSelectionStyleBlue), @"gray" : @(UITableViewCellSelectionStyleGray)}),
@@ -1119,8 +1137,10 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pe(S(selectionStyle), @{@"none" : @(UITableViewCellEditingStyleNone), @"delete" : @(UITableViewCellEditingStyleDelete), @"insert" : @(UITableViewCellEditingStyleInsert)}),
             p(S(showsReorderControl), ISSPropertyTypeBool),
             p(S(shouldIndentWhileEditing), ISSPropertyTypeBool),
+#if TARGET_OS_TV == 0
             pe(S(accessoryType), accessoryTypes),
             pe(S(editingAccessoryType), accessoryTypes),
+#endif
             p(S(indentationLevel), ISSPropertyTypeNumber),
             p(S(indentationWidth), ISSPropertyTypeNumber),
             p(S(separatorInset), ISSPropertyTypeEdgeInsets),
@@ -1133,7 +1153,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 #pragma mark - UIToolbar
 
     NSSet* toolbarProperties = [NSSet setWithArray:@[
+#if TARGET_OS_TV == 0
             barStyle,
+#endif
             translucent,
             barTintColor,
             backgroundImage,
@@ -1146,7 +1168,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
 #pragma mark - UINavigationBar
 
     NSSet* navigationBarProperties = [NSSet setWithArray:@[
+#if TARGET_OS_TV == 0
             barStyle,
+#endif
             translucent,
             barTintColor,
             backgroundImage,
@@ -1167,7 +1191,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     [statefulSearchBarIconParameters addEntriesFromDictionary:controlStateParametersValues];
 
     NSSet* searchBarProperties = [NSSet setWithArray:@[
+#if TARGET_OS_TV == 0
             barStyle,
+#endif
             text,
             prompt,
             placeholder,
@@ -1215,6 +1241,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
                 }
                 return NO;
             }),
+#if TARGET_OS_TV == 0
             pp(@"scopeBarButtonTitleFont", controlStateParametersValues, ISSPropertyTypeFont, ^(SetterBlockParamList) {
                 return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeFont);
             }),
@@ -1227,6 +1254,7 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pp(@"scopeBarButtonTitleShadowOffset", controlStateParametersValues, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
                 return setTitleTextAttributes(viewObject, value, parameters, UITextAttributeTextShadowOffset);
             }),
+#endif
             p(S(searchFieldBackgroundPositionAdjustment), ISSPropertyTypeOffset),
             p(S(searchTextPositionAdjustment), ISSPropertyTypeOffset),
             pp(@"positionAdjustmentForSearchBarIcon", searchBarIconParameters, ISSPropertyTypeOffset, ^(SetterBlockParamList) {
@@ -1254,7 +1282,9 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             pe(S(itemPositioning), @{@"automatic" : @(UITabBarItemPositioningAutomatic), @"centered" : @(UITabBarItemPositioningCentered), @"fill" : @(UITabBarItemPositioningFill)}),
             p(S(itemWidth), ISSPropertyTypeNumber),
             p(S(itemSpacing), ISSPropertyTypeNumber),
+#if TARGET_OS_TV == 0
             barStyle,
+#endif
             translucent
         ]];
 
@@ -1279,13 +1309,17 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             resistanceIsFutile UIImageView.class : imageViewProperties,
             resistanceIsFutile UIScrollView.class : scrollViewProperties,
             resistanceIsFutile UITableView.class : tableViewProperties,
+#if TARGET_OS_TV == 0
             resistanceIsFutile UIWebView.class : webViewProperties,
+#endif
             resistanceIsFutile UITableViewCell.class : tableViewCellProperties,
             resistanceIsFutile UICollectionView.class : collectionViewProperties,
 
             resistanceIsFutile UINavigationBar.class : navigationBarProperties,
             resistanceIsFutile UISearchBar.class : searchBarProperties,
+#if TARGET_OS_TV == 0
             resistanceIsFutile UIToolbar.class : toolbarProperties,
+#endif
             resistanceIsFutile UIBarButtonItem.class : barButtonProperties,
 
             resistanceIsFutile UITabBar.class : tabBarProperties,
@@ -1297,11 +1331,13 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             resistanceIsFutile UILabel.class : labelProperties,
             resistanceIsFutile UIProgressView.class : progressViewProperties,
             resistanceIsFutile UISegmentedControl.class : segmentedControlProperties,
+            resistanceIsFutile UITextField.class : textFieldProperties,
+            resistanceIsFutile UITextView.class : textViewProperties,
+#if TARGET_OS_TV == 0
             resistanceIsFutile UISlider.class : sliderProperties,
             resistanceIsFutile UIStepper.class : stepperProperties,
-            resistanceIsFutile UISwitch.class : switchProperties,
-            resistanceIsFutile UITextField.class : textFieldProperties,
-            resistanceIsFutile UITextView.class : textViewProperties
+            resistanceIsFutile UISwitch.class : switchProperties
+#endif
     };
 
     NSMutableDictionary* classesToNames = [[NSMutableDictionary alloc] init];

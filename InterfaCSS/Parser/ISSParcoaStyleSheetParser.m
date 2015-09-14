@@ -1054,9 +1054,12 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
                 img = [self imageNamed:imageName];
                 if( cc.count == 5 ) {
                     img = [img resizableImageWithCapInsets:UIEdgeInsetsMake([cc[1] floatValue], [cc[2] floatValue], [cc[3] floatValue], [cc[4] floatValue])];
-                } else if( cc.count == 2 ) {
+                }
+#if TARGET_OS_TV == 0
+                else if( cc.count == 2 ) {
                     img = [img stretchableImageWithLeftCapWidth:[cc[1] intValue] topCapHeight:[cc[2] intValue]];
                 }
+#endif
             }
             if( img ) return img;
             else return [NSNull null];
@@ -1122,7 +1125,11 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
     fontValueParser = [[fontValueParser keepLeft:commaOrSpace] then:fontValueParser];
     fontValueParser = [fontValueParser transform:^id(NSArray* values) {
+#if TARGET_OS_TV == 0
         CGFloat fontSize = [UIFont systemFontSize];
+#else
+        CGFloat fontSize = 17;
+#endif
         NSString* fontName = nil;
         NSURL* remoteFontURL = nil;
         if( [values isKindOfClass:NSArray.class] ) {
@@ -1167,7 +1174,11 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
                 else if( [@"fontWithSize" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[value[4] floatValue]];
                 else return value[2];
             }
+#if TARGET_OS_TV == 0
             return [UIFont systemFontOfSize:[UIFont systemFontSize]];
+#else
+            return [UIFont systemFontOfSize:17];
+#endif
     } name:@"fontFunctionParser"];
 
     typeToParser[@(ISSPropertyTypeFont)] = [Parcoa choice:@[fontFunctionParser, fontValueParser]];

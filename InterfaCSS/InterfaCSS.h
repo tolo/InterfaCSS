@@ -8,6 +8,10 @@
 //
 
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
 @class ISSPropertyRegistry;
@@ -26,7 +30,6 @@
 
 typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
 typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
-
 
 
 #import "ISSPropertyDefinition.h"

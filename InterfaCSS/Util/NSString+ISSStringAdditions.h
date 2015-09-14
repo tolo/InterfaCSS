@@ -7,6 +7,8 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <Foundation/Foundation.h>
+
 @interface NSString (ISSStringAdditions)
 
 + (BOOL) iss_string:(NSString*)string1 isEqualToString:(NSString*)string2;

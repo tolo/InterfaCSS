@@ -348,6 +348,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             *count = navBar.items.count;
         }
     }
+#if TARGET_OS_TV == 0
     else if( [self.uiElement isKindOfClass:UIBarButtonItem.class] && [self.parentView isKindOfClass:UIToolbar.class] ) {
         UIToolbar* toolbar = (UIToolbar*)self.parentView;
         if( toolbar ) {
@@ -355,6 +356,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             *count = toolbar.items.count;
         }
     }
+#endif
     else if( [self.uiElement isKindOfClass:UITabBarItem.class] && [self.parentView isKindOfClass:UITabBar.class] ) {
         UITabBar* tabbar = (UITabBar*)self.parentView;
         if( tabbar ) {
@@ -428,6 +430,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     NSMutableOrderedSet* subviews = self.view.subviews ? [[NSMutableOrderedSet alloc] initWithArray:self.view.subviews] : [[NSMutableOrderedSet alloc] init];
     
     UIView* parentView = nil;
+#if TARGET_OS_TV == 0
     // Special case: UIToolbar - add toolbar items to "subview" list
     if( [self.view isKindOfClass:UIToolbar.class] ) {
         UIToolbar* toolbar = (UIToolbar*)self.view;
@@ -435,7 +438,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         if( toolbar.items ) [subviews addObjectsFromArray:toolbar.items];
     }
     // Special case: UINavigationBar - add nav bar items to "subview" list
-    else if( [self.view isKindOfClass:UINavigationBar.class] ) {
+    else
+#endif
+    if( [self.view isKindOfClass:UINavigationBar.class] ) {
         UINavigationBar* navigationBar = (UINavigationBar*)self.view;
         parentView = navigationBar;
         
@@ -443,7 +448,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         for(id item in navigationBar.items) {
             if( [item isKindOfClass:UINavigationItem.class] ) {
                 UINavigationItem* navigationItem = (UINavigationItem*)item;
+#if TARGET_OS_TV == 0
                 if( navigationItem.backBarButtonItem ) [additionalSubViews addObject:navigationItem.backBarButtonItem];
+#endif
                 if( navigationItem.leftBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.leftBarButtonItems];
                 if( navigationItem.titleView ) [additionalSubViews addObject:navigationItem.titleView];
                 if( navigationItem.rightBarButtonItems.count ) [additionalSubViews addObjectsFromArray:navigationItem.rightBarButtonItems];

@@ -7,6 +7,9 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
 
 /**
  * Category that adds InterfaCSS integration to `UITableView`.

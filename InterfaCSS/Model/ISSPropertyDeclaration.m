@@ -127,10 +127,12 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
 
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
-    else if( [object isKindOfClass:ISSPropertyDeclaration.class] && [[object property] isEqual:self.property] &&
-            [NSString iss_string:[object nestedElementKeyPath] isEqualToString:self.nestedElementKeyPath] ) {
-        if( [object parameters] == self.parameters ) return YES;
-        else return [[object parameters] isEqualToArray:self.parameters];
+    else if( [object isKindOfClass:ISSPropertyDeclaration.class] ) {
+        ISSPropertyDeclaration* other = object;
+        if( [other.property isEqual:self.property] && [NSString iss_string:other.nestedElementKeyPath isEqualToString:self.nestedElementKeyPath] ) {
+            if( other.parameters == self.parameters ) return YES;
+            else return [other.parameters isEqualToArray:self.parameters];
+        }
     }
     return NO;
 }

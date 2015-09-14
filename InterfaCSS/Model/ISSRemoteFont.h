@@ -7,7 +7,11 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 #import "ISSUpdatableValue.h"
+
 
 @class ISSDownloadableResource;
 

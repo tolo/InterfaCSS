@@ -7,9 +7,14 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+
 @class ISSUIElementDetails;
 
 typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
+#if TARGET_OS_TV == 0
     // User interface orientation and traits
     ISSPseudoClassTypeInterfaceOrientationLandscape,
     ISSPseudoClassTypeInterfaceOrientationLandscapeLeft,
@@ -17,10 +22,14 @@ typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
     ISSPseudoClassTypeInterfaceOrientationPortrait,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpright,
     ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown,
+#endif
 
     // Device
     ISSPseudoClassTypeUserInterfaceIdiomPad,
     ISSPseudoClassTypeUserInterfaceIdiomPhone,
+#if TARGET_OS_TV == 1
+    ISSPseudoClassTypeUserInterfaceIdiomTV,
+#endif
     ISSPseudoClassTypeMinOSVersion,
     ISSPseudoClassTypeMaxOSVersion,
     ISSPseudoClassTypeDeviceModel,

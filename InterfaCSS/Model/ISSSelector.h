@@ -7,6 +7,8 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+#import <Foundation/Foundation.h>
+
 @class ISSPseudoClass;
 @class ISSUIElementDetails;
 @class ISSStylingContext;

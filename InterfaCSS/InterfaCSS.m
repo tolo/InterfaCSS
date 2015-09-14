@@ -115,17 +115,20 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
         NSNotificationCenter* notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self selector:@selector(memoryWarning:) name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
+#if TARGET_OS_TV == 0
         [notificationCenter addObserver:self selector:@selector(deviceOrientationChanged:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+#endif
         [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeKeyNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(windowDidBecomeVisible:) name:UIWindowDidBecomeVisibleNotification object:nil];
-        
-        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
     }
     return self;
 }
 
 - (void) dealloc {
+#if TARGET_OS_TV == 0
     [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+#endif
     
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -148,6 +151,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 #pragma mark - Device orientation
 
+#if TARGET_OS_TV == 0
 - (void) deviceOrientationChanged:(NSNotification*)notification {
     UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
     if( UIDeviceOrientationIsValidInterfaceOrientation(orientation) ) {
@@ -162,6 +166,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         }
     }
 }
+#endif
 
 - (void) resetDeviceIsRotatingFlag {
     deviceIsRotating = NO;
