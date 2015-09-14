@@ -12,6 +12,9 @@
 #import "ISSPropertyDefinition.h"
 #import "NSString+ISSStringAdditions.h"
 #import "NSObject+ISSLogSupport.h"
+#import "ISSDownloadableResource.h"
+#import "ISSUIElementDetails.h"
+#import "ISSUpdatableValue.h"
 
 
 NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
@@ -75,7 +78,7 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
     return NO;
 }
 
-- (BOOL) applyPropertyValueOnTarget:(id)target {
+- (BOOL) applyPropertyValueOnTarget:(ISSUIElementDetails*)targetDetails {
     if( !self.property ) {
         ISSLogWarning(@"Cannot apply property value - unknown property!");
         return NO;
@@ -96,7 +99,18 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
         return NO;
     }
 
-    return [self.property setValue:self.propertyValue onTarget:target andParameters:self.parameters];
+    id value = nil;
+    if( [self.propertyValue isKindOfClass:ISSUpdatableValue.class] ) {
+        ISSUpdatableValue* updatableValue = self.propertyValue;
+        [targetDetails observeUpdatableValue:updatableValue forProperty:self];
+        [updatableValue requestUpdate];
+        value = updatableValue.lastValue;
+    } else {
+        [targetDetails stopObservingUpdatableValueForProperty:self];
+        value = self.propertyValue;
+    }
+
+    return [self.property setValue:value onTarget:targetDetails.uiElement andParameters:self.parameters];
 }
 
 

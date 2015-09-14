@@ -27,6 +27,8 @@
 #import "ISSPropertyRegistry.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSLayout.h"
+#import "ISSDownloadableResource.h"
+#import "ISSRemoteFont.h"
 
 
 /* Helper functions */
@@ -304,6 +306,10 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return [value iss_asUIImage];
     } name:@"patternImage"];
 
+    ParcoaParser* urlImageParser = [[Parcoa iss_parameterStringWithPrefix:@"url"] transform:^id(NSArray* parameters) {
+        return [ISSDownloadableResource downloadableImageWithURL:[NSURL URLWithString:[[parameters firstObject] iss_trimQuotes]]];
+    } name:@"urlImage"];
+
     // Parses an arbitrary text string as an image from file name or pre-defined color name - in that order
     ParcoaParser* catchAll = [anythingButControlChars transform:^id(id value) {
         value = [value iss_trimQuotes];
@@ -311,13 +317,20 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         if( !image ) {
             UIColor* color = [self parsePredefColorValue:value];
             if( color ) return [color iss_asUIImage];
-            else return [NSNull null];
+            else {
+                NSString* lc = [value lowercaseString];
+                if ( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) {
+                    return [ISSDownloadableResource downloadableImageWithURL:[NSURL URLWithString:value]];
+                } else {
+                    return [NSNull null];
+                }
+            }
         } else {
             return image;
         }
     } name:@"imageCatchAllParser"];
 
-    return [Parcoa choice:@[imageParser, colorFunctionAsImage, imageAsColor, catchAll]];
+    return [Parcoa choice:@[imageParser, colorFunctionAsImage, imageAsColor, urlImageParser, catchAll]];
 }
 
 - (ParcoaParser*) colorParser:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {
@@ -1101,13 +1114,27 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Ex: smaller(@font, 1)
     // Ex: fontWithSize(@font, 12)
     ParcoaParser* commaOrSpace = [[Parcoa choice:@[[Parcoa space], comma]] many1];
-    ParcoaParser* fontValueParser = [Parcoa choice:@[quotedString, anyName]];
+    ParcoaParser* remoteFontValueURLParser = [[Parcoa choice:@[quotedString, anyName]] transform:^id(id input) {
+        return [NSURL URLWithString:[input iss_trimQuotes]];
+    } name:@"remoteFontValueURLParser"];
+    ParcoaParser* remoteFontValueParser = [Parcoa iss_singleParameterFunctionParserWithName:@"url" parameterParser:remoteFontValueURLParser];
+    ParcoaParser* fontValueParser = [Parcoa choice:@[remoteFontValueParser, quotedString, anyName]];
+
     fontValueParser = [[fontValueParser keepLeft:commaOrSpace] then:fontValueParser];
-    fontValueParser = [fontValueParser transform:^id(id value) {
+    fontValueParser = [fontValueParser transform:^id(NSArray* values) {
         CGFloat fontSize = [UIFont systemFontSize];
         NSString* fontName = nil;
-        if( [value isKindOfClass:[NSArray class]] ) {
-            for(NSString* stringVal in value) {
+        NSURL* remoteFontURL = nil;
+        if( [values isKindOfClass:NSArray.class] ) {
+            for(id value in values) {
+                if( [value isKindOfClass:NSURL.class] ) {
+                    remoteFontURL = value;
+                    continue;
+                }
+                else if( ![value isKindOfClass:NSString.class] ) continue;
+
+                NSString* stringVal = value;
+
                 NSString* lc = [stringVal.lowercaseString iss_trim];
                 if( [lc hasSuffix:@"pt"] || [lc hasSuffix:@"px"] ) {
                     lc = [lc substringToIndex:lc.length-2];
@@ -1117,13 +1144,18 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
                     if( lc.iss_isNumeric ) {
                         fontSize = [lc floatValue];
                     } else { // If not pt, px or comma
-                        fontName = [stringVal iss_trimQuotes];
+                        if( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) {
+                            remoteFontURL = [NSURL URLWithString:[stringVal iss_trimQuotes]];
+                        } else {
+                            fontName = [stringVal iss_trimQuotes];
+                        }
                     }
                 }
             }
         }
 
-        if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
+        if( remoteFontURL ) return [ISSRemoteFont remoteFontWithURL:remoteFontURL fontSize:fontSize];
+        else if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
         else return [UIFont systemFontOfSize:fontSize];
     } name:@"font"];
 

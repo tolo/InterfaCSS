@@ -21,6 +21,7 @@
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSParcoaStyleSheetParser.h"
 #import "ISSLayout.h"
+#import "ISSUIElementDetails.h"
 
 
 @interface ISSParcoaStyleSheetTestParser : ISSParcoaStyleSheetParser
@@ -441,8 +442,9 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     // Test layer prefix properties
     NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" getDeclarations:YES];
     UIView* view = [[UIView alloc] init];
-    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:view];
-    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:view];
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
+    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:details];
+    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:details];
     ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
     ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
     

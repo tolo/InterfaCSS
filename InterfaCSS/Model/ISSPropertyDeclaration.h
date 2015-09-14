@@ -9,7 +9,7 @@
 
 #import "ISSLazyValue.h"
 
-@class ISSPropertyDefinition;
+@class ISSPropertyDefinition, ISSUIElementDetails;
 
 extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
 
@@ -33,6 +33,6 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
 
 - (BOOL) transformValueIfNeeded;
 
-- (BOOL) applyPropertyValueOnTarget:(id)target;
+- (BOOL) applyPropertyValueOnTarget:(ISSUIElementDetails*)targetDetails;
 
 @end

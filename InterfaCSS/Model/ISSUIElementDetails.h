@@ -9,7 +9,8 @@
 
 #import "InterfaCSS.h"
 
-@class ISSLayout;
+@class ISSLayout, ISSUpdatableValue, ISSPropertyDeclaration;
+
 
 extern NSString* const ISSIndexPathKey;
 extern NSString* const ISSPrototypeViewInitializedKey;
@@ -88,5 +89,8 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 - (void) clearDisabledProperties;
 
 - (id) childElementForKeyPath:(NSString*)keyPath;
+
+- (void) observeUpdatableValue:(ISSUpdatableValue*)value forProperty:(ISSPropertyDeclaration*)propertyDeclaration;
+- (void) stopObservingUpdatableValueForProperty:(ISSPropertyDeclaration*)propertyDeclaration;
 
 @end

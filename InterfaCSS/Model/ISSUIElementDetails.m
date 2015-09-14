@@ -11,6 +11,9 @@
 
 #import <objc/runtime.h>
 #import "ISSPropertyRegistry.h"
+#import "ISSDownloadableResource.h"
+#import "ISSUpdatableValue.h"
+#import "ISSPropertyDeclaration.h"
 
 NSString* const ISSIndexPathKey = @"ISSIndexPathKey";
 NSString* const ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
@@ -51,6 +54,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @property (nonatomic, strong) NSMutableDictionary* additionalDetails;
 
 @property (nonatomic, strong) NSMutableDictionary* prototypes;
+
+@property (nonatomic, strong) NSMapTable* observedUpdatableValues;
 
 @end
 
@@ -462,6 +467,29 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     }
     
     return [subviews array];
+}
+
+- (void) observeUpdatableValue:(ISSUpdatableValue*)value forProperty:(ISSPropertyDeclaration*)propertyDeclaration {
+    if( [[self.observedUpdatableValues objectForKey:propertyDeclaration] isEqual:value] ) return;
+
+    if( !self.observedUpdatableValues ) {
+        self.observedUpdatableValues = [NSMapTable weakToWeakObjectsMapTable];
+    }
+    [value addValueUpdateObserver:self selector:@selector(updatableValueUpdated:)];
+    [self.observedUpdatableValues setObject:value forKey:propertyDeclaration];
+}
+
+- (void) stopObservingUpdatableValueForProperty:(ISSPropertyDeclaration*)propertyDeclaration {
+    ISSUpdatableValue* value = [self.observedUpdatableValues objectForKey:propertyDeclaration];
+    if( value ) {
+        [value removeValueUpdateObserver:self];
+        [self.observedUpdatableValues removeObjectForKey:propertyDeclaration];
+        if( self.observedUpdatableValues.count == 0 ) self.observedUpdatableValues = nil;
+    }
+}
+
+- (void) updatableValueUpdated:(NSNotification*)notification {
+    [[InterfaCSS sharedInstance] applyStyling:self.uiElement includeSubViews:NO force:YES];
 }
 
 
