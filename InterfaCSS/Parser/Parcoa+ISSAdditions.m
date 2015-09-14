@@ -300,7 +300,7 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 + (ParcoaParser*) iss_singleParameterFunctionParserWithName:(NSString*)name parameterParser:(ParcoaParser*)parameterParser {
     ParcoaParser* parser = [[self iss_stringIgnoringCase:name] then:[self iss_quickUnichar:'(' skipSpace:YES]];
     parser = [parser keepRight:parameterParser];
-    return [parser keepLeft:[self iss_quickUnichar:')' skipSpace:YES]];
+    return [parser keepLeft:[Parcoa sequential:@[[Parcoa spaces], [self iss_quickUnichar:')']]]];
 }
 
 + (ParcoaParser*) iss_singleParameterFunctionParserWithNames:(NSArray*)names parameterParser:(ParcoaParser*)parameterParser {
