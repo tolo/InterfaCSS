@@ -429,12 +429,10 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     //NSArray* subviews = self.view.subviews ?: [[NSArray alloc] init];
     NSMutableOrderedSet* subviews = self.view.subviews ? [[NSMutableOrderedSet alloc] initWithArray:self.view.subviews] : [[NSMutableOrderedSet alloc] init];
     
-    UIView* parentView = nil;
 #if TARGET_OS_TV == 0
     // Special case: UIToolbar - add toolbar items to "subview" list
     if( [self.view isKindOfClass:UIToolbar.class] ) {
         UIToolbar* toolbar = (UIToolbar*)self.view;
-        parentView = toolbar;
         if( toolbar.items ) [subviews addObjectsFromArray:toolbar.items];
     }
     // Special case: UINavigationBar - add nav bar items to "subview" list
@@ -442,8 +440,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 #endif
     if( [self.view isKindOfClass:UINavigationBar.class] ) {
         UINavigationBar* navigationBar = (UINavigationBar*)self.view;
-        parentView = navigationBar;
-        
+
         NSMutableArray* additionalSubViews = [NSMutableArray array];
         for(id item in navigationBar.items) {
             if( [item isKindOfClass:UINavigationItem.class] ) {
@@ -463,7 +460,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     // Special case: UITabBar - add tab bar items to "subview" list
     else if( [self.view isKindOfClass:UITabBar.class] ) {
         UITabBar* tabBar = (UITabBar*)self.view;
-        parentView = tabBar;
         if( tabBar.items ) [subviews addObjectsFromArray:tabBar.items];
     }
     
