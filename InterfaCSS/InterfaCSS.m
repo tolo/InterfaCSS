@@ -342,9 +342,8 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         for (ISSPropertyDeclaration* propertyDeclaration in styles) {
             if( [elementDetails.disabledProperties containsObject:propertyDeclaration.property] ) {
                 ISSLogTrace(@"Skipping setting of %@ - property disabled on %@", propertyDeclaration, elementDetails.uiElement);
-            }
-            else if ( ![propertyDeclaration applyPropertyValueOnTarget:elementDetails] ) {
-                ISSLogDebug(@"Unable to set value of %@ on %@", propertyDeclaration, elementDetails.uiElement);
+            } else {
+                [propertyDeclaration applyPropertyValueOnTarget:elementDetails];
             }
         }
 

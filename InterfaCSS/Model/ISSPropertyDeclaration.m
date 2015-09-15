@@ -100,17 +100,23 @@ NSObject* const ISSPropertyDefinitionUseCurrentValue = @"<current>";
     }
 
     id value = nil;
+    BOOL skipWarning = NO;
     if( [self.propertyValue isKindOfClass:ISSUpdatableValue.class] ) {
         ISSUpdatableValue* updatableValue = self.propertyValue;
         [targetDetails observeUpdatableValue:updatableValue forProperty:self];
         [updatableValue requestUpdate];
         value = updatableValue.lastValue;
+        skipWarning = value == nil;
     } else {
         [targetDetails stopObservingUpdatableValueForProperty:self];
         value = self.propertyValue;
     }
 
-    return [self.property setValue:value onTarget:targetDetails.uiElement andParameters:self.parameters];
+    BOOL result = [self.property setValue:value onTarget:targetDetails.uiElement andParameters:self.parameters];
+    if( !result && !skipWarning ) {
+        ISSLogDebug(@"Unable to set value on %@", targetDetails.uiElement);
+    }
+    return result;
 }
 
 
