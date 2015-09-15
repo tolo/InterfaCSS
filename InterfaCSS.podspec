@@ -7,9 +7,12 @@ Pod::Spec.new do |s|
   s.authors      = { 'Tobias Löfstrand' => 'tobias@leafnode.se' }
   s.source       = { :git => 'https://github.com/tolo/InterfaCSS.git', :tag => s.version.to_s }
   s.ios.deployment_target = '7.0'
+if defined?(s.tvos)
   s.tvos.deployment_target = '9.0'
+end
   s.source_files = 'InterfaCSS/**/*.{h,m}'
   s.requires_arc = true
   s.frameworks   = 'Foundation', 'UIKit', 'CoreGraphics', 'QuartzCore'
   s.dependency 'Parcoa', '~> 0.0.1'
+
 end
