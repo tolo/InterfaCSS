@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.license      = 'MIT'
   s.authors      = { 'Tobias Löfstrand' => 'tobias@leafnode.se' }
   s.source       = { :git => 'https://github.com/tolo/InterfaCSS.git', :tag => s.version.to_s }
-  s.ios.deployment_target = '6.0'
+  s.ios.deployment_target = '7.0'
   s.tvos.deployment_target = '9.0'
   s.source_files = 'InterfaCSS/**/*.{h,m}'
   s.requires_arc = true
