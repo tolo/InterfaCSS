@@ -21,11 +21,11 @@ NSString* const ISSResourceDownloadFailedNotification = @"ISSResourceDownloadFai
 
 static NSMapTable* activeDownloadableResources;
 static NSCache* downloadableResourceCache;
-static __weak NSOperationQueue* downloadableResourceOperationQueue;
 
 
 @interface ISSDownloadableResource()
 
+@property (nonatomic) BOOL downloading;
 @property (nonatomic, weak, readwrite) id cachedResource;
 
 - (id) resourceWithData:(NSData*)data;
@@ -129,37 +129,34 @@ static __weak NSOperationQueue* downloadableResourceOperationQueue;
 }
 
 - (void) download:(BOOL)force {
-    if( !force && self.cachedResource ) return;
+    if( !force && (self.downloading || self.cachedResource) ) return;
 
+    self.downloading = YES;
+    
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.resourceURL];
     if( force ) {
         [request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
     }
-
-    NSOperationQueue* operationQueue = downloadableResourceOperationQueue;
-    if( !operationQueue ) {
-        operationQueue = [[NSOperationQueue alloc] init];
-        downloadableResourceOperationQueue = operationQueue;
-    }
-
+    
     __weak ISSDownloadableResource* weakSelf = self;
-    [NSURLConnection sendAsynchronousRequest:request queue:operationQueue
-       completionHandler:^(NSURLResponse* response, NSData* data, NSError* error) {
-           dispatch_async(dispatch_get_main_queue(), ^{
-               __strong ISSDownloadableResource* self = weakSelf;
-               if( error || !data ) {
-                   [self iss_logDebug:@"Error downloading resource - %@", error];
-                   [[NSNotificationCenter defaultCenter] postNotificationName:ISSResourceDownloadFailedNotification object:weakSelf];
-               } else {
-                   [self iss_logDebug:@"Resource downloaded (%d bytes)", data.length];
-                   __strong id cachedResource = [self resourceWithData:data]; // Store in strong ref
-                   self.cachedResource = cachedResource;
-                   [[NSNotificationCenter defaultCenter] postNotificationName:ISSResourceDownloadedNotification object:weakSelf];
-                   [self valueUpdated];
-               }
-           });
-       }
-    ];
+    NSURLSession* urlSession = [NSURLSession sharedSession];
+    NSURLSessionDataTask* dataDownloadTask = [urlSession dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.downloading = NO;
+            __strong ISSDownloadableResource* self = weakSelf;
+            if( error || !data ) {
+                [self iss_logDebug:@"Error downloading resource - %@", error];
+                [[NSNotificationCenter defaultCenter] postNotificationName:ISSResourceDownloadFailedNotification object:weakSelf];
+            } else {
+                [self iss_logDebug:@"Resource downloaded (%d bytes)", data.length];
+                __strong id cachedResource = [self resourceWithData:data]; // Store in local strong ref, just to make sure cachedResource doesn't go away (since it's stored as weak ref in NSMapTable)
+                self.cachedResource = cachedResource;
+                [[NSNotificationCenter defaultCenter] postNotificationName:ISSResourceDownloadedNotification object:weakSelf];
+                [self valueUpdated];
+            }
+        });
+    }];
+    [dataDownloadTask resume];
 }
 
 - (id) resourceWithData:(NSData*)data { return nil; }
