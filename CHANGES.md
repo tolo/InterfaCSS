@@ -1,6 +1,23 @@
 #Changes
 
 
+##Version 1.2
+
+### New features & changes
+* Added support for properties leftViewMode and rightViewMode in UITextField. Also added leftView and rightView as valid property prefix key paths. 
+* Added support for using swift classes as custom type selectors and custom elements in view definition files.
+* Added better control over how refreshable stylesheets are handled (added methods for manually reloading stylesheets etc).
+* Added support for starting and stopping animation of a UIActivityIndicatorView via the "animating" property.
+* Added support for nesting variables, i.e. referring to other variables in variable declarations. 
+* Updated minimum required iOS version to iOS7. 
+* Added pseudo classes `minOSVersion` , `maxOSVersion`, `deviceModel`, `screenWidth`, `screenWidthLessThan`, `screenWidthGreaterThan`, `screenHeight`, `screenHeightLessThan` and `screenHeightGreaterThan`.
+* Added support for remote loading (via http/https URLs) of fonts and images (resolves [issue 21](https://github.com/tolo/InterfaCSS/issues/21), requested by @tbrannam).
+* Added support for using InterfaCSS in tvOS apps (resolves [issue 44](https://github.com/tolo/InterfaCSS/issues/44), requested by @tbrannam).  
+
+### Bug fixes
+* Fixed issue in ISSLayout with auto width/height, and also an issue with how layout guide values are calculated.
+
+
 
 ##Version 1.1.1
 
