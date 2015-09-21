@@ -1,6 +1,14 @@
 #Changes
 
 
+##Version 1.2.1
+
+### Bug fixes
+* Changed incorrect type of attributed string properties `underlineStyle` and `strikeThroughStyle` from number to (bitmask) enum (NSUnderlineStyle* and NSUnderlinePattern* now supported). 
+* Fixed issues with line breaks (\n) and escaping of quotes in strings and attributed strings.
+* Fixed issue with local file monitoring, when file is (incorrectly) reported as deleted.
+
+
 ##Version 1.2
 
 ### New features & changes
