@@ -24,6 +24,9 @@
 
 typedef id (^ISSViewHierarchyVisitorBlock)(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop);
 
+NSString* const ISSWillRefreshStyleSheetsNotification = @"ISSWillRefreshStyleSheetsNotification";
+
+
 
 static InterfaCSS* singleton = nil;
 
@@ -916,6 +919,8 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (void) reloadRefreshableStyleSheets:(BOOL)force {
+    [[NSNotificationCenter defaultCenter] postNotificationName:ISSWillRefreshStyleSheetsNotification object:nil];
+    
     for(ISSStyleSheet* styleSheet in self.styleSheets) {
         if( styleSheet.refreshable && styleSheet.active && !styleSheet.usingLocalFileChangeMonitoring ) { // Attempt to get updated stylesheet
             [self reloadRefreshableStyleSheet:styleSheet force:force];
@@ -931,6 +936,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
     [self.styleSheets removeObject:styleSheet];
+    if( styleSheet.usingLocalFileChangeMonitoring ) {
+        [styleSheet endMonitoringLocalFileChanges];
+    }
     if( refreshStyling ) [self refreshStylingForStyleSheet:styleSheet];
     else [self clearAllCachedStyles];
 }

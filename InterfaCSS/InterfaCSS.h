@@ -32,6 +32,11 @@ typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclar
 typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
 
 
+#pragma mark - Common notification definitions
+
+extern NSString* const ISSWillRefreshStyleSheetsNotification;
+
+
 #import "ISSPropertyDefinition.h"
 #import "ISSStyleSheet.h"
 #import "ISSViewBuilder.h"
