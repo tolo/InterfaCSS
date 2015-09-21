@@ -143,24 +143,53 @@ static NSDictionary* stringToPseudoClassType;
 }
 
 #if TARGET_OS_TV == 0
-- (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
-    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
-    
-    if( orientation == UIInterfaceOrientationUnknown ) {
-        UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-        if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) { // ...if not found - fall back to device orientation...
-            switch( deviceOrientation ) {
-                case UIDeviceOrientationLandscapeLeft : return UIInterfaceOrientationLandscapeRight;
-                case UIDeviceOrientationLandscapeRight : return UIInterfaceOrientationLandscapeLeft;
-                case UIDeviceOrientationPortraitUpsideDown : return UIInterfaceOrientationPortraitUpsideDown;
-                default: return UIInterfaceOrientationPortrait;
-            }
-        } else {
-            return UIInterfaceOrientationPortrait;
-        }
-    } else {
-        return orientation;
+- (NSString*) interfaceOrientationToString:(UIInterfaceOrientation)orientation {
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait: return @"UIInterfaceOrientationPortrait";
+        case UIInterfaceOrientationPortraitUpsideDown: return @"UIInterfaceOrientationPortraitUpsideDown";
+        case UIInterfaceOrientationLandscapeLeft: return @"UIInterfaceOrientationLandscapeLeft";
+        case UIInterfaceOrientationLandscapeRight: return @"UIInterfaceOrientationLandscapeRight";
+        default: return @"UIInterfaceOrientationUnknown";
     }
+}
+
+- (UIInterfaceOrientation) currentInterfaceOrientationForDevice:(ISSUIElementDetails*)elementDetails {
+    // Transform device orientation into interface orientation
+    UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    if( UIDeviceOrientationIsValidInterfaceOrientation(deviceOrientation) ) {
+        switch( deviceOrientation ) {
+            case UIDeviceOrientationLandscapeLeft : orientation = UIInterfaceOrientationLandscapeRight; break;
+            case UIDeviceOrientationLandscapeRight : orientation = UIInterfaceOrientationLandscapeLeft; break;
+            case UIDeviceOrientationPortraitUpsideDown : orientation = UIInterfaceOrientationPortraitUpsideDown; break;
+            default: orientation = UIInterfaceOrientationPortrait;
+        }
+    }
+    
+    // Setup set with valid interface orienrations for application
+    static NSSet* supportedInterfaceOrientations;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSArray* supportedInterfaceOrientationsArray = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"UISupportedInterfaceOrientations"];
+        if( supportedInterfaceOrientationsArray.count ) supportedInterfaceOrientations = [NSSet setWithArray:supportedInterfaceOrientationsArray];
+        else supportedInterfaceOrientations = nil;
+    });
+    
+    // Validate interface orientation
+    static UIInterfaceOrientation lastValidInterfaceOrientation = UIInterfaceOrientationUnknown;
+    if( !supportedInterfaceOrientations || [supportedInterfaceOrientations containsObject:[self interfaceOrientationToString:orientation]] ) {
+        lastValidInterfaceOrientation = orientation;
+        if( elementDetails.closestViewController && ((elementDetails.closestViewController.supportedInterfaceOrientations & (1 << orientation)) == 0) ) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            return elementDetails.closestViewController.interfaceOrientation; // If orientation is not supported by vc - use last good one
+#pragma GCC diagnostic pop            
+        } else {
+            return orientation;
+        }
+    }
+    else return lastValidInterfaceOrientation;
+    
 }
 #endif
 
@@ -211,7 +240,11 @@ static NSDictionary* stringToPseudoClassType;
 
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-        case ISSPseudoClassTypeHorizontalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+        case ISSPseudoClassTypeHorizontalSizeClassRegular: {
+            NSLog(@"elementDetails.view.traitCollection: %@", elementDetails.view.traitCollection);
+            NSLog(@"elementDetails.view.traitCollection: %@", elementDetails.closestViewController.view.traitCollection);
+            return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+        }
         case ISSPseudoClassTypeHorizontalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
         case ISSPseudoClassTypeVerticalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
         case ISSPseudoClassTypeVerticalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
