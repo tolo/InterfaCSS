@@ -52,32 +52,34 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
     int fd = open([self.resourceURL.path fileSystemRepresentation], O_EVTONLY);
     
     if( fd < 0 ) {
-        ISSLogWarning(@"Unable to monitor '%@' for changes", self.resourceURL);
+        ISSLogWarning(@"Unable to monitor '%@' for changes (file could not be opened)", self.resourceURL);
         return;
     }
     
     _fileChangeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE, fd, DISPATCH_VNODE_WRITE | DISPATCH_VNODE_DELETE, DISPATCH_TARGET_QUEUE_DEFAULT);
-    
-    __weak ISSRefreshableResource* weakSelf = self;
-    dispatch_source_set_event_handler(_fileChangeSource, ^() {
-        unsigned long const data = dispatch_source_get_data(_fileChangeSource);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if( data & DISPATCH_VNODE_WRITE ) {
+    if( _fileChangeSource ) {
+        __weak ISSRefreshableResource* weakSelf = self;
+        dispatch_source_set_event_handler(_fileChangeSource, ^() {
+            unsigned long const data = dispatch_source_get_data(_fileChangeSource);
+            dispatch_async(dispatch_get_main_queue(), ^{
                 callbackBlock(weakSelf);
-            } else if( data & DISPATCH_VNODE_DELETE ) {
-                [weakSelf endMonitoringLocalFileChanges];
-                [weakSelf iss_logWarning:@"'%@' deleted - file monitoring aborted", weakSelf.resourceURL];
-            }
+                if( data & DISPATCH_VNODE_DELETE ) {
+                    [weakSelf iss_logDebug:@"'%@' seems to have been deleted - attempting to restart monitoring of file", weakSelf.resourceURL];
+                    [weakSelf startMonitoringLocalFileChanges:callbackBlock];
+                }
+            });
         });
-    });
-    
-    dispatch_source_set_cancel_handler(_fileChangeSource, ^(){
-        close(fd);
-    });
-    
-    dispatch_resume(_fileChangeSource);
-    
-    ISSLogDebug(@"Started monitoring '%@' for changes", self.resourceURL);
+        
+        dispatch_source_set_cancel_handler(_fileChangeSource, ^(){
+            close(fd);
+        });
+        
+        dispatch_resume(_fileChangeSource);
+        
+        ISSLogDebug(@"Started monitoring '%@' for changes", self.resourceURL);
+    } else {
+        ISSLogWarning(@"Unable to monitor '%@' for changes (error creating dispatch source)", self.resourceURL);
+    }
 }
 
 - (NSDate*) parseLastModifiedFromResponse:(NSHTTPURLResponse*)response {
