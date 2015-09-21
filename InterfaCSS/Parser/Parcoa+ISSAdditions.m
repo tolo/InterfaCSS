@@ -43,22 +43,40 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return [self iss_quickUnichar:c skipSpace:NO];
 }
 
-+ (ParcoaParser*) iss_anythingButUnichar:(unichar)c escapesEnabled:(BOOL)escapes {
++ (ParcoaParser*) iss_anythingButUnichar:(unichar)c escapesEnabled:(BOOL)replaceEscapedCharacters {
     return [ParcoaParser parserWithBlock:^ParcoaResult*(NSString* input) {
         NSUInteger i = 0;
 
         BOOL isBackslash = NO;
         while ( i < input.length ) {
-            if( [input characterAtIndex:i] == c && !isBackslash ) {
+            unichar charAtIndex = [input characterAtIndex:i];
+            if( charAtIndex == c && !isBackslash ) {
                 break;
             }
             else {
-                if ( escapes && [input characterAtIndex:i] == '\\' ) {
-                    if ( isBackslash ) {
-                        input = [input stringByReplacingCharactersInRange:NSMakeRange(i, 1) withString:@""];
+                if( charAtIndex == '\\' ) {
+                    if ( isBackslash ) { // Double backslash
+                        if( replaceEscapedCharacters ) {
+                            input = [input stringByReplacingCharactersInRange:NSMakeRange(i, 1) withString:@""];
+                            i--;
+                        }
                         isBackslash = NO;
-                    } else {
+                    } else { // Backslash found
                         isBackslash = YES;
+                    }
+                } else if( isBackslash )  { // Previous character is backslash
+                    isBackslash = NO;
+                    if( replaceEscapedCharacters ) {
+                        if( charAtIndex == 'n' ) {
+                            input = [input stringByReplacingCharactersInRange:NSMakeRange(i-1, 2) withString:@"\n"];
+                        } else if( charAtIndex == 't' ) {
+                            input = [input stringByReplacingCharactersInRange:NSMakeRange(i-1, 2) withString:@"\t"];
+                        } else if( charAtIndex == '\'' || charAtIndex == '\"' ) {
+                            input = [input stringByReplacingCharactersInRange:NSMakeRange(i-1, 1) withString:@""];
+                        } else {
+                            i++;
+                        }
+                        i--;
                     }
                 }
 

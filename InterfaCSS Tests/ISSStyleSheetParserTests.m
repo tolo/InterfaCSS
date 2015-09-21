@@ -502,6 +502,7 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     NSDictionary* attrs2e = @{
                              NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue-Medium" size:15],
                              NSForegroundColorAttributeName: [UIColor iss_colorWithHexString:@"000000"],
+                             NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle | NSUnderlinePatternDash)
                              };
     
     XCTAssertEqualObjects([value string], @"title1 title2");

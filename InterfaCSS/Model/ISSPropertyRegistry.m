@@ -1355,7 +1355,13 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
     typeNamesToClasses[@"uiwindow"] = UIWindow.class;
     self.classesToTypeNames = [NSDictionary dictionaryWithDictionary:classesToNames];
     self.typeNamesToClasses = [NSDictionary dictionaryWithDictionary:typeNamesToClasses];
+    
 
+    NSDictionary* underlineStyleEnums = @{@"none" : @(NSUnderlineStyleNone), @"stylenone" : @(NSUnderlineStyleNone), @"single" : @(NSUnderlineStyleSingle), @"stylesingle" : @(NSUnderlineStyleSingle),
+                                              @"double" : @(NSUnderlineStyleDouble), @"styledouble" : @(NSUnderlineStyleDouble), @"thick" : @(NSUnderlineStyleThick), @"stylethick" : @(NSUnderlineStyleThick),
+                                              @"dash" : @(NSUnderlinePatternDash), @"patterndash" : @(NSUnderlinePatternDash), @"dot" : @(NSUnderlinePatternDot), @"patterndot" : @(NSUnderlinePatternDot),
+                                              @"dashDot" : @(NSUnderlinePatternDashDot), @"patterndashDot" : @(NSUnderlinePatternDashDot), @"dashdotdot" : @(NSUnderlinePatternDashDotDot), @"patterndashdotdot" : @(NSUnderlinePatternDashDotDot),
+                                              @"solid" : @(NSUnderlinePatternSolid), @"patternsolid" : @(NSUnderlinePatternSolid)};
 
     // Type properties
     NSSet* attributedStringProperties = [NSSet setWithArray:@[
@@ -1379,11 +1385,11 @@ static BOOL setTitleTextAttributes(id viewObject, id value, NSArray* parameters,
             if( value ) attributes[NSKernAttributeName] = value;
             return YES;
         }),
-        ps(@"strikethroughStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+        peos(@"strikethroughStyle", underlineStyleEnums, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSStrikethroughStyleAttributeName] = value;
             return YES;
         }),
-        ps(@"underlineStyle", ISSPropertyTypeNumber, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
+        peos(@"underlineStyle", underlineStyleEnums, ^(ISSPropertyDefinition* property, NSMutableDictionary* attributes, id value, NSArray* parameters) {
             if( value ) attributes[NSUnderlineStyleAttributeName] = value;
             return YES;
         }),

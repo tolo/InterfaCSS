@@ -1,4 +1,4 @@
- //
+//
 //  ISSParcoaStyleSheetParser.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
@@ -135,7 +135,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Common parsers
     ParcoaParser *dot, *hash, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
             *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *anythingButControlCharsExceptColon,
-            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *numberOrExpressionValue, *anyValue, *commentParser, *quotedString;
+            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *numberOrExpressionValue, *anyValue, *commentParser, *quotedString, *quotedStringRaw;
 
     NSCharacterSet* validVariableNameSet;
 
@@ -162,6 +162,9 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         for(NSString* enumName in p.enumValues.allKeys) {
             if( [enumString hasSuffix:enumName] ) return p.enumValues[enumName];
         }
+        // Fallback 2 - try to convert enum string as a numeric value
+        ParcoaResult* parseResult = [numberValue parse:enumString];
+        if( parseResult.isOK ) result = parseResult.value;
     }
     return result;
 }
@@ -716,7 +719,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     
     /** -- String -- **/
     
-    ParcoaParser* standardStringParser = [ParcoaParser parserWithBlock:^ParcoaResult*(NSString* input) {
+    ParcoaParser* defaultStringParser = [ParcoaParser parserWithBlock:^ParcoaResult*(NSString* input) {
         return [ParcoaResult ok:[self cleanedStringValue:input] residual:nil expected:[ParcoaExpectation unsatisfiable]];
     } name:@"standardStringParser" summary:@"standardStringParser"];
     
@@ -728,7 +731,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         return [self localizedStringWithKey:value];
     } name:@"localizedStringParser"];
     
-    ParcoaParser* stringParser = [Parcoa choice:@[localizedStringParser, standardStringParser]];
+    ParcoaParser* stringParser = [Parcoa choice:@[localizedStringParser, cleanedQuotedStringParser, defaultStringParser]];
 
     typeToParser[@(ISSPropertyTypeString)] = stringParser;
 
@@ -760,7 +763,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
                 ISSPropertyDefinition* def = attributedStringProperties[[components[0] lowercaseString]];
                 if( def ) {
                     // Parse value
-                    id value = [blockSelf parsePropertyValue:components[1] ofType:def.type];
+                    id value = [blockSelf doTransformValue:components[1] forProperty:def];
                     if( value ) {
                         // Use standard method in ISSPropertyDefinition to set value (using custom setter block)
                         [def setValue:value onTarget:attributes andParameters:nil];
@@ -1185,8 +1188,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
 
     /** -- Enums -- **/
-    enumValueParser = identifier;
-    enumBitMaskValueParser = [identifier sepBy:commaOrSpace];
+    enumValueParser = [Parcoa choice:@[identifier, plainNumber]];
+    enumBitMaskValueParser = [enumValueParser sepBy:commaOrSpace];
 
 
     /** -- Unrecognized line -- **/
@@ -1197,8 +1200,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
 
     /** -- Property pair -- **/
-    ParcoaParser* propertyValueCombined = [[Parcoa sequential:@[quotedString, anythingButControlCharsExceptColon]] concat];
-    ParcoaParser* propertyValue = [Parcoa choice:@[propertyValueCombined, quotedString, anythingButControlCharsExceptColon]];
+    ParcoaParser* propertyValueCombined = [[Parcoa sequential:@[quotedStringRaw, anythingButControlCharsExceptColon]] concat];
+    ParcoaParser* propertyValue = [Parcoa choice:@[propertyValueCombined, quotedStringRaw, anythingButControlCharsExceptColon]];
     ParcoaParser* propertyPairParser = [[[anythingButControlChars keepLeft:propertyNameValueSeparator] then:[propertyValue keepLeft:semiColonSkipSpace]] transform:^id(id value) {
         ISSPropertyDeclaration* declaration = [blockSelf transformPropertyPair:value];
         // If this declaration contains a reference to a nested element - return a nested ruleset declaration containing the property declaration, instead of the property declaration itself
@@ -1294,6 +1297,18 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
         quotedString = [Parcoa choice:@[singleQuotedString, doubleQuotedString]];
         quotedIdentifier = [[[singleQuote keepRight:identifier] keepLeft:singleQuote] or:[[doubleQuote keepRight:identifier] keepLeft:doubleQuote]];
+        
+        ParcoaParser* notSingleQuoteRaw = [Parcoa iss_anythingButUnichar:'\'' escapesEnabled:NO];
+        ParcoaParser* singleQuotedStringRaw = [[[singleQuote keepRight:notSingleQuoteRaw] keepLeft:singleQuote] transform:^id(id value) {
+            return [NSString stringWithFormat:@"\'%@\'", value];
+        } name:@"singleQuotedStringRaw"];
+        
+        ParcoaParser* notDoubleQuoteRaw = [Parcoa iss_anythingButUnichar:'\"' escapesEnabled:NO];
+        ParcoaParser* doubleQuotedStringRaw = [[[doubleQuote keepRight:notDoubleQuoteRaw] keepLeft:doubleQuote] transform:^id(id value) {
+            return [NSString stringWithFormat:@"\"%@\"", value];
+        } name:@"doubleQuotedStringRaw"];
+        
+        quotedStringRaw = [Parcoa choice:@[singleQuotedStringRaw, doubleQuotedStringRaw]];
 
 
         /** Comments **/
