@@ -579,7 +579,7 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     XCTAssertEqualObjects([values[0] propertyValue], @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
     [values[1] transformValueIfNeeded];
     XCTAssertEqualObjects([values[1] propertyValue], @(NSLineBreakByWordWrapping), @"Unexpected propety value");
-    XCTAssertEqualObjects([values[2] parameters][0], @(UIControlStateSelected), @"Unexpected propety value");
+    XCTAssertEqualObjects(((NSArray*)[values[2] parameters])[0], @(UIControlStateSelected), @"Unexpected propety value");
 }
 
 - (void) testNumericExpressions {
