@@ -27,7 +27,7 @@ NSString* const ISSViewDefinitionFileAttributePrototype = @"prototype";
 NSString* const ISSViewDefinitionFileAttributePrototypeScope = @"prototypeScope";
 NSString* const ISSViewDefinitionFileAttributeAddAsSubview = @"addSubview";
 NSString* const ISSViewDefinitionFileAttributeImplementationClass = @"implementation";
-NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass = @"layoutClass";
+NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass = @"collectionViewLayout";
 
 
 static NSDictionary* tagToClass;
@@ -96,9 +96,11 @@ static NSDictionary* tagToClass;
     @try {
         NSXMLParser* parser = [[NSXMLParser alloc] initWithData:fileData];
         [parser setDelegate:viewParser];
-        [parser parse];
+        if( ![parser parse] ) {
+            ISSLogWarning(@"Error parsing view hierarchy file - %@", parser.parserError);
+        }
     } @catch (NSException* exception) {
-        ISSLogDebug(@"Error view hierarchy file - %@", exception);
+        ISSLogWarning(@"Error parsing view hierarchy file - %@", exception);
     }
 
     return viewParser.rootView;
@@ -244,8 +246,8 @@ static NSDictionary* tagToClass;
             viewClass =  [ISSRuntimeIntrospectionUtils classWithName:value];
             canonicalAttributes[ISSViewDefinitionFileAttributeImplementationClass] = value;
         }
-        // "layoutClass":
-        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeCollectionViewLayoutClass] ) {
+        // "collectionViewLayout":
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeCollectionViewLayoutClass] || [key iss_isEqualIgnoreCase:@"layoutClass"] ) {
             collectionViewLayoutClass = [ISSRuntimeIntrospectionUtils classWithName:value];
             canonicalAttributes[ISSViewDefinitionFileAttributeCollectionViewLayoutClass] = value;
         }
