@@ -1023,7 +1023,8 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
 #pragma mark - UITextInputTraits
 
     NSSet* uiTextInputTraitsProperties = [NSSet setWithArray:@[
-            pi(S(autocapitalizationType), ISSPropertyTypeBool),
+            pei(S(autocapitalizationType), @{@"none" : @(UITextAutocapitalizationTypeNone), @"allCharacters" : @(UITextAutocapitalizationTypeAllCharacters),
+                    @"sentences" : @(UITextAutocapitalizationTypeSentences), @"words" : @(UITextAutocapitalizationTypeWords)}),
             pei(S(autocorrectionType), @{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)}),
             pi(S(enablesReturnKeyAutomatically), ISSPropertyTypeBool),
             pei(S(keyboardAppearance), @{@"default" : @(UIKeyboardAppearanceDefault), @"alert" : @(UIKeyboardAppearanceAlert),
