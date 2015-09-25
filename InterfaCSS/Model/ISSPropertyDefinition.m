@@ -105,8 +105,12 @@ NSString* const ISSAnonymousPropertyDefinitionName = @"ISSAnonymousPropertyDefin
         [obj setValue:value forKeyPath:self.name]; // Will throw exception if property doesn't exist
         return YES;
     } @catch (NSException* e) {
-        ISSLogDebug(@"Unable to set value for property %@ - %@", self.name, e);
-        return NO;
+        // Attempt to set via reflection:
+        BOOL result = [ISSRuntimeIntrospectionUtils invokeSetterForProperty:self.name withValue:value inObject:obj];
+        if( !result ) {
+            ISSLogDebug(@"Unable to set value for property %@ - %@", self.name, e);
+        }
+        return result;
     }
 }
 
