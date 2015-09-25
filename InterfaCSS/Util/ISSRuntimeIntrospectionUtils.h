@@ -30,6 +30,8 @@
 
 + (BOOL) invokeSetterForProperty:(NSString*)propertyName withValue:(id)value inObject:(id)object;
 
++ (id) invokeGetterForProperty:(NSString*)propertyName inObject:(id)object;
+
 + (Class) classWithName:(NSString*)className;
 
 + (BOOL) klaatuVerataNikto:(Class)clazz selector:(SEL)originalSelector replacement:(IMP)replacement originalPointer:(IMP*)originalPointer;

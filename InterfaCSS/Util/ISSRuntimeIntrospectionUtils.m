@@ -93,9 +93,9 @@ static NSCache* propertyNamesWithClassForClassCache;
     }
 }
 
-+ (NSString*) customSetterMethodForProperty:(objc_property_t)property {
++ (NSString*) customSetterOrGetterMethodForProperty:(objc_property_t)property searchString:(NSString*)searchString {
     NSString* propertyAttributesDescription = [NSString stringWithCString:property_getAttributes(property) encoding:NSUTF8StringEncoding];
-    NSRange range = [propertyAttributesDescription rangeOfString:@",S"];
+    NSRange range = [propertyAttributesDescription rangeOfString:searchString];
     if( range.location != NSNotFound ) {
         NSInteger setterBeginIndex = range.location + range.length;
         NSRange searchRange = NSMakeRange(setterBeginIndex, propertyAttributesDescription.length - setterBeginIndex);
@@ -104,6 +104,14 @@ static NSCache* propertyNamesWithClassForClassCache;
         else return [propertyAttributesDescription substringWithRange:searchRange];
     }
     return nil;
+}
+
++ (NSString*) customSetterMethodForProperty:(objc_property_t)property {
+    return [self customSetterOrGetterMethodForProperty:property searchString:@",S"];
+}
+
++ (NSString*) customGetterMethodForProperty:(objc_property_t)property {
+    return [self customSetterOrGetterMethodForProperty:property searchString:@",G"];
 }
 
 + (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName {
@@ -140,10 +148,45 @@ static NSCache* propertyNamesWithClassForClassCache;
     else return nil;
 }
 
++ (NSInvocation*) invocationForSelectorWithName:(NSString*)selectorName inObject:(id)object {
+    if( !object || ![selectorName iss_hasData] ) return nil;
+    
+    // TODO: Consider adding some caching...
+    SEL selector = NSSelectorFromString(selectorName);
+    NSMethodSignature* signature = nil;
+    Class clazz = [object class];
+    while( clazz && clazz != NSObject.class ) {
+        signature = [clazz instanceMethodSignatureForSelector:selector];
+        if( signature ) break;
+        clazz = [clazz superclass];
+    }
+    
+    if( signature ) {
+        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget:object];
+        [invocation setSelector:selector];
+        return invocation;
+    }
+    return nil;
+}
+
++ (objc_property_t) findPropertyWithName:(NSString*)propertyName inObject:(id)object {
+    if( !object || ![propertyName iss_hasData] ) return nil;
+    
+    objc_property_t property = nil;
+    Class clazz = [object class];
+    while( clazz && clazz != NSObject.class ) {
+        property = class_getProperty(clazz, [propertyName cStringUsingEncoding:NSUTF8StringEncoding]);
+        if( property ) break;
+        clazz = [clazz superclass];
+    }
+    return property;
+}
+
 + (NSInvocation*) findSetterForProperty:(NSString*)propertyName inObject:(id)object {
     if( !object || ![propertyName iss_hasData] ) return nil;
     
-    objc_property_t property = class_getProperty([object class], [propertyName cStringUsingEncoding:NSUTF8StringEncoding]);
+    objc_property_t property = [self findPropertyWithName:propertyName inObject:object];
     NSString* setter = nil;
     if( property ) {
         setter = [self customSetterMethodForProperty:property];
@@ -156,28 +199,32 @@ static NSCache* propertyNamesWithClassForClassCache;
         }
     }
     
-    if ( setter ) {
-        // TODO: Consider adding some caching...
-        SEL selector = NSSelectorFromString(setter);
-        NSMethodSignature* signature = [[object class] instanceMethodSignatureForSelector:selector];
-        if( signature ) {
-            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget:object];
-            [invocation setSelector:selector];
-            return invocation;
-        }
+    return [self invocationForSelectorWithName:setter inObject:object];
+}
+
++ (NSInvocation*) findGetterForProperty:(NSString*)propertyName inObject:(id)object {
+    if( !object || ![propertyName iss_hasData] ) return nil;
+    
+    objc_property_t property = [self findPropertyWithName:propertyName inObject:object];
+    NSString* getter = nil;
+    if( property ) {
+        getter = [self customSetterMethodForProperty:property];
     }
-    return nil;
+    if( !getter ) getter = propertyName;
+    
+    return [self invocationForSelectorWithName:getter inObject:object];
 }
 
 + (BOOL) invokeSetterForProperty:(NSString*)propertyName withValue:(id)value inObject:(id)object {
     NSInvocation* invocation = [self findSetterForProperty:propertyName inObject:object];
+    if( !invocation ) return NO;
+    
     const char* argType = [invocation.methodSignature getArgumentTypeAtIndex:2];
     
     void* argValue = nil;
     
     if( *argType == *@encode(id) ) {
-        argValue = (__bridge void *)(value);
+        [invocation setArgument:&value atIndex:2];
     }
     else if( *argType == *@encode(char) ) {
         char v = [value charValue];
@@ -230,17 +277,78 @@ static NSCache* propertyNamesWithClassForClassCache;
     else if( *argType == *@encode(BOOL) ) {
         BOOL v = [value boolValue];
         argValue = &v;
+    } else {
+        return NO;
     }
     
     if( argValue ) {
         [invocation setArgument:argValue atIndex:2];
-        
-        [invocation invoke];
-        
-        return YES;
+    }   
+    [invocation invoke];
+    
+    return YES;
+}
+
++ (id) invokeGetterForProperty:(NSString*)propertyName inObject:(id)object {
+    NSInvocation* invocation = [self findGetterForProperty:propertyName inObject:object];
+    if( !invocation ) return nil;
+    
+    const char* returnType = [invocation.methodSignature methodReturnType];
+    id returnValue = nil;
+    
+    if( *returnType == *@encode(id) ) {
+            id __unsafe_unretained tmpReturn;
+            [invocation getReturnValue:&tmpReturn];
+            returnValue = tmpReturn;
     } else {
-        return NO;
+        NSUInteger length = [invocation.methodSignature methodReturnLength];
+        void* buffer = (void*)malloc(length);
+        [invocation getReturnValue:buffer];
+        
+        if( *returnType == *@encode(char) ) {
+            returnValue = [NSNumber numberWithChar:*((char*)buffer)];
+        }
+        else if( *returnType == *@encode(short) ) {
+            returnValue = [NSNumber numberWithShort:*((short*)buffer)];
+        }
+        else if( *returnType == *@encode(int) ) {
+            returnValue = [NSNumber numberWithInt:*((int*)buffer)];
+        }
+        else if( *returnType == *@encode(long) ) {
+            returnValue = [NSNumber numberWithLong:*((long*)buffer)];
+        }
+        else if( *returnType == *@encode(long long) ) {
+            returnValue = [NSNumber numberWithLongLong:*((long long*)buffer)];
+        }
+        else if( *returnType == *@encode(unsigned char) ) {
+            returnValue = [NSNumber numberWithUnsignedChar:*((long long*)buffer)];
+        }
+        else if( *returnType == *@encode(unsigned short) ) {
+            returnValue = [NSNumber numberWithUnsignedShort:*((long long*)buffer)];
+        }
+        else if( *returnType == *@encode(unsigned int) ) {
+            returnValue = [NSNumber numberWithUnsignedInt:*((unsigned int*)buffer)];
+        }
+        else if( *returnType == *@encode(unsigned long) ) {
+            returnValue = [NSNumber numberWithUnsignedLong:*((unsigned long*)buffer)];
+        }
+        else if( *returnType == *@encode(unsigned long long) ) {
+            returnValue = [NSNumber numberWithUnsignedLong:*((unsigned long long*)buffer)];
+        }
+        else if( *returnType == *@encode(float) ) {
+            returnValue = [NSNumber numberWithFloat:*((float*)buffer)];
+        }
+        else if( *returnType == *@encode(double) ) {
+            returnValue = [NSNumber numberWithDouble:*((double*)buffer)];
+        }
+        else if( *returnType == *@encode(BOOL) ) {
+            returnValue = [NSNumber numberWithBool:*((BOOL*)buffer)];
+        }
+        
+        free(buffer);
     }
+    
+    return returnValue;
 }
 
 + (Class) classWithName:(NSString*)className {
