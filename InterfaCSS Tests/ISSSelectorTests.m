@@ -335,7 +335,7 @@
 }
 
 - (void) testPseudoClassScreenWidth {
-    CGFloat width = [UIScreen mainScreen].bounds.size.width;
+    CGFloat width = MIN([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
     NSString* narrower = [NSString stringWithFormat:@"%f", width - 1];
     NSString* wider = [NSString stringWithFormat:@"%f", width + 1];
     
@@ -361,7 +361,7 @@
 }
 
 - (void) testPseudoClassScreenHeight {
-    CGFloat height = [UIScreen mainScreen].bounds.size.height;
+    CGFloat height = MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
     NSString* shorter = [NSString stringWithFormat:@"%f", height - 1];
     NSString* taller = [NSString stringWithFormat:@"%f", height + 1];
     

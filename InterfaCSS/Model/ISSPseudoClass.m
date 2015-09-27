@@ -245,7 +245,7 @@ static NSDictionary* stringToPseudoClassType;
             return self.screenNativeWidth > [_parameter floatValue];
         }
         case ISSPseudoClassTypeScreenHeight: {
-            return ISS_EQUAL_FLT(self.screenNativeWidth, [_parameter floatValue]);
+            return ISS_EQUAL_FLT(self.screenNativeHeight, [_parameter floatValue]);
         }
         case ISSPseudoClassTypeScreenHeightLessThan: {
             return self.screenNativeHeight < [_parameter floatValue];
