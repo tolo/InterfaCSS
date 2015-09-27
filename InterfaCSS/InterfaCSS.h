@@ -12,6 +12,9 @@
 #import <Foundation/Foundation.h>
 
 
+#define ISS_EQUAL_FLT(x, y) (fabs((x) - (y)) < FLT_EPSILON)
+
+
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
 @class ISSPropertyRegistry;

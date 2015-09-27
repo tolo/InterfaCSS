@@ -193,6 +193,22 @@ static NSDictionary* stringToPseudoClassType;
 }
 #endif
 
+- (CGFloat) screenNativeWidth {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+    return [UIScreen mainScreen].nativeBounds.size.width / [UIScreen mainScreen].nativeScale;
+#else
+    return MIN([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
+#endif
+}
+
+- (CGFloat) screenNativeHeight {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+    return [UIScreen mainScreen].nativeBounds.size.height / [UIScreen mainScreen].nativeScale;
+#else
+    return MAX([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
+#endif
+}
+
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails {
     id uiElement = elementDetails.uiElement;
     switch( _pseudoClassType ) {
@@ -220,22 +236,22 @@ static NSDictionary* stringToPseudoClassType;
             return [[UIDevice iss_deviceModelId] hasPrefix:_parameter];
         }
         case ISSPseudoClassTypeScreenWidth: {
-            return [UIScreen mainScreen].bounds.size.width == [_parameter floatValue];
+            return ISS_EQUAL_FLT(self.screenNativeWidth, [_parameter floatValue]);
         }
         case ISSPseudoClassTypeScreenWidthLessThan: {
-            return [UIScreen mainScreen].bounds.size.width < [_parameter floatValue];
+            return self.screenNativeWidth < [_parameter floatValue];
         }
         case ISSPseudoClassTypeScreenWidthGreaterThan: {
-            return [UIScreen mainScreen].bounds.size.width > [_parameter floatValue];
+            return self.screenNativeWidth > [_parameter floatValue];
         }
         case ISSPseudoClassTypeScreenHeight: {
-            return [UIScreen mainScreen].bounds.size.height == [_parameter floatValue];
+            return ISS_EQUAL_FLT(self.screenNativeWidth, [_parameter floatValue]);
         }
         case ISSPseudoClassTypeScreenHeightLessThan: {
-            return [UIScreen mainScreen].bounds.size.height < [_parameter floatValue];
+            return self.screenNativeHeight < [_parameter floatValue];
         }
         case ISSPseudoClassTypeScreenHeightGreaterThan: {
-            return [UIScreen mainScreen].bounds.size.height > [_parameter floatValue];
+            return self.screenNativeHeight > [_parameter floatValue];
         }
 
 

@@ -11,5 +11,4 @@
     #import "NSString+ISSStringAdditions.h"
 #endif
 
-#define ISS_EQUAL_FLT(x, y) (fabs((x) - (y)) < FLT_EPSILON)
 #define ISSAssertEqualFloats(x, y, ...) XCTAssertTrue(ISS_EQUAL_FLT(x, y), __VA_ARGS__)
