@@ -1115,6 +1115,9 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
 #pragma mark - UISlider
 
     NSSet* sliderProperties = [NSSet setWithArray:@[
+            p(S(value), ISSPropertyTypeNumber),
+            p(S(minimumValue), ISSPropertyTypeNumber),
+            p(S(maximumValue), ISSPropertyTypeNumber),
             p(S(minimumValueImage), ISSPropertyTypeImage),
             p(S(maximumValueImage), ISSPropertyTypeImage),
             p(S(minimumTrackTintColor), ISSPropertyTypeColor),
