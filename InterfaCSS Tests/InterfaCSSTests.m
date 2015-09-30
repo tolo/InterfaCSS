@@ -593,8 +593,11 @@
 }
 
 - (void) testPrefixedPropertyOverrideOfTypeProperty {
+    UIView* rootView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
+    
     UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 500, 500)];
     view.styleClassISS = @"typeSelectorAndPrefixedPropertyTest";
+    [rootView addSubview:view];
     
     UIButton* btn = [UIButton buttonWithType:UIButtonTypeCustom];
     btn.styleClassISS = @"testNestedProperty";

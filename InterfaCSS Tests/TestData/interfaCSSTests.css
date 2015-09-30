@@ -177,7 +177,7 @@ UIView.disabledStylingTest {
 }
 
 
-.typeSelectorAndPrefixedPropertyTest {
+UIView > .typeSelectorAndPrefixedPropertyTest {
     UILabel {
         font: GillSans 1;
         titleLabel.alpha: 1;

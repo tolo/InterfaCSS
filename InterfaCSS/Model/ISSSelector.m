@@ -29,7 +29,7 @@
     if (self) {
         _wildcardType = wildcardType;
         _type = type;
-        _elementId = elementId;
+        _elementId = [elementId lowercaseString];
         _styleClass = [styleClass lowercaseString];
         if( pseudoClasses.count == 0 ) pseudoClasses = nil;
         _pseudoClasses = pseudoClasses;

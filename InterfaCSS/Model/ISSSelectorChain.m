@@ -174,7 +174,7 @@
         for(NSUInteger i=remainingCount; i>1 && nextUIElementDetails; i-=2) { // ...then rest of selector chain
             ISSSelectorCombinator combinator = (ISSSelectorCombinator)[_selectorComponents[i - 1] integerValue];
             ISSSelector* selector = _selectorComponents[i-2];
-            nextUIElementDetails = [ISSSelectorChain matchElement:elementDetails withSelector:selector andCombinator:combinator stylingContext:(ISSStylingContext*)stylingContext];
+            nextUIElementDetails = [ISSSelectorChain matchElement:nextUIElementDetails withSelector:selector andCombinator:combinator stylingContext:(ISSStylingContext*)stylingContext];
         }
         // If element at least matched last selector in chain, but didn't match it completely - set a flag indicating that there are partial matches
         if( !nextUIElementDetails ) {

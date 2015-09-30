@@ -20,6 +20,7 @@
 #import "UIView+InterfaCSS.h"
 #import "ISSPropertyRegistry.h"
 #import "ISSStylingContext.h"
+#import "ISSNestedElementSelector.h"
 
 
 @interface MyCustomView : UIView
@@ -133,6 +134,33 @@
     XCTAssertTrue([childChain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Child selector chain must match!");
     
     XCTAssertFalse(childChain.hasPseudoClassSelector, @"Expected selector chain to report not having pseudo class");
+}
+
+- (void) testDeepChildAndDescendant {
+    UIView* view1 = [[UIView alloc] init];
+    [rootView addSubview:view1];
+    [view1 addStyleClassISS:@"view1"];
+    
+    UIScrollView* view2 = [[UIScrollView alloc] init];
+    [view1 addSubview:view2];
+    [view2 addStyleClassISS:@"view2"];
+    
+    UIButton* button = [[UIButton alloc] init];
+    [view2 addSubview:button];
+    
+    
+    ISSSelector* viewSelector = [ISSSelector selectorWithType:@"UIView" styleClass:nil pseudoClasses:nil];
+    ISSSelector* view1Selector = [ISSSelector selectorWithType:@"UIView" styleClass:@"view1" pseudoClasses:nil];
+    ISSSelector* view2Selector = [ISSSelector selectorWithType:@"UIScrollView" styleClass:@"view2" pseudoClasses:nil];
+    ISSSelector* buttonSelector = [ISSSelector selectorWithType:@"UIButton" styleClass:nil pseudoClasses:nil];
+    ISSSelector* titleLabelSelector = [ISSNestedElementSelector selectorWithNestedElementKeyPath:@"titleLabel"];
+    
+    ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorChild), view1Selector, @(ISSSelectorCombinatorDescendant), view2Selector,
+                                                                              @(ISSSelectorCombinatorChild), buttonSelector, @(ISSSelectorCombinatorDescendant), titleLabelSelector]];
+    
+    ISSUIElementDetails* labelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:button.titleLabel];
+    
+    XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[[ISSStylingContext alloc] init]], @"Deep descendant/child selector chain must match!");
 }
 
 - (void) doTestSibling:(BOOL)adjacent {
