@@ -1,6 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
-platform :ios, '6.0'
+platform :ios, '7.0'
 xcodeproj 'InterfaCSS'
 
 target :'InterfaCSS' do
