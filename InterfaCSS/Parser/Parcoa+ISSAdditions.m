@@ -337,16 +337,17 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
         NSUInteger i = 0;
         SKIP_SPACE_AND_NEWLINES; // Skip space
 
-        unichar c = [input characterAtIndex:i];
-        if ( input.length && (c == ':' | c == '=') ) {
-            NSString *value = [input substringWithRange:NSMakeRange(i, 1)];
-            i++;
-            SKIP_SPACE_AND_NEWLINES; // Skip space
-            NSString *residual = [input substringFromIndex:i];
-            return [ParcoaResult ok:value residual:residual expected:[ParcoaExpectation unsatisfiable]];
-        } else {
-            return [ParcoaResult failWithRemaining:input expected:@"Character matching unichar"];
+        if( i < input.length ) {
+            unichar c = [input characterAtIndex:i];
+            if ( input.length && (c == ':' | c == '=') ) {
+                NSString* value = [input substringWithRange:NSMakeRange(i, 1)];
+                i++;
+                SKIP_SPACE_AND_NEWLINES; // Skip space
+                NSString* residual = [input substringFromIndex:i];
+                return [ParcoaResult ok:value residual:residual expected:[ParcoaExpectation unsatisfiable]];
+            }
         }
+        return [ParcoaResult failWithRemaining:input expected:@"Character matching unichar"];
     } name:@"nameValueSeparator" summary:@""];
 }
 
