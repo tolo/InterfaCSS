@@ -1,12 +1,34 @@
 #Changes
 
 
+
+##Version 1.3
+
+### New features & changes
+* View definition file changes: made `collectionViewLayout` preferred tag name for UICollectionViewLayout and added better parser error logging. 
+* Added proper support for using `titleTextAttributes`, `scopeBarButtonTitleTextAttributes`, `defaultTextAttributes`, `typingAttributes`, `linkTextAttributes` as prefix for text attributes (`font`, `textColor`, `shadowColor` and `shadowOffset`), e.g. `titleTextAttributes.font`. 
+* Added support for setting title, image, enabled, width and contentOffset for UISegmentedControl segments. 
+* Added fallback to introspection when KVC fails when setting properties.
+* Added more UISlider properties (value, minimumValue, maximumValue).
+* Bumped target ios version to 7.0.
+
+### Bug fixes
+* Fixed issue in `invokeSetterForProperty` and added `invokeGetterForProperty`.
+* Fixed issue with setting text attributes property titleTextAttributes(:forState:),
+* Changed incorrect type of property `autocapitalizationType` from bool to enum.
+* Fixed errors with screenWidth/height pseudo classes.
+* Added missing bounds check to nameValueSeparator parser (causing ill-formed stylesheets to crash sometimes).
+* Fixed issue in ISSSelectorChain that prevented selector chains from being properly traversed in some cases. This mostly affected how child selector combinators (´>´) were evaluated.
+
+
+
 ##Version 1.2.1
 
 ### Bug fixes
 * Changed incorrect type of attributed string properties `underlineStyle` and `strikeThroughStyle` from number to (bitmask) enum (NSUnderlineStyle* and NSUnderlinePattern* now supported). 
 * Fixed issues with line breaks (\n) and escaping of quotes in strings and attributed strings.
 * Fixed issue with local file monitoring, when file is (incorrectly) reported as deleted.
+
 
 
 ##Version 1.2
