@@ -135,7 +135,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Common parsers
     ParcoaParser *dot, *hash, *semiColonSkipSpace, *comma, *openBraceSkipSpace, *closeBraceSkipSpace,
             *untilSemiColon, *propertyNameValueSeparator, *anyName, *anythingButControlChars, *anythingButControlCharsExceptColon,
-            *identifier, *quotedIdentifier, *plainNumber, *numberValue, *numberOrExpressionValue, *anyValue, *commentParser, *quotedString, *quotedStringRaw;
+            *identifier, *identifierOnlyAlphpaAndUnderscore, *quotedIdentifier, *plainNumber, *numberValue, *numberOrExpressionValue, *anyValue, *commentParser, *quotedString, *quotedStringRaw;
 
     NSCharacterSet* validVariableNameSet;
 
@@ -811,9 +811,9 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* additionalConstant = [numberValue skipSurroundingSpaces];
     ParcoaParser* constantOnlyValue = [numberValue skipSurroundingSpaces];
 
-    ParcoaParser* elementAttribute = [[dot keepRight:identifier] skipSurroundingSpaces];
-    ParcoaParser* elementIdWithPrefix = [[Parcoa iss_quickUnichar:'#'] keepRight:identifier];
-    ParcoaParser* elementId = [Parcoa choice:@[identifier, quotedIdentifier, elementIdWithPrefix]];
+    ParcoaParser* elementAttribute = [[dot keepRight:identifierOnlyAlphpaAndUnderscore] skipSurroundingSpaces];
+    ParcoaParser* elementIdWithPrefix = [[Parcoa iss_quickUnichar:'#'] keepRight:identifierOnlyAlphpaAndUnderscore];
+    ParcoaParser* elementId = [Parcoa choice:@[identifierOnlyAlphpaAndUnderscore, quotedIdentifier, elementIdWithPrefix]];
 
 
     // A.attr [* 1.5] [+/- 0.5]
@@ -1172,7 +1172,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ParcoaParser* fontFunctionParser = [[Parcoa sequential:@[identifier, [Parcoa iss_quickUnichar:'(' skipSpace:YES],
         fontValueParser, [Parcoa iss_quickUnichar:',' skipSpace:YES], plainNumber, [Parcoa iss_quickUnichar:')' skipSpace:YES]]] transform:^id(id value) {
             if( [value[2] isKindOfClass:UIFont.class] ) {
-                if( [@"bigger" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[(UIFont*)value[2] pointSize] + [value[4] floatValue]];
+                if( [@"larger" iss_isEqualIgnoreCase:value[0]] || [@"bigger" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[(UIFont*)value[2] pointSize] + [value[4] floatValue]];
                 else if( [@"smaller" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[(UIFont*)value[2] pointSize] - [value[4] floatValue]];
                 else if( [@"fontWithSize" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[value[4] floatValue]];
                 else return value[2];
@@ -1265,6 +1265,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         anythingButControlChars = [Parcoa iss_anythingButBasicControlChars:1];
         anythingButControlCharsExceptColon = [Parcoa iss_anythingButBasicControlCharsExceptColon:1];
         identifier = [Parcoa iss_validIdentifierChars:1];
+        identifierOnlyAlphpaAndUnderscore = [Parcoa iss_validIdentifierChars:1 onlyAlphpaAndUnderscore:YES];
         anyValue = untilSemiColon;
 
         plainNumber = [[Parcoa digit] concatMany1];
