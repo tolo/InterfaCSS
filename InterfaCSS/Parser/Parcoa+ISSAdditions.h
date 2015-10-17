@@ -37,6 +37,8 @@ typedef NSUInteger (^MatcherBlock)(NSString* input);
 
 + (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount;
 
++ (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount onlyAlphpaAndUnderscore:(BOOL)onlyAlphpaAndUnderscore;
+
 + (ParcoaParser*) iss_logicalExpressionParser;
 
 + (ParcoaParser*) iss_mathExpressionParser;

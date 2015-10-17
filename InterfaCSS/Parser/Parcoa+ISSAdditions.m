@@ -161,6 +161,12 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
     return [characterSet copy];
 }
 
++ (NSCharacterSet*) iss_validIdentifierExcludingMinusCharsSet {
+    NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"_"];
+    [characterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
+    return [characterSet copy];
+}
+
 + (NSCharacterSet*) iss_validIdentifierCharsSet {
     NSMutableCharacterSet* characterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"-_"];
     [characterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
@@ -168,7 +174,14 @@ static NSCharacterSet* whitespaceAndNewLineSet = nil;
 }
 
 + (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount {
-    NSCharacterSet* characterSet = [self iss_validIdentifierCharsSet];
+    return [self iss_validIdentifierChars:minCount onlyAlphpaAndUnderscore:NO];
+}
+
++ (ParcoaParser*) iss_validIdentifierChars:(NSUInteger)minCount onlyAlphpaAndUnderscore:(BOOL)onlyAlphpaAndUnderscore {
+    NSCharacterSet* characterSet;
+    if( onlyAlphpaAndUnderscore ) characterSet = [self iss_validIdentifierExcludingMinusCharsSet];
+    else characterSet = [self iss_validIdentifierCharsSet];
+    
     ParcoaParser* firstCharParser = [Parcoa satisfy:[Parcoa inCharacterSet:[self iss_validInitialIdentifierCharacterCharsSet] setName:@"validInitialIdentifierCharacterCharsSet"]]; // First identifier char must not be digit...
     return [[firstCharParser then:[self iss_takeUntilInSet:[characterSet invertedSet] minCount:minCount - 1]] concat];
 }
