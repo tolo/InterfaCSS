@@ -12,7 +12,6 @@
 // Define this to enable using ISSViewBuilder shorthand macros:
 //#define ISS_VIEW_BUILDER_SHORTHAND_ENABLED
 
-#import <InterfaCSS.h>
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
 

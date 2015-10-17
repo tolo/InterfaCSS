@@ -9,11 +9,10 @@
 
 #import "AppDelegate.h"
 
-#import <InterfaCSS.h>
-#import <InterfaCSS/UIView+InterfaCSS.h>
 #import <InterfaCSS/NSObject+ISSLogSupport.h>
 #import "SimpleSampleViewController.h"
 #import "PrototypeExampleViewController.h"
+#import "IBViewController.h"
 
 @implementation AppDelegate
 
@@ -39,11 +38,12 @@
     
     SimpleSampleViewController* viewController = [[SimpleSampleViewController alloc] init];
     PrototypeExampleViewController* prototypeExampleViewController = [[PrototypeExampleViewController alloc] init];
+    IBViewController* ibViewController = [[IBViewController alloc] init];
     
     UITabBarController* tabBarController = [[UITabBarController alloc] init];
     tabBarController.tabBar.translucent = NO;
     tabBarController.tabBar.styleClassISS = @"tabBarStyle1";
-    tabBarController.viewControllers = @[viewController, prototypeExampleViewController];
+    tabBarController.viewControllers = @[viewController, prototypeExampleViewController, ibViewController];
     tabBarController.selectedIndex = 0;
     
     self.window.rootViewController = tabBarController;

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F30BC6E5A4D4392884CBCE5 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F20178D7D1BF42608469BA81 /* libPods.a */; };
 		2706724518A3ED4E000DD1FF /* views.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2706724418A3ED4E000DD1FF /* views.xml */; };
 		2706724818A4C3CF000DD1FF /* image.png in Resources */ = {isa = PBXBuildFile; fileRef = 2706724618A4C3CF000DD1FF /* image.png */; };
 		2706724918A4C3CF000DD1FF /* main.css in Resources */ = {isa = PBXBuildFile; fileRef = 2706724718A4C3CF000DD1FF /* main.css */; };
@@ -22,6 +21,10 @@
 		27F1BB8418A2D50E00022036 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F1BB8318A2D50E00022036 /* main.m */; };
 		27F1BB8818A2D50E00022036 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F1BB8718A2D50E00022036 /* AppDelegate.m */; };
 		27F1BBA818A2D65E00022036 /* SimpleSampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F1BBA718A2D65E00022036 /* SimpleSampleViewController.m */; };
+		736AA0AD8182D20FE853A80B /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 965AD1AB77812E0736073667 /* Pods.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		8A2BFED61BD2504200C87464 /* IBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A2BFED51BD2504200C87464 /* IBViewController.m */; settings = {ASSET_TAGS = (); }; };
+		8A2BFED81BD2505C00C87464 /* IBViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8A2BFED71BD2505C00C87464 /* IBViewController.xib */; settings = {ASSET_TAGS = (); }; };
+		8A2BFEDA1BD264C600C87464 /* IBViewController.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A2BFED91BD264C600C87464 /* IBViewController.css */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,8 +49,12 @@
 		27F1BBA618A2D65E00022036 /* SimpleSampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleSampleViewController.h; sourceTree = "<group>"; };
 		27F1BBA718A2D65E00022036 /* SimpleSampleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimpleSampleViewController.m; sourceTree = "<group>"; };
 		87C21769D8FCCF9DA40AC587 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		8A2BFED41BD2504200C87464 /* IBViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IBViewController.h; sourceTree = "<group>"; };
+		8A2BFED51BD2504200C87464 /* IBViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IBViewController.m; sourceTree = "<group>"; };
+		8A2BFED71BD2505C00C87464 /* IBViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = IBViewController.xib; sourceTree = "<group>"; };
+		8A2BFED91BD264C600C87464 /* IBViewController.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = IBViewController.css; sourceTree = "<group>"; };
+		965AD1AB77812E0736073667 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C559F74EEB96025A701FD1B2 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
-		F20178D7D1BF42608469BA81 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,7 +65,7 @@
 				27F1BB7A18A2D50E00022036 /* CoreGraphics.framework in Frameworks */,
 				27F1BB7C18A2D50E00022036 /* UIKit.framework in Frameworks */,
 				27F1BB7818A2D50E00022036 /* Foundation.framework in Frameworks */,
-				0F30BC6E5A4D4392884CBCE5 /* libPods.a in Frameworks */,
+				736AA0AD8182D20FE853A80B /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +96,7 @@
 				27F1BB7718A2D50E00022036 /* Foundation.framework */,
 				27F1BB7918A2D50E00022036 /* CoreGraphics.framework */,
 				27F1BB7B18A2D50E00022036 /* UIKit.framework */,
-				F20178D7D1BF42608469BA81 /* libPods.a */,
+				965AD1AB77812E0736073667 /* Pods.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -103,6 +110,10 @@
 				2785E24218A7E49D001D1104 /* PrototypeExampleViewController.m */,
 				27F1BB8618A2D50E00022036 /* AppDelegate.h */,
 				27F1BB8718A2D50E00022036 /* AppDelegate.m */,
+				8A2BFED41BD2504200C87464 /* IBViewController.h */,
+				8A2BFED51BD2504200C87464 /* IBViewController.m */,
+				8A2BFED91BD264C600C87464 /* IBViewController.css */,
+				8A2BFED71BD2505C00C87464 /* IBViewController.xib */,
 				27C1F16B19451C0000BAFCC7 /* constants.css */,
 				2706724718A4C3CF000DD1FF /* main.css */,
 				275E02C318F329AC00FF1491 /* prototypeExample.css */,
@@ -146,6 +157,7 @@
 				27F1BB7118A2D50E00022036 /* Frameworks */,
 				27F1BB7218A2D50E00022036 /* Resources */,
 				BAAE66154A06409B8BF94417 /* Copy Pods Resources */,
+				91E7B5485F2311E01E306E8A /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -187,6 +199,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A2BFEDA1BD264C600C87464 /* IBViewController.css in Resources */,
 				2706724918A4C3CF000DD1FF /* main.css in Resources */,
 				27C1F16C19451C0000BAFCC7 /* constants.css in Resources */,
 				2706724518A3ED4E000DD1FF /* views.xml in Resources */,
@@ -194,6 +207,7 @@
 				2785E24918A82DF1001D1104 /* Default-568h@2x.png in Resources */,
 				2706724818A4C3CF000DD1FF /* image.png in Resources */,
 				275E02C418F329AC00FF1491 /* prototypeExample.css in Resources */,
+				8A2BFED81BD2505C00C87464 /* IBViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,6 +227,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		91E7B5485F2311E01E306E8A /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BAAE66154A06409B8BF94417 /* Copy Pods Resources */ = {
@@ -240,6 +269,7 @@
 				2785E24318A7E49D001D1104 /* PrototypeExampleViewController.m in Sources */,
 				27F1BBA818A2D65E00022036 /* SimpleSampleViewController.m in Sources */,
 				27F1BB8818A2D50E00022036 /* AppDelegate.m in Sources */,
+				8A2BFED61BD2504200C87464 /* IBViewController.m in Sources */,
 				27F1BB8418A2D50E00022036 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,0 +1,19 @@
+
+.IBViewControllerRoot {
+    backgroundColor: #dbdad8;
+}
+
+.IBViewControllerLabel {
+    textColor: darkgray;
+    layout: left(parent.leftMargin), right(parent.rightMargin), height(60), centerY(parent - 40);
+    text: "View loaded from XIB, and styled using IBInspectable property";
+    numberOfLines: 0;
+}
+
+#IBViewControllerButton {
+    layout: centerX(parent), centerY(parent);
+    titleColor: red;
+    backgroundImage: clear;
+    backgroundImage(highlighted): clear;
+    borderWidth: 0;
+}

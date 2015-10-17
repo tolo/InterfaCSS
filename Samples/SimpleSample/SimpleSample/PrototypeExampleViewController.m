@@ -9,7 +9,6 @@
 
 #import "PrototypeExampleViewController.h"
 
-#import <InterfaCSS.h>
 #import <InterfaCSS/ISSViewBuilder.h>
 #import <InterfaCSS/UITableView+InterfaCSS.h>
 #import <InterfaCSS/UIView+InterfaCSS.h>
