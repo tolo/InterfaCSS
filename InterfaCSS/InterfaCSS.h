@@ -20,14 +20,6 @@
 @class ISSPropertyRegistry;
 
 
-#pragma mark - Common macro definitions
-
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-#define ISS_IBInspectableIfAvailable IBInspectable
-#else
-#define ISS_IBInspectableIfAvailable
-#endif
-
 
 #pragma mark - Common block type definitions
 

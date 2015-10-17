@@ -18,7 +18,11 @@
 /**
  * Convenience property for setting/getting a single style class. If multiple classes are set, the value returned by this property can be any of those styles.
  */
-@property (nonatomic, strong) ISS_IBInspectableIfAvailable NSString* styleClassISS;
+@property (nonatomic, strong)
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+    IBInspectable
+#endif
+    NSString* styleClassISS;
 
 /**
  * Represents the style class for the this view.
@@ -49,7 +53,12 @@
 @property (nonatomic, strong) NSString* customStylingIdentityISS;
 
 /** An optional element identifier for this view. May be used to find a view using the method `subviewWithElementId:`. */
-@property (nonatomic, strong) ISS_IBInspectableIfAvailable NSString* elementIdISS;
+@property (nonatomic, strong)
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+    IBInspectable
+#endif
+    NSString* elementIdISS;
+
 
 /** Flag indicating if styling is enabled for this view. */
 @property (nonatomic, readonly) BOOL stylingEnabledISS;
