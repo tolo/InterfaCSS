@@ -2,6 +2,15 @@
 
 
 
+##Version 1.3.1
+
+### Bug fixes
+* Fixed issue with using +/- without adjoining whitespace in ISSLayout definitions. 
+* Fixed issue causing crash when using layout on elements without element id.
+* Fixed issue with IBInspectable not working properly on styleClassISS and elementIdISS.
+ 
+
+
 ##Version 1.3
 
 ### New features & changes
