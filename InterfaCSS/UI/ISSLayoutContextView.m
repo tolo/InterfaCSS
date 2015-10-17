@@ -51,7 +51,9 @@
             if( self.layoutPostProcessingBlock ) {
                 self.layoutPostProcessingBlock(elementDetails.view, elementDetails.layout);
             }
-            resolvedElements[elementDetails.elementId] = elementDetails;
+            if( elementDetails.elementId ) {
+                resolvedElements[elementDetails.elementId] = elementDetails;
+            }
             didResolveElements = YES;
         } else {
             [unresolved addObject:elementDetails];
