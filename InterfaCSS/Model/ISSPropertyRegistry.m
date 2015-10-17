@@ -1336,8 +1336,12 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
     
 #pragma mark - UISearchBar
 
+#if TARGET_OS_TV == 0
     NSDictionary* searchBarIconParameters = @{@"iconBookmark" : @(UISearchBarIconBookmark), @"iconClear" : @(UISearchBarIconClear),
-                    @"iconResultsList" : @(UISearchBarIconResultsList), @"iconSearch" : @(UISearchBarIconSearch)};
+                                              @"iconResultsList" : @(UISearchBarIconResultsList), @"iconSearch" : @(UISearchBarIconSearch)};
+#else
+    NSDictionary* searchBarIconParameters = @{@"iconSearch" : @(UISearchBarIconSearch)};
+#endif
     NSMutableDictionary* statefulSearchBarIconParameters = [NSMutableDictionary dictionaryWithDictionary:searchBarIconParameters];
     [statefulSearchBarIconParameters addEntriesFromDictionary:controlStateParametersValues];
 
