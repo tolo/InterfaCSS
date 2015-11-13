@@ -35,6 +35,24 @@
     attributedTitle: "title1 " (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2, underlineStyle: single dash);
 }
 
+.hexColorsRGBA {
+    color: #4080B000;
+    titleColor: #00FF80FF;
+    backgroundColor: #00000080;
+    tintColor: #80000000;
+    textColor: #800000FF;
+    shadowColor: #80000080;
+}
+
+.hexColorsCompact {
+    color: #000;
+    titleColor: #fff;
+    backgroundColor: #0008;
+    tintColor: #888;
+    textColor: #8888;
+    shadowColor: #8880;
+}
+
 .localizedStrings {
     text: L("Text");
     title: localized('Title');

@@ -28,15 +28,27 @@ static inline CGFloat adjustWithAbsoluteAmount(CGFloat value, CGFloat adjustAmou
 
 + (UIColor*) iss_colorWithHexString:(NSString*)hex {
     hex = [hex iss_trim];
-    if ( hex.length == 6 ) {
+    BOOL withAlpha = hex.length == 4 || hex.length == 8;
+    BOOL compact = hex.length == 3 || hex.length == 4;
+
+    if ( hex.length == 6 || compact || withAlpha ) {
         NSScanner* scanner = [NSScanner scannerWithString:hex];
         unsigned int cc = 0;
+        unsigned int alphaOffset = withAlpha ? (compact ? 4 : 8) : 0;
+        unsigned int chanelOffset = compact ? 4 : 8;
+        unsigned int mask = compact ? 0x0F : 0xFF;
+        unsigned int multiplier = 0xFF/mask;
 
         if( [scanner scanHexInt:&cc] ) {
-            NSInteger r = (cc >> 16) & 0xFF;
-            NSInteger g = (cc >> 8) & 0xFF;
-            NSInteger b = cc & 0xFF;
-            return [self iss_colorWithR:r G:g B:b];
+            NSInteger r = ((cc >> (2*chanelOffset + alphaOffset)) & mask) * multiplier;
+            NSInteger g = ((cc >> (chanelOffset + alphaOffset)) & mask) * multiplier;
+            NSInteger b = ((cc >> alphaOffset) & mask) * multiplier;
+            if( withAlpha ) {
+                float a = (cc & mask) / (float)mask;
+                return [self iss_colorWithR:r G:g B:b A:a];
+            } else {
+                return [self iss_colorWithR:r G:g B:b];
+            }
         }
     }
     return [UIColor magentaColor];

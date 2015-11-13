@@ -415,6 +415,26 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     XCTAssertEqualObjects(values[3], [UIColor redColor]);
 }
 
+- (void) testRGBAHexColorPropertyValues {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsRGBA"];
+    XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:64 G:128 B:176 A:0]);
+    XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:0 G:255 B:128 A:1]);
+    XCTAssertEqualObjects(values[2], [UIColor iss_colorWithR:0 G:0 B:0 A:128/255.0]);
+    XCTAssertEqualObjects(values[3], [UIColor iss_colorWithR:128 G:0 B:0 A:0]);
+    XCTAssertEqualObjects(values[4], [UIColor iss_colorWithR:128 G:0 B:0 A:1]);
+    XCTAssertEqualObjects(values[5], [UIColor iss_colorWithR:128 G:0 B:0 A:128/255.0]);
+}
+
+- (void) testCompactHexColorPropertyValues {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsCompact"];
+    XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:0 G:0 B:0]);
+    XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:255 G:255 B:255]);
+    XCTAssertEqualObjects(values[2], [UIColor colorWithRed:0 green:0 blue:0 alpha:8/15.0f]);
+    XCTAssertEqualObjects(values[3], [UIColor colorWithRed:8/15.0f green:8/15.0f blue:8/15.0f alpha:1]);
+    XCTAssertEqualObjects(values[4], [UIColor colorWithRed:8/15.0f green:8/15.0f blue:8/15.0f alpha:8/15.0f]);
+    XCTAssertEqualObjects(values[5], [UIColor colorWithRed:8/15.0f green:8/15.0f blue:8/15.0f alpha:0]);
+}
+
 - (void) testUIColorFunctionPropertyValues {
     NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"textColor", @"tintColor", @"shadowColor", @"sectionIndexColor", @"separatorColor"] fromStyleClass:@"colorfunctions"];
     UIColor* sourceColor = [UIColor iss_colorWithHexString:@"112233"];
