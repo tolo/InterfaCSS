@@ -618,6 +618,28 @@
     ISSAssertEqualFloats(item.customView.alpha, 0.5f);
 }
 
+- (void) testNestedPropertyNotDirectChildView {
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@""];
+    [[InterfaCSS interfaCSS] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
+    [[InterfaCSS interfaCSS] applyStyling:cell];
+    
+    XCTAssertEqual(cell.textLabel.enabled, NO);
+    XCTAssertEqual(cell.detailTextLabel.enabled, YES);
+    ISSAssertEqualFloats(cell.textLabel.alpha, 1.0f);
+    ISSAssertEqualFloats(cell.detailTextLabel.alpha, 0.5f);
+}
+
+- (void) testNestedPropertiesOfSameTypeUsesDifferentStyleIdentities {
+    UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@""];
+    [[InterfaCSS interfaCSS] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
+    [[InterfaCSS interfaCSS] applyStyling:cell];
+    
+    ISSUIElementDetails* textLabelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell.textLabel];
+    ISSUIElementDetails* detailTextLabelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell.detailTextLabel];
+    
+    XCTAssertNotEqualObjects(textLabelDetails.elementStyleIdentityPath, detailTextLabelDetails.elementStyleIdentityPath);
+}
+
 - (void) testSetAllProperties {
     ISSPropertyRegistry* reg = [InterfaCSS sharedInstance].propertyRegistry;
     NSDictionary* classDefinitions = reg.propertyDefinitionsForClass;

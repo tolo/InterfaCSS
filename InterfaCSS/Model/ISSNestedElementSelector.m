@@ -25,11 +25,11 @@
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
-    ISSUIElementDetails* parentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:elementDetails.parentElement];
+    ISSUIElementDetails* parentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:elementDetails.ownerElement];
     NSString* validParentKeyPath = parentDetails.validNestedElements[self.nestedElementKeyPath];
     
     if( validParentKeyPath ) {
-        return [elementDetails.parentElement valueForKey:validParentKeyPath] == elementDetails.uiElement;
+        return [elementDetails.ownerElement valueForKey:validParentKeyPath] == elementDetails.uiElement;
     } else {
         return NO;
     }

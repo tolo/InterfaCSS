@@ -136,6 +136,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     else if( self.elementId ) {
         self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"#%@", self.elementId]; // Prefix element id with #
     }
+    else if( self.nestedElementKeyPath ) {
+        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"$%@", self.nestedElementKeyPath]; // Prefix nested elements with $
+    }
     else if( self.styleClasses ) {
         NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
             return [obj1 compare:obj2];
@@ -206,6 +209,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     self.ancestorHasElementId = NO;
     self.ancestorUsesCustomElementStyleIdentity = NO;
     _closestViewController = nil;
+    self.ownerElement = nil;
 }
 
 - (void) resetCachedData {
@@ -243,6 +247,11 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         }
     }
     return _parentElement;
+}
+
+- (id) ownerElement {
+    if( _ownerElement ) return _ownerElement;
+    else return self.parentElement;
 }
 
 - (UIViewController*) parentViewController {
@@ -466,7 +475,15 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     // Add any valid nested elements (valid property prefix key paths) to the subviews list
     for(NSString* nestedElementKeyPath in self.validNestedElements.allValues) {
         id nestedElement = [self.uiElement valueForKeyPath:nestedElementKeyPath];
-        if( nestedElement ) [subviews addObject:nestedElement];
+        if( nestedElement ) {
+            ISSUIElementDetails* childDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nestedElement];
+            // Set the ownerElement and nestedElementPropertyName to make sure that the nested property can be properly matched by ISSNestedElementSelector
+            // (even if it's not a direct subview) and that it has a unique styling identity (in its sub tree)
+            childDetails.ownerElement = self.uiElement;
+            childDetails.nestedElementKeyPath = nestedElementKeyPath;
+
+            [subviews addObject:nestedElement];
+        }
     }
     
     return [subviews array];

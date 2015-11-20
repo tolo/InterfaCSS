@@ -32,6 +32,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @property (nonatomic, weak, readonly) id uiElement;
 @property (nonatomic, weak, readonly) UIView* view; // uiElement, if instance of UIView, otherwise nil
 @property (nonatomic, weak) id parentElement;
+@property (nonatomic, weak) id ownerElement; // Element holding a property reference (which is defined validNestedElements) to this element, otherwise parentElement
 @property (nonatomic, weak, readonly) UIView* parentView; // parentElement, if instance of UIView, otherwise nil
 
 @property (nonatomic, weak, readonly) UIViewController* parentViewController; // Direct parent view controller of element, i.e. parentElement, if instance of UIViewController, otherwise nil
@@ -42,6 +43,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 @property (nonatomic, readonly) NSDictionary* validNestedElements;
 
 @property (nonatomic, strong) NSString* elementId;
+@property (nonatomic, strong) NSString* nestedElementKeyPath; // The key path / property name by which this element is know as in the ownerElement
 
 @property (nonatomic, strong) ISSLayout* layout;
 

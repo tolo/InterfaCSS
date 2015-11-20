@@ -196,6 +196,10 @@ UIBarButtonItem.prefixedPropertyOnNonUIViewClass {
     customView.alpha: 0.5;
 }
 
+UITableViewCell.nestedPropertyNotDirectChildView {
+    textLabel.enabled: NO;
+    detailTextLabel.alpha: 0.5;
+}
 
 .textInputTraits {
     keyboardType: numberPad;
