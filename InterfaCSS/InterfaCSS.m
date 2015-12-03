@@ -32,7 +32,7 @@ static InterfaCSS* singleton = nil;
 
 // Private extension of ISSUIElementDetails
 @interface ISSUIElementDetailsInterfaCSS : ISSUIElementDetails
-@property (nonatomic) BOOL beingStyled;
+@property (nonatomic) BOOL isVisiting;
 @property (nonatomic) BOOL stylingScheduled;
 @end
 @implementation ISSUIElementDetailsInterfaCSS
@@ -396,9 +396,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedStylesOnlyIfNeeded:NO];
 }
 
-- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
+- (void) clearCachedInformationForUIElementDetailsInternal:(ISSUIElementDetails*)uiElementDetails clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
     if( !uiElementDetails ) return;
-
+    
     // If styles information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
     if( clearCachedStylesOnlyIfNeeded && !uiElementDetails.stylesFullyResolved ) {
         ISSLogTrace(@"Partially clearing cached information for '%@'", uiElementDetails);
@@ -408,13 +408,16 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
         [uiElementDetails resetCachedData];
     }
+}
 
+- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
+    [self clearCachedInformationForUIElementDetailsInternal:uiElementDetails clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
+    
     if( includeSubViews ) {
-        NSArray* subViews = uiElementDetails.childElementsForElement;
-        for (UIView* subView in subViews) {
-            ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView create:NO];
-            [self clearCachedInformationForUIElementDetails:subViewDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
-        }
+        [self visitViewHierarchyFromElementDetails:uiElementDetails onlyChildren:YES visitorBlock:^id(id viewObject, ISSUIElementDetails* subViewDetails, BOOL* stop) {
+            [self clearCachedInformationForUIElementDetailsInternal:subViewDetails clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
+            return nil;
+        } stop:nil createDetails:NO];
     }
 }
 
@@ -536,13 +539,13 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         return;
     }
 
-    if( !uiElementDetails.beingStyled ) { // Prevent recursive styling calls for uiElement during styling
+    if( !uiElementDetails.isVisiting ) { // Prevent recursive styling calls for uiElement during styling
         @try {
-            uiElementDetails.beingStyled = YES;
+            uiElementDetails.isVisiting = YES;
             [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews force:force];
         }
         @finally {
-            uiElementDetails.beingStyled = NO;
+            uiElementDetails.isVisiting = NO;
             // Cancel scheduled calls after styling has been applied, to avoid "loop"
             if( uiElementDetails.stylingScheduled ) {
                 [self cancelScheduledApplyStyling:uiElementDetails.uiElement];
@@ -572,7 +575,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
         // Process subviews
         for(id subView in subViews) {
-            ISSUIElementDetails* subViewDetails = [self detailsForUIElement:subView];
+            ISSUIElementDetailsInterfaCSS* subViewDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:subView];
 
             // Make sure parent element reference is correctly set
             if( !subViewDetails.parentElement ) subViewDetails.parentElement = uiElementDetails.uiElement;
@@ -725,20 +728,32 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (id) visitViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
     BOOL stop = NO;
-    return [self visitViewHierarchyFromView:view visitorBlock:visitorBlock stop:&stop];
+    return [self visitViewHierarchyFromElementDetails:[self detailsForUIElement:view create:NO] onlyChildren:NO visitorBlock:visitorBlock stop:&stop createDetails:NO];
 }
 
-- (id) visitViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
-    ISSUIElementDetails* details = [self detailsForUIElement:view create:NO];
-    id result = visitorBlock(view, details, stop);
-    if( *stop ) return result;
+- (id) visitViewHierarchyFromElementDetails:(ISSUIElementDetails*)uiElementDetails onlyChildren:(BOOL)onlyChildren visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop createDetails:(BOOL)createDetails {
+    ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)uiElementDetails;
+    if( !details || details.isVisiting ) return nil; // Prevent recursive loops...
+    
+    @try {
+        details.isVisiting = YES;
+    
+        id result = nil;
+        if( !onlyChildren ) {
+            result = visitorBlock(details.uiElement, details, stop);
+            if( stop && *stop ) return result;
+        }
 
-    // Drill down
-    for(UIView* subview in details.childElementsForElement) {
-        result = [self visitViewHierarchyFromView:subview visitorBlock:visitorBlock stop:stop];
-        if( *stop ) return result;
+        // Drill down
+        for(UIView* subview in details.childElementsForElement) {
+            ISSUIElementDetails* subviewDetails = [self detailsForUIElement:subview create:createDetails];
+            result = [self visitViewHierarchyFromElementDetails:subviewDetails onlyChildren:NO visitorBlock:visitorBlock stop:stop createDetails:createDetails];
+            if( stop && *stop ) return result;
+        }
+        return nil;
+    } @finally {
+        details.isVisiting = NO;
     }
-    return nil;
 }
 
 - (id) visitReversedViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
@@ -839,20 +854,16 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 #pragma mark - Stylesheets
 
-- (ISSUIElementDetails*) firstChildElementMatchingScope:(ISSStyleSheetScope*)scope inElement:(ISSUIElementDetails*)elementDetails {
-    if( [scope elementInScope:elementDetails] ) return elementDetails;
-    
-    NSArray* subViews = elementDetails.childElementsForElement;
-    for (UIView* subView in subViews) {
-        ISSUIElementDetails* v = [self firstChildElementMatchingScope:scope inElement:[self detailsForUIElement:subView]];
-        if( v ) return v;
-    }
-    return nil;
+- (ISSUIElementDetails*) firstChildElementMatchingScope:(ISSStyleSheetScope*)scope inElement:(id)element {
+    return [self visitViewHierarchyFromView:element visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
+        if( [scope elementInScope:elementDetails] ) return elementDetails;
+        else return nil;
+    }];
 }
 
 - (ISSUIElementDetails*) firstElementMatchingScope:(ISSStyleSheetScope*)scope {
     for(UIWindow* window in self.initializedWindows.keyEnumerator) {
-        ISSUIElementDetails* v = [self firstChildElementMatchingScope:scope inElement:[self detailsForUIElement:window]];
+        ISSUIElementDetails* v = [self firstChildElementMatchingScope:scope inElement:window];
         if( v ) return v;
     }
     return nil;

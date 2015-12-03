@@ -475,7 +475,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     // Add any valid nested elements (valid property prefix key paths) to the subviews list
     for(NSString* nestedElementKeyPath in self.validNestedElements.allValues) {
         id nestedElement = [self.uiElement valueForKeyPath:nestedElementKeyPath];
-        if( nestedElement ) {
+        if( nestedElement && nestedElement != self.uiElement ) {
             ISSUIElementDetails* childDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nestedElement];
             // Set the ownerElement and nestedElementPropertyName to make sure that the nested property can be properly matched by ISSNestedElementSelector
             // (even if it's not a direct subview) and that it has a unique styling identity (in its sub tree)
