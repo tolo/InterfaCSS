@@ -2,6 +2,17 @@
 
 
 
+##Version 1.3.2
+
+### Bug fixes
+* Fixed problem with infinite loops occurring under certain circumstances while traversing the view hierarchy ([issue 49](https://github.com/tolo/InterfaCSS/issues/49), reported by @bangerang).
+* Fixed problem with setting properties on nested elements where the superview is not the owner of the nested element. Also fixed related issue with nested elements of the same type not being properly differentiated.
+
+### New features & changes (yes, a small feature update snuck into this maintenance release...)
+* Added support for compact hex colors (4 bits per channel, i.e. #123) and hex colors with alpha component (i.e. #1122337f, or #1238) ([issue 48](https://github.com/tolo/InterfaCSS/issues/48), reported by @vitorhugomagalhaes ).
+
+
+
 ##Version 1.3.1
 
 ### Bug fixes
