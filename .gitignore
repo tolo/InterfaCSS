@@ -2,6 +2,7 @@
 **/xcuserdata/**
 *.xcuserstate
 *.pbxuser
+*.xcbaseline
 *.xccheckout
 *.hmap
 *.ipa

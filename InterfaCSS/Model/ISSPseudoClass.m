@@ -257,13 +257,17 @@ static NSDictionary* stringToPseudoClassType;
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
         case ISSPseudoClassTypeHorizontalSizeClassRegular: {
-            NSLog(@"elementDetails.view.traitCollection: %@", elementDetails.view.traitCollection);
-            NSLog(@"elementDetails.view.traitCollection: %@", elementDetails.closestViewController.view.traitCollection);
             return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
         }
-        case ISSPseudoClassTypeHorizontalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
-        case ISSPseudoClassTypeVerticalSizeClassRegular: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
-        case ISSPseudoClassTypeVerticalSizeClassCompact: return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        case ISSPseudoClassTypeHorizontalSizeClassCompact: {
+            return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        }
+        case ISSPseudoClassTypeVerticalSizeClassRegular: {
+            return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+        }
+        case ISSPseudoClassTypeVerticalSizeClassCompact: {
+            return [elementDetails.view respondsToSelector:@selector(traitCollection)] && elementDetails.view.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        }
 #endif
 
         case ISSPseudoClassTypeStateEnabled: {

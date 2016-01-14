@@ -16,7 +16,7 @@
     autoresizingMask: width height left right top bottom;
     clipsToBounds: YES;
     contentMode: bottomRight;
-    text: "Text:";
+    text: "Text's:";
     title: Title;
     prompt: 'Prompt';
     searchTextPositionAdjustment: offset(1, 2);

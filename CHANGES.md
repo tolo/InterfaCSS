@@ -1,6 +1,12 @@
 #Changes
 
 
+##Version 1.4
+
+### New features & changes
+* Significantly improved performance of stylesheet parsing, primarily by replacing Parcoa with a custom parser implementation (inspired by Parcoa).
+
+
 
 ##Version 1.3.2
 

@@ -19,14 +19,16 @@
 #import "ISSPointValue.h"
 #import "ISSRectValue.h"
 #import "UIColor+ISSColorAdditions.h"
-#import "ISSParcoaStyleSheetParser.h"
+#import "ISSDefaultStyleSheetParser.h"
 #import "ISSLayout.h"
 #import "ISSUIElementDetails.h"
+#import "ISSParser.h"
+#import "ISSParser+CSS.h"
 
 
-@interface ISSParcoaStyleSheetTestParser : ISSParcoaStyleSheetParser
+@interface ISSDefaultStyleSheetTestParser : ISSDefaultStyleSheetParser
 @end
-@implementation ISSParcoaStyleSheetTestParser
+@implementation ISSDefaultStyleSheetTestParser
 
 - (UIImage*) imageNamed:(NSString*)name {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:name ofType:nil];
@@ -40,7 +42,7 @@
 @end
 
 
-static ISSParcoaStyleSheetTestParser* defaultParser;
+static ISSDefaultStyleSheetTestParser* defaultParser;
 
 
 @interface ISSStyleSheetParserTests : XCTestCase
@@ -54,9 +56,8 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
 
 + (void) setUp {
     [super setUp];
-    //NSLog(@"%@", [ISSPropertyDefinition propertyDescriptionsForMarkdown]);
     
-    defaultParser = [[ISSParcoaStyleSheetTestParser alloc] init];
+    defaultParser = [[ISSDefaultStyleSheetTestParser alloc] init];
 }
 
 - (void) setUp {
@@ -101,7 +102,6 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
             }
             
             if( [propertyName iss_isEqualIgnoreCase:name] || [d.property.allNames containsObject:[name lowercaseString]] ) {
-                NSLog(@"propertyName: %@", propertyName);
                 if( getDeclarations ) value = d;
                 else {
                     [d transformValueIfNeeded];
@@ -245,7 +245,7 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
 
 - (void) testStringPropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"prompt"] fromStyleClass:@"simple"];
-    XCTAssertEqualObjects(values[0], @"Text:", @"Expected value 'Text:' for property text");
+    XCTAssertEqualObjects(values[0], @"Text's:", @"Expected value 'Text:' for property text");
     XCTAssertEqualObjects(values[1], @"Title", @"Expected value 'Title' for property title");
     XCTAssertEqualObjects(values[2], @"Prompt", @"Expected value 'Prompt' for property prompt");
 }
@@ -731,5 +731,18 @@ static ISSParcoaStyleSheetTestParser* defaultParser;
     id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"nestedVariableClass"] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"GillSans" size:42]);
 }
+
+/*- (void) testParsingPerformance {
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"interfaCSSTests" ofType:@"css"];
+    NSString* styleSheetData = [NSString stringWithContentsOfFile:path usedEncoding:nil error:nil];
+    NSMutableString* mergedStylesheets = [NSMutableString string];
+    for(int i=0; i<10; i++) {
+        [mergedStylesheets appendString:styleSheetData];
+    }
+    
+    [self measureBlock:^{
+        [parser parse:mergedStylesheets];
+    }];
+}*/
 
 @end

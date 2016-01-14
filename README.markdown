@@ -133,7 +133,7 @@ You can add InterfaCSS to your project in two ways:
 
 * The simplest way is to use [CocoaPods](http://cocoapods.org/).
 
-* Download the source and add the files in the `InterfaCSS` directory to your project. Note that [Parcoa](https://github.com/brotchie/Parcoa) is a required dependency.
+* Download the source and add the files in the `InterfaCSS` directory to your project.
 
 
 ###Sample code

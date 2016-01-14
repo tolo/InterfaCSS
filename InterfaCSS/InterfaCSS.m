@@ -10,7 +10,7 @@
 #import "InterfaCSS.h"
 
 #import "ISSStyleSheetParser.h"
-#import "ISSParcoaStyleSheetParser.h"
+#import "ISSDefaultStyleSheetParser.h"
 #import "ISSPropertyDeclaration.h"
 #import "ISSViewPrototype.h"
 #import "ISSUIElementDetails.h"
@@ -205,7 +205,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (id<ISSStyleSheetParser>) parser {
     if ( !_parser ) {
-        _parser = [[ISSParcoaStyleSheetParser alloc] init];
+        _parser = [[ISSDefaultStyleSheetParser alloc] init];
     }
     return _parser;
 }

@@ -1,5 +1,5 @@
 //
-//  ISSParcoaStyleSheetParser.h
+//  ISSDefaultStyleSheetParser.h
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Created by Tobias Löfstrand on 2013-06-14.
@@ -9,6 +9,6 @@
 
 #import "ISSStyleSheetParser.h"
 
-@interface ISSParcoaStyleSheetParser : NSObject <ISSStyleSheetParser>
+@interface ISSDefaultStyleSheetParser : NSObject <ISSStyleSheetParser>
 
 @end
