@@ -131,24 +131,33 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     else return [self findParent:parentView.superview ofClass:class];
 }
 
+- (NSString*) classNamesStyleIdentityFragment {
+    if( self.styleClasses.count == 0 ) {
+        return @"";
+    } else {
+        NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
+            return [obj1 compare:obj2];
+        }];
+        NSMutableString* str = [NSMutableString stringWithString:@"["];
+        [str appendString:[styleClasses componentsJoinedByString:@","]];
+        [str appendString:@"]"];
+        return [str copy];
+    }
+}
+
 - (void) updateElementStyleIdentity {
     if( self.customElementStyleIdentity ) {
-        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"@%@", self.customElementStyleIdentity]; // Prefix custom style id with @
+        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"@%@%@", self.customElementStyleIdentity, [self classNamesStyleIdentityFragment]]; // Prefix custom style id with @
     }
     else if( self.elementId ) {
-        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"#%@", self.elementId]; // Prefix element id with #
+        self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"#%@%@", self.elementId, [self classNamesStyleIdentityFragment]]; // Prefix element id with #
     }
     else if( self.nestedElementKeyPath ) {
         self.elementStyleIdentity = self.elementStyleIdentityPath = [NSString stringWithFormat:@"$%@", self.nestedElementKeyPath]; // Prefix nested elements with $
     }
     else if( self.styleClasses ) {
-        NSArray* styleClasses = [[self.styleClasses allObjects] sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
-            return [obj1 compare:obj2];
-        }];
         NSMutableString* str = [NSMutableString stringWithString:NSStringFromClass(self.canonicalType)];
-        [str appendString:@"["];
-        [str appendString:[styleClasses componentsJoinedByString:@","]];
-        [str appendString:@"]"];
+        [str appendString:[self classNamesStyleIdentityFragment]];
         self.elementStyleIdentity = [str copy];
     }
     else {

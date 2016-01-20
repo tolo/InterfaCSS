@@ -792,6 +792,9 @@
     childView.styleClassISS = @"parentSwitcher_childElement";
     [childView applyStylingISS];
     
+    
+    ISSAssertEqualFloats(0.5, childView.alpha);
+    
     UIView* parentView = [[UIView alloc] init];
     parentView.styleClassISS = @"parentSwitcher_parentElement";
     [parentView addSubview:childView];
@@ -799,6 +802,20 @@
     
     ISSAssertEqualFloats(0.75, childView.alpha);
     XCTAssertEqualObjects(@"UIView[parentswitcher_parentelement] UIView[parentswitcher_childelement]", childView.elementDetailsISS.elementStyleIdentityPath);
+}
+
+- (void) testStyleUpdatesWithElementIdAndStyleClass {
+    UIView* view = [[UIView alloc] init];
+    view.elementIdISS = @"elementIdAndClassTest";
+    view.styleClassISS = @"someClass";
+    [view applyStylingISS];
+    
+    ISSAssertEqualFloats(0.75, view.alpha);
+    
+    view.styleClassISS = nil;
+    [view applyStylingISS];
+    
+    ISSAssertEqualFloats(0.5, view.alpha);
 }
 
 @end

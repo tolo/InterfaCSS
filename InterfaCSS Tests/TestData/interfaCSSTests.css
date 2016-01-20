@@ -237,3 +237,12 @@ UILabel.scopeTest {
         alpha: 0.75;
     }
 }
+
+
+#elementIdAndClassTest {
+    alpha: 0.5;
+}
+
+#elementIdAndClassTest.someClass {
+    alpha: 0.75;
+}
