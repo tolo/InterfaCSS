@@ -83,9 +83,9 @@ class ViewController: UIViewController {
     
     // Action handler method for button
     func moveMe() {
-        var hasClass: Bool = self.button?.hasStyleClassISS("moveMe") as Bool!
+        let hasClass: Bool = self.button?.hasStyleClassISS("moveMe") as Bool!
         
-        UIView.animateWithDuration(0.3, delay: 0, options: .BeginFromCurrentState | .LayoutSubviews, animations: { () -> Void in
+        UIView.animateWithDuration(0.3, delay: 0, options: [.BeginFromCurrentState, .LayoutSubviews], animations: { () -> Void in
             if( hasClass ) {
                 self.button?.removeStyleClassISS("moveMe")
             } else {

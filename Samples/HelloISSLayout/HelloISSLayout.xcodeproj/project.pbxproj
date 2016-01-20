@@ -116,6 +116,7 @@
 				27D59A4E1AF39BBF001F2F2F /* Frameworks */,
 				27D59A4F1AF39BBF001F2F2F /* Resources */,
 				7BFDB818A3C828BECE6E56CC /* Copy Pods Resources */,
+				F05173D5DF0EB97CDD69F90F /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -132,6 +133,8 @@
 		27D59A491AF39BBF001F2F2F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0720;
+				LastSwiftUpdateCheck = 0720;
 				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = Leafnode;
 				TargetAttributes = {
@@ -202,6 +205,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F05173D5DF0EB97CDD69F90F /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
