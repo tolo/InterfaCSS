@@ -187,8 +187,9 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ## Apps using InterfaCSS
 
-* [PlayMyQ HD - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-hd-music-player-remote/id432506056?mt=8)
-* [PlayMyQ - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-music-player-remote/id432505283?mt=8)
+* [PlayMyQ - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-hd-music-player-remote/id432506056?mt=8)
+* [Zmarta](https://itunes.apple.com/se/app/zmarta/id1067304436?l=en&mt=8)
+
 
 
 ## License
