@@ -79,6 +79,8 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 - (id) initWithUIElement:(id)uiElement;
 
+- (BOOL) checkForUpdatedParentElement;
+
 + (void) resetAllCachedData;
 - (void) resetCachedViewHierarchyRelatedData;
 - (void) resetCachedData;

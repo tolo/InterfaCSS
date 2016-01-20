@@ -227,3 +227,13 @@ UILabel.scopeTest {
     alpha: 1.0;
 }
 
+
+.parentSwitcher_childElement {
+    alpha: 0.5;
+}
+
+.parentSwitcher_parentElement {
+    .parentSwitcher_childElement {
+        alpha: 0.75;
+    }
+}

@@ -127,17 +127,17 @@ extern NSString* const ISSWillRefreshStyleSheetsNotification;
 #pragma mark - Styling
 
 /**
- * Clears cached styles, along with other cached information related to UI elements.
+ * Clears all cached information, including cached style data, related to the specified UI element, but does not initiate re-styling.
  */
 - (void) clearCachedStylesForUIElement:(id)uiElement;
 
 /**
- * Clears all cached style information (along with other cached information) for the specified element and (optionally) its subviews, but does not initiate re-styling.
+ * Clears all cached information, including cached style data, for the specified element and (optionally) its subviews, but does not initiate re-styling.
  */
 - (void) clearCachedStylesForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 
 /**
- * Clears all cached style information (along with other cached information), if needed, for the specified element and (optionally) its subviews, but does not initiate re-styling.
+ * Clears all cached information, including cached style data, if needed, for the specified element and (optionally) its subviews, but does not initiate re-styling.
  */
 - (void) clearCachedStylesIfNeededForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews;
 

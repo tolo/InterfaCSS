@@ -39,6 +39,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 @property (nonatomic, weak, readwrite) UIView* parentView;
 
+@property (nonatomic) BOOL hasChangedParent;
+
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentityPath;
 @property (nonatomic, strong) NSString* elementStyleIdentity;
 
@@ -93,8 +95,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     
     copy.layout = self.layout;
 
-    copy.elementStyleIdentity = self.elementStyleIdentity;
-    copy.elementStyleIdentityPath = self.elementStyleIdentityPath;
+    copy->_elementStyleIdentity = _elementStyleIdentity;
+    copy->_elementStyleIdentityPath = _elementStyleIdentityPath;
     copy.ancestorHasElementId = self.ancestorHasElementId;
     copy.customElementStyleIdentity = self.customElementStyleIdentity;
     copy.ancestorUsesCustomElementStyleIdentity = self.ancestorUsesCustomElementStyleIdentity;
@@ -159,16 +161,23 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     [self elementStyleIdentity];
     
     if( self.elementId || self.customElementStyleIdentity ) return; // If element uses element Id, or custom style id, elementStyleIdentityPath will have been set by call above, and will only contain the element Id itself
-
-    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self.parentElement];
-    NSString* parentStyleIdentityPath = parentDetails.elementStyleIdentityPath;
-    // Check if an ancestor has an element id (i.e. style identity path will contain #someParentElementId) - this information will be used to determine if styles can be cacheable or not
-    self.ancestorHasElementId = [parentStyleIdentityPath hasPrefix:@"#"] || [parentStyleIdentityPath rangeOfString:@" #"].location != NSNotFound;
-    self.ancestorUsesCustomElementStyleIdentity = [parentStyleIdentityPath hasPrefix:@"@"] || [parentStyleIdentityPath rangeOfString:@" @"].location != NSNotFound;
     
-    // Concatenate parent elementStyleIdentityPath of parent with the elementStyleIdentity of this element, separated by a space:
-    if( parentStyleIdentityPath ) self.elementStyleIdentityPath = [NSString stringWithFormat:@"%@ %@", parentDetails.elementStyleIdentityPath, self.elementStyleIdentity];
-    else self.elementStyleIdentityPath = self.elementStyleIdentity;
+    if( self.parentElement ) {
+        ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self.parentElement];
+        NSString* parentStyleIdentityPath = parentDetails.elementStyleIdentityPath;
+        // Check if an ancestor has an element id (i.e. style identity path will contain #someParentElementId) - this information will be used to determine if styles can be cacheable or not
+        self.ancestorHasElementId = [parentStyleIdentityPath hasPrefix:@"#"] || [parentStyleIdentityPath rangeOfString:@" #"].location != NSNotFound;
+        self.ancestorUsesCustomElementStyleIdentity = [parentStyleIdentityPath hasPrefix:@"@"] || [parentStyleIdentityPath rangeOfString:@" @"].location != NSNotFound;
+        
+        // Concatenate parent elementStyleIdentityPath of parent with the elementStyleIdentity of this element, separated by a space:
+        if( parentStyleIdentityPath ) self.elementStyleIdentityPath = [NSString stringWithFormat:@"%@ %@", parentDetails.elementStyleIdentityPath, self.elementStyleIdentity];
+        else self.elementStyleIdentityPath = self.elementStyleIdentity;
+    } else {
+        self.ancestorHasElementId = NO;
+        self.ancestorUsesCustomElementStyleIdentity = NO;
+        
+        self.elementStyleIdentityPath = self.elementStyleIdentity;
+    }
 }
 
 
@@ -205,11 +214,17 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 }
 
 - (void) resetCachedViewHierarchyRelatedData {
-    if( !self.elementId && !self.customElementStyleIdentity ) self.elementStyleIdentityPath = nil; // Reset style identity path, but only if this element doesn't use an element id
-    self.ancestorHasElementId = NO;
-    self.ancestorUsesCustomElementStyleIdentity = NO;
+    if( !self.elementId && !self.customElementStyleIdentity ) _elementStyleIdentityPath = nil; // Reset style identity path, but only if this element doesn't use an element id
+    _ancestorHasElementId = NO;
+    _ancestorUsesCustomElementStyleIdentity = NO;
     _closestViewController = nil;
-    self.ownerElement = nil;
+    _parentElement = nil;
+    
+    // Reset cached style references, in case elementStyleIdentityPath was reset
+    if( !_elementStyleIdentityPath ) {
+        self.stylingApplied = NO;
+        self.cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
+    }
 }
 
 - (void) resetCachedData {
@@ -231,6 +246,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (id) parentElement {
     if( !_parentElement ) {
+        id lastParentElement = _parentElement;
+        
         if( [_uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)_uiElement;
             _parentView = view.superview; // Update cached parentView reference
@@ -245,8 +262,24 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         else if( [_uiElement isKindOfClass:[UIViewController class]] ) {
             _parentElement = ((UIViewController*)self.uiElement).view.superview; // User the super view of the view controller root view
         }
+        if( lastParentElement != _parentElement ) {
+            self.hasChangedParent = YES;
+        }
     }
     return _parentElement;
+}
+
+- (BOOL) checkForUpdatedParentElement {
+    BOOL didChangeParent = self.hasChangedParent;
+    if( didChangeParent ) {
+        self.hasChangedParent = NO;
+    } else {
+        if( self.view && self.view.superview != self.parentView ) {
+            didChangeParent = YES;
+            _parentElement = nil; // Reset parent element to make sure it's re-evaluated
+        }
+    }
+    return didChangeParent;
 }
 
 - (id) ownerElement {
@@ -435,7 +468,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 }
 
 - (NSArray*) childElementsForElement {
-    //NSArray* subviews = self.view.subviews ?: [[NSArray alloc] init];
     NSMutableOrderedSet* subviews = self.view.subviews ? [[NSMutableOrderedSet alloc] initWithArray:self.view.subviews] : [[NSMutableOrderedSet alloc] init];
     
 #if TARGET_OS_TV == 0

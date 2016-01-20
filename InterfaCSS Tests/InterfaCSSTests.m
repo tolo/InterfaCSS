@@ -787,4 +787,18 @@
     ISSAssertEqualFloats(0.5, leafLabel.alpha);
 }
 
+- (void) testViewMovedToNewParent {
+    UIView* childView = [[UIView alloc] init];
+    childView.styleClassISS = @"parentSwitcher_childElement";
+    [childView applyStylingISS];
+    
+    UIView* parentView = [[UIView alloc] init];
+    parentView.styleClassISS = @"parentSwitcher_parentElement";
+    [parentView addSubview:childView];
+    [parentView applyStylingISS];
+    
+    ISSAssertEqualFloats(0.75, childView.alpha);
+    XCTAssertEqualObjects(@"UIView[parentswitcher_parentelement] UIView[parentswitcher_childelement]", childView.elementDetailsISS.elementStyleIdentityPath);
+}
+
 @end

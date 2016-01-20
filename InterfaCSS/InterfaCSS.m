@@ -376,7 +376,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 
-#pragma mark - Styling - Caching
+#pragma mark - Styling - Caching - Public methods
+
+// NOTE: For historical reasons, the methods below clear cached styles along with other element (ISSUIElementDetails) data, even though this really isn't necessary in most cases...
 
 - (void) clearCachedStylesForUIElement:(id)uiElement {
     [self clearCachedStylesForUIElement:uiElement includeSubViews:YES];
@@ -384,38 +386,46 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) clearCachedStylesForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:NO];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedInformationOnlyIfNeeded:NO clearCachedStyleDeclarations:YES];
 }
 
 - (void) clearCachedStylesIfNeededForUIElement:(id)uiElement includeSubViews:(BOOL)includeSubViews {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement create:NO];
-    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedStylesOnlyIfNeeded:YES];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:includeSubViews clearCachedInformationOnlyIfNeeded:YES clearCachedStyleDeclarations:YES];
 }
 
-- (void) clearCachedStylesForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
-    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedStylesOnlyIfNeeded:NO];
+
+#pragma mark - Styling - Caching - Private methods
+
+- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedInformationOnlyIfNeeded:NO clearCachedStyleDeclarations:NO];
 }
 
-- (void) clearCachedInformationForUIElementDetailsInternal:(ISSUIElementDetails*)uiElementDetails clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
+- (void) clearCachedInformationIfNeededForUIElementDetails:(ISSUIElementDetails*)uiElementDetails {
+    [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedInformationOnlyIfNeeded:YES clearCachedStyleDeclarations:NO];
+}
+
+- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails clearCachedInformationOnlyIfNeeded:(BOOL)clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:(BOOL)clearCachedStyleDeclarations {
     if( !uiElementDetails ) return;
     
-    // If styles information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
-    if( clearCachedStylesOnlyIfNeeded && !uiElementDetails.stylesFullyResolved ) {
+    // If styling information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
+    if( clearCachedInformationOnlyIfNeeded && uiElementDetails.stylesFullyResolved ) {
         ISSLogTrace(@"Partially clearing cached information for '%@'", uiElementDetails);
         [uiElementDetails resetCachedViewHierarchyRelatedData]; // ...only reset information directly related to the position of the element in the view hierarchy
     } else {
-        ISSLogTrace(@"Clearing cached styles for '%@'", uiElementDetails);
-        [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
+        ISSLogTrace(@"Clearing cached information for '%@'", uiElementDetails);
+        // Only clear actual cached style declarations if clearCachedStyles is YES (since there is no need to clear this information in normal cases)
+        if( clearCachedStyleDeclarations ) [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
         [uiElementDetails resetCachedData];
     }
 }
 
-- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedStylesOnlyIfNeeded:(BOOL)clearCachedStylesOnlyIfNeeded {
-    [self clearCachedInformationForUIElementDetailsInternal:uiElementDetails clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
+- (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedInformationOnlyIfNeeded:(BOOL)clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:(BOOL)clearCachedStyleDeclarations {
+    [self clearCachedInformationForUIElementDetails:uiElementDetails clearCachedInformationOnlyIfNeeded:clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:clearCachedStyleDeclarations];
     
     if( includeSubViews ) {
         [self visitViewHierarchyFromElementDetails:uiElementDetails onlyChildren:YES visitorBlock:^id(id viewObject, ISSUIElementDetails* subViewDetails, BOOL* stop) {
-            [self clearCachedInformationForUIElementDetailsInternal:subViewDetails clearCachedStylesOnlyIfNeeded:clearCachedStylesOnlyIfNeeded];
+            [self clearCachedInformationForUIElementDetails:subViewDetails clearCachedInformationOnlyIfNeeded:clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:clearCachedStyleDeclarations];
             return nil;
         } stop:nil createDetails:NO];
     }
@@ -558,14 +568,12 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 // Internal styling method ("inner") - should only be called by -[doApplyStylingInternal:includeSubViews:force:].
 - (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
-
-    // Reset cached styles if superview has changed (but not if using custom styling identity)
-    UIView* view = uiElementDetails.view;
-    if( view && view.superview != uiElementDetails.parentView ) {
-        ISSLogTrace(@"Superview of %@ has changed - resetting cached view hierarchy related information", view);
-        // Clear cached styles - but only if needed (i.e. not already fully resolved)
-        [self clearCachedInformationForUIElementDetails:uiElementDetails includeSubViews:YES clearCachedStylesOnlyIfNeeded:YES];
-        uiElementDetails.parentElement = nil; // Reset parent element to make sure it's re-evaluated
+    
+    // Reset cached styles if parent/superview has changed
+    if( [uiElementDetails checkForUpdatedParentElement] ) {
+        ISSLogTrace(@"Parent element of %@ has changed - resetting cached view hierarchy related information", uiElementDetails);
+        // Clear cached element information - but only if needed (i.e. not already fully resolved)
+        [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
     }
 
     [self styleUIElement:uiElementDetails force:force];
@@ -623,7 +631,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         uiElementDetails.styleClasses = nil;
     }
 
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails];
 }
 
 - (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass {
@@ -639,7 +647,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     if( existingClasses ) newClasses = [newClasses setByAddingObjectsFromSet:existingClasses];
     uiElementDetails.styleClasses = newClasses;
 
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails];
 }
 
 - (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement {
@@ -654,7 +662,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         uiElementDetails.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
     }
 
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails];
 }
 
 
@@ -662,7 +670,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) setElementId:(NSString*)elementId forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails];
     uiElementDetails.elementId = elementId;
 }
 
@@ -691,7 +699,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    [self clearCachedStylesForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationForUIElementDetails:uiElementDetails];
     uiElementDetails.customElementStyleIdentity = customStylingIdentity;
 }
 
