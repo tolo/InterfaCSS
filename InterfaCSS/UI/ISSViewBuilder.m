@@ -27,7 +27,7 @@
     }
     if( styleClassName ) {
         NSArray* styles = [styleClassName iss_splitOnSpaceOrComma];
-        for(NSString* style in styles) [theView addStyleClassISS:style];
+        for(NSString* style in styles) [theView addStyleClassISS:style scheduleStyling:NO];
     }
     
     if( subViewBlock ) {

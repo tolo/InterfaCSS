@@ -6,6 +6,9 @@
 ### New features & changes
 * Significantly improved performance of stylesheet parsing, primarily by replacing Parcoa with a custom parser implementation (inspired by Parcoa).
 
+### Bug fixes
+* Fixed problem with caching of element (styling) information, preventing proper style matching in some cases.
+
 
 
 ##Version 1.3.2

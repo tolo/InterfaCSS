@@ -82,8 +82,8 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 - (BOOL) checkForUpdatedParentElement;
 
 + (void) resetAllCachedData;
-- (void) resetCachedViewHierarchyRelatedData;
 - (void) resetCachedData;
+- (void) resetCachedData:(BOOL)resetTypeRelatedInformation;
 
 - (void) typeQualifiedPositionInParent:(NSInteger*)position count:(NSInteger*)count;
 

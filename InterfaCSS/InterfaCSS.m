@@ -411,7 +411,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     // If styling information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
     if( clearCachedInformationOnlyIfNeeded && uiElementDetails.stylesFullyResolved ) {
         ISSLogTrace(@"Partially clearing cached information for '%@'", uiElementDetails);
-        [uiElementDetails resetCachedViewHierarchyRelatedData]; // ...only reset information directly related to the position of the element in the view hierarchy
+        [uiElementDetails resetCachedData:NO]; // ...only reset information related to styling and the position of the element in the view hierarchy
     } else {
         ISSLogTrace(@"Clearing cached information for '%@'", uiElementDetails);
         // Only clear actual cached style declarations if clearCachedStyles is YES (since there is no need to clear this information in normal cases)
@@ -566,7 +566,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 // Internal styling method ("inner") - should only be called by -[doApplyStylingInternal:includeSubViews:force:].
-- (void) applyStylingInternal:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
+- (void) applyStylingInternal:(ISSUIElementDetailsInterfaCSS*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
     
     // Reset cached styles if parent/superview has changed
@@ -740,14 +740,15 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (id) visitViewHierarchyFromElementDetails:(ISSUIElementDetails*)uiElementDetails onlyChildren:(BOOL)onlyChildren visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop createDetails:(BOOL)createDetails {
+    BOOL visitRootElement = !onlyChildren;
     ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)uiElementDetails;
-    if( !details || details.isVisiting ) return nil; // Prevent recursive loops...
+    if( !details || (visitRootElement && details.isVisiting) ) return nil; // Prevent recursive loops...
     
     @try {
         details.isVisiting = YES;
     
         id result = nil;
-        if( !onlyChildren ) {
+        if( visitRootElement ) {
             result = visitorBlock(details.uiElement, details, stop);
             if( stop && *stop ) return result;
         }

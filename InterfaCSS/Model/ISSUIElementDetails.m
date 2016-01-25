@@ -222,31 +222,30 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     [[NSNotificationCenter defaultCenter] postNotificationName:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
 }
 
-- (void) resetCachedViewHierarchyRelatedData {
-    if( !self.elementId && !self.customElementStyleIdentity ) _elementStyleIdentityPath = nil; // Reset style identity path, but only if this element doesn't use an element id
-    _ancestorHasElementId = NO;
-    _ancestorUsesCustomElementStyleIdentity = NO;
-    _closestViewController = nil;
-    _parentElement = nil;
-    
-    // Reset cached style references, in case elementStyleIdentityPath was reset
-    if( !_elementStyleIdentityPath ) {
-        self.stylingApplied = NO;
-        self.cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
+- (void) resetCachedData:(BOOL)resetTypeRelatedInformation {
+    if( resetTypeRelatedInformation ) {
+        _canonicalType = nil;
+        _validNestedElements = nil;
     }
+    
+    // Identity and structure:
+    _elementStyleIdentityPath = nil; // Will result in re-evaluation of elementStyleIdentityPath, ancestorHasElementId and ancestorUsesCustomElementStyleIdentity
+    _closestViewController = nil;
+    
+    // Reset fields related to style caching
+    _stylingApplied = NO;
+    _stylesFullyResolved = NO;
+    _stylesContainPseudoClassesOrDynamicProperties = NO;
+    _cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
 }
 
 - (void) resetCachedData {
-    // Identity and structure:
-    _canonicalType = nil;
-    
-    [self resetCachedViewHierarchyRelatedData];
+    [self resetCachedData:YES];
+}
 
-    _validNestedElements = nil;
-
-    // Cached styles:
-    self.stylingApplied = NO;
-    self.cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
+/// @deprecated
+- (void) resetCachedViewHierarchyRelatedData {
+    [self resetCachedData:NO];
 }
 
 - (UIView*) view {
@@ -260,12 +259,11 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         if( [_uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)_uiElement;
             _parentView = view.superview; // Update cached parentView reference
-            UIViewController* closestViewController = [self.class closestViewController:view];
-            if( closestViewController.view == view ) {
-                _parentElement = closestViewController;
+            _closestViewController = [self.class closestViewController:view];
+            if( _closestViewController.view == view ) {
+                _parentElement = _closestViewController;
             } else {
                 _parentElement = _parentView; // In case parent element is view - _parentElement is the same as _parentView
-                _closestViewController = closestViewController;
             }
         }
         else if( [_uiElement isKindOfClass:[UIViewController class]] ) {
@@ -288,6 +286,11 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             _parentElement = nil; // Reset parent element to make sure it's re-evaluated
         }
     }
+    
+    if( didChangeParent ) {
+        [self parentElement]; // Update parent element
+    }
+    
     return didChangeParent;
 }
 
