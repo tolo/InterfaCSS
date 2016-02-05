@@ -16,6 +16,9 @@ extern NSString* const ISSIndexPathKey;
 extern NSString* const ISSPrototypeViewInitializedKey;
 
 
+typedef id (^ISSUIElementDetailsVisitorBlock)(ISSUIElementDetails* elementDetails);
+
+
 @interface NSObject (ISSUIElementDetails)
 @property (nonatomic, strong) ISSUIElementDetails* elementDetailsISS;
 @end
@@ -76,6 +79,8 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 @property (nonatomic, strong, readonly) NSMutableDictionary* prototypes;
 
+@property (nonatomic, readonly) BOOL isVisiting;
+
 
 - (id) initWithUIElement:(id)uiElement;
 
@@ -96,5 +101,7 @@ extern NSString* const ISSPrototypeViewInitializedKey;
 
 - (void) observeUpdatableValue:(ISSUpdatableValue*)value forProperty:(ISSPropertyDeclaration*)propertyDeclaration;
 - (void) stopObservingUpdatableValueForProperty:(ISSPropertyDeclaration*)propertyDeclaration;
+
+- (id) visitExclusively:(ISSUIElementDetailsVisitorBlock)visitorBlock;
 
 @end

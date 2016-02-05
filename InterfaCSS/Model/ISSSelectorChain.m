@@ -23,8 +23,12 @@
                                         stylingContext:(ISSStylingContext*)stylingContext {
     if( !parentDetails ) return nil;
     else if( [selector matchesElement:parentDetails stylingContext:stylingContext] ) return parentDetails;
-    else return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentElement]
-                                               forSelector:selector stylingContext:stylingContext];
+    else {
+        return [parentDetails visitExclusively:^id (ISSUIElementDetails* details) {
+            return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:details.parentElement]
+                                           forSelector:selector stylingContext:stylingContext];
+        }];
+    }
 }
 
 + (ISSUIElementDetails*) findMatchingChildSelectorParent:(ISSUIElementDetails*)parentDetails forSelector:(ISSSelector*)selector

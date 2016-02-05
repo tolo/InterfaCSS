@@ -32,7 +32,6 @@ static InterfaCSS* singleton = nil;
 
 // Private extension of ISSUIElementDetails
 @interface ISSUIElementDetailsInterfaCSS : ISSUIElementDetails
-@property (nonatomic) BOOL isVisiting;
 @property (nonatomic) BOOL stylingScheduled;
 @end
 @implementation ISSUIElementDetailsInterfaCSS
@@ -548,20 +547,16 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         ISSLogTrace(@"Styling disabled for %@", uiElementDetails.view);
         return;
     }
-
-    if( !uiElementDetails.isVisiting ) { // Prevent recursive styling calls for uiElement during styling
-        @try {
-            uiElementDetails.isVisiting = YES;
-            [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews force:force];
-        }
-        @finally {
-            uiElementDetails.isVisiting = NO;
-            // Cancel scheduled calls after styling has been applied, to avoid "loop"
-            if( uiElementDetails.stylingScheduled ) {
-                [self cancelScheduledApplyStyling:uiElementDetails.uiElement];
-                uiElementDetails.stylingScheduled = NO;
-            }
-        }
+    
+    [uiElementDetails visitExclusively:^id (ISSUIElementDetails* _) { // Prevent recursive styling calls for uiElement during styling
+        [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews force:force];
+        return nil;
+    }];
+    
+    // Cancel scheduled calls after styling has been applied, to avoid "loop"
+    if( uiElementDetails.stylingScheduled ) {
+        [self cancelScheduledApplyStyling:uiElementDetails.uiElement];
+        uiElementDetails.stylingScheduled = NO;
     }
 }
 
@@ -744,9 +739,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)uiElementDetails;
     if( !details || (visitRootElement && details.isVisiting) ) return nil; // Prevent recursive loops...
     
-    @try {
-        details.isVisiting = YES;
-    
+    return [details visitExclusively:^id (ISSUIElementDetails* details) {
         id result = nil;
         if( visitRootElement ) {
             result = visitorBlock(details.uiElement, details, stop);
@@ -760,9 +753,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
             if( stop && *stop ) return result;
         }
         return nil;
-    } @finally {
-        details.isVisiting = NO;
-    }
+    }];
 }
 
 - (id) visitReversedViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {

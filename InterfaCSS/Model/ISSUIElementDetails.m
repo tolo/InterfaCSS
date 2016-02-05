@@ -59,6 +59,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 @property (nonatomic, strong) NSMapTable* observedUpdatableValues;
 
+@property (nonatomic, readwrite) BOOL isVisiting;
+
 @end
 
 @implementation ISSUIElementDetails
@@ -554,6 +556,21 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (void) updatableValueUpdated:(NSNotification*)notification {
     [[InterfaCSS sharedInstance] applyStyling:self.uiElement includeSubViews:NO force:YES];
+}
+
+- (id) visitExclusively:(ISSUIElementDetailsVisitorBlock)visitorBlock {
+    if( !_isVisiting ) {
+        @try {
+            _isVisiting = YES;
+            return visitorBlock(self);
+        }
+        @finally {
+            _isVisiting = NO;
+        }
+    } else {
+        ISSLogWarning(@"Already vising element - aborting!");
+        return nil;
+    }
 }
 
 
