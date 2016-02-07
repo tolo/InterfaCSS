@@ -59,6 +59,11 @@
     attributedText: L("text1") (font: HelveticaNeue-Medium 12) L("-text2") (font: HelveticaNeue-Medium 12);
 }
 
+.stringsWithEscapes {
+    text: "dr \"evil\" rules";
+    attributedText: "dr \"evil\" rules" (font: HelveticaNeue-Medium 12) ", and so does austin \"danger\" powers" (font: HelveticaNeue-Medium 12);
+}
+
 .prefixes {
     cornerRadius: 5;
     layer.borderWidth: 10;

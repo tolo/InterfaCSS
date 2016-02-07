@@ -257,6 +257,12 @@ static ISSDefaultStyleSheetTestParser* defaultParser;
     XCTAssertEqualObjects([values[2] string], @"text1.localized-text2.localized");
 }
 
+- (void) testStringsWithEscapes {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"attributedText"] fromStyleClass:@"stringsWithEscapes"];
+    XCTAssertEqualObjects(values[0], @"dr \"evil\" rules");
+    XCTAssertEqualObjects([values[1] string], @"dr \"evil\" rules, and so does austin \"danger\" powers");
+}
+
 - (void) testOffsetPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"searchTextPositionAdjustment"];
     UIOffset offset = [value isKindOfClass:NSValue.class] ? [value UIOffsetValue] : UIOffsetZero;

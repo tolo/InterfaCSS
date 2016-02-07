@@ -397,12 +397,13 @@
         }
         
         NSString* string = [input substringWithRange:NSMakeRange(status->index, i - status->index)];
-        const NSUInteger stringLength = string.length;
+        NSUInteger stringLength = string.length;
         for(int c=0; c<stringLength; c++) {
             unichar charAtIndex = [string characterAtIndex:c];
             if( charAtIndex == '\\' ) {
                 if ( isBackslash ) { // Double backslash
                     string = [string stringByReplacingCharactersInRange:NSMakeRange(c, 1) withString:@""];
+                    stringLength = string.length;
                     c--;
                     isBackslash = NO;
                 } else { // Backslash found
@@ -420,6 +421,7 @@
                 } else {
                     c++;
                 }
+                stringLength = string.length;
                 c--;
             }
         }
