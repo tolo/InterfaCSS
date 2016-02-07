@@ -423,7 +423,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     [self clearCachedInformationForUIElementDetails:uiElementDetails clearCachedInformationOnlyIfNeeded:clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:clearCachedStyleDeclarations];
     
     if( includeSubViews ) {
-        [self visitViewHierarchyFromElementDetails:uiElementDetails onlyChildren:YES visitorBlock:^id(id viewObject, ISSUIElementDetails* subViewDetails, BOOL* stop) {
+        [self visitViewHierarchyFromElementDetails:uiElementDetails scope:_cmd onlyChildren:YES visitorBlock:^id(id viewObject, ISSUIElementDetails* subViewDetails, BOOL* stop) {
             [self clearCachedInformationForUIElementDetails:subViewDetails clearCachedInformationOnlyIfNeeded:clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:clearCachedStyleDeclarations];
             return nil;
         } stop:nil createDetails:NO];
@@ -548,7 +548,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         return;
     }
     
-    [uiElementDetails visitExclusively:^id (ISSUIElementDetails* _) { // Prevent recursive styling calls for uiElement during styling
+    [uiElementDetails visitExclusivelyWithScope:_cmd visitorBlock:^id (ISSUIElementDetails* _) { // Prevent recursive styling calls for uiElement during styling
         [self applyStylingInternal:uiElementDetails includeSubViews:includeSubViews force:force];
         return nil;
     }];
@@ -731,15 +731,15 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (id) visitViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
     BOOL stop = NO;
-    return [self visitViewHierarchyFromElementDetails:[self detailsForUIElement:view create:NO] onlyChildren:NO visitorBlock:visitorBlock stop:&stop createDetails:NO];
+    return [self visitViewHierarchyFromElementDetails:[self detailsForUIElement:view create:NO] scope:_cmd onlyChildren:NO visitorBlock:visitorBlock stop:&stop createDetails:NO];
 }
 
-- (id) visitViewHierarchyFromElementDetails:(ISSUIElementDetails*)uiElementDetails onlyChildren:(BOOL)onlyChildren visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop createDetails:(BOOL)createDetails {
+- (id) visitViewHierarchyFromElementDetails:(ISSUIElementDetails*)uiElementDetails scope:(void*)scope onlyChildren:(BOOL)onlyChildren visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop createDetails:(BOOL)createDetails {
     BOOL visitRootElement = !onlyChildren;
     ISSUIElementDetailsInterfaCSS* details = (ISSUIElementDetailsInterfaCSS*)uiElementDetails;
     if( !details || (visitRootElement && details.isVisiting) ) return nil; // Prevent recursive loops...
     
-    return [details visitExclusively:^id (ISSUIElementDetails* details) {
+    return [details visitExclusivelyWithScope:scope visitorBlock:^id (ISSUIElementDetails* details) {
         id result = nil;
         if( visitRootElement ) {
             result = visitorBlock(details.uiElement, details, stop);
@@ -749,7 +749,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         // Drill down
         for(UIView* subview in details.childElementsForElement) {
             ISSUIElementDetails* subviewDetails = [self detailsForUIElement:subview create:createDetails];
-            result = [self visitViewHierarchyFromElementDetails:subviewDetails onlyChildren:NO visitorBlock:visitorBlock stop:stop createDetails:createDetails];
+            result = [self visitViewHierarchyFromElementDetails:subviewDetails scope:scope onlyChildren:NO visitorBlock:visitorBlock stop:stop createDetails:createDetails];
             if( stop && *stop ) return result;
         }
         return nil;

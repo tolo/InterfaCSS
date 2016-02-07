@@ -228,6 +228,23 @@ UILabel.scopeTest {
 }
 
 
+UIViewController UIView {
+    alpha: 0.1;
+}
+
+UIViewController > UIView {
+    alpha: 0.25;
+}
+
+UIViewController > #rootView {
+    alpha: 0.5;
+}
+
+CustomViewController > UIView {
+    alpha: 0.75;
+}
+
+
 .parentSwitcher_childElement {
     alpha: 0.5;
 }

@@ -60,6 +60,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @property (nonatomic, strong) NSMapTable* observedUpdatableValues;
 
 @property (nonatomic, readwrite) BOOL isVisiting;
+@property (nonatomic) const void* visitorScope;
 
 @end
 
@@ -558,18 +559,20 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     [[InterfaCSS sharedInstance] applyStyling:self.uiElement includeSubViews:NO force:YES];
 }
 
-- (id) visitExclusively:(ISSUIElementDetailsVisitorBlock)visitorBlock {
-    if( !_isVisiting ) {
+- (id) visitExclusivelyWithScope:(const void*)scope visitorBlock:(ISSUIElementDetailsVisitorBlock)visitorBlock {
+    if( !_isVisiting || scope != _visitorScope ) {
+        const void* previousScope = _visitorScope;
         @try {
             _isVisiting = YES;
+            _visitorScope = scope;
             return visitorBlock(self);
         }
         @finally {
+            _visitorScope = previousScope;
             _isVisiting = NO;
         }
     } else {
-        ISSLogWarning(@"Already vising element - aborting!");
-        return nil;
+        return nil; // Already vising element - aborting
     }
 }
 

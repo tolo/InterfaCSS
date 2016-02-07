@@ -787,6 +787,29 @@
     ISSAssertEqualFloats(0.5, leafLabel.alpha);
 }
 
+- (void) testViewControllerSelectorChains {
+    UIView* parentView = [[UIView alloc] init];
+    parentView.elementIdISS = @"rootView";
+    
+    UIViewController* vc = [[UIViewController alloc] init];
+    [parentView addSubview:vc.view];
+    vc.view.elementIdISS = @"rootView";
+    UIView* childView = [[UIView alloc] init];
+    childView.tag = 12345;
+    [vc.view addSubview:childView];
+    [vc.view applyStylingISS];
+    
+    ISSAssertEqualFloats(1.0, parentView.alpha);
+    ISSAssertEqualFloats(0.5, vc.view.alpha);
+    ISSAssertEqualFloats(0.1, childView.alpha);
+
+    CustomViewController* custom = [[CustomViewController alloc] init];
+    [parentView addSubview:custom.view];
+    [custom.view applyStylingISS];
+    
+    ISSAssertEqualFloats(0.75, custom.view.alpha);
+}
+
 - (void) testViewMovedToNewParent {
     UIView* childView = [[UIView alloc] init];
     childView.styleClassISS = @"parentSwitcher_childElement";

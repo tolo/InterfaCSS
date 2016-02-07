@@ -102,6 +102,6 @@ typedef id (^ISSUIElementDetailsVisitorBlock)(ISSUIElementDetails* elementDetail
 - (void) observeUpdatableValue:(ISSUpdatableValue*)value forProperty:(ISSPropertyDeclaration*)propertyDeclaration;
 - (void) stopObservingUpdatableValueForProperty:(ISSPropertyDeclaration*)propertyDeclaration;
 
-- (id) visitExclusively:(ISSUIElementDetailsVisitorBlock)visitorBlock;
+- (id) visitExclusivelyWithScope:(const void*)scope visitorBlock:(ISSUIElementDetailsVisitorBlock)visitorBlock;
 
 @end
