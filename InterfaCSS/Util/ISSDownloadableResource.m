@@ -50,7 +50,7 @@ static NSCache* downloadableResourceCache;
     if ( font ) {
         CFErrorRef error;
         if ( CTFontManagerRegisterGraphicsFont(font, &error) ) {
-            fontName = (__bridge NSString*)CGFontCopyPostScriptName(font);
+            fontName = CFBridgingRelease(CGFontCopyPostScriptName(font));
             [self iss_logDebug:@"Loaded font: %@", fontName];
         }
         CFRelease(font);

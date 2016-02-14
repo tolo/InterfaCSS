@@ -333,7 +333,7 @@ static NSCache* propertyNamesWithClassForClassCache;
             returnValue = [NSNumber numberWithUnsignedLong:*((unsigned long*)buffer)];
         }
         else if( *returnType == *@encode(unsigned long long) ) {
-            returnValue = [NSNumber numberWithUnsignedLong:*((unsigned long long*)buffer)];
+            returnValue = [NSNumber numberWithUnsignedLongLong:*((unsigned long long*)buffer)];
         }
         else if( *returnType == *@encode(float) ) {
             returnValue = [NSNumber numberWithFloat:*((float*)buffer)];
