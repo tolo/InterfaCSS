@@ -14,7 +14,7 @@
 		27D59A611AF39BBF001F2F2F /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 27D59A5F1AF39BBF001F2F2F /* LaunchScreen.xib */; };
 		27D59A781AF51204001F2F2F /* styles.css in Resources */ = {isa = PBXBuildFile; fileRef = 27D59A771AF51204001F2F2F /* styles.css */; };
 		27D59A7A1AF5120D001F2F2F /* layout.css in Resources */ = {isa = PBXBuildFile; fileRef = 27D59A791AF5120D001F2F2F /* layout.css */; };
-		F7F89ACE3246B8A2473B3038 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B1E28E162B3213F5967B96B /* libPods.a */; };
+		C4D45AD71A6714B736925BA2 /* Pods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E16F15E5AAFC499ABA2C3795 /* Pods.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,9 +27,8 @@
 		27D59A601AF39BBF001F2F2F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		27D59A771AF51204001F2F2F /* styles.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
 		27D59A791AF5120D001F2F2F /* layout.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = layout.css; sourceTree = "<group>"; };
-		27D59A7B1AF51286001F2F2F /* ObjC-Bridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ObjC-Bridge.h"; sourceTree = "<group>"; };
-		7B1E28E162B3213F5967B96B /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		9972B2A2380BA46009A77EB4 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		E16F15E5AAFC499ABA2C3795 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C915E9E881725C37DBF394 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -38,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F7F89ACE3246B8A2473B3038 /* libPods.a in Frameworks */,
+				C4D45AD71A6714B736925BA2 /* Pods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,7 +73,6 @@
 				27D59A771AF51204001F2F2F /* styles.css */,
 				27D59A791AF5120D001F2F2F /* layout.css */,
 				2764B14B1B25CC1D0054C7AF /* layout.xml */,
-				27D59A7B1AF51286001F2F2F /* ObjC-Bridge.h */,
 			);
 			path = ISSLayout;
 			sourceTree = "<group>";
@@ -99,7 +97,7 @@
 		3A73DAB32442C454416E009F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7B1E28E162B3213F5967B96B /* libPods.a */,
+				E16F15E5AAFC499ABA2C3795 /* Pods.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -334,7 +332,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = HelloISSLayout;
-				SWIFT_OBJC_BRIDGING_HEADER = "ISSLayout/ObjC-Bridge.h";
 			};
 			name = Debug;
 		};
@@ -347,7 +344,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = HelloISSLayout;
-				SWIFT_OBJC_BRIDGING_HEADER = "ISSLayout/ObjC-Bridge.h";
 			};
 			name = Release;
 		};
