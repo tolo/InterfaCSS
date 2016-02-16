@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import InterfaCSS
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
