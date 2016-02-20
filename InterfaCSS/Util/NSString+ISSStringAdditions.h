@@ -1,5 +1,5 @@
 //
-//  NSString+ISStringSupport.h
+//  NSString+ISStringAdditions.h
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Created by Tobias Löfstrand on 2010-10-27.

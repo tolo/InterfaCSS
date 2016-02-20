@@ -1,4 +1,7 @@
 //
+//  ISSLayoutContextView.h
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
+//
 // Created by Tobias Löfstrand on 2015-01-24.
 // Copyright (c) 2015 Leafnode AB. All rights reserved.
 //

@@ -1,7 +1,7 @@
 //
-//  InterfaCSS
 //  ISSPropertyRegistry.m
-//  
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
+//
 //  Created by Tobias Löfstrand on 2014-10-03.
 //  Copyright (c) 2014 Leafnode AB. All rights reserved.
 //
