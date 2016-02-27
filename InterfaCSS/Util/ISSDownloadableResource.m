@@ -1,12 +1,10 @@
 //
-//  ISSRefreshableResource.m
+//  ISSDownloadableResource.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2015-09-12.
-//  Copyright (c) 2014 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
-
 
 #import "ISSDownloadableResource.h"
 

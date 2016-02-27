@@ -1,11 +1,10 @@
 //
-//  InterfaCSS
 //  ISSRuntimeIntrospectionUtils.h
-//  
-//  Created by Tobias Löfstrand on 2014-10-22.
-//  Copyright (c) 2014 Leafnode AB. All rights reserved.
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
+//
 
 #import <Foundation/Foundation.h>
 

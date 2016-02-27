@@ -2,8 +2,7 @@
 //  NSObject+ISSLogSupport.h
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2010-10-20
-//  Copyright (c) 2010 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 

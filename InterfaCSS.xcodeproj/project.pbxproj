@@ -349,10 +349,10 @@
 				CC3C83FFBC650611AEFB8E9A /* ISSUIElementDetails.m */,
 				CC3C816E089F9508ACDCA38E /* ISSViewPrototype.h */,
 				CC3C86D98E3FBB3F7B12BDAB /* ISSViewPrototype.m */,
-				CC3C856B166302EF1EB76386 /* ISSRemoteFont.m */,
 				CC3C871CF347011077E00643 /* ISSRemoteFont.h */,
-				135E5C1121AB38B643C678A3 /* ISSUpdatableValue.m */,
+				CC3C856B166302EF1EB76386 /* ISSRemoteFont.m */,
 				135E5B03F2FCE239A237A379 /* ISSUpdatableValue.h */,
+				135E5C1121AB38B643C678A3 /* ISSUpdatableValue.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -415,10 +415,10 @@
 				27D8144E17FB595800E365B1 /* NSString+ISSStringAdditions.m */,
 				27D8145117FB5A7D00E365B1 /* UIColor+ISSColorAdditions.h */,
 				27D8145217FB5A7D00E365B1 /* UIColor+ISSColorAdditions.m */,
-				CC3C830A8A2EB2F6FBD714E6 /* UIDevice+ISSAdditions.m */,
 				CC3C81B7D03082115745D939 /* UIDevice+ISSAdditions.h */,
-				135E5323845C5FEBBBD97A40 /* ISSDownloadableResource.m */,
+				CC3C830A8A2EB2F6FBD714E6 /* UIDevice+ISSAdditions.m */,
 				135E5B99279EE8B8F159C327 /* ISSDownloadableResource.h */,
+				135E5323845C5FEBBBD97A40 /* ISSDownloadableResource.m */,
 			);
 			path = Util;
 			sourceTree = "<group>";

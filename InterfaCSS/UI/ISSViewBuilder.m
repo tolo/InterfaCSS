@@ -2,11 +2,9 @@
 //  ISSViewBuilder.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2012-12-07.
-//  Copyright (c) 2012 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
-
 
 #import "ISSViewBuilder.h"
 

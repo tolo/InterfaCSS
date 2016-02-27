@@ -1,9 +1,9 @@
 //
-//  InterfaCSS
-//  ISSSelectorTest.m
-//  
-//  Created by Tobias Löfstrand on 2014-03-15.
-//  Copyright (c) 2014 Leafnode AB. All rights reserved.
+//  ISSSelectorTests.m
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
+//
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
 #import <XCTest/XCTest.h>

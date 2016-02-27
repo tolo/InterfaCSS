@@ -1,9 +1,8 @@
 //
-//  ISSViewHierarchyParser.h
+//  ISSViewHierarchyParser.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2014-01-31.
-//  Copyright (c) 2014 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 

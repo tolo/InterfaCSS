@@ -2,11 +2,9 @@
 //  ISSParser+CSS.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2016-01-10.
-//  Copyright (c) 2016 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
-
 
 #import "ISSParser+CSS.h"
 

@@ -1,6 +1,9 @@
 //
-// Created by PMB on 2015-09-14.
-// Copyright (c) 2015 Leafnode AB. All rights reserved.
+//  ISSUpdatableValue.m
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
+//
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
 #import "ISSUpdatableValue.h"

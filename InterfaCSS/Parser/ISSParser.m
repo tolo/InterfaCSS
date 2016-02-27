@@ -3,8 +3,7 @@
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //  Inspired by Parcoa (https://github.com/brotchie/Parcoa).
 //
-//  Created by Tobias Löfstrand on 2016-01-10.
-//  Copyright (c) 2016 Leafnode AB.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 

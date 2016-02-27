@@ -1,9 +1,9 @@
 //
-//  InterfaCSS
 //  NSAttributedString+ISSAdditions.h
-//  
-//  Created by Tobias Löfstrand on 12/06/14.
-//  Copyright (c) 2014 Leafnode AB. All rights reserved.
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
+//
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
 #import <Foundation/Foundation.h>
