@@ -116,7 +116,7 @@ UIView.disabledStylingTest {
 }
 
 .sizeToFitTest1 {
-    frame: sizeToFit().top(10).left(20));
+    frame: sizeToFit().top(10).left(20);
 }
 
 .sizeToFitTest2 {

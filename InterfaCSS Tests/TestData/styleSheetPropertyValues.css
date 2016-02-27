@@ -1,17 +1,17 @@
 
 @attrFont1: HelveticaNeue-Medium 14;
-@attrColor1: lighten(#ffffff, 0%);
+@attrColor1 : lighten(#ffffff, 0%);
 @attrFont2: HelveticaNeue-Medium 15;
 @attrColor2: rgb(0,0,0);
 @numericalConstant: 42;
 @mathExpressionConstant: 10 ** (3 - 1);
 
-@fontNameVariable: "GillSans";
+@fontNameVariable  : "GillSans";
 @fontSizeVariable: 42;
-@nestedVariable: @fontNameVariable @fontSizeVariable;
+@nestedVariable : @fontNameVariable @fontSizeVariable;
 
 .simple {
-    alpha: 0.33;
+    alpha : 0.33;
     layer.cornerRadius: 5;
     autoresizingMask: width height left right top bottom;
     clipsToBounds: YES;
@@ -27,8 +27,8 @@
     bounds: size(10,20);
     color: rgb(128, 128, 128);
     tintColor: #ffffff;
-    titleColor(selectedHighlighted): blue;
-    textColor: rgba(64, 64, 64, 0.5);
+    titleColor(selectedHighlighted)  : blue;
+    textColor : rgba(64, 64, 64, 0.5);
     shadowColor: red;
     transform: rotate(10) scale(20,30) translate(40,50);
     attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: rgb(0,0,255), color: darken(#000000, 0%), baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);

@@ -235,7 +235,7 @@ static ISSDefaultStyleSheetTestParser* defaultParser;
     ISSAssertEqualFloats([value floatValue], 0.33f, @"Expected value '0.33' for property alpha");
     
     value = [self getSimplePropertyValueWithName:@"cornerRadius"];
-    XCTAssertEqualObjects(value, @(5), @"Expected value '5' for property alpha");
+    XCTAssertEqualObjects(value, @(5), @"Expected value '5' for property cornerRadius");
 }
 
 - (void) testBooleanPropertyValue {
