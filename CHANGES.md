@@ -1,6 +1,14 @@
 #Changes
 
 
+##Version 1.4.1
+
+### Bug fixes
+
+* Fixed issues with variable and property name/value parsing ([issue 57](https://github.com/tolo/InterfaCSS/issues/57), reported by @xmmk).
+
+
+
 ##Version 1.4
 
 ### New features & changes
