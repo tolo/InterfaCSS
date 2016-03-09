@@ -27,6 +27,7 @@ NSString* const ISSViewDefinitionFileAttributePrototypeScope = @"prototypeScope"
 NSString* const ISSViewDefinitionFileAttributeAddAsSubview = @"addSubview";
 NSString* const ISSViewDefinitionFileAttributeImplementationClass = @"implementation";
 NSString* const ISSViewDefinitionFileAttributeCollectionViewLayoutClass = @"collectionViewLayout";
+NSString* const ISSViewDefinitionFileAttributeAccessibilityIdentifier = @"accessibilityIdentifier";
 
 
 static NSDictionary* tagToClass;
@@ -192,6 +193,7 @@ static NSDictionary* tagToClass;
     NSString* prototypeName = nil;
     BOOL prototypeScopeParent = YES;
     BOOL addSubview = YES;
+    NSString* accessibilityIdentifier = nil;
     Class viewClass = nil;
     Class collectionViewLayoutClass = nil;
 
@@ -250,6 +252,11 @@ static NSDictionary* tagToClass;
             collectionViewLayoutClass = [ISSRuntimeIntrospectionUtils classWithName:value];
             canonicalAttributes[ISSViewDefinitionFileAttributeCollectionViewLayoutClass] = value;
         }
+        // "accessibilityIdentifier":
+        else if ( [key iss_isEqualIgnoreCase:ISSViewDefinitionFileAttributeAccessibilityIdentifier] ) {
+            accessibilityIdentifier = value; 
+            canonicalAttributes[ISSViewDefinitionFileAttributeAccessibilityIdentifier] = value;
+        }
         else {
             canonicalAttributes[key] = value;
         }
@@ -287,6 +294,9 @@ static NSDictionary* tagToClass;
                 view = [ISSViewBuilder collectionViewOfClass:viewClass collectionViewLayoutClass:collectionViewLayoutClass withStyle:styleClass andSubViews:nil];
             } else {
                 view = [ISSViewBuilder viewOfClass:viewClass withId:elementId andStyle:styleClass];
+            }
+            if ( accessibilityIdentifier != nil ) {
+              view.accessibilityIdentifier = accessibilityIdentifier;
             }
 
             [self postProcessView:view issLayoutValue:issLayoutValue];
