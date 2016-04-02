@@ -1,6 +1,17 @@
 #Changes
 
 
+##Version 1.4.2
+
+### Bug fixes
+
+* Fixed issue with stylesheet scoping not always being applied correctly.
+
+### New features & changes (yes, a small feature update snuck into this maintenance release...)
+* Added support for the attribute `accessibilityIdentifier` to elements in XML view definition files ([pull request 60](https://github.com/tolo/InterfaCSS/issues/60), added by @ChrisInIssaquah).
+
+
+
 ##Version 1.4.1
 
 ### Bug fixes
