@@ -24,7 +24,7 @@ class ViewController: UIViewController {
         
         
         // *** OPTION 1 - Using view builder and layout specified in stylesheet ***
-        InterfaCSS.sharedInstance().loadStyleSheetFromMainBundleFile("layout.css")
+        /*InterfaCSS.sharedInstance().loadStyleSheetFromMainBundleFile("layout.css")
         self.view = ISSViewBuilder.rootViewWithId("rootView", withOwner: self, andSubViews: {
             return [
                 ISSViewBuilder.labelWithId("marginLabel"),
@@ -37,12 +37,12 @@ class ViewController: UIViewController {
                 ISSViewBuilder.viewWithId("view4"),
                 ISSViewBuilder.labelWithId("label")
             ];
-        })
+        })*/
         
-//        // *** OPTION 2 - Load both view hierachy and layout from a view definition file ('layout.xml') ***
-//        self.view = ISSViewBuilder.loadViewHierarchyFromMainBundleFile("layout.xml", fileOwner: self)
+        // *** OPTION 2 - Load both view hierachy and layout from a view definition file ('layout.xml') ***
+        self.view = ISSViewBuilder.loadViewHierarchyFromMainBundleFile("layout.xml", fileOwner: self)
 
-        
+/*
         if let b = button {
             // Initialize default value for layout attribute that we'll need later
             b.applyStylingISS() // Make sure styling has been applied first (only really needed for option 1)
@@ -54,6 +54,7 @@ class ViewController: UIViewController {
         if let l = label {
             l.text = "Hello ISSLayout World!"
         }
+*/
 
         // Example of how additional layout pre/post processing / validation / customization can be applied:
         if let layoutContextView = self.rootView {

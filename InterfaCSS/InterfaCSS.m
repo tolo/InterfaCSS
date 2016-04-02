@@ -268,6 +268,10 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
             // Find all matching (or potentially matching, i.e. pseudo class) style declarations
             NSArray* styleSheetDeclarations = [styleSheet declarationsMatchingElement:elementDetails stylingContext:stylingContext];
             if ( styleSheetDeclarations ) {
+                // We need to add scope along with declarations, otherwise the scope check won't be used below...
+                for(ISSPropertyDeclarations* declarations in styleSheetDeclarations) {
+                    declarations.scope = styleSheet.scope;
+                }
                 [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
             }
         }
@@ -311,6 +315,10 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         ISSStylingContext* stylingContext = [[ISSStylingContext alloc] init];
         NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
         for (ISSPropertyDeclarations* declarations in cachedDeclarations) {
+            // Verify that element is in scope:
+            if ( declarations.scope != nil && ![declarations.scope elementInScope:elementDetails] ) {
+                continue;
+            }
             // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
             if ( !declarations.containsPseudoClassSelector || [declarations matchesElement:elementDetails stylingContext:stylingContext] ) {
                 [viewStyles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];

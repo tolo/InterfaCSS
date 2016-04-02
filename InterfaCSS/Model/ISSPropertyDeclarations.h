@@ -8,6 +8,7 @@
 
 @class ISSUIElementDetails;
 @class ISSStylingContext;
+@class ISSStyleSheetScope;
 
 
 /**
@@ -21,6 +22,8 @@
 @property (nonatomic, readonly) BOOL containsPseudoClassSelector;
 @property (nonatomic, readonly) BOOL containsPseudoClassSelectorOrDynamicProperties;
 @property (nonatomic, readonly) NSUInteger specificity;
+
+@property (nonatomic, weak) ISSStyleSheetScope* scope; // The scope used by the parent stylesheet...
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties;
 

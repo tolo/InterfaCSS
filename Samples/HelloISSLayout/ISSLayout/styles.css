@@ -1,51 +1,235 @@
+/*
+ * Demo InterfaCSS stylesheet file.
+ *
+ * Read more about the stylesheet format here: https://github.com/tolo/InterfaCSS/wiki/Stylesheet-format
+ * Checkout this page for a reference on what properties can be set: https://github.com/tolo/InterfaCSS/wiki/Stylesheet-Property-Reference
+ *
+ * For a short selection of available properties that can be set, see bottom of file.
+ */
 
-#rootView {
-    backgroundColor: #fafafa;
-}
 
-#rootView UIView, #rootView UIButton {
+/** Load remote font: **/
+@SanFranciscoDisplayUltralight: url("https://github.com/supermarin/YosemiteSanFranciscoFont/raw/master/System%20San%20Francisco%20Display%20Ultralight.ttf");
+
+@stdFont1: AvenirNextCondensed-Regular 14;
+@stdFont2: Superclarendon-BlackItalic  15;
+@stdFont3: GillSans-Bold 13;
+@stdFont4: AvenirNextCondensed-Bold 16;
+@stdFont5: Futura-Medium 16;
+
+@pinkColor: #ff3ab7;
+@magentaColor: #4d0e8d;
+@lightGreenColor: #c3e217;
+@greenColor: #a1d22a;
+@orangeColor: #e26317;
+@mediumGray: #6e6e6e;
+@blueColor: #00bce3;
+
+
+/** Common style declarations **/
+
+.roundedCorners {
     cornerRadius: 5;
+    clipsToBounds: YES;
 }
 
 
-#marginLabel {
-    text: "Using margin";
-    font: AvenirNextCondensed-Regular 14;
+.buttonStyle1, .buttonStyle2, .buttonStyle3 {
+    titleColor: white;
+    titleColor(highlighted): @lightGreenColor;
+    font: @stdFont4;
+    titleLabel.adjustsFontSizeToFitWidth: YES;
+    titleLabel.minimumScaleFactor: 0.5;
 }
 
-#layoutGuideLabel {
-    text: "Using layout guide";
-    font: AvenirNextCondensed-Regular 14;
+.buttonStyle1 {
+    backgroundImage: @magentaColor; // Color as image
+    backgroundImage(highlighted): darken(#4d0e8d, 50%); // Color function example
+}
+
+.buttonStyle2 {
+    backgroundColor: @pinkColor;
+    backgroundImage: url("http://photos.leafnode.se/Iceland-July-2013-Quick-Favorite/i-WPgkgsz/0/S/C5D_1826-S.jpg");
+    contentVerticalAlignment: top;
+    titleColor: black;
+    titleColor(highlighted): @lightGreenColor;
+}
+
+.buttonStyle3 {
+    borderColor: @greenColor;
+    borderWidth: 2;
+    font: @stdFont5;
 }
 
 
-#button {
-    backgroundColor: #2bff8a;
-    textColor: white;
-    titleLabel.font: AvenirNextCondensed-Bold 18;
+UIView > UILabel { /* Set default font for all labels that are direct children of UIViews */
+    font: @stdFont1;
 }
 
-#button.moveMe {
-    backgroundColor: #7febff;
+UIView.headerView > UILabel { /* Set default font for all labels that are direct children of UIViews with style class "headerView" */
+    font: @SanFranciscoDisplayUltralight 30;
 }
 
-#view1 {
+
+.labelStyle1, .labelStyle2, .labelStyle3 {
+    textAlignment: center;
+}
+
+.labelStyle1 {
+    textColor: @magentaColor;
+    font: @stdFont1;
+    borderColor: @magentaColor;
+    borderWidth: 0.5;
+}
+
+.labelStyle2 {
     backgroundColor: #ff3ab7;
+    textColor: white;
+    font: @stdFont2;
 }
 
-#view2 {
-    backgroundColor: #ff1717;
+.labelStyle3 {
+    font: @stdFont3;
 }
 
-#view3 {
-    backgroundColor: #9f38ff;
+
+
+/** Element specific styles (and layout) **/
+
+#demoRootView {
+    backgroundColor: gradient(#fafafa, #e0e0e0);
 }
 
-#view4 {
-    backgroundColor: #ff9227;
+
+#demoHeaderView {
+    layout: top(guide.top + 1), height(44), centerX(parent); /* Placing label at top layout guide (with offset) and using intrinsic content size of label */
+    
+    #demoHeaderLabel { /* Example of nested style declaration */
+        layout: size(parent, parent);
+        textAlignment: center;
+        text: "Welcome to InterfaCSS";
+    }
 }
 
-#label {
-    textColor: black;
-    font: AvenirNextCondensed-Regular 14;
+
+
+#demoLabel1 {
+    layout: height(40), width(parent.width * 0.27), bottom(demoButton1 - 40), centerX(parent.width * 0.18);
+    text: "I am label #1";
 }
+#demoLabel2 {
+    layout: height(40), width(parent.width * 0.3), centerY(demoLabel1), centerX(parent.width * 0.5);
+    text: "Label #2";
+}
+#demoLabel3 {
+    layout: height(40), width(parent.width * 0.27), centerY(demoLabel1), centerX(parent.width * 0.82);
+    attributedText: "I am " (underlineStyle: single, color: #4d0e8d), "label " (underlineStyle: single, color: lighten(#4d0e8d, 50%)), "#3" (underlineStyle: single, color: fadeout(lighten(#4d0e8d, 50%), 33%));
+}
+
+
+#demoButton1 {
+    layout: height(40), width(parent.width * 0.25), centerY(demoButton2), centerX(parent.width * 0.15);
+    title: "Button #1";
+}
+#demoButton2 {
+    layout: size(120, 80), center(parent, parent); /* Using implicit/default parent relations that evaluates to parent.centerX / parent.centerY (same attributes used) */
+    title: "I am a button #2";
+}
+#demoButton3 {
+    layout: height(40), width(parent.width * 0.25), centerY(demoButton2), centerX(parent.width * 0.85);
+    attributedTitle: "✔︎" (color: @greenColor),  " Button #3" (color: @mediumGray);
+    attributedTitle(highlighted): "✘" (color: @orangeColor),  " " (), "Button #3" (color: @mediumGray, underlineStyle: single);
+}
+#demoButton3:phone:portrait {
+    attributedTitle: "✔︎" (color: @greenColor),  " Btn #3" (color: @mediumGray);
+    attributedTitle(highlighted): "✘" (color: @orangeColor),  " " (), "Btn #3" (color: @mediumGray, underlineStyle: single);
+}
+
+
+#demoSpinner {
+    layout: centerX(demoButton2), top(demoButton2.bottom + 50);
+    activityIndicatorViewStyle: whiteLarge;
+    color: @pinkColor;
+    hidesWhenStopped: NO;
+    /*animating: YES; Comment out this line if you want the spinner to start animating automatically */
+    transform: scale(1.5, 1.5);
+}
+#demoSpinner:landscape {
+    layout: right(parent.marginRight - 10), top(guide.top + 10);
+    transform: scale(1, 1);
+}
+
+
+#demoSlider {
+    layout: width(120), center(demoButton2.left - 50, demoButton2.bottom + 70);
+    transform: rotate(75);
+    anchorPoint: point(0.5, 0.5); /* Make sure the slider is rotated around it's center point */
+    tintColor: @lightGreenColor;
+    thumbTintColor: @magentaColor;
+    maximumValue: 10;
+    value: 5;
+}
+#demoSlider:landscape {
+    transform: rotate(15);
+}
+
+#demoSwitch {
+    layout: topLeft(demoButton2 + 30, demoButton2 + 50);
+    tintColor: lighten(gray, 60%);
+    onTintColor: @greenColor;
+    thumbTintColor: @blueColor;
+}
+
+
+/**
+ Below is a small selection of available properties that can be set on different view classes in UIKit.
+ 
+ UIView {
+ alpha: 0.33;
+ anchorPoint: point(0.5, 0.5);
+ autoresizingMask: width height left right top bottom;
+ center: point(5, 6);
+ clipsToBounds: YES;
+ contentMode: center;
+ cornerRadius: 5;
+ frame: rect(1,2,3,4);
+ shadowColor: red;
+ tintColor: #ffffff;
+ transform: rotate(10) scale(20,30) translate(40,50);
+ }
+ 
+ UILabel {
+ attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: rgb(0,0,255), color: darken(green, 33%), baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);
+ numberOfLines: 2;
+ text: "Text:";
+ textAlignment: right;
+ textColor: rgba(64, 64, 64, 0.5);
+ }
+ 
+ UIButton {
+ attributedTitle: "Hello " (font: @someFontVariable, foregroundColor: @someColorVariable), "World" (font: @someOtherFontVariable, foregroundColor: red, underlineStyle: single dash);
+ backgroundImage: #2bff8a; // Color as image
+ backgroundImage(selected): darken(#2bff8a, 50%); // Parameterized property that sets a value for a specific UIControlState
+ contentInset: insets(10, 20, 30, 40);
+ font: HelveticaNeue-Medium 12; // Basically and alias for titleLabel.font
+ title: "Title";
+ title(selected): "Selected Title";
+ titleColor(selectedHighlighted): blue;
+ }
+ 
+ UITextField {
+ adjustsFontSizeToFitWidth: YES;
+ autocorrectionType: default;
+ attributedText: "Hello " (font: @someFontVariable, foregroundColor: @someColorVariable), "World" (font: @someOtherFontVariable, foregroundColor: red, underlineStyle: single dash);
+ borderStyle: roundedRect;
+ clearsOnInsertion: NO;
+ keyboardAppearance:	light
+ keyboardType: numbersAndPunctuation;
+ minimumScaleFactor: 0.5;
+ placeholder: "placeholder";
+ returnKeyType: done;
+ text: "Text:";
+ textColor: rgba(64, 64, 64, 0.5);
+ }
+ 
+ **/
