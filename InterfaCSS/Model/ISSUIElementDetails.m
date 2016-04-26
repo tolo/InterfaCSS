@@ -71,6 +71,8 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     self = [super init];
     if (self) {
         _uiElement = uiElement;
+        _visitorScope = NULL;
+        
         [self parentElement]; // Make sure weak reference to super view is set directly
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resetCachedData) name:ISSUIElementDetailsResetCachedDataNotificationName object:nil];
@@ -256,8 +258,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (id) parentElement {
     if( !_parentElement ) {
-        id lastParentElement = _parentElement;
-        
         if( [_uiElement isKindOfClass:[UIView class]] ) {
             UIView* view = (UIView*)_uiElement;
             _parentView = view.superview; // Update cached parentView reference
@@ -271,7 +271,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         else if( [_uiElement isKindOfClass:[UIViewController class]] ) {
             _parentElement = ((UIViewController*)self.uiElement).view.superview; // User the super view of the view controller root view
         }
-        if( lastParentElement != _parentElement ) {
+        if( _parentElement ) {
             self.hasChangedParent = YES;
         }
     }
@@ -568,7 +568,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
         }
         @finally {
             _visitorScope = previousScope;
-            _isVisiting = NO;
+            if (_visitorScope == NULL) {
+                _isVisiting = NO;
+            }
         }
     } else {
         return nil; // Already vising element - aborting

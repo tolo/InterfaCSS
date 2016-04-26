@@ -23,9 +23,9 @@
     if( !parentDetails ) return nil;
     else if( [selector matchesElement:parentDetails stylingContext:stylingContext] ) return parentDetails;
     else {
-        return [parentDetails visitExclusivelyWithScope:(__bridge void *)(self) visitorBlock:^id (ISSUIElementDetails* details) {
-            return [self findMatchingDescendantSelectorParent:[[InterfaCSS interfaCSS] detailsForUIElement:details.parentElement]
-                                           forSelector:selector stylingContext:stylingContext];
+        ISSUIElementDetails* grandParentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentElement];
+        return [grandParentDetails visitExclusivelyWithScope:(__bridge void *)(self) visitorBlock:^id (ISSUIElementDetails* details) {
+            return [self findMatchingDescendantSelectorParent:details forSelector:selector stylingContext:stylingContext];
         }];
     }
 }
