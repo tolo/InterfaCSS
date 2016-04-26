@@ -29,6 +29,8 @@
 
 + (BOOL) invokeSetterForProperty:(NSString*)propertyName withValue:(id)value inObject:(id)object;
 
++ (id) invokeGetterForKeyPath:(NSString*)keyPath inObject:(id)object;
+
 + (id) invokeGetterForProperty:(NSString*)propertyName inObject:(id)object;
 
 + (Class) classWithName:(NSString*)className;

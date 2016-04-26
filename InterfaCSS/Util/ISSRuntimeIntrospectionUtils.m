@@ -208,7 +208,7 @@ static NSCache* propertyNamesWithClassForClassCache;
     objc_property_t property = [self findPropertyWithName:propertyName inObject:object];
     NSString* getter = nil;
     if( property ) {
-        getter = [self customSetterMethodForProperty:property];
+        getter = [self customGetterMethodForProperty:property];
     }
     if( !getter ) getter = propertyName;
     
@@ -289,17 +289,37 @@ static NSCache* propertyNamesWithClassForClassCache;
     return YES;
 }
 
++ (id) invokeGetterForKeyPath:(NSString*)keyPath inObject:(id)object {
+    NSArray* keyPathComponents = [keyPath componentsSeparatedByString:@"."];
+    
+    id currentObject = object;
+    int i = 0;
+    for(NSString* keyPathComponent in keyPathComponents) {
+        currentObject = [self invokeGetterForProperty:keyPathComponent inObject:currentObject];
+        i++;
+        if (i == keyPathComponents.count) {
+            return currentObject;
+        } else if ( currentObject == nil ) {
+            return nil;
+        }
+    }
+    
+    return nil;
+}
+
 + (id) invokeGetterForProperty:(NSString*)propertyName inObject:(id)object {
     NSInvocation* invocation = [self findGetterForProperty:propertyName inObject:object];
     if( !invocation ) return nil;
+    
+    [invocation invoke];
     
     const char* returnType = [invocation.methodSignature methodReturnType];
     id returnValue = nil;
     
     if( *returnType == *@encode(id) ) {
-            id __unsafe_unretained tmpReturn;
-            [invocation getReturnValue:&tmpReturn];
-            returnValue = tmpReturn;
+        id __unsafe_unretained tmpReturn;
+        [invocation getReturnValue:&tmpReturn];
+        returnValue = tmpReturn;
     } else {
         NSUInteger length = [invocation.methodSignature methodReturnLength];
         void* buffer = (void*)malloc(length);
