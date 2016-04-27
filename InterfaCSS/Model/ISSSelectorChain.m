@@ -12,9 +12,12 @@
 #import "ISSSelector.h"
 #import "ISSUIElementDetails.h"
 #import "ISSStylingContext.h"
+#import "ISSNestedElementSelector.h"
 
 
-@implementation ISSSelectorChain
+@implementation ISSSelectorChain {
+    BOOL _nestedElenentSelectorChain;
+}
 
 #pragma mark - Utility methods
 
@@ -24,9 +27,7 @@
     else if( [selector matchesElement:parentDetails stylingContext:stylingContext] ) return parentDetails;
     else {
         ISSUIElementDetails* grandParentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentElement];
-        return [grandParentDetails visitExclusivelyWithScope:(__bridge void *)(self) visitorBlock:^id (ISSUIElementDetails* details) {
-            return [self findMatchingDescendantSelectorParent:details forSelector:selector stylingContext:stylingContext];
-        }];
+        return [self findMatchingDescendantSelectorParent:grandParentDetails forSelector:selector stylingContext:stylingContext];
     }
 }
 
@@ -57,11 +58,10 @@
     return nil;
 }
 
-+ (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails withSelector:(ISSSelector*)selector andCombinator:(ISSSelectorCombinator)combinator
-                stylingContext:(ISSStylingContext*)stylingContext {
++ (ISSUIElementDetails*) matchElement:(ISSUIElementDetails*)elementDetails parentElement:(ISSUIElementDetails*)parentDetails
+                         selector:(ISSSelector*)selector combinator:(ISSSelectorCombinator)combinator stylingContext:(ISSStylingContext*)stylingContext {
     ISSUIElementDetails* nextUIElementDetails = nil;
-    ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:elementDetails.parentElement];
-
+    
     switch (combinator) {
         case ISSSelectorCombinatorDescendant: {
             nextUIElementDetails = [self findMatchingDescendantSelectorParent:parentDetails forSelector:selector stylingContext:stylingContext];
@@ -88,6 +88,10 @@
 
 - (id) initWithComponents:(NSArray*)selectorComponents hasPseudoClassSelector:(BOOL)hasPseudoClassSelector { // Private initializer
     if( self = [super init] ) {
+        if ( selectorComponents.count > 1 && [[selectorComponents lastObject] isKindOfClass:ISSNestedElementSelector.class] ) {
+            _nestedElenentSelectorChain = YES;
+        }
+        
         _selectorComponents = selectorComponents;
         _hasPseudoClassSelector = hasPseudoClassSelector;
     }
@@ -172,12 +176,21 @@
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     ISSSelector* lastSelector = [_selectorComponents lastObject];
     if( [lastSelector matchesElement:elementDetails stylingContext:(ISSStylingContext*)stylingContext] ) { // Match last selector...
-        NSUInteger remainingCount = _selectorComponents.count - 1;
+        const NSUInteger remainingCount = _selectorComponents.count - 1;
         ISSUIElementDetails* nextUIElementDetails = elementDetails;
         for(NSUInteger i=remainingCount; i>1 && nextUIElementDetails; i-=2) { // ...then rest of selector chain
             ISSSelectorCombinator combinator = (ISSSelectorCombinator)[_selectorComponents[i - 1] integerValue];
             ISSSelector* selector = _selectorComponents[i-2];
-            nextUIElementDetails = [ISSSelectorChain matchElement:nextUIElementDetails withSelector:selector andCombinator:combinator stylingContext:(ISSStylingContext*)stylingContext];
+            
+            ISSUIElementDetails* nextParentUIElementDetails;
+            if ( _nestedElenentSelectorChain && i == remainingCount ) { // In case last selector is ISSNestedElementSelector, we need to use ownerElement instead of parentElement
+                nextParentUIElementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nextUIElementDetails.ownerElement];
+            } else {
+                nextParentUIElementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nextUIElementDetails.parentElement];
+            }
+            
+            nextUIElementDetails = [ISSSelectorChain matchElement:nextUIElementDetails parentElement:nextParentUIElementDetails selector:selector
+                                                    combinator:combinator stylingContext:(ISSStylingContext*)stylingContext];
         }
         // If element at least matched last selector in chain, but didn't match it completely - set a flag indicating that there are partial matches
         if( !nextUIElementDetails ) {

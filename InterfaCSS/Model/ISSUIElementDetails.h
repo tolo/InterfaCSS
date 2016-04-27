@@ -33,7 +33,7 @@ typedef id (^ISSUIElementDetailsVisitorBlock)(ISSUIElementDetails* elementDetail
 
 @property (nonatomic, weak, readonly) id uiElement;
 @property (nonatomic, weak, readonly) UIView* view; // uiElement, if instance of UIView, otherwise nil
-@property (nonatomic, weak) id parentElement;
+@property (nonatomic, weak, readonly) id parentElement;
 @property (nonatomic, weak) id ownerElement; // Element holding a property reference (which is defined validNestedElements) to this element, otherwise parentElement
 @property (nonatomic, weak, readonly) UIView* parentView; // parentElement, if instance of UIView, otherwise nil
 

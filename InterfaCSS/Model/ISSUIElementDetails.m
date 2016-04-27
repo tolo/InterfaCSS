@@ -37,6 +37,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @interface ISSUIElementDetails ()
 
 @property (nonatomic, weak, readwrite) UIView* parentView;
+@property (nonatomic, weak, readwrite) id parentElement;
 
 @property (nonatomic) BOOL hasChangedParent;
 
@@ -269,7 +270,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             }
         }
         else if( [_uiElement isKindOfClass:[UIViewController class]] ) {
-            _parentElement = ((UIViewController*)self.uiElement).view.superview; // User the super view of the view controller root view
+            _parentElement = ((UIViewController*)self.uiElement).view.superview; // Use the super view of the view controller root view
         }
         if( _parentElement ) {
             self.hasChangedParent = YES;

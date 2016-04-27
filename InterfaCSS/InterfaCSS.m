@@ -588,9 +588,6 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         for(id subView in subViews) {
             ISSUIElementDetailsInterfaCSS* subViewDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:subView];
 
-            // Make sure parent element reference is correctly set
-            if( !subViewDetails.parentElement ) subViewDetails.parentElement = uiElementDetails.uiElement;
-
             [self applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)subViewDetails includeSubViews:YES force:force];
         }
     }
