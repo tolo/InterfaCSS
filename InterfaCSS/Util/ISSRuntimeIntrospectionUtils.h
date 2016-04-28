@@ -19,7 +19,9 @@
 
 + (NSSet*) propertyNamesForClass:(Class)class;
 
-+ (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName;
++ (BOOL) doesClass:(Class)clazz havePropertyWithName:(NSString*)propertyName;
+
++ (BOOL) doesClassOrSuperClass:(Class)clazz havePropertyWithName:(NSString*)propertyName excludingRootClass:(Class)rootClass;
 
 + (NSString*) actualPropertyNameForCaseInsensitiveName:(NSString*)caseInsensitivePropertyName inClass:(Class)class;
 

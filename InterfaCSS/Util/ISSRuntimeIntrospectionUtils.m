@@ -45,19 +45,19 @@ static NSCache* propertyNamesWithClassForClassCache;
     func(object, selector, parameter);
 }
 
-+ (NSSet*) propertyNamesForClass:(Class)class {
-    return [NSSet setWithArray:[self propertyNamesWithClassForClass:class].allKeys];
++ (NSSet*) propertyNamesForClass:(Class)clazz {
+    return [NSSet setWithArray:[self propertyNamesWithClassForClass:clazz].allKeys];
 }
 
-+ (NSDictionary*) propertyNamesWithClassForClass:(Class)class {
-    if( !class || class == NSObject.class || class == [NSNull null] ) return nil;
++ (NSDictionary*) propertyNamesWithClassForClass:(Class)clazz {
+    if( !clazz || clazz == NSObject.class || clazz == [NSNull null] ) return nil;
     
-    NSMutableDictionary* propertyNamesAndClasses = [propertyNamesWithClassForClassCache objectForKey:class];
+    NSMutableDictionary* propertyNamesAndClasses = [propertyNamesWithClassForClassCache objectForKey:clazz];
     if( !propertyNamesAndClasses ) {
         // Add the properties of this class
         propertyNamesAndClasses = [NSMutableDictionary dictionary];
         unsigned int outCount = 0;
-        objc_property_t* properties = class_copyPropertyList(class, &outCount);
+        objc_property_t* properties = class_copyPropertyList(clazz, &outCount);
         for (unsigned int i=0; i<outCount; i++) {
             objc_property_t property = properties[i];
             const char* name = property_getName(property);
@@ -70,11 +70,11 @@ static NSCache* propertyNamesWithClassForClassCache;
         free(properties);
 
         // Add to cache
-        [propertyNamesWithClassForClassCache setObject:propertyNamesAndClasses forKey:class];
+        [propertyNamesWithClassForClassCache setObject:propertyNamesAndClasses forKey:clazz];
     }
 
     // Get superclass properties
-    NSDictionary* superClassPropertyNamesAndClasses = [self propertyNamesWithClassForClass:[class superclass]] ?: [NSMutableDictionary dictionary];
+    NSDictionary* superClassPropertyNamesAndClasses = [self propertyNamesWithClassForClass:[clazz superclass]] ?: [NSMutableDictionary dictionary];
 
     // Combine super class properties with the properties of this class and return
     NSMutableDictionary* combinedPropertyNamesAndClasses = superClassPropertyNamesAndClasses ? [NSMutableDictionary dictionaryWithDictionary:superClassPropertyNamesAndClasses] : [NSMutableDictionary dictionary];
@@ -114,8 +114,8 @@ static NSCache* propertyNamesWithClassForClassCache;
     return [self customSetterOrGetterMethodForProperty:property searchString:@",G"];
 }
 
-+ (BOOL) doesClass:(Class)class havePropertyWithName:(NSString*)propertyName {
-    return [[self propertyNamesForClass:class] containsObject:propertyName];
++ (BOOL) doesClass:(Class)clazz havePropertyWithName:(NSString*)propertyName {
+    return [[self propertyNamesForClass:clazz] containsObject:propertyName];
 }
 
 + (NSArray*) actualPropertyNameAndClassForCaseInsensitiveName:(NSString*)caseInsensitivePropertyName inClass:(Class)class {
@@ -171,16 +171,25 @@ static NSCache* propertyNamesWithClassForClassCache;
 }
 
 + (objc_property_t) findPropertyWithName:(NSString*)propertyName inObject:(id)object {
-    if( !object || ![propertyName iss_hasData] ) return nil;
+    if( !object ) return nil;
+    
+    return [self findPropertyWithName:propertyName inClass:[object class] excludingRootClass:NSObject.class];
+}
+
++ (objc_property_t) findPropertyWithName:(NSString*)propertyName inClass:(Class)clazz excludingRootClass:(Class)rootClass {
+    if( ![propertyName iss_hasData] ) return nil;
     
     objc_property_t property = nil;
-    Class clazz = [object class];
-    while( clazz && clazz != NSObject.class ) {
+    while( clazz && clazz != rootClass ) {
         property = class_getProperty(clazz, [propertyName cStringUsingEncoding:NSUTF8StringEncoding]);
         if( property ) break;
         clazz = [clazz superclass];
     }
     return property;
+}
+
++ (BOOL) doesClassOrSuperClass:(Class)clazz havePropertyWithName:(NSString*)propertyName excludingRootClass:(Class)rootClass {
+    return [self findPropertyWithName:propertyName inClass:clazz excludingRootClass:rootClass] != nil;
 }
 
 + (NSInvocation*) findSetterForProperty:(NSString*)propertyName inObject:(id)object {

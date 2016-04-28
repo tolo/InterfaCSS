@@ -13,6 +13,8 @@
 #import "ISSDownloadableResource.h"
 #import "ISSUpdatableValue.h"
 #import "ISSPropertyDeclaration.h"
+#import "ISSRuntimeIntrospectionUtils.h"
+
 
 NSString* const ISSIndexPathKey = @"ISSIndexPathKey";
 NSString* const ISSPrototypeViewInitializedKey = @"ISSPrototypeViewInitializedKey";
@@ -281,17 +283,16 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (BOOL) checkForUpdatedParentElement {
     BOOL didChangeParent = self.hasChangedParent;
-    if( didChangeParent ) {
-        self.hasChangedParent = NO;
-    } else {
-        if( self.view && self.view.superview != self.parentView ) {
+    if( !didChangeParent ) {
+        if( self.view && self.view.superview != self.parentView ) { // Check for updated superview
             didChangeParent = YES;
             _parentElement = nil; // Reset parent element to make sure it's re-evaluated
         }
     }
     
     if( didChangeParent ) {
-        [self parentElement]; // Update parent element
+        [self parentElement]; // Update parent element...
+        self.hasChangedParent = NO; //...and finally, reset the hasChangedParent flag since it may have been set again by [self parentElement]...
     }
     
     return didChangeParent;
@@ -522,14 +523,35 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     // Add any valid nested elements (valid property prefix key paths) to the subviews list
     for(NSString* nestedElementKeyPath in self.validNestedElements.allValues) {
         id nestedElement = [self.uiElement valueForKeyPath:nestedElementKeyPath];
-        if( nestedElement && nestedElement != self.uiElement ) {
+        if( nestedElement && nestedElement != self.uiElement && nestedElement != self.parentElement ) { // Do quick initial sanity checks for circular relationship
             ISSUIElementDetails* childDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nestedElement];
-            // Set the ownerElement and nestedElementPropertyName to make sure that the nested property can be properly matched by ISSNestedElementSelector
-            // (even if it's not a direct subview) and that it has a unique styling identity (in its sub tree)
-            childDetails.ownerElement = self.uiElement;
-            childDetails.nestedElementKeyPath = nestedElementKeyPath;
+            
+            BOOL circularReference = NO;
+            if( childDetails.ownerElement ) {
+                // If nested element already has an owner - check that there isn't a circular relationship (can happen with inputView and inputAccessoryView for instance)
+                if( [ISSRuntimeIntrospectionUtils invokeGetterForKeyPath:nestedElementKeyPath inObject:self.parentElement] == nestedElement ) {
+                    circularReference = YES;
+                } else {
+                    UIView* superview = self.view.superview;
+                    while(superview != nil) {
+                        if( superview == nestedElement ) {
+                            circularReference = TRUE;
+                            break;
+                        }
+                        superview = superview.superview;
+                    }
+                }
+            }
+            
+            if (!circularReference) {
+                // Set the ownerElement and nestedElementPropertyName to make sure that the nested property can be properly matched by ISSNestedElementSelector
+                // (even if it's not a direct subview) and that it has a unique styling identity (in its sub tree)
+                childDetails.ownerElement = self.uiElement;
+                childDetails.nestedElementKeyPath = nestedElementKeyPath;
 
-            [subviews addObject:nestedElement];
+                [subviews addObject:nestedElement];
+            }
+            
         }
     }
     
