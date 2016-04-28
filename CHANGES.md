@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 1.4.4
+
+### Bug fixes
+* Added workaround for problem with circular relationships occurring for some nested elements key paths (inputView and inputAccessoryView), leading to infinite loops while applying style.
+
+
+
 ##Version 1.4.3
 
 ### Bug fixes
