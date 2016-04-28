@@ -1,6 +1,19 @@
 #Changes
 
 
+##Version 1.4.3
+
+### Bug fixes
+
+* Fixed problem with cyclic ISSUIElementDetails object graphs, due to incorrect use of parentElement field in situations where nested element key paths are present (resolves [issue 53](https://github.com/tolo/InterfaCSS/issues/53), reported by @bangerang). 
+* Fixed bug in visiting of ISSUIElementDetails (visitExclusivelyWithScope).
+* Fixed bug in invokeGetterForProperty in ISSRuntimeIntrospectionUtils. 
+
+### New features & changes (yes, a small feature update snuck into this maintenance release...)
+* Added notification for when refreshable stylesheets are updated (ISSDidRefreshStyleSheetNotification) 
+
+
+
 ##Version 1.4.2
 
 ### Bug fixes
