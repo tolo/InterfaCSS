@@ -272,6 +272,14 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
                 // We need to add scope along with declarations, otherwise the scope check won't be used below...
                 for(ISSPropertyDeclarations* declarations in styleSheetDeclarations) {
                     declarations.scope = styleSheet.scope;
+
+                    // Get reference to inherited declarations, if any:
+                    if ( declarations.extendedDeclarationSelectorChain && !declarations.extendedDeclaration ) {
+                        for (ISSStyleSheet* s in self.effectiveStylesheets) {
+                            declarations.extendedDeclaration = [s findPropertyDeclarationsWithSelectorChain:declarations.extendedDeclarationSelectorChain];
+                            if (declarations.extendedDeclaration) break;
+                        }
+                    }
                 }
                 [cachedDeclarations addObjectsFromArray:styleSheetDeclarations];
             }

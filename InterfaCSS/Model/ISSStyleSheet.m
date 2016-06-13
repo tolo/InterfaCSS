@@ -140,6 +140,15 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
     return matchingDeclarations;
 }
 
+- (ISSPropertyDeclarations*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain {
+    for (ISSPropertyDeclarations* declarations in _declarations) {
+        if ( [declarations containsSelectorChain:selectorChain] ) {
+            return declarations;
+        }
+    }
+    return nil;
+}
+
 
 #pragma mark - Refreshable stylesheet methods
 

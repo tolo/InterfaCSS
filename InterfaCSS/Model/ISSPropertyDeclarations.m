@@ -14,15 +14,23 @@
 #import "ISSPropertyDeclaration.h"
 
 
-@implementation ISSPropertyDeclarations
+@implementation ISSPropertyDeclarations {
+    NSArray* _properties;
+}
 
 #pragma mark - ISSPropertyDeclarations interface
 
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties {
+    return [self initWithSelectorChains:selectorChains andProperties:properties extendedDeclarationSelectorChain:nil];
+}
+
+- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties extendedDeclarationSelectorChain:(ISSSelectorChain*)extendedDeclarationSelectorChain {
     if( self = [super init] ) {
         _selectorChains = selectorChains;
         _properties = properties;
+        _extendedDeclarationSelectorChain = extendedDeclarationSelectorChain;
+
         for(ISSSelectorChain* chain in selectorChains) {
             if( chain.hasPseudoClassSelector ) {
                 _containsPseudoClassSelector = _containsPseudoClassSelectorOrDynamicProperties = YES;
@@ -39,6 +47,14 @@
         }
     }
     return self;
+}
+
+- (NSArray*) properties {
+    if ( _extendedDeclaration && _extendedDeclaration != self ) {
+        return [_extendedDeclaration.properties arrayByAddingObjectsFromArray:_properties];
+    } else {
+        return _properties;
+    }
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
@@ -60,6 +76,15 @@
     }
     if( matchingChains.count ) return [[ISSPropertyDeclarations alloc] initWithSelectorChains:matchingChains andProperties:self.properties];
     else return nil;
+}
+
+- (BOOL) containsSelectorChain:(ISSSelectorChain*)selectorChain {
+    for(ISSSelectorChain* ruleSetSelectorChain in _selectorChains) {
+        if ( [ruleSetSelectorChain isEqual:selectorChain] ) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (NSUInteger) specificity {

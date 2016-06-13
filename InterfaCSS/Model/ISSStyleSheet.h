@@ -13,6 +13,8 @@
 @protocol ISSStyleSheetParser;
 @class ISSUIElementDetails;
 @class ISSStylingContext;
+@class ISSPropertyDeclarations;
+@class ISSSelectorChain;
 
 
 typedef BOOL (^ISSStyleSheetScopeMatcher)(ISSUIElementDetails* elementDetails);
@@ -69,6 +71,8 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 - (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable scope:(ISSStyleSheetScope*)scope;
 
 - (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+
+- (ISSPropertyDeclarations*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain;
 
 - (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force;
 

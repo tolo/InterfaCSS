@@ -126,6 +126,18 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 @end
 
 
+@interface ISSDeclarationExtension: NSObject
+@property (nonatomic, strong, readonly) ISSSelectorChain* extendedDeclaration;
+@end
+@implementation ISSDeclarationExtension
++ (instancetype) extensionOfDeclaration:(ISSSelectorChain*)extendedDeclaration {
+    ISSDeclarationExtension* extensionOfDeclaration = [[ISSDeclarationExtension alloc] init];
+    extensionOfDeclaration->_extendedDeclaration = extendedDeclaration;
+    return extensionOfDeclaration;
+}
+@end
+
+
 /**
  * ISSDefaultStyleSheetParser
  */
@@ -716,7 +728,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
 #pragma mark - Property parsers setup
 
-- (ISSParser*) propertyParsers:(ISSParser*)selectorsChainsDeclarations commentParser:(ISSParser*)commentParser {
+- (ISSParser*) propertyParsers:(ISSParser*)selectorsChainsDeclarations commentParser:(ISSParser*)commentParser selectorChainParser:(ISSParser*)selectorChainParser {
     __weak ISSDefaultStyleSheetParser* blockSelf = self;
 
     propertyNameToProperty = [[NSMutableDictionary alloc] init];
@@ -1224,15 +1236,23 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         ISSPropertyDeclaration* declaration = [blockSelf transformPropertyPair:value];
         // If this declaration contains a reference to a nested element - return a nested ruleset declaration containing the property declaration, instead of the property declaration itself
         if( declaration.nestedElementKeyPath ) {
-            ISSSelector* selector = [ISSNestedElementSelector selectorWithNestedElementKeyPath:declaration.nestedElementKeyPath];
-            ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[selector]];
+            ISSSelector* nestedElementSelector = [ISSNestedElementSelector selectorWithNestedElementKeyPath:declaration.nestedElementKeyPath];
+            ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[nestedElementSelector]];
             ISSSelectorChainsDeclaration* chains = [ISSSelectorChainsDeclaration selectorChainsWithArray:[@[chain] mutableCopy]];
-            chains.properties = [@[declaration]mutableCopy];
+            chains.properties = [@[declaration] mutableCopy];
             return chains;
         } else {
             return declaration;
         }
     } name:@"propertyPair"];
+
+
+    /** -- Extension/Inheritance -- **/
+    ISSParser* extendDeclarationParser = [[ISSParser sequential:@[[ISSParser stringEQIgnoringCase:@"@extend"], [ISSParser spaces], selectorChainParser, [ISSParser unichar:';' skipSpaces:YES]]] transform:^id(id value) {
+        ISSSelectorChain* selectorChain = elementOrNil(value, 2);
+        return [ISSDeclarationExtension extensionOfDeclaration:selectorChain];
+    } name:@"pseudoClassParameterParser"];
+
 
         
     // Create parser for unsupported nested declarations, to prevent those to interfere with current declarations
@@ -1247,7 +1267,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     ISSParserWrapper* nestedRulesetParserProxy = [[ISSParserWrapper alloc] init];
 
     // Property declarations
-    ISSParser* propertyParser = [ISSParser choice:@[commentParser, propertyPairParser, nestedRulesetParserProxy, unsupportedNestedRulesetParser, unrecognizedLine]];
+    ISSParser* propertyParser = [ISSParser choice:@[commentParser, propertyPairParser, nestedRulesetParserProxy, extendDeclarationParser, unsupportedNestedRulesetParser, unrecognizedLine]];
     propertyParser = [propertyParser manyActualValues];
     
     // Create parser for nested declarations
@@ -1496,7 +1516,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
         /** Properties **/
         transformedValueCache = [[NSMutableDictionary alloc] init];
-        ISSParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclarations commentParser:commentParser];
+        ISSParser* propertyDeclarations = [self propertyParsers:selectorsChainsDeclarations commentParser:commentParser selectorChainParser:selectorChain];
 
         
         /** Ruleset **/
@@ -1526,6 +1546,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     
     if( selectorChains.count ) {
         NSMutableArray* propertyDeclarations = [[NSMutableArray alloc] init];
+        ISSSelectorChain* extendedDeclarationSelectorChain = nil;
+
         for(id entry in properties) {
             ISSSelectorChainsDeclaration* selectorChainsDeclaration = [entry isKindOfClass:ISSSelectorChainsDeclaration.class] ? entry : nil;
 
@@ -1547,6 +1569,10 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
                 [nestedDeclarations addObject:@[selectorChainsDeclaration.properties, nestedSelectorChains]];
             }
+            // ISSDeclarationExtension
+            else if( [entry isKindOfClass:ISSDeclarationExtension.class] ) {
+                extendedDeclarationSelectorChain = ((ISSDeclarationExtension*)entry).extendedDeclaration;
+            }
             // ISSPropertyDeclaration
             else {
                 [propertyDeclarations addObject:entry];
@@ -1554,7 +1580,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         }
 
         // Add declaration
-        [declarations addObject:[[ISSPropertyDeclarations alloc] initWithSelectorChains:selectorChains andProperties:propertyDeclarations]];
+        [declarations addObject:[[ISSPropertyDeclarations alloc] initWithSelectorChains:selectorChains andProperties:propertyDeclarations extendedDeclarationSelectorChain:extendedDeclarationSelectorChain]];
 
         // Process nested declarations
         for(NSArray* declarationPair in nestedDeclarations) {
