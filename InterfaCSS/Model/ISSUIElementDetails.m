@@ -578,7 +578,9 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 }
 
 - (void) updatableValueUpdated:(NSNotification*)notification {
-    [[InterfaCSS sharedInstance] applyStyling:self.uiElement includeSubViews:NO force:YES];
+    if ( ![InterfaCSS sharedInstance].useManualStyling ) {
+        [[InterfaCSS sharedInstance] applyStyling:self.uiElement includeSubViews:NO force:YES];
+    }
 }
 
 - (id) visitExclusivelyWithScope:(const void*)scope visitorBlock:(ISSUIElementDetailsVisitorBlock)visitorBlock {

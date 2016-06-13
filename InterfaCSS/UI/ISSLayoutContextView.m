@@ -79,7 +79,9 @@
     ISSUIElementDetails* selfDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self];
     
     if( !didLayoutOnce ) { // Make sure styling is applied before proceeding (this is not just important for ISSLayout, but for the use of relative ISSRectValue objects as well)
-        [self applyStylingISS];
+        if ( ![InterfaCSS sharedInstance].useManualStyling ) {
+            [self applyStylingISS];
+        }
         didLayoutOnce = YES;
     }
 

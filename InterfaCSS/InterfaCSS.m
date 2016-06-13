@@ -156,7 +156,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 #if TARGET_OS_TV == 0
 - (void) deviceOrientationChanged:(NSNotification*)notification {
     UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
-    if( UIDeviceOrientationIsValidInterfaceOrientation(orientation) ) {
+    if( !self.useManualStyling && UIDeviceOrientationIsValidInterfaceOrientation(orientation) ) {
         ISSLogTrace(@"Triggering re-styling due to device orientation change");
 
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(resetDeviceIsRotatingFlag) object:nil];
@@ -470,7 +470,9 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) initViewHierarchyForWindow:(UIWindow*)window {
     if( window && ![self.initializedWindows objectForKey:window] ) {
         [self.initializedWindows setObject:@(YES) forKey:window];
-        [self scheduleApplyStyling:window animated:NO]; // Delay styling a bit, since deviceOrientationChanged will probably be called directly after this
+        if ( !self.useManualStyling ) {
+            [self scheduleApplyStyling:window animated:NO]; // Delay styling a bit, since deviceOrientationChanged will probably be called directly after this
+        }
     }
 }
 
@@ -722,7 +724,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) setStylingEnabled:(BOOL)enabled forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
     uiElementDetails.stylingDisabled = !enabled;
-    if( enabled ) [self scheduleApplyStyling:uiElement animated:NO];
+    if( enabled && !self.useManualStyling ) [self scheduleApplyStyling:uiElement animated:NO];
 }
 
 - (BOOL) isStylingEnabledForUIElement:(id)uiElement {

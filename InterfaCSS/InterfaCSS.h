@@ -105,6 +105,11 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
  */
 @property (nonatomic) BOOL useSelectorSpecificity;
 
+/**
+ * Enables or disables manual styling. If this property is set to `YES`, no calls to `applyStyling` etc will be scheduled automatically by InterfaCSS. Default value of this property is `NO`.
+ */
+@property (nonatomic) BOOL useManualStyling;
+
 
 #pragma mark - Properties
 

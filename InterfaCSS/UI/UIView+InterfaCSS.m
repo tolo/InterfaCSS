@@ -13,6 +13,8 @@
 #import "ISSUIElementDetails.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 
+#define ISS [InterfaCSS interfaCSS]
+
 
 @implementation UIView (InterfaCSS)
 
@@ -62,7 +64,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (NSSet*) styleClassesISS {
-    return [[InterfaCSS interfaCSS] styleClassesForUIElement:self];
+    return [ISS styleClassesForUIElement:self];
 }
 
 - (void) setStyleClassesISS:(NSSet*)classes {
@@ -70,71 +72,71 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockISS {
-    return [[InterfaCSS interfaCSS] willApplyStylingBlockForUIElement:self];
+    return [ISS willApplyStylingBlockForUIElement:self];
 }
 
 - (void) setWillApplyStylingBlockISS:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock {
-    [[InterfaCSS interfaCSS] setWillApplyStylingBlock:willApplyStylingBlock forUIElement:self];
+    [ISS setWillApplyStylingBlock:willApplyStylingBlock forUIElement:self];
 }
 
 - (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockISS {
-    return [[InterfaCSS interfaCSS] didApplyStylingBlockForUIElement:self];
+    return [ISS didApplyStylingBlockForUIElement:self];
 }
 
 - (void) setDidApplyStylingBlockISS:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock {
-    [[InterfaCSS interfaCSS] setDidApplyStylingBlock:didApplyStylingBlock forUIElement:self];
+    [ISS setDidApplyStylingBlock:didApplyStylingBlock forUIElement:self];
 }
 
 - (void) setCustomStylingIdentityISS:(NSString*)customStylingIdentity {
-    [[InterfaCSS interfaCSS] setCustomStylingIdentity:customStylingIdentity forUIElement:self];
+    [ISS setCustomStylingIdentity:customStylingIdentity forUIElement:self];
 }
 
 - (NSString*) customStylingIdentityISS {
-    return [[InterfaCSS interfaCSS] customStylingIdentityForUIElement:self];
+    return [ISS customStylingIdentityForUIElement:self];
 }
 
 - (NSString*) elementIdISS {
-    return [[InterfaCSS interfaCSS] elementIdForUIElement:self];
+    return [ISS elementIdForUIElement:self];
 }
 
 - (void) setElementIdISS:(NSString*)elementIdISS {
-    [[InterfaCSS interfaCSS] setElementId:elementIdISS forUIElement:self];
+    [ISS setElementId:elementIdISS forUIElement:self];
 }
 
 - (ISSLayout*) layoutISS {
-    return [[InterfaCSS interfaCSS] detailsForUIElement:self].layout;
+    return [ISS detailsForUIElement:self].layout;
 }
 
 - (void) setLayoutISS:(ISSLayout*)layoutISS {
-    [[InterfaCSS interfaCSS] detailsForUIElement:self].layout = layoutISS;
+    [ISS detailsForUIElement:self].layout = layoutISS;
 }
 
 
 #pragma mark - Methods
 
 - (void) scheduleApplyStylingISS {
-    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:NO];
+    [ISS scheduleApplyStyling:self animated:NO];
 }
 
 - (void) scheduleApplyStylingIfNeededISS {
-    [[InterfaCSS interfaCSS] scheduleApplyStylingIfNeeded:self animated:NO force:NO];
+    [ISS scheduleApplyStylingIfNeeded:self animated:NO force:NO];
 }
 
 - (void) cancelScheduledApplyStylingISS {
-    [[InterfaCSS interfaCSS] cancelScheduledApplyStyling:self];
+    [ISS cancelScheduledApplyStyling:self];
 }
 
 - (void) scheduleApplyStylingISS:(BOOL)animated {
-    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:animated];
+    [ISS scheduleApplyStyling:self animated:animated];
 }
 
 - (void) scheduleApplyStylingWithAnimationISS {
-    [[InterfaCSS interfaCSS] scheduleApplyStyling:self animated:YES];
+    [ISS scheduleApplyStyling:self animated:YES];
 }
 
 - (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated {
-    [[InterfaCSS interfaCSS] setStyleClasses:classes forUIElement:self];
-    [self scheduleApplyStylingISS:animated];
+    [ISS setStyleClasses:classes forUIElement:self];
+    if ( !ISS.useManualStyling ) [self scheduleApplyStylingISS:animated];
 }
 
 - (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
@@ -142,11 +144,11 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (BOOL) hasStyleClassISS:(NSString*)styleClass {
-    return [[InterfaCSS interfaCSS] uiElement:self hasStyleClass:styleClass];
+    return [ISS uiElement:self hasStyleClass:styleClass];
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass {
-    return [self addStyleClassISS:styleClass animated:NO scheduleStyling:YES];
+    return [self addStyleClassISS:styleClass animated:NO scheduleStyling:!ISS.useManualStyling];
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling {
@@ -154,12 +156,12 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
-    return [self addStyleClassISS:styleClass animated:animated scheduleStyling:YES];
+    return [self addStyleClassISS:styleClass animated:animated scheduleStyling:!ISS.useManualStyling];
 }
 
 - (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( ![self hasStyleClassISS:styleClass] ) {
-        [[InterfaCSS interfaCSS] addStyleClass:styleClass forUIElement:self];
+        [ISS addStyleClass:styleClass forUIElement:self];
         if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
         return YES;
     }
@@ -167,7 +169,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass {
-    return [self removeStyleClassISS:styleClass animated:NO scheduleStyling:YES];
+    return [self removeStyleClassISS:styleClass animated:NO scheduleStyling:!ISS.useManualStyling];
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass scheduleStyling:(BOOL)scheduleStyling {
@@ -175,12 +177,12 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
-    return [self removeStyleClassISS:styleClass animated:animated scheduleStyling:YES];
+    return [self removeStyleClassISS:styleClass animated:animated scheduleStyling:!ISS.useManualStyling];
 }
 
 - (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( [self hasStyleClassISS:styleClass] ) {
-        [[InterfaCSS interfaCSS] removeStyleClass:styleClass forUIElement:self];
+        [ISS removeStyleClass:styleClass forUIElement:self];
         if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
         return YES;
     }
@@ -188,7 +190,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (void) applyStylingISS:(BOOL)force includeSubViews:(BOOL)includeSubViews {
-    [[InterfaCSS interfaCSS] applyStyling:self includeSubViews:includeSubViews force:force];
+    [ISS applyStyling:self includeSubViews:includeSubViews force:force];
 }
 
 - (void) applyStylingISS:(BOOL)force {
@@ -200,7 +202,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (void) applyStylingIfScheduledISS {
-    [[InterfaCSS interfaCSS] applyStylingIfScheduled:self];
+    [ISS applyStylingIfScheduled:self];
 }
 
 - (void) applyStylingOnceISS {
@@ -210,47 +212,47 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 }
 
 - (void) applyStylingWithAnimationISS {
-    [[InterfaCSS interfaCSS] applyStylingWithAnimation:self];
+    [ISS applyStylingWithAnimation:self];
 }
 
 - (void) disableStylingISS {
-    [[InterfaCSS interfaCSS] setStylingEnabled:NO forUIElement:self];
+    [ISS setStylingEnabled:NO forUIElement:self];
 }
 
 - (void) enableStylingISS {
-    [[InterfaCSS interfaCSS] setStylingEnabled:YES forUIElement:self];
+    [ISS setStylingEnabled:YES forUIElement:self];
 }
 
 - (BOOL) stylingEnabledISS {
-    return [[InterfaCSS interfaCSS] isStylingEnabledForUIElement:self];
+    return [ISS isStylingEnabledForUIElement:self];
 }
 
 - (BOOL) stylingAppliedISS {
-    return [[InterfaCSS interfaCSS] isStylingAppliedForUIElement:self];
+    return [ISS isStylingAppliedForUIElement:self];
 }
 
 - (void) clearCachedStylesISS {
-    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self];
+    [ISS clearCachedStylesForUIElement:self];
 }
 
 - (void) clearCachedStylesISS:(BOOL)includeSubViews {
-    [[InterfaCSS interfaCSS] clearCachedStylesForUIElement:self includeSubViews:includeSubViews];
+    [ISS clearCachedStylesForUIElement:self includeSubViews:includeSubViews];
 }
 
 - (void) disableStylingForPropertyISS:(NSString*)propertyName {
-    [[InterfaCSS interfaCSS] setStylingEnabled:NO forProperty:propertyName inUIElement:self];
+    [ISS setStylingEnabled:NO forProperty:propertyName inUIElement:self];
 }
 
 - (void) enableStylingForPropertyISS:(NSString*)propertyName {
-    [[InterfaCSS interfaCSS] setStylingEnabled:YES forProperty:propertyName inUIElement:self];
+    [ISS setStylingEnabled:YES forProperty:propertyName inUIElement:self];
 }
 
 - (BOOL) stylingEnabledForPropertyISS:(NSString*)propertyName {
-    return [[InterfaCSS interfaCSS] isStylingEnabledForProperty:propertyName inUIElement:self];
+    return [ISS isStylingEnabledForProperty:propertyName inUIElement:self];
 }
 
 - (id) subviewWithElementId:(NSString*)elementId {
-    return [[InterfaCSS interfaCSS] subviewWithElementId:elementId inView:self];
+    return [ISS subviewWithElementId:elementId inView:self];
 }
 
 @end

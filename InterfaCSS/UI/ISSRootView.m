@@ -53,17 +53,17 @@
     BOOL frameModified = !CGRectEqualToRect(self.frame, frame);
     [super setFrame:frame];
     _wrappedRootView.frame = self.bounds;
-    if( frameModified ) [self scheduleApplyStylingISS]; // Note: This is only really needed if element contains relative ISSRectValue/ISSPointValue
+    if( frameModified && ![InterfaCSS sharedInstance].useManualStyling ) [self scheduleApplyStylingISS]; // Note: This is only really needed if element contains relative ISSRectValue/ISSPointValue
 }
 
 - (void) didMoveToSuperview {
     [super didMoveToSuperview];
-    if( self.superview ) [self scheduleApplyStylingISS];
+    if( self.superview && ![InterfaCSS sharedInstance].useManualStyling ) [self scheduleApplyStylingISS];
 }
 
 - (void) didMoveToWindow {
     [super didMoveToWindow];
-    if( self.window ) [self applyStylingISS];
+    if( self.window && ![InterfaCSS sharedInstance].useManualStyling ) [self applyStylingISS];
 }
 
 @end
