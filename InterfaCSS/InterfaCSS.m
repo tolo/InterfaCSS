@@ -436,6 +436,10 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedInformationOnlyIfNeeded:(BOOL)clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:(BOOL)clearCachedStyleDeclarations {
+    if ( clearCachedInformationOnlyIfNeeded && !uiElementDetails.addedToViewHierarchy ) {
+        return; // Skip clearing of cached data if view hasn't been added to view hierarchy yet, and clearCachedInformationOnlyIfNeeded is YES
+    }
+
     [self clearCachedInformationForUIElementDetails:uiElementDetails clearCachedInformationOnlyIfNeeded:clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:clearCachedStyleDeclarations];
     
     if( includeSubViews ) {
@@ -639,7 +643,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         uiElementDetails.styleClasses = nil;
     }
 
-    [self clearCachedInformationForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
 }
 
 - (BOOL) uiElement:(id)uiElement hasStyleClass:(NSString*)styleClass {
@@ -655,7 +659,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     if( existingClasses ) newClasses = [newClasses setByAddingObjectsFromSet:existingClasses];
     uiElementDetails.styleClasses = newClasses;
 
-    [self clearCachedInformationForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
 }
 
 - (void) removeStyleClass:(NSString*)styleClass forUIElement:(id)uiElement {
@@ -670,7 +674,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         uiElementDetails.styleClasses = [existingClasses filteredSetUsingPredicate:predicate];
     }
 
-    [self clearCachedInformationForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
 }
 
 
@@ -678,7 +682,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) setElementId:(NSString*)elementId forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    [self clearCachedInformationForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
     uiElementDetails.elementId = elementId;
 }
 
@@ -707,7 +711,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement {
     ISSUIElementDetails* uiElementDetails = [self detailsForUIElement:uiElement];
-    [self clearCachedInformationForUIElementDetails:uiElementDetails];
+    [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
     uiElementDetails.customElementStyleIdentity = customStylingIdentity;
 }
 
