@@ -1341,7 +1341,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         /** Selectors **/
         // Basic selector fragment parsers:
         ISSParser* typeName = [ISSParser choice:@[identifier, [ISSParser unichar:'*']]];
-        ISSParser* classNameSelector = [dot keepRight:identifier];
+        ISSParser* classNamesSelector = [[dot keepRight:identifier] many1];
         ISSParser* elementIdSelector = [hash keepRight:identifier];
 
         // Pseudo class parsers:
@@ -1419,8 +1419,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         /* Actual selectors parsers: */
 
         // type #id .class [:pseudo]
-        ISSParser* typeSelector1 = [[ISSParser sequential:@[ typeName, elementIdSelector, classNameSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) elementId:elementOrNil(value, 1) styleClass:elementOrNil(value, 2) pseudoClasses:elementOrNil(value, 3)];
+        ISSParser* typeSelector1 = [[ISSParser sequential:@[ typeName, elementIdSelector, classNamesSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) elementId:elementOrNil(value, 1) styleClasses:elementOrNil(value, 2) pseudoClasses:elementOrNil(value, 3)];
             return selector ?: [NSNull null];
         } name:@"typeSelector1"];
 
@@ -1431,8 +1431,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         } name:@"typeSelector2"];
 
         // type .class [:pseudo]
-        ISSParser* typeSelector3 = [[ISSParser sequential:@[ typeName, classNameSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) styleClass:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
+        ISSParser* typeSelector3 = [[ISSParser sequential:@[ typeName, classNamesSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:elementOrNil(value, 0) styleClasses:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
             return selector ?: [NSNull null];
         } name:@"typeSelector3"];
 
@@ -1443,8 +1443,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         } name:@"typeSelector4"];
 
         // #id .class [:pseudo]
-        ISSParser* elementSelector1 = [[ISSParser sequential:@[ elementIdSelector, classNameSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:nil elementId:elementOrNil(value, 0) styleClass:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
+        ISSParser* elementSelector1 = [[ISSParser sequential:@[ elementIdSelector, classNamesSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:nil elementId:elementOrNil(value, 0) styleClasses:elementOrNil(value, 1) pseudoClasses:elementOrNil(value, 2)];
             return selector ?: [NSNull null];
         } name:@"elementSelector1"];
 
@@ -1455,8 +1455,8 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         } name:@"elementSelector2"];
 
         // .class [:pseudo]
-        ISSParser* classSelector = [[ISSParser sequential:@[ classNameSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
-            ISSSelector* selector = [ISSSelector selectorWithType:nil styleClass:elementOrNil(value, 0) pseudoClasses:elementOrNil(value, 1)];
+        ISSParser* classSelector = [[ISSParser sequential:@[ classNamesSelector, [ISSParser optional:pseudoClassSelector] ]] transform:^id(id value) {
+            ISSSelector* selector = [ISSSelector selectorWithType:nil styleClasses:elementOrNil(value, 0) pseudoClasses:elementOrNil(value, 1)];
             return selector ?: [NSNull null];
         } name:@"classSelector"];
 

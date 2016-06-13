@@ -23,13 +23,19 @@
 
 #pragma mark - ISSelector interface
 
-- (instancetype) initWithType:(Class)type wildcardType:(BOOL)wildcardType elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
+- (instancetype) initWithType:(Class)type wildcardType:(BOOL)wildcardType elementId:(NSString*)elementId styleClasses:(NSArray*)styleClasses pseudoClasses:(NSArray*)pseudoClasses {
     self = [super init];
     if (self) {
         _wildcardType = wildcardType;
         _type = type;
         _elementId = [elementId lowercaseString];
-        _styleClass = [styleClass lowercaseString];
+        if( styleClasses ) {
+            NSMutableArray* lcStyleClasses = [NSMutableArray array];
+            for(NSString* styleClass in styleClasses) {
+                [lcStyleClasses addObject:[styleClass lowercaseString]];
+            }
+            _styleClasses = lcStyleClasses;
+        } else _styleClasses = nil;
         if( pseudoClasses.count == 0 ) pseudoClasses = nil;
         _pseudoClasses = pseudoClasses;
     }
@@ -44,7 +50,19 @@
     return [self selectorWithType:type elementId:nil styleClass:styleClass pseudoClasses:pseudoClasses];
 }
 
++ (instancetype) selectorWithType:(NSString*)type styleClasses:(NSArray*)styleClasses pseudoClasses:(NSArray*)pseudoClasses {
+    return [self selectorWithType:type elementId:nil styleClasses:styleClasses pseudoClasses:pseudoClasses];
+}
+
 + (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId styleClass:(NSString*)styleClass pseudoClasses:(NSArray*)pseudoClasses {
+    if( styleClass ) {
+        return [self selectorWithType:type elementId:elementId styleClasses:@[styleClass] pseudoClasses:pseudoClasses];
+    } else {
+        return [self selectorWithType:type elementId:elementId styleClasses:nil pseudoClasses:pseudoClasses];
+    }
+}
+
++ (instancetype) selectorWithType:(NSString*)type elementId:(NSString*)elementId styleClasses:(NSArray*)styleClasses pseudoClasses:(NSArray*)pseudoClasses {
     Class typeClass = nil;
     BOOL wildcardType = NO;
 
@@ -56,12 +74,12 @@
         }
     }
 
-    if( typeClass || wildcardType || elementId || styleClass ) {
-        return [[self alloc] initWithType:typeClass wildcardType:wildcardType elementId:elementId styleClass:styleClass pseudoClasses:pseudoClasses];
+    if( typeClass || wildcardType || elementId || styleClasses.count ) {
+        return [[self alloc] initWithType:typeClass wildcardType:wildcardType elementId:elementId styleClasses:styleClasses pseudoClasses:pseudoClasses];
     } else if( [type iss_hasData] ) {
         if( [InterfaCSS interfaCSS].useLenientSelectorParsing ) {
             ISSLogWarning(@"Unrecognized type: '%@' - using type as style class instead", type);
-            return [[self alloc] initWithType:nil wildcardType:NO elementId:nil styleClass:type pseudoClasses:pseudoClasses];
+            return [[self alloc] initWithType:nil wildcardType:NO elementId:nil styleClasses:@[type] pseudoClasses:pseudoClasses];
         } else {
             ISSLogWarning(@"Unrecognized type: '%@' - Have you perhaps forgotten to register a valid type selector class?", type);
         }
@@ -71,8 +89,12 @@
     return nil;
 }
 
+- (NSString*) styleClass {
+    return [self.styleClasses firstObject];
+}
+
 - (instancetype) copyWithZone:(NSZone*)zone {
-    return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType elementId:self.elementId styleClass:self.styleClass pseudoClasses:self.pseudoClasses];
+    return [[(id)self.class allocWithZone:zone] initWithType:_type wildcardType:_wildcardType elementId:self.elementId styleClasses:self.styleClasses pseudoClasses:self.pseudoClasses];
 }
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
@@ -87,12 +109,15 @@
         match = [elementDetails.elementId iss_isEqualIgnoreCase:self.elementId];
     }
     
-    // STYLE CLASS
-    if( match && self.styleClass ) {
-        match = [elementDetails.styleClasses containsObject:self.styleClass];
+    // STYLE CLASSES
+    if( match && self.styleClasses ) {
+        for(NSString* styleClass in self.styleClasses) {
+            match = [elementDetails.styleClasses containsObject:styleClass];
+            if( !match ) break;
+        }
     }
 
-    // PSEUDO CLASS
+    // PSEUDO CLASSES
     if( !stylingContext.ignorePseudoClasses && match && self.pseudoClasses.count ) {
         for(ISSPseudoClass* pseudoClass in self.pseudoClasses) {
             match = [pseudoClass matchesElement:elementDetails];
@@ -106,7 +131,7 @@
 - (NSUInteger) specificity {
     NSUInteger specificity = 0;
     if( self.elementId ) specificity += 100;
-    if( self.styleClass ) specificity += 10;
+    if( self.styleClasses.count ) specificity += 10 * self.styleClasses.count;
     if( self.pseudoClasses.count ) specificity += 10 * self.pseudoClasses.count;
     if( self.type ) specificity += 1;
     
@@ -125,8 +150,10 @@
     }
 
     NSString* classString = @"";
-    if( _styleClass ) {
-        classString = [NSString stringWithFormat:@".%@", _styleClass];
+    if( self.styleClasses.count > 0 ) {
+        for(NSString* styleClass in self.styleClasses) {
+            classString = [classString stringByAppendingFormat:@".%@", styleClass];
+        }
     }
 
     NSString* pseudoClassSuffix = @"";
@@ -151,13 +178,13 @@
     else if ( [object isKindOfClass:ISSSelector.class] ) {
         ISSSelector* other = (ISSSelector*)object;
         return _wildcardType == other->_wildcardType && self.type == other.type &&
-            [NSString iss_string:self.styleClass isEqualToString:other.styleClass] &&
+            self.styleClasses == other.styleClasses ? YES : [self.styleClasses isEqual:other.styleClasses] &&
             self.pseudoClasses == other.pseudoClasses ? YES : [self.pseudoClasses isEqual:other.pseudoClasses];
     } else return NO;
 }
 
 - (NSUInteger) hash {
-    return 31u*31u*31u * [self.type hash] + 31u*31u*[self.styleClass hash] + 31*[self.elementId hash] + [self.pseudoClasses hash] + (_wildcardType ? 1 : 0);
+    return 31u*31u*31u * [self.type hash] + 31u*31u*[self.styleClasses hash] + 31*[self.elementId hash] + [self.pseudoClasses hash] + (_wildcardType ? 1 : 0);
 }
 
 @end
