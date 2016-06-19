@@ -263,3 +263,13 @@ CustomViewController > UIView {
 #elementIdAndClassTest.someClass {
     alpha: 0.75;
 }
+
+
+.styleInheritance_baseClass {
+    alpha: 0.5;
+}
+
+.styleInheritance_subClass {
+    @extend .styleInheritance_baseClass;
+    contentScaleFactor: 10;
+}

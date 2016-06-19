@@ -196,8 +196,9 @@ static ISSDefaultStyleSheetTestParser* defaultParser;
 
 - (void) testStylesheetStructure {
     NSArray* result = [self parseStyleSheet:@"styleSheetStructure"];
-    NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @"uilabel#identity.class1", @"#identity.class1", @".class1",
-                                                                            @"uiview .class1 .class2", @"uilabel, uilabel.class1, .class1, uiview .class1 .class2",
+    NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @"uilabel#identity.class1", @"uilabel#identity.class1.class2", @"#identity.class1", @".class1", @".class1.class2",
+                                                                            @"uiview .class1 .class2", @"uiview .class1.class2",
+                                                                            @"uilabel, uilabel.class1, .class1, uiview .class1 .class2", @"uilabel, uilabel.class1.class2, .class1, uiview .class1.class2 .class3",
                                                                             @"uiview > .class1 + .class2 ~ .class3", @"uiview", @"uiview .classn1", @"uiview .classn1 .classn2",
                                                                             @"uiview:onlychild", @"uiview:minosversion(8.4)", @"uiview#identifier.class1:onlychild", @"uiview:nthchild(2n+1)", @"uiview uilabel:firstoftype", @"uiview.classx", @"uiview.classx uilabel:lastoftype", @"uiview:pad:landscape", @"uiview:portrait:phone",
                                                                             @"* uiview", @"* uiview *", @"uiview *", @"uiview * uiview"]];
@@ -222,7 +223,7 @@ static ISSDefaultStyleSheetTestParser* defaultParser;
         }
     }
     
-    XCTAssertEqual((NSUInteger)0, expectedSelectors.count, @"Not all selectors were found");
+    XCTAssertEqual((NSUInteger)0, expectedSelectors.count, @"Not all selectors were found (expectedSelectors left: %@)", expectedSelectors);
 }
 
 

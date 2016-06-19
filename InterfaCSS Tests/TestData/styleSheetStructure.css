@@ -16,6 +16,10 @@ uilabel#identity.class1 {
     alpha: 0.666;
 }
 
+uilabel#identity.class1.class2 {
+    alpha: 0.666;
+}
+
 // elementId+class selector
 #identity.class1 {
     alpha: 0.666;
@@ -26,8 +30,17 @@ uilabel#identity.class1 {
     alpha: 0.666;
 }
 
+// Multi-class selector
+.class1.class2 {
+    alpha: 0.666;
+}
+
 // Descendant selector chain
 uiview .class1 .class2 {
+    alpha: 0.666;
+}
+
+uiview .class1.class2 {
     alpha: 0.666;
 }
 
@@ -38,6 +51,10 @@ uiview > .class1 + .class2 ~ .class3 {
 
 // Multiple selector (chains)
 uilabel, uilabel.class1, .class1, uiview .class1 .class2 {
+    alpha: 0.666;
+}
+
+uilabel, uilabel.class1.class2, .class1, uiview .class1.class2 .class3 {
     alpha: 0.666;
 }
 

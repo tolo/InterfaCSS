@@ -815,7 +815,6 @@
     childView.styleClassISS = @"parentSwitcher_childElement";
     [childView applyStylingISS];
     
-    
     ISSAssertEqualFloats(0.5, childView.alpha);
     
     UIView* parentView = [[UIView alloc] init];
@@ -839,6 +838,15 @@
     [view applyStylingISS];
     
     ISSAssertEqualFloats(0.5, view.alpha);
+}
+
+- (void) testStyleInheritance {
+    UIView* view = [[UIView alloc] init];
+    view.styleClassISS = @"styleInheritance_subClass";
+    [view applyStylingISS];
+    
+    ISSAssertEqualFloats(0.5, view.alpha);
+    ISSAssertEqualFloats(10.0, view.contentScaleFactor);
 }
 
 @end

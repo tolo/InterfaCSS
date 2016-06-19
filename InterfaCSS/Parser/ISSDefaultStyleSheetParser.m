@@ -1246,10 +1246,13 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         }
     } name:@"propertyPair"];
 
-
+    
+    ISSParser* optional_s = [ISSParser optional:[ISSParser unichar:'s']];
+    ISSParser* optionalColon = [ISSParser optional:[ISSParser sequential:@[[ISSParser optional: [ISSParser spaces]], [ISSParser unichar:':']]]];
+    
     /** -- Extension/Inheritance -- **/
-    ISSParser* extendDeclarationParser = [[ISSParser sequential:@[[ISSParser stringEQIgnoringCase:@"@extend"], [ISSParser spaces], selectorChainParser, [ISSParser unichar:';' skipSpaces:YES]]] transform:^id(id value) {
-        ISSSelectorChain* selectorChain = elementOrNil(value, 2);
+    ISSParser* extendDeclarationParser = [[ISSParser sequential:@[[ISSParser stringEQIgnoringCase:@"@extend"], optional_s, optionalColon, [ISSParser spaces], selectorChainParser, [ISSParser unichar:';' skipSpaces:YES]]] transform:^id(id value) {
+        ISSSelectorChain* selectorChain = elementOrNil(value, 4);
         return [ISSDeclarationExtension extensionOfDeclaration:selectorChain];
     } name:@"pseudoClassParameterParser"];
 

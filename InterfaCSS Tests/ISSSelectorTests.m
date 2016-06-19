@@ -88,6 +88,28 @@
 
 #pragma mark - Tests
 
+- (void) testMultiClassSelector {
+    ISSSelector* singleClassSelector = [ISSSelector selectorWithType:nil styleClass:@"class1" pseudoClasses:nil];
+    ISSSelector* multiClassSelector = [ISSSelector selectorWithType:nil styleClasses:@[@"class1", @"class2"] pseudoClasses:nil];
+    
+    UIView* view = [[UIView alloc] init];
+    view.styleClassISS = @"class1";
+    ISSUIElementDetails* viewDetails = [[InterfaCSS interfaCSS] detailsForUIElement:view];
+    
+    XCTAssertTrue([singleClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Single class selector must match element with style class!");
+    XCTAssertFalse([multiClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Multi class selector must NOT match element with single class!");
+    
+    [view addStyleClassISS:@"anotherClass"];
+    
+    XCTAssertTrue([singleClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Single class selector must match element with style class!");
+    XCTAssertFalse([multiClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Multi class selector must NOT match element with only partial match!");
+    
+    [view addStyleClassISS:@"class2"];
+    
+    XCTAssertTrue([singleClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Single class selector must match element with style class!");
+    XCTAssertTrue([multiClassSelector matchesElement:viewDetails stylingContext:[[ISSStylingContext alloc] init]], @"Multi class selector must match element with multiple classes!");
+}
+
 
 - (void) testDescendantButNotChild {
     UIView* inbetweenView = [[UIView alloc] init];
