@@ -51,6 +51,7 @@ typedef id (^ISSUIElementDetailsVisitorBlock)(ISSUIElementDetails* elementDetail
 
 @property (nonatomic, readonly) BOOL addedToViewHierarchy;
 @property (nonatomic, readonly) BOOL stylesCacheable;
+@property (nonatomic) BOOL cachedStylingInformationDirty;
 
 @property (nonatomic, strong, readonly) NSString* elementStyleIdentityPath;
 @property (nonatomic, readonly) BOOL ancestorHasElementId;

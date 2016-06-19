@@ -41,7 +41,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 @property (nonatomic, weak, readwrite) UIView* parentView;
 @property (nonatomic, weak, readwrite) id parentElement;
 
-@property (nonatomic) BOOL hasChangedParent;
+//@property (nonatomic) BOOL hasChangedParent;
 
 @property (nonatomic, strong, readwrite) NSString* elementStyleIdentityPath;
 @property (nonatomic, strong) NSString* elementStyleIdentity;
@@ -275,25 +275,20 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
             _parentElement = ((UIViewController*)self.uiElement).view.superview; // Use the super view of the view controller root view
         }
         if( _parentElement ) {
-            self.hasChangedParent = YES;
+            _cachedStylingInformationDirty = YES;
         }
     }
     return _parentElement;
 }
 
 - (BOOL) checkForUpdatedParentElement {
-    BOOL didChangeParent = self.hasChangedParent;
-    if( !didChangeParent ) {
-        if( self.view && self.view.superview != self.parentView ) { // Check for updated superview
-            didChangeParent = YES;
-            _parentElement = nil; // Reset parent element to make sure it's re-evaluated
-        }
+    BOOL didChangeParent = NO;
+    if( self.view && self.view.superview != self.parentView ) { // Check for updated superview
+        _parentElement = nil; // Reset parent element to make sure it's re-evaluated
+        didChangeParent = _cachedStylingInformationDirty = YES;
     }
     
-    if( didChangeParent ) {
-        [self parentElement]; // Update parent element...
-        self.hasChangedParent = NO; //...and finally, reset the hasChangedParent flag since it may have been set again by [self parentElement]...
-    }
+    [self parentElement]; // Update parent element, if needed...
     
     return didChangeParent;
 }
@@ -336,16 +331,19 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 - (void) setElementId:(NSString*)elementId {
     _elementId = elementId;
     _elementStyleIdentityPath = _elementStyleIdentity = nil; // Reset style identity to force refresh
+    _cachedStylingInformationDirty = YES;
 }
 
 - (void) setStyleClasses:(NSSet*)styleClasses {
     _styleClasses = styleClasses;
     _elementStyleIdentityPath = _elementStyleIdentity = nil; // Reset style identity to force refresh
+    _cachedStylingInformationDirty = YES;
 }
 
 - (void) setCustomElementStyleIdentity:(NSString*)customElementStyleIdentity {
     _customElementStyleIdentity = customElementStyleIdentity;
     _elementStyleIdentityPath = _elementStyleIdentity = nil; // Reset style identity to force refresh
+    _cachedStylingInformationDirty = YES;
 }
 
 - (NSString*) elementStyleIdentity {

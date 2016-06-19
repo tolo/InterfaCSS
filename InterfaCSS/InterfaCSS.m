@@ -425,14 +425,13 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     
     // If styling information for element is fully resolved, and if clearCachedStylesOnlyIfNeeded is YES - skip reset of cached styles, and...
     if( clearCachedInformationOnlyIfNeeded && uiElementDetails.stylesFullyResolved ) {
-        ISSLogTrace(@"Partially clearing cached information for '%@'", uiElementDetails);
-        [uiElementDetails resetCachedData:NO]; // ...only reset information related to styling and the position of the element in the view hierarchy
+        ISSLogTrace(@"Clearing cached information for '%@' (excluding cached styles)", uiElementDetails);
     } else {
         ISSLogTrace(@"Clearing cached information for '%@'", uiElementDetails);
         // Only clear actual cached style declarations if clearCachedStyles is YES (since there is no need to clear this information in normal cases)
         if( clearCachedStyleDeclarations ) [self.cachedStyleDeclarationsForElements removeObjectForKey:uiElementDetails.elementStyleIdentityPath];
-        [uiElementDetails resetCachedData];
     }
+    [uiElementDetails resetCachedData:NO];
 }
 
 - (void) clearCachedInformationForUIElementDetails:(ISSUIElementDetails*)uiElementDetails includeSubViews:(BOOL)includeSubViews clearCachedInformationOnlyIfNeeded:(BOOL)clearCachedInformationOnlyIfNeeded clearCachedStyleDeclarations:(BOOL)clearCachedStyleDeclarations {
@@ -586,11 +585,12 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) applyStylingInternal:(ISSUIElementDetailsInterfaCSS*)uiElementDetails includeSubViews:(BOOL)includeSubViews force:(BOOL)force {
     ISSLogTrace(@"Applying style to %@", uiElementDetails.uiElement);
     
-    // Reset cached styles if parent/superview has changed
-    if( [uiElementDetails checkForUpdatedParentElement] ) {
-        ISSLogTrace(@"Parent element of %@ has changed - resetting cached view hierarchy related information", uiElementDetails);
-        // Clear cached element information - but only if needed (i.e. not already fully resolved)
-        [self clearCachedInformationIfNeededForUIElementDetails:uiElementDetails];
+    [uiElementDetails checkForUpdatedParentElement]; // Reset cached styles if parent/superview has changed...
+    
+    if ( uiElementDetails.cachedStylingInformationDirty ) {
+        ISSLogTrace(@"Cached styling information for element of %@ dirty - resetting cached styling information", uiElementDetails);
+        [self clearCachedInformationForUIElementDetails:uiElementDetails];
+        uiElementDetails.cachedStylingInformationDirty = NO;
     }
 
     [self styleUIElement:uiElementDetails force:force];
