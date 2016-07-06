@@ -502,7 +502,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
     ISSUIElementDetailsInterfaCSS* uiElementDetails = (ISSUIElementDetailsInterfaCSS*)[self detailsForUIElement:uiElement]; // Create details if not found, to ensure stylingScheduled is set correctly
     if( uiElementDetails.stylingAppliedAndDisabled || uiElementDetails.stylingScheduled ) return;
     
-    if( deviceIsRotating ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
+    if( deviceIsRotating && uiElementDetails.view.window ) { // If device is rotating, we need to apply styles directly, to ensure they are performed within the animation used during the rotation
         [self applyStyling:uiElement includeSubViews:YES];
     } else {
         uiElementDetails.stylingScheduled = YES; // Flag reset in [applyStyling:includeSubViews:force:]
