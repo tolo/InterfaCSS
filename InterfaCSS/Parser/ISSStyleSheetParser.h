@@ -8,6 +8,9 @@
 
 #import "ISSPropertyDefinition.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @class ISSStyleSheet;
 @class ISSPropertyDefinition;
 
@@ -19,26 +22,29 @@
 /**
  * Parses the specified stylesheet data into an array of `ISSPropertyDeclarations` objects.
  */
-- (NSMutableArray*) parse:(NSString*)styleSheetData;
+- (nullable NSMutableArray*) parse:(NSString*)styleSheetData;
 
 /**
  * Transforms the specified value, using the specified propertyType. Any variable references in `value` will be replaced with their corresponding values.
  */
-- (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType;
+- (nullable id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType;
 
 /**
  * Transforms the specified value, using the specified propertyType. Optionally replaces variable references in `value` with the corresponding values.
  */
-- (id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType replaceVariableReferences:(BOOL)replaceVariableReferences;
+- (nullable id) transformValue:(NSString*)value asPropertyType:(ISSPropertyType)propertyType replaceVariableReferences:(BOOL)replaceVariableReferences;
 
 /**
  * Transforms the specified value, using the specified propertyDefinition. Any variable references in `value` will be replaced with their corresponding values.
  */
-- (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
+- (nullable id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
 
 /**
  * Transforms the specified value, using the specified propertyDefinition. Optionally replaces variable references in `value` with the corresponding values.
  */
-- (id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition replaceVariableReferences:(BOOL)replaceVariableReferences;
+- (nullable id) transformValue:(NSString*)value forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition replaceVariableReferences:(BOOL)replaceVariableReferences;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

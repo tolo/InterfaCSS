@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @interface ISSStylingContext : NSObject
 
 @property (nonatomic) BOOL ignorePseudoClasses;
@@ -17,3 +20,6 @@
 + (instancetype) contextIgnoringPseudoClasses;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

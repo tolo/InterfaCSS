@@ -9,6 +9,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 #define ISSParserSkipSpaceAndNewLines(input) while( i < input.length && [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[input characterAtIndex:i]] ) i++;
 
@@ -19,9 +21,9 @@ typedef struct ISSParserStatus {
 } ISSParserStatus;
 
 
-typedef id (^ISSParserBlock)(NSString* input, ISSParserStatus* status);
+typedef id _Nonnull (^ISSParserBlock)(NSString* input, ISSParserStatus* status);
 typedef BOOL (^ISSParserMatchCondition)(unichar c);
-typedef id (^ISSParserTransformerBlock)(id value);
+typedef id _Nonnull (^ISSParserTransformerBlock)(id value);
 
 
 /**
@@ -102,12 +104,12 @@ typedef id (^ISSParserTransformerBlock)(id value);
 
 + (ISSParser*) takeWhileInSet:(NSCharacterSet*)characterSet;
 + (ISSParser*) takeWhileInSet:(NSCharacterSet*)characterSet minCount:(NSUInteger)minCount;
-+ (ISSParser*) takeWhileInSet:(NSCharacterSet*)characterSet initialCharSet:(NSCharacterSet*)initialCharSet minCount:(NSUInteger)minCount;
++ (ISSParser*) takeWhileInSet:(NSCharacterSet*)characterSet initialCharSet:(nullable NSCharacterSet*)initialCharSet minCount:(NSUInteger)minCount;
 
 + (ISSParser*) takeUntilChar:(unichar)character;
 + (ISSParser*) takeUntilChar:(unichar)character andSkip:(BOOL)skip minCount:(NSUInteger)minCount;
 
-+ (ISSParser*) takeWhileCharMatches:(ISSParserMatchCondition)matcher initialCharMatcher:(ISSParserMatchCondition)initialCharMatcher minCount:(NSUInteger)minCount skipPastEndChar:(BOOL)skipPastEndChar name:(NSString*)name;
++ (ISSParser*) takeWhileCharMatches:(ISSParserMatchCondition)matcher initialCharMatcher:(nullable ISSParserMatchCondition)initialCharMatcher minCount:(NSUInteger)minCount skipPastEndChar:(BOOL)skipPastEndChar name:(NSString*)name;
 
 @end
 
@@ -115,3 +117,6 @@ typedef id (^ISSParserTransformerBlock)(id value);
 @interface ISSParserWrapper : ISSParser
 @property (nonatomic, strong) ISSParser* wrappedParser;
 @end
+
+
+NS_ASSUME_NONNULL_END

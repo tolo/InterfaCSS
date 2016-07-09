@@ -8,6 +8,12 @@
 
 #import "ISSStyleSheetParser.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @interface ISSDefaultStyleSheetParser : NSObject <ISSStyleSheetParser>
 
 @end
+
+
+NS_ASSUME_NONNULL_END

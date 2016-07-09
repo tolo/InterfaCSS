@@ -6,6 +6,8 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * Category that adds InterfaCSS integration to `UICollectionView`.
  */
@@ -34,3 +36,5 @@
 - (id) dequeueReusableSupplementaryPrototypeViewOfKindISS:(NSString*)elementKind withReuseIdentifier:(NSString*)prototypeName forIndexPath:(NSIndexPath*)indexPath;
 
 @end
+
+NS_ASSUME_NONNULL_END

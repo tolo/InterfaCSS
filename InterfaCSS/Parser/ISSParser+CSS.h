@@ -8,6 +8,9 @@
 
 #import "ISSParser.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @interface ISSParser (CSS)
 
 + (ISSParser*) iss_anythingButBasicControlChars:(NSUInteger)minCount;
@@ -30,7 +33,7 @@
 
 + (ISSParser*) iss_parameterStringWithPrefixes:(NSArray*)prefixes;
 
-+ (ISSParser*) iss_parameterStringWithPrefix:(NSString*)prefix;
++ (ISSParser*) iss_parameterStringWithPrefix:(nullable NSString*)prefix;
 
 + (ISSParser*) iss_parameterString;
 
@@ -47,3 +50,6 @@
 + (ISSParser*) iss_propertyPairParser:(BOOL)forVariableDefinition;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

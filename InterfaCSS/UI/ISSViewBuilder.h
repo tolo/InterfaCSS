@@ -40,7 +40,11 @@
 
 #endif
 
-typedef NSArray* (^SubViewBlock)();
+
+NS_ASSUME_NONNULL_BEGIN
+
+
+typedef NSArray* _Nonnull (^SubViewBlock)();
 
 /**
  * Factory class that enables building of view hierarchies in a concise and convenient way. Note that all the methods of this class support setting multiple
@@ -52,42 +56,42 @@ typedef NSArray* (^SubViewBlock)();
 
 
 /** Sets up the specified view by adding the specified style class(es) to it. */
-+ (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName;
++ (id) setupView:(UIView*)theView withStyleClass:(nullable NSString*)styleClassName;
 /** Sets up the specified view by assigning it the specified element id and adding the specified style class(es) to it. */
-+ (id) setupView:(UIView*)theView withId:(NSString*)elementId andStyleClass:(NSString*)styleClassName;
++ (id) setupView:(UIView*)theView withId:(nullable NSString*)elementId andStyleClass:(nullable NSString*)styleClassName;
 
 /** Sets up the specified view by adding the specified style class(es) and subviews, via a `SubViewBlock`. */
-+ (id) setupView:(UIView*)theView withStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock;
++ (id) setupView:(UIView*)theView withStyleClass:(nullable NSString*)styleClassName andSubViews:(nullable SubViewBlock)subViewBlock;
 /** Sets up the specified view by assigning it the specified element id adding the specified view class(es) and subviews, via a `SubViewBlock`. */
-+ (id) setupView:(UIView*)theView withId:(NSString*)elementId andStyleClass:(NSString*)styleClassName andSubViews:(SubViewBlock)subViewBlock;
++ (id) setupView:(UIView*)theView withId:(nullable NSString*)elementId andStyleClass:(nullable NSString*)styleClassName andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /** Creates a view of class ISSRootView, intended to serve as the root view of a view controller. */
-+ (ISSRootView*) rootViewWithStyle:(NSString*)styleClass;
++ (ISSRootView*) rootViewWithStyle:(nullable NSString*)styleClass;
 /** Creates a view of class ISSRootView, intended to serve as the root view of a view controller. */
-+ (ISSRootView*) rootViewWithId:(NSString*)elementId;
++ (ISSRootView*) rootViewWithId:(nullable NSString*)elementId;
 
 /** Creates a view of class ISSRootView, intended to serve as the root view of a view controller. Adds the subviews from the specified `SubViewBlock`. */
-+ (ISSRootView*) rootViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (ISSRootView*) rootViewWithStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 /** Creates a view of class ISSRootView, intended to serve as the root view of a view controller. Adds the subviews from the specified `SubViewBlock`. */
-+ (ISSRootView*) rootViewWithId:(NSString*)elementId andSubViews:(SubViewBlock)subViewBlock;
++ (ISSRootView*) rootViewWithId:(nullable NSString*)elementId andSubViews:(nullable SubViewBlock)subViewBlock;
 
 /**
  * Creates a view of class ISSRootView, intended to serve as the root view of a view controller. If `owner` is specified, this method will attempt to auto populate 
  * properties for any views with an element id, created via the `SubViewBlock`.
  */
-+ (ISSRootView*) rootViewWithStyle:(NSString*)styleClass withOwner:(id)owner andSubViews:(SubViewBlock)subViewBlock;
++ (ISSRootView*) rootViewWithStyle:(nullable NSString*)styleClass withOwner:(nullable id)owner andSubViews:(nullable SubViewBlock)subViewBlock;
 /**
  * Creates a view of class ISSRootView, intended to serve as the root view of a view controller. If `owner` is specified, this method will attempt to auto populate
  * properties for any views with an element id, created via the `SubViewBlock`.
  */
-+ (ISSRootView*) rootViewWithId:(NSString*)elementId withOwner:(id)owner andSubViews:(SubViewBlock)subViewBlock;
++ (ISSRootView*) rootViewWithId:(nullable NSString*)elementId withOwner:(nullable id)owner andSubViews:(nullable SubViewBlock)subViewBlock;
 
 /**
  * Creates a view of class ISSRootView, intended to serve as the root view of a view controller. If `owner` is specified, this method will attempt to auto populate
  * properties for any views with an element id, created via the `SubViewBlock`.
  */
-+ (ISSRootView*) rootViewWithId:(NSString*)elementId andStyleClass:(NSString*)styleClass withOwner:(id)owner andSubViews:(SubViewBlock)subViewBlock;
++ (ISSRootView*) rootViewWithId:(nullable NSString*)elementId andStyleClass:(nullable NSString*)styleClass withOwner:(nullable id)owner andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /**
@@ -124,16 +128,16 @@ typedef NSArray* (^SubViewBlock)();
 + (UIView*) viewWithId:(NSString*)elementId andSubViews:(SubViewBlock)subViewBlock;
 
 /** Builds a view of the specified implementation class and style class. */
-+ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass;
++ (UIView*) viewOfClass:(Class)clazz withStyle:(nullable NSString*)styleClass;
 /** Builds a view of the specified implementation class and element id. */
-+ (UIView*) viewOfClass:(Class)clazz withId:(NSString*)elementId;
++ (UIView*) viewOfClass:(Class)clazz withId:(nullable NSString*)elementId;
 /** Builds a view of the specified implementation class, element id and style class. */
-+ (UIView*) viewOfClass:(Class)clazz withId:(NSString*)elementId andStyle:(NSString*)styleClass;
++ (UIView*) viewOfClass:(Class)clazz withId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass;
 
 /** Builds a view of the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UIView*) viewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UIView*) viewOfClass:(Class)clazz withStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 /** Builds a view of the specified implementation class, element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UIView*) viewOfClass:(Class)clazz withId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UIView*) viewOfClass:(Class)clazz withId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /** Builds a `UICollectionView` with the specified style class. */
@@ -142,15 +146,15 @@ typedef NSArray* (^SubViewBlock)();
 + (UICollectionView*) collectionViewWithId:(NSString*)elementId;
 
 /** Builds a `UICollectionView` with the specified style class and adds the subviews from the specified `SubViewBlock`. */
-+ (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UICollectionView*) collectionViewWithStyle:(NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 /** Builds a `UICollectionView` with the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UICollectionView*) collectionViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UICollectionView*) collectionViewOfClass:(nullable Class)clazz withStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 /** Builds a `UICollectionView` with the specified implementation class, collection view layout class and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UICollectionView*) collectionViewOfClass:(Class)clazz collectionViewLayoutClass:(Class)collectionViewLayoutClass withStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UICollectionView*) collectionViewOfClass:(nullable Class)clazz collectionViewLayoutClass:(nullable Class)collectionViewLayoutClass withStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 /** Builds a `UICollectionView` with the specified implementation class, collection view layout class, element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UICollectionView*) collectionViewOfClass:(Class)clazz collectionViewLayoutClass:(Class)collectionViewLayoutClass withId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UICollectionView*) collectionViewOfClass:(nullable Class)clazz collectionViewLayoutClass:(nullable Class)collectionViewLayoutClass withId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /** Builds a `UIImageView` with the specified style class. */
@@ -161,7 +165,7 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UIImageView` with the specified style class and adds the subviews from the specified `SubViewBlock`. */
 + (UIImageView*) imageViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 /** Builds a `UIImageView` with the specified element id and adds the subviews from the specified `SubViewBlock`. */
-+ (UIImageView*) imageViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UIImageView*) imageViewWithId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /** Builds a `UIScrollView` with the specified style class. */
@@ -172,7 +176,7 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UIScrollView` with the specified style class and adds the subviews from the specified `SubViewBlock`. */
 + (UIScrollView*) scrollViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 /** Builds a `UIScrollView` with the specified element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UIScrollView*) scrollViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UIScrollView*) scrollViewWithId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andSubViews:(nullable SubViewBlock)subViewBlock;
 
 
 /** Builds a `UITableView` with the specified style class. */
@@ -183,12 +187,12 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UITableView` with the specified style class and adds the subviews from the specified `SubViewBlock`. */
 + (UITableView*) tableViewWithStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
 /** Builds a `UITableView` with the specified element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UITableView*) tableViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
++ (UITableView*) tableViewWithId:(NSString*)elementId andStyle:(nullable NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
 
 /** Builds a `UITableView` with the specified implementation class and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UITableView*) tableViewOfClass:(Class)clazz withStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
++ (UITableView*) tableViewOfClass:(nullable Class)clazz withStyle:(nullable NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(nullable SubViewBlock)subViewBlock;
 /** Builds a `UITableView` with the specified implementation class, element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UITableView*) tableViewOfClass:(Class)clazz withId:(NSString*)elementId andStyle:(NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(SubViewBlock)subViewBlock;
++ (UITableView*) tableViewOfClass:(nullable Class)clazz withId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andTableViewStyle:(UITableViewStyle)tableViewStyle andSubViews:(nullable SubViewBlock)subViewBlock;
 
 #if TARGET_OS_TV == 0
 /** Builds a `UIWebView` with the specified style class. */
@@ -199,7 +203,7 @@ typedef NSArray* (^SubViewBlock)();
 /** Builds a `UIWebView` with the specified style class and adds the subviews from the specified `SubViewBlock`. */
 + (UIWebView*) webViewWithStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 /** Builds a `UIWebView` with the specified element id and style class, and adds the subviews from the specified `SubViewBlock`. */
-+ (UIWebView*) webViewWithId:(NSString*)elementId andStyle:(NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
++ (UIWebView*) webViewWithId:(nullable NSString*)elementId andStyle:(nullable NSString*)styleClass andSubViews:(SubViewBlock)subViewBlock;
 #endif
 
 /** Builds a `UIActivityIndicatorView` with the specified style class. */
@@ -261,3 +265,6 @@ typedef NSArray* (^SubViewBlock)();
 + (UITableViewCell*) tableViewCellWithStyle:(NSString*)styleClass andCellStyle:(UITableViewCellStyle)cellStyle andReuseIdentifier:(NSString*)reuseIdentifier;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

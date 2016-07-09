@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @class ISSSelector;
 @class ISSUIElementDetails;
 @class ISSStylingContext;
@@ -29,3 +32,6 @@
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

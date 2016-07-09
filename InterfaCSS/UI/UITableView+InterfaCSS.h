@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Category that adds InterfaCSS integration to `UITableView`.
@@ -33,3 +34,5 @@
 - (id) dequeueReusablePrototypeHeaderFooterViewWithIdentifierISS:(NSString*)prototypeName;
 
 @end
+
+NS_ASSUME_NONNULL_END

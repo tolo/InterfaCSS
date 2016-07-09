@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 typedef NS_ENUM(NSInteger, ISSRectValueType) {
     ISSRectValueTypeStandard,
@@ -49,3 +51,6 @@ extern CGFloat const ISSRectValueAuto;
 - (CGRect) rectForView:(UIView*)view;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

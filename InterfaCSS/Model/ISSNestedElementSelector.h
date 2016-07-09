@@ -8,6 +8,9 @@
 
 #import "ISSSelector.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @interface ISSNestedElementSelector : ISSSelector
 
 + (instancetype) selectorWithNestedElementKeyPath:(NSString*)nestedElementKeyPath;
@@ -15,3 +18,6 @@
 @property (nonatomic, strong, readonly) NSString* nestedElementKeyPath;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

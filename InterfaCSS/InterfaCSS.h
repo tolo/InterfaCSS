@@ -22,14 +22,14 @@
 
 #pragma mark - Common block type definitions
 
-typedef NSArray* (^ISSWillApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
-typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* propertyDeclarations);
+typedef NSArray* _Nonnull (^ISSWillApplyStylingNotificationBlock)(NSArray* _Nonnull propertyDeclarations);
+typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* _Nonnull propertyDeclarations);
 
 
 #pragma mark - Common notification definitions
 
-extern NSString* const ISSWillRefreshStyleSheetsNotification;
-extern NSString* const ISSDidRefreshStyleSheetNotification;
+extern NSString* _Nonnull const ISSWillRefreshStyleSheetsNotification;
+extern NSString* _Nonnull const ISSDidRefreshStyleSheetNotification;
 
 
 #import "ISSPropertyDefinition.h"
@@ -40,11 +40,12 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 #import "NSObject+ISSLogSupport.h"
 
 
+NS_ASSUME_NONNULL_BEGIN
+
 /** 
  * The heart, core and essence of InterfaCSS. Handles loading of stylesheets and keeps track of all style information.
  */
 @interface InterfaCSS : NSObject
-
 
 #pragma mark - Static methods
 
@@ -241,12 +242,12 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
  * styling identities (effectively the cache key for the styling information) can be calculated more effectively, since the element id can be used as starting point 
  * for the view hierarchy "path" that styling identities consist of. This also means that it's imporant to keep element ids unique.
  */
-- (void) setElementId:(NSString*)elementId forUIElement:(id)uiElement;
+- (void) setElementId:(nullable NSString*)elementId forUIElement:(id)uiElement;
 
 /**
  * Gets the unique element identifier associated with the specified element.
  */
-- (NSString*) elementIdForUIElement:(id)uiElement;
+- (nullable NSString*) elementIdForUIElement:(id)uiElement;
 
 
 #pragma mark - Additional styling control
@@ -255,18 +256,18 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
  * Sets a callback block for getting notified when styles will be applied to the specified UI element. Makes it possible to prevent some properties from being applied, by returning a different
  * list of properties than the list passed as a parameter to the block.
  */
-- (void) setWillApplyStylingBlock:(ISSWillApplyStylingNotificationBlock)willApplyStylingBlock forUIElement:(id)uiElement;
+- (void) setWillApplyStylingBlock:(nullable ISSWillApplyStylingNotificationBlock)willApplyStylingBlock forUIElement:(id)uiElement;
 
 /** Gets the current callback block for getting notified when styles will be applied to the specified UI element.*/
-- (ISSWillApplyStylingNotificationBlock) willApplyStylingBlockForUIElement:(id)uiElement;
+- (nullable ISSWillApplyStylingNotificationBlock) willApplyStylingBlockForUIElement:(id)uiElement;
 
 /**
  * Sets a callback block for getting notified when styles have been applied to the specified UI element. Makes it possible to for instance adjust property values or update dependent properties.
  */
-- (void) setDidApplyStylingBlock:(ISSDidApplyStylingNotificationBlock)didApplyStylingBlock forUIElement:(id)uiElement;
+- (void) setDidApplyStylingBlock:(nullable ISSDidApplyStylingNotificationBlock)didApplyStylingBlock forUIElement:(id)uiElement;
 
 /** Gets the current callback block for getting notified when styles have been applied to the specified UI element.*/
-- (ISSDidApplyStylingNotificationBlock) didApplyStylingBlockForUIElement:(id)uiElement;
+- (nullable ISSDidApplyStylingNotificationBlock) didApplyStylingBlockForUIElement:(id)uiElement;
 
 /**
  * Sets a custom styling identity that overrides the default mechanism for assigning styling identities to elements (which essentially involves building a full view
@@ -278,10 +279,10 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
  * NOTE: When using a custom styling identity for a view, avoid using style declarations that depends on the view hierarchy above that view (i.e. use of chained
  * or nested selectors that ).
  */
-- (void) setCustomStylingIdentity:(NSString*)customStylingIdentity forUIElement:(id)uiElement;
+- (void) setCustomStylingIdentity:(nullable NSString*)customStylingIdentity forUIElement:(id)uiElement;
 
 /** Gets the custom styling identity. */
-- (NSString*) customStylingIdentityForUIElement:(id)uiElement;
+- (nullable NSString*) customStylingIdentityForUIElement:(id)uiElement;
 
 /**
  * Disables or re-enables styling of the specified UI element. If `enabled` is set to `NO`, InterfaCSS will stop applying styling information to the element and it's children,
@@ -308,9 +309,9 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 - (BOOL) isStylingEnabledForProperty:(NSString*)propertyName inUIElement:(id)uiElement;
 
 /** Finds a sub view with the specified element identifier. */
-- (id) subviewWithElementId:(NSString*)elementId inView:(id)view;
+- (nullable id) subviewWithElementId:(NSString*)elementId inView:(id)view;
 /** Finds a super view with the specified element identifier. */
-- (id) superviewWithElementId:(NSString*)elementId inView:(id)view;
+- (nullable id) superviewWithElementId:(NSString*)elementId inView:(id)view;
 
 - (void) autoPopulatePropertiesInViewHierarchyFromView:(UIView*)view inOwner:(id)owner;
 
@@ -320,28 +321,28 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 /**
  * Loads a stylesheet from the main bundle.
  */
-- (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName;
-- (ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(ISSStyleSheetScope*)scope;
+- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName;
+- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(nullable ISSStyleSheetScope*)scope;
 
 /**
  * Loads a stylesheet from an absolute file path.
  */
-- (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath;
-- (ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
+- (nullable ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath;
+- (nullable ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(nullable ISSStyleSheetScope*)scope;
 
 /**
  * Loads an auto-refreshable stylesheet from a URL (both file and http URLs are supported).
  * Note: Refreshable stylesheets are only intended for use during development, and not in production.
  */
-- (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
-- (ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL withScope:(ISSStyleSheetScope*)scope;
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL withScope:(nullable ISSStyleSheetScope*)scope;
 
 /**
  * Loads an auto-refreshable stylesheet from a local file path, and starts monitoring the file for changes.
  * Note: Refreshable stylesheets are only intended for use during development, and not in production.
  */
-- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
-- (ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(ISSStyleSheetScope*)scope;
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(nullable ISSStyleSheetScope*)scope;
 
 /** Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified. */
 - (void) reloadRefreshableStyleSheets:(BOOL)force;
@@ -388,17 +389,17 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 /**
  * Creates a view from a prototype defined in a view definition file.
  */
-- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName;
+- (nullable UIView*) viewFromPrototypeWithName:(NSString*)prototypeName;
 
 /**
  * Creates a view from a prototype defined in a view definition file.
  */
-- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName prototypeParent:(id)prototypeParent;
+- (nullable UIView*) viewFromPrototypeWithName:(NSString*)prototypeName prototypeParent:(nullable id)prototypeParent;
 
 /**
  * Creates a view from a prototype defined in a view definition file.
  */
-- (UIView*) viewFromPrototypeWithName:(NSString*)prototypeName registeredInElement:(id)registeredInElement prototypeParent:(id)prototypeParent;
+- (nullable UIView*) viewFromPrototypeWithName:(NSString*)prototypeName registeredInElement:(nullable id)registeredInElement prototypeParent:(nullable id)prototypeParent;
 
 
 #pragma mark - Variable access
@@ -406,22 +407,22 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 /**
  * Returns the raw value of the stylesheet variable with the specified name.
  */
-- (NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName;
+- (nullable NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName;
 
 /**
  * Returns the value of the stylesheet variable with the specified name, transformed to the specified type.
  */
-- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType;
+- (nullable id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType;
 
 /**
  * Returns the value of the stylesheet variable with the specified name, transformed using the specified property definition.
  */
-- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
+- (nullable id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName forPropertyDefinition:(ISSPropertyDefinition*)propertyDefinition;
 
 /**
  * Sets the raw value of the stylesheet variable with the specified name.
  */
-- (void) setValue:(NSString*)value forStyleSheetVariableWithName:(NSString*)variableName;
+- (void) setValue:(nullable NSString*)value forStyleSheetVariableWithName:(NSString*)variableName;
 
 
 #pragma mark - Debugging support
@@ -432,3 +433,5 @@ extern NSString* const ISSDidRefreshStyleSheetNotification;
 - (void) logMatchingStyleDeclarationsForUIElement:(id)uiElement;
 
 @end
+
+NS_ASSUME_NONNULL_END

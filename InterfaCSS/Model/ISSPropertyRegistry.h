@@ -8,6 +8,9 @@
 
 #import "ISSPropertyDefinition.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 /**
  * The property registry keeps track on all properties that can be set through stylesheets.
  */
@@ -28,10 +31,10 @@
  * Returns the canonical type class for the given class, i.e. the closest super class that represents a valid type selector. For instance, for all `UIView`
  * subclasses, this would by default be `UIView`.
  */
-- (Class) canonicalTypeClassForClass:(Class)clazz;
-- (NSString*) canonicalTypeForClass:(Class)clazz;
-- (Class) canonicalTypeClassForType:(NSString*)type registerIfNotFound:(BOOL)registerIfNotFound;
-- (Class) canonicalTypeClassForType:(NSString*)type;
+- (nullable Class) canonicalTypeClassForClass:(Class)clazz;
+- (nullable NSString*) canonicalTypeForClass:(Class)clazz;
+- (nullable Class) canonicalTypeClassForType:(NSString*)type registerIfNotFound:(BOOL)registerIfNotFound;
+- (nullable Class) canonicalTypeClassForType:(NSString*)type;
 
 
 /**
@@ -73,3 +76,6 @@
 #endif
 
 @end
+
+
+NS_ASSUME_NONNULL_END

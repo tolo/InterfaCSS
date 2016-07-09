@@ -412,7 +412,7 @@ static NSDictionary* stringToLayoutGuide;
 }
 
 + (NSString*) attributeToString:(ISSLayoutAttribute)attribute {
-    __block NSString* attributeName = nil;
+    __block NSString* attributeName = @"default";
     [stringToAttribute enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSNumber* value, BOOL *stop) {
         if( [value integerValue] == attribute ) {
             attributeName = key;

@@ -8,6 +8,8 @@
 
 #import "ISSRectValue.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 extern NSString* const ISSLayoutAttributeRelationParent;
 extern NSString* const ISSLayoutAttributeRelationLayoutGuide;
@@ -98,3 +100,6 @@ typedef NS_ENUM(NSInteger, ISSLayoutType) {
 - (BOOL) resolveRectForView:(UIView*)view withResolvedElements:(NSDictionary*)elementMappings andLayoutGuideInsets:(UIEdgeInsets)layoutGuideInsets;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

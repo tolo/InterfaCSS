@@ -632,7 +632,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 #pragma mark - Style classes
 
 - (NSSet*) styleClassesForUIElement:(id)uiElement {
-    return [self detailsForUIElement:uiElement].styleClasses;
+    return [self detailsForUIElement:uiElement].styleClasses ?: [NSSet set];
 }
 
 - (void) setStyleClasses:(NSSet*)styleClasses forUIElement:(id)uiElement {

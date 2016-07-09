@@ -8,6 +8,8 @@
 
 #import "InterfaCSS.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * UIView category that adds convenience methods for managing the style classes of a UI element.
  */
@@ -16,7 +18,7 @@
 /**
  * Convenience property for setting/getting a single style class. If multiple classes are set, the value returned by this property can be any of those styles.
  */
-@property (nonatomic, strong)
+@property (nonatomic, strong, nullable)
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
     IBInspectable
 #endif
@@ -25,18 +27,18 @@
 /**
  * Represents the style class for the this view.
  */
-@property (nonatomic, strong) NSSet* styleClassesISS;
+@property (nonatomic, strong, nullable) NSSet* styleClassesISS;
 
 /**
  * Callback block for getting notified when styles will be applied to this view. Makes it possible to prevent some properties from being applied, by returning a different 
  * list of properties than the list passed as a parameter to the block.
  */
-@property (nonatomic, copy) ISSWillApplyStylingNotificationBlock willApplyStylingBlockISS;
+@property (nonatomic, copy, nullable) ISSWillApplyStylingNotificationBlock willApplyStylingBlockISS;
 
 /**
  * Callback block for getting notified when styles have been applied to this view. Makes it possible to for instance adjust property values or update dependent properties.
  */
-@property (nonatomic, copy) ISSDidApplyStylingNotificationBlock didApplyStylingBlockISS;
+@property (nonatomic, copy, nullable) ISSDidApplyStylingNotificationBlock didApplyStylingBlockISS;
 
 /**
  * A custom styling identity that overrides the default mechanism for assigning styling identities to elements (which essentially involves building a full view
@@ -48,10 +50,10 @@
  * NOTE: When using a custom styling identity for a view, avoid using style declarations that depends on the view hierarchy above that view (i.e. use of chained
  * or nested selectors that ).
  */
-@property (nonatomic, strong) NSString* customStylingIdentityISS;
+@property (nonatomic, strong, nullable) NSString* customStylingIdentityISS;
 
 /** An optional element identifier for this view. May be used to find a view using the method `subviewWithElementId:`. */
-@property (nonatomic, strong)
+@property (nonatomic, strong, nullable)
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
     IBInspectable
 #endif
@@ -65,7 +67,7 @@
 @property (nonatomic, readonly) BOOL stylingAppliedISS;
 
 /** The layout currently assigned to this view. */
-@property (nonatomic, strong) ISSLayout* layoutISS;
+@property (nonatomic, strong, nullable) ISSLayout* layoutISS;
 
 
 /**
@@ -242,6 +244,8 @@
 
 
 /** Finds a sub view with the specified element identifier. */
-- (id) subviewWithElementId:(NSString*)elementId;
+- (nullable id) subviewWithElementId:(NSString*)elementId;
 
 @end
+
+NS_ASSUME_NONNULL_END

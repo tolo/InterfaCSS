@@ -161,7 +161,7 @@
     return [self collectionViewOfClass:nil withStyle:styleClass andSubViews:nil];
 }
 
-+ (UICollectionView*) collectionViewWithId:(NSString *)elementId {
++ (UICollectionView*) collectionViewWithId:(NSString*)elementId {
     return [self collectionViewOfClass:nil collectionViewLayoutClass:UICollectionViewFlowLayout.class withId:elementId andStyle:nil andSubViews:nil];
 }
 

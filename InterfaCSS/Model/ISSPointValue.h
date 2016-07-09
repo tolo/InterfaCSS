@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 typedef NS_ENUM(NSInteger, ISSPointValueType) {
     ISSPointValueTypeStandard,
@@ -34,3 +36,6 @@ typedef NS_ENUM(NSInteger, ISSPointValueType) {
 - (CGPoint) pointForView:(UIView*)view;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

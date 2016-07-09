@@ -9,12 +9,15 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
 @interface UIView (ISSPrototypeReusableView)
 
 @property (nonatomic) BOOL initializedFromPrototypeISS;
 
 - (void) setupViewFromPrototypeISS;
-- (void) setupViewFromPrototypeRegisteredInViewISS:(UIView*)registeredInView;
+- (void) setupViewFromPrototypeRegisteredInViewISS:(nullable UIView*)registeredInView;
 
 @end
+
+NS_ASSUME_NONNULL_END

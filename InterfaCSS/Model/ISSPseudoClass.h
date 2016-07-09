@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 @class ISSUIElementDetails;
 
@@ -83,3 +85,6 @@ typedef NS_ENUM(NSInteger, ISSPseudoClassType) {
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

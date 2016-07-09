@@ -8,8 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
-typedef UIView* (^ViewBuilderBlock)(UIView* superview);
+
+typedef UIView* _Nullable (^ViewBuilderBlock)(UIView* _Nullable superview);
 
 /**
  * Represents a registered view prototype.
@@ -18,7 +20,7 @@ typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 
 @property (nonatomic, strong, readonly) NSString* name;
 
-@property (nonatomic, strong, readonly) NSString* propertyName;
+@property (nonatomic, strong, readonly, nullable) NSString* propertyName;
 @property (nonatomic) BOOL implicitPropertyName;
 @property (nonatomic, readonly) BOOL addAsSubView;
 
@@ -27,8 +29,11 @@ typedef UIView* (^ViewBuilderBlock)(UIView* superview);
 
 @property (nonatomic) BOOL prototypeScopeParent;
 
-+ (instancetype) prototypeWithName:(NSString*)name propertyName:(NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
++ (instancetype) prototypeWithName:(NSString*)name propertyName:(nullable NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
 
-- (UIView*) createViewObjectFromPrototypeWithParent:(id)parentObject;
+- (nullable UIView*) createViewObjectFromPrototypeWithParent:(nullable id)parentObject;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

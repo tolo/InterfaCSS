@@ -12,7 +12,10 @@
 @class ISSLayout;
 
 
-typedef void (^ISSLayoutProcessingBlock)(UIView* view, ISSLayout* layout);
+NS_ASSUME_NONNULL_BEGIN
+
+
+typedef void (^ISSLayoutProcessingBlock)(UIView* view, ISSLayout* _Nullable layout);
 
 
 /**
@@ -22,9 +25,12 @@ typedef void (^ISSLayoutProcessingBlock)(UIView* view, ISSLayout* layout);
 @interface ISSLayoutContextView : UIView
 
 /** Pre processing block for any additional customization of layout before layout is resolved. */
-@property (nonatomic, copy) ISSLayoutProcessingBlock layoutPreProcessingBlock;
+@property (nonatomic, copy, nullable) ISSLayoutProcessingBlock layoutPreProcessingBlock;
 
 /** Post processing block for any additional customization of frame after layout has been resolved. */
-@property (nonatomic, copy) ISSLayoutProcessingBlock layoutPostProcessingBlock;
+@property (nonatomic, copy, nullable) ISSLayoutProcessingBlock layoutPostProcessingBlock;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

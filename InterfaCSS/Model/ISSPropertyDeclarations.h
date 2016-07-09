@@ -11,17 +11,19 @@
 @class ISSStyleSheetScope;
 @class ISSSelectorChain;
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 /**
  * Represents a declaration block (or rule set) in a stylesheet.
  */
 @interface ISSPropertyDeclarations : NSObject
 
-@property (nonatomic, readonly) ISSSelectorChain* extendedDeclarationSelectorChain;
-@property (nonatomic, weak) ISSPropertyDeclarations* extendedDeclaration;
+@property (nonatomic, readonly, nullable) ISSSelectorChain* extendedDeclarationSelectorChain;
+@property (nonatomic, weak, nullable) ISSPropertyDeclarations* extendedDeclaration;
 
 @property (nonatomic, readonly) NSArray* selectorChains;
-@property (nonatomic, readonly) NSArray* properties;
+@property (nonatomic, readonly, nullable) NSArray* properties;
 @property (nonatomic, readonly) NSString* displayDescription;
 @property (nonatomic, readonly) BOOL containsPseudoClassSelector;
 @property (nonatomic, readonly) BOOL containsPseudoClassSelectorOrDynamicProperties;
@@ -29,8 +31,8 @@
 
 @property (nonatomic, weak) ISSStyleSheetScope* scope; // The scope used by the parent stylesheet...
 
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties;
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties extendedDeclarationSelectorChain:(ISSSelectorChain*)extendedDeclarationSelectorChain;
+- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties;
+- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties extendedDeclarationSelectorChain:(nullable ISSSelectorChain*)extendedDeclarationSelectorChain;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 - (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
@@ -40,3 +42,6 @@
 - (NSString*) displayDescription:(BOOL)withProperties;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

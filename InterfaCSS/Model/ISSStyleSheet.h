@@ -10,6 +10,9 @@
 
 #import "ISSRefreshableResource.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @protocol ISSStyleSheetParser;
 @class ISSUIElementDetails;
 @class ISSStylingContext;
@@ -60,20 +63,23 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 @interface ISSStyleSheet : ISSRefreshableResource
 
 @property (nonatomic, readonly) NSURL* styleSheetURL;
-@property (nonatomic, readonly) NSArray* declarations; // ISSPropertyDeclarations
+@property (nonatomic, readonly, nullable) NSArray* declarations; // ISSPropertyDeclarations
 @property (nonatomic) BOOL active;
 @property (nonatomic, readonly) BOOL refreshable;
 @property (nonatomic, readonly) NSString* displayDescription;
-@property (nonatomic, strong) ISSStyleSheetScope* scope;
+@property (nonatomic, strong, nullable) ISSStyleSheetScope* scope;
 
-- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations;
-- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable;
-- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable scope:(ISSStyleSheetScope*)scope;
+- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(nullable NSArray*)declarations;
+- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable;
+- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable scope:(nullable ISSStyleSheetScope*)scope;
 
-- (NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (nullable NSArray*) declarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
-- (ISSPropertyDeclarations*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain;
+- (nullable ISSPropertyDeclarations*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain;
 
 - (void) refreshStylesheetWithCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

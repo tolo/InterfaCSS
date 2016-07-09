@@ -8,8 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
-typedef id (^ISSLazyValueBlock)(id parameter);
+
+typedef id _Nullable (^ISSLazyValueBlock)(id _Nullable parameter);
 
 
 @interface ISSLazyValue : NSObject
@@ -17,7 +19,10 @@ typedef id (^ISSLazyValueBlock)(id parameter);
 + (instancetype) lazyValueWithBlock:(ISSLazyValueBlock)block;
 - (instancetype) initWithLazyEvaluationBlock:(ISSLazyValueBlock)block;
 
-- (id) evaluate;
-- (id) evaluateWithParameter:(id)parameter;
+- (nullable id) evaluate;
+- (nullable id) evaluateWithParameter:(nullable id)parameter;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

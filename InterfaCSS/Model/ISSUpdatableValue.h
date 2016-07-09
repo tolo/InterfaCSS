@@ -8,13 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 extern NSString* const ISSUpdatableValueUpdatedNotification;
 
 
 @interface ISSUpdatableValue : NSObject
 
-@property (nonatomic, weak, readonly) id lastValue;
+@property (nonatomic, weak, readonly, nullable) id lastValue;
 
 - (void) requestUpdate;
 
@@ -24,3 +26,6 @@ extern NSString* const ISSUpdatableValueUpdatedNotification;
 - (void) valueUpdated;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

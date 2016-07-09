@@ -8,6 +8,9 @@
 
 #import "ISSLazyValue.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+
 @class ISSPropertyDefinition, ISSUIElementDetails;
 
 extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
@@ -18,16 +21,16 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
  */
 @interface ISSPropertyDeclaration : NSObject<NSCopying>
 
-@property (nonatomic, readonly) NSString* nestedElementKeyPath;
+@property (nonatomic, readonly, nullable) NSString* nestedElementKeyPath;
 @property (nonatomic, readonly) ISSPropertyDefinition* property;
-@property (nonatomic, readonly) NSArray* parameters;
-@property (nonatomic, readonly) NSString* unrecognizedName;
-@property (nonatomic, strong) id propertyValue;
-@property (nonatomic, copy) ISSLazyValueBlock lazyPropertyTransformationBlock;
+@property (nonatomic, readonly, nullable) NSArray* parameters;
+@property (nonatomic, readonly, nullable) NSString* unrecognizedName;
+@property (nonatomic, strong, nullable) id propertyValue;
+@property (nonatomic, copy, nullable) ISSLazyValueBlock lazyPropertyTransformationBlock;
 @property (nonatomic, readonly) BOOL dynamicValue; // Indicates weather the value of this property may be dynamic, i.e. may need to be re-evaluated every time styles are applied
 
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property nestedElementKeyPath:(NSString*)nestedElementKeyPath;
-- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath;
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
+- (instancetype) initWithProperty:(ISSPropertyDefinition*)property parameters:(nullable NSArray*)parameters nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
 - (instancetype) initWithUnrecognizedProperty:(NSString*)unrecognizedPropertyName;
 
 - (BOOL) transformValueIfNeeded;
@@ -35,3 +38,6 @@ extern NSObject* const ISSPropertyDefinitionUseCurrentValue;
 - (BOOL) applyPropertyValueOnTarget:(ISSUIElementDetails*)targetDetails;
 
 @end
+
+
+NS_ASSUME_NONNULL_END

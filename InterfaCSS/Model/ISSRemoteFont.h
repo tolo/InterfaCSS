@@ -11,6 +11,8 @@
 
 #import "ISSUpdatableValue.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 @class ISSDownloadableResource;
 
@@ -23,3 +25,6 @@
 + (instancetype) remoteFontWithURL:(NSURL*)url fontSize:(CGFloat)fontSize;
 
 @end
+
+
+NS_ASSUME_NONNULL_END
