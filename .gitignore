@@ -1,6 +1,7 @@
-.DS_Store
 **/xcuserdata/**
+*.xcuserdatad
 *.xcuserstate
+*.xcbkptlist
 *.pbxuser
 *.xcbaseline
 *.xccheckout
@@ -10,6 +11,7 @@ build/
 Pods
 Podfile.lock
 InterfaCSS.xcworkspace
-**/SimpleSample.xcworkspace
+Samples/*/*.xcworkspace
 .idea
 notes
+.DS_Store
