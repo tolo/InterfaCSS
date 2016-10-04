@@ -1,6 +1,20 @@
 #Changes
 
 
+
+##Version 1.5
+
+### New features & changes
+* Added support for multiple style classes in selector declarations.
+* Added support for extending style declarations (via keyword `@extend`).
+* Introduced behavioural flag `useManualStyling` to class InterfaCSS, to make it possible to take control over when styling is applied to views.
+* Added nullability support for better Swift interoperability.
+
+### Bug fixes
+* Fixed minor issues with style/element information caching. 
+
+
+
 ##Version 1.4.4
 
 ### Bug fixes
