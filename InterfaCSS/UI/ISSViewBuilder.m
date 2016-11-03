@@ -318,11 +318,11 @@
 }
 
 + (UISwitch*) switchWithStyle:(NSString*)styleClass {
-    return [self setupView:[[UIStepper alloc] init] withStyleClass:styleClass];
+    return [self setupView:[[UISwitch alloc] init] withStyleClass:styleClass];
 }
 
 + (UISwitch*) switchWithId:(NSString*)elementId {
-    return [self setupView:[[UIStepper alloc] init] withId:elementId andStyleClass:nil];
+    return [self setupView:[[UISwitch alloc] init] withId:elementId andStyleClass:nil];
 }
 #endif
 
