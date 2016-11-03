@@ -1,6 +1,12 @@
 #Changes
 
 
+##Version 1.5.1
+
+### Bug fixes
+* Fixed copy/paste bug in ISSViewBuilder (resolves [issue 61](https://github.com/tolo/InterfaCSS/issues/61), reported by @bangerang).
+
+
 
 ##Version 1.5
 
