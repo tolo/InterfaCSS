@@ -875,8 +875,11 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 
 - (ISSUIElementDetails*) firstChildElementMatchingScope:(ISSStyleSheetScope*)scope inElement:(id)element {
     return [self visitViewHierarchyFromView:element visitorBlock:^id(id viewObject, ISSUIElementDetails* elementDetails, BOOL* stop) {
-        if( [scope elementInScope:elementDetails] ) return elementDetails;
-        else return nil;
+        if( [scope elementInScope:elementDetails] ) {
+            if (stop) (*stop) = YES;
+            return elementDetails;
+        }
+        return nil;
     }];
 }
 
@@ -1022,7 +1025,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 - (void) refreshStylingForScope:(ISSStyleSheetScope*)scope {
     ISSUIElementDetails* firstElementMatchingScope = [self firstElementMatchingScope:scope];
     if( firstElementMatchingScope ) {
-        [self clearCachedStylesForUIElement:firstElementMatchingScope];
+        [self clearCachedStylesForUIElement:firstElementMatchingScope.uiElement];
         [self applyStylingWithDetails:(ISSUIElementDetailsInterfaCSS*)firstElementMatchingScope includeSubViews:YES force:NO];
     }
 }
