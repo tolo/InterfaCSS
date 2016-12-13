@@ -79,6 +79,13 @@
 @end
 
 
+@interface InterfaCSS ()
+
+- (void) initViewHierarchyForView:(UIView*)view;
+
+@end
+
+
 
 @interface InterfaCSSTests : XCTestCase
 
@@ -785,6 +792,34 @@
     ISSAssertEqualFloats(1.0, rootLabel.alpha);
     ISSAssertEqualFloats(0.5, customLabel.alpha);
     ISSAssertEqualFloats(0.5, leafLabel.alpha);
+}
+
+- (void) testRefreshStylingForScope {
+    UIWindow* window = [[UIWindow alloc] init];
+    
+    UIViewController* root = [[UIViewController alloc] init];
+    UILabel* rootLabel = [ISSViewBuilder labelWithStyle:@"scopeTest"];
+    [root.view addSubview:rootLabel];
+    
+    [window addSubview:root.view];
+    
+    CustomViewController* custom = [[CustomViewController alloc] init];
+    UILabel* customLabel = [ISSViewBuilder labelWithStyle:@"scopeTest"];
+    [custom.view addSubview:customLabel];
+    custom.view.elementIdISS = @"custom";
+    [root addChildViewController:custom];
+    [root.view addSubview:custom.view];
+    
+    // Make sure view hierarchy is initialized (needed for firstElementMatchingScope / visitViewHierarchyFromView)
+    [[InterfaCSS interfaCSS] initViewHierarchyForView:root.view];
+    [root.view applyStylingISS];
+    
+    // Load stylesheet with a scope that limits it to only CustomViewContoller
+    NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"scopedStyles" ofType:@"css"];
+    ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:CustomViewController.class];
+    [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path withScope:scope];
+    
+    ISSAssertEqualFloats(0.5, customLabel.alpha);
 }
 
 - (void) testViewControllerSelectorChains {
