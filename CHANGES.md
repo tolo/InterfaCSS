@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 1.5.2
+
+### Bug fixes
+* Added fix for reloading of scoped stylesheets ([pull request 62](https://github.com/tolo/InterfaCSS/issues/62), added by @fantast1k).
+
+
+
 ##Version 1.5.1
 
 ### Bug fixes
