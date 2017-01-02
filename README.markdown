@@ -187,6 +187,7 @@ And out of that notion sprung the foundation of InterfaCSS, which after a spendi
 
 ## Apps using InterfaCSS
 
+* [B. The Puffin - Prelude](https://itunes.apple.com/app/b.-the-puffin-prelude/id1089174935?ls=1)
 * [PlayMyQ - Music Player • Remote Control • Jukebox](https://itunes.apple.com/app/playmyq-hd-music-player-remote/id432506056?mt=8)
 * [Zmarta](https://itunes.apple.com/se/app/zmarta/id1067304436?l=en&mt=8)
 
