@@ -382,9 +382,18 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
             SLC(leftView) : S(leftView), SLC(rightView) : S(rightView)};
     
 
+#if ISS_UIKIT_SDK_VERSION < 90000
     NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"normalHighlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
             @"highlighted" : @(UIControlStateNormal | UIControlStateHighlighted),
             @"selected" : @(UIControlStateSelected), @"selectedHighlighted" : @(UIControlStateSelected | UIControlStateHighlighted), @"disabled" : @(UIControlStateDisabled)};
+#else
+    NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"focused" : @(UIControlStateFocused),
+                @"normalHighlighted" : @(UIControlStateHighlighted), @"highlighted" : @(UIControlStateHighlighted),
+                @"highlightedFocused" : @(UIControlStateHighlighted | UIControlStateFocused),
+                @"selected" : @(UIControlStateSelected), @"selectedHighlighted" : @(UIControlStateSelected | UIControlStateHighlighted),
+                @"selectedFocused" : @(UIControlStateSelected | UIControlStateFocused), @"selectedHighlightedFocused" : @(UIControlStateSelected | UIControlStateHighlighted | UIControlStateFocused),
+                @"disabled" : @(UIControlStateDisabled)};
+#endif
 
     NSDictionary* barMetricsParameters = @{@"metricsDefault" : @(UIBarMetricsDefault), @"metricsLandscapePhone" : @(UIBarMetricsLandscapePhone),
                 @"metricsLandscapePhonePrompt" : @(UIBarMetricsLandscapePhonePrompt), @"metricsDefaultPrompt" : @(UIBarMetricsDefaultPrompt)};
@@ -931,7 +940,7 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
             p(S(color), ISSPropertyTypeColor),
             p(S(hidesWhenStopped), ISSPropertyTypeBool),
             ps(@"animating", ISSPropertyTypeBool, ^(SetterBlockParamList) {
-                if( value ) [viewObject startAnimating];
+                if( [value isKindOfClass:NSNumber.class] && ((NSNumber*)value).boolValue ) [viewObject startAnimating];
                 else [viewObject stopAnimating];
                 return YES;
             })

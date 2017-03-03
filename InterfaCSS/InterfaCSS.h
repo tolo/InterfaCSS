@@ -13,6 +13,17 @@
 
 #define ISS_EQUAL_FLT(x, y) (fabs((x) - (y)) < FLT_EPSILON)
 
+#ifndef ISS_UIKIT_SDK_VERSION
+    #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+        #define ISS_UIKIT_SDK_VERSION __IPHONE_OS_VERSION_MIN_REQUIRED
+    #elif defined(__TV_OS_VERSION_MIN_REQUIRED)
+        #define ISS_UIKIT_SDK_VERSION __TV_OS_VERSION_MIN_REQUIRED
+    #else
+        #define ISS_UIKIT_SDK_VERSION 80000
+    #endif
+#endif
+
+
 
 @protocol ISSStyleSheetParser;
 @class ISSViewPrototype;
