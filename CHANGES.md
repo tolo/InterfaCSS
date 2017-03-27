@@ -1,6 +1,13 @@
 #Changes
 
 
+##Version 1.5.3
+
+### Bug fixes
+* Fixed issue with property `animating` of UIActivityIndicatorView.
+
+
+
 ##Version 1.5.2
 
 ### Bug fixes
