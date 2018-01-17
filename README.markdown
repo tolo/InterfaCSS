@@ -126,9 +126,9 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
 
 
 
-##Getting started
+## Getting started
 
-###Install
+### Install
 You can add InterfaCSS to your project in two ways:
 
 * The simplest way is to use [CocoaPods](http://cocoapods.org/).
@@ -136,7 +136,7 @@ You can add InterfaCSS to your project in two ways:
 * Download the source and add the files in the `InterfaCSS` directory to your project.
 
 
-###Sample code
+### Sample code
 Checking out the sample code is a good way to get a feel for how InterfaCSS is used in an app. To run the sample code, do like this:
 
 * Run `pod install` in the `Samples/SimpleSample` directory.
@@ -144,7 +144,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 * Build and run.
 
 
-###Setup InterfaCSS in your app
+### Setup InterfaCSS in your app
 
 * Load a stylesheet, like this: `[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your **app delegate**, when your app is first launched, but if you have a lot of stylesheets it's better to defer loading of the stylesheets to when you actually need them (`loadView` of a particular view controller might be a better place in this case).
 
@@ -161,15 +161,13 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 
 
-##Project status and background
+## Project status and background
 
 ### Status
 
-With the release of 1.0, InterfaCSS had finally reached the point where the most important stuff was there, and version 1.1 added a bunch of new handy features and fixes, to make InterfaCSS even more complete. But the work with refining the feature set, improving documentation and perfecting unit tests will of course continue.
+With the release of 1.0, InterfaCSS had finally reached the point where the most important stuff was there, and version 1.1 added a bunch of new handy features and fixes, to make InterfaCSS even more complete. But the work with refining the feature set, improving documentation and perfecting unit tests will of course continue. Also, work on a version 2.0 is currently in progress - this version will among other things focus on modularization and simplification.
 
-And of course - all feedback is most welcome!
-
-*"Við munum gera betur næst, þetta er ágætis byrjun"*  
+And as always - all feedback is most welcome!
 
 
 ### Background
