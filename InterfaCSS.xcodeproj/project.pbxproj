@@ -153,6 +153,7 @@
 		6F452185DFC84B08E8B9E078 /* Pods-InterfaCSS Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		8A3F37721B80F3F000E988AE /* ISSStylingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingContext.h; sourceTree = "<group>"; };
 		8A3F37731B80F3F000E988AE /* ISSStylingContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingContext.m; sourceTree = "<group>"; };
+		8A9CB172200F823E004ADDC4 /* .travis.yml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .travis.yml; sourceTree = "<group>"; };
 		8AA5A3B51B7091FD00D577D4 /* libPods-InterfaCSS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-InterfaCSS.a"; path = "Pods/../build/Debug-iphoneos/libPods-InterfaCSS.a"; sourceTree = "<group>"; };
 		8AA646AD1C45331900B417C9 /* ISSParser+CSS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ISSParser+CSS.h"; sourceTree = "<group>"; };
 		8AA646AE1C45331900B417C9 /* ISSParser+CSS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ISSParser+CSS.m"; sourceTree = "<group>"; };
@@ -426,6 +427,7 @@
 		F6F5FC0C14F5683B008E647E = {
 			isa = PBXGroup;
 			children = (
+				8A9CB172200F823E004ADDC4 /* .travis.yml */,
 				27AC9F1C18F33FDF00A4182D /* CHANGES.md */,
 				27AC9F1D18F33FDF00A4182D /* InterfaCSS.podspec */,
 				27AC9F1E18F33FDF00A4182D /* README.markdown */,
