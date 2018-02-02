@@ -1,7 +1,7 @@
 <img src="https://raw.githubusercontent.com/tolo/InterfaCSS/master/Resources/InterfaCSS-title-logo.png" alt="InterfaCSS" title="InterfaCSS" width="432">
 
 
-***Update:*** Want to experiment with styling on a running device? Checkout **[InterfaCSS Playground](https://itunes.apple.com/us/app/interfacss-playground/id1038797485)**!
+***Update:*** The work with a new and improved version of InterfaCSS has now started in the **[develop](https://github.com/tolo/InterfaCSS/tree/develop)** branch... 😁
 
 
 [![Build Status](https://travis-ci.org/tolo/InterfaCSS.svg?branch=master)](https://travis-ci.org/tolo/InterfaCSS)
