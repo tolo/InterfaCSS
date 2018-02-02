@@ -11,7 +11,7 @@
 
 
 
-## Welcome to InterfaCSS
+## Welcome to InterfaCSS 2
 
 
 ### Simple yet powerful styling
