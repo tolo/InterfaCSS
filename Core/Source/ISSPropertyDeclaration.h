@@ -43,6 +43,7 @@ extern NSObject* const ISSPropertyDeclarationUseCurrentValue;
 - (instancetype) initWithNestedElementKeyPathToRegister:(NSString*)nestedElementKeyPath;
 
 - (id) valueForProperty:(ISSPropertyDefinition*)property;
+- (id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(nullable NSString*)valueCacheKey;
 
 @end
 

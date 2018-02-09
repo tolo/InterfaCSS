@@ -34,7 +34,7 @@
 
 @property (nonatomic, strong, readonly) NSString* attributeName;
 @property (nonatomic, strong, readonly) ISSPropertyType propertyType;
-@property (nonatomic, strong, readonly, nullable) NSDictionary* enumMapping;
+@property (nonatomic, strong, readonly, nullable) ISSPropertyEnumValueMapping* enumMapping;
 
 @end
 
@@ -52,7 +52,7 @@
     return self;
 }
 
-- (instancetype) init:(NSString*)attributeName enumMapping:(NSDictionary*)enumMapping {
+- (instancetype) init:(NSString*)attributeName enumMapping:(ISSPropertyEnumValueMapping*)enumMapping {
     if ( self = [super init] ) {
         _attributeName = attributeName;
         _propertyType = ISSPropertyTypeEnumType;
@@ -77,11 +77,9 @@
 
 @implementation ISSStyleSheetPropertyParser
 
-- (instancetype) init:(ISSStyleSheetParser*)styleSheetParser {
+- (instancetype) init {
     if ( self = [super init] ) {
         _typeToParser = [NSMutableDictionary dictionary];
-        
-        _styleSheetParser = styleSheetParser;
         
         NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
         
@@ -92,319 +90,361 @@
                                               @"dashDot" : @(NSUnderlinePatternDashDot), @"patterndashDot" : @(NSUnderlinePatternDashDot), @"dashdotdot" : @(NSUnderlinePatternDashDotDot), @"patterndashdotdot" : @(NSUnderlinePatternDashDotDot),
                                               @"solid" : @(NSUnderlinePatternSolid), @"patternsolid" : @(NSUnderlinePatternSolid)};
         
-        attrs[@"backgroundColor"] = [[ISSAttributedStringAttribute alloc] init:NSBackgroundColorAttributeName propertyType:ISSPropertyTypeColor];
-        attrs[@"baselineOffset"] = [[ISSAttributedStringAttribute alloc] init:NSBaselineOffsetAttributeName propertyType:ISSPropertyTypeNumber];
+        ISSPropertyBitMaskEnumValueMapping* underlineStyleMapping = [[ISSPropertyBitMaskEnumValueMapping alloc] initWithEnumValues:underlineStyleEnums enumBaseName:@"NSUnderlineStyle" defaultValue:@(NSUnderlineStyleNone)];
+        
+        attrs[@"backgroundcolor"] = [[ISSAttributedStringAttribute alloc] init:NSBackgroundColorAttributeName propertyType:ISSPropertyTypeColor];
+        attrs[@"baselineoffset"] = [[ISSAttributedStringAttribute alloc] init:NSBaselineOffsetAttributeName propertyType:ISSPropertyTypeNumber];
         attrs[@"expansion"] = [[ISSAttributedStringAttribute alloc] init:NSExpansionAttributeName propertyType:ISSPropertyTypeNumber];
         attrs[@"font"] = [[ISSAttributedStringAttribute alloc] init:NSFontAttributeName propertyType:ISSPropertyTypeFont];
-        attrs[@"foregroundColor"] = [[ISSAttributedStringAttribute alloc] init:NSForegroundColorAttributeName propertyType:ISSPropertyTypeColor];
+        attrs[@"foregroundcolor"] = [[ISSAttributedStringAttribute alloc] init:NSForegroundColorAttributeName propertyType:ISSPropertyTypeColor];
         attrs[@"kern"] = [[ISSAttributedStringAttribute alloc] init:NSKernAttributeName propertyType:ISSPropertyTypeNumber];
         attrs[@"ligature"] = [[ISSAttributedStringAttribute alloc] init:NSLigatureAttributeName propertyType:ISSPropertyTypeNumber];
         attrs[@"obliqueness"] = [[ISSAttributedStringAttribute alloc] init:NSObliquenessAttributeName propertyType:ISSPropertyTypeNumber];
         attrs[@"shadowcolor"] = [[ISSAttributedStringAttribute alloc] init:NSShadowAttributeName propertyType:ISSPropertyTypeColor];
         attrs[@"shadowoffset"] = [[ISSAttributedStringAttribute alloc] init:NSShadowAttributeName propertyType:ISSPropertyTypeSize];
-        attrs[@"strikethroughColor"] = [[ISSAttributedStringAttribute alloc] init:NSStrikethroughColorAttributeName propertyType:ISSPropertyTypeColor];
-        attrs[@"strikethroughStyle"] = [[ISSAttributedStringAttribute alloc] init:NSStrikethroughStyleAttributeName enumMapping:underlineStyleEnums];
-        attrs[@"strokeColor"] = [[ISSAttributedStringAttribute alloc] init:NSStrokeColorAttributeName propertyType:ISSPropertyTypeColor];
-        attrs[@"strokeWidth"] = [[ISSAttributedStringAttribute alloc] init:NSStrokeWidthAttributeName propertyType:ISSPropertyTypeNumber];
-        attrs[@"underlineColor"] = [[ISSAttributedStringAttribute alloc] init:NSUnderlineColorAttributeName propertyType:ISSPropertyTypeColor];
-        attrs[@"underlineStyle"] = [[ISSAttributedStringAttribute alloc] init:NSUnderlineStyleAttributeName enumMapping:underlineStyleEnums];
+        attrs[@"strikethroughcolor"] = [[ISSAttributedStringAttribute alloc] init:NSStrikethroughColorAttributeName propertyType:ISSPropertyTypeColor];
+        attrs[@"strikethroughstyle"] = [[ISSAttributedStringAttribute alloc] init:NSStrikethroughStyleAttributeName enumMapping:underlineStyleMapping];
+        attrs[@"strokecolor"] = [[ISSAttributedStringAttribute alloc] init:NSStrokeColorAttributeName propertyType:ISSPropertyTypeColor];
+        attrs[@"strokewidth"] = [[ISSAttributedStringAttribute alloc] init:NSStrokeWidthAttributeName propertyType:ISSPropertyTypeNumber];
+        attrs[@"underlinecolor"] = [[ISSAttributedStringAttribute alloc] init:NSUnderlineColorAttributeName propertyType:ISSPropertyTypeColor];
+        attrs[@"underlinestyle"] = [[ISSAttributedStringAttribute alloc] init:NSUnderlineStyleAttributeName enumMapping:underlineStyleMapping];
         // TODO: NSTextEffectAttributeName
         
-        attrs[@"color"] = attrs[@"foregroundColor"];
+        attrs[@"color"] = attrs[@"foregroundcolor"];
         
         _attributedStringProperties = [attrs copy];
-        
-        
-        __weak ISSStyleSheetPropertyParser* blockSelf = self;
-        
-        
-        // Property parser setup:
-        
-        /** -- String -- **/
-        ISSParser* defaultStringParser = [ISSParser parserWithBlock:^id(NSString* input, ISSParserStatus* status) {
-            status->match = YES;
-            return [self cleanedStringValue:input];
-        } andName:@"defaultStringParser"];
-        
-        ISSParser* cleanedQuotedStringParser = [styleSheetParser.quotedString transform:^id(id input) {
-            return [self cleanedStringValue:input];
-        } name:@"quotedStringParser"];
-        
-        ISSParser* localizedStringParser = [[styleSheetParser singleParameterFunctionParserWithNames:@[@"localized", @"L"] parameterParser:cleanedQuotedStringParser] transform:^id(id value) {
-            return [self localizedStringWithKey:value];
-        } name:@"localizedStringParser"];
-        
-        ISSParser* stringParser = [ISSParser choice:@[localizedStringParser, cleanedQuotedStringParser, defaultStringParser]];
-        
-        self.typeToParser[ISSPropertyTypeString] = stringParser;
-        
-        
-        /** -- BOOL -- **/
-        ISSParser* boolValueParser = [self.styleSheetParser.identifier transform:^id(id value) {
-            return @([value boolValue]);
-        } name:@"bool"];
-        self.typeToParser[ISSPropertyTypeBool] = [ISSParser choice:@[[self.styleSheetParser logicalExpressionParser], boolValueParser]];
-        
-        
-        /** -- Number -- **/
-        self.typeToParser[ISSPropertyTypeNumber] = self.styleSheetParser.numberOrExpressionValue;
-        
-        
-        /** -- AttributedString -- **/
-        ISSParser* attributedStringAttributesParser = [[self.styleSheetParser parameterString] transform:^id(NSArray* values) {
-            NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
-            for(NSString* pairString in values) {
-                NSArray* components = [pairString iss_trimmedSplit:@":"];
-                if( components.count == 2 && [components[0] iss_hasData] && [components[1] iss_hasData] ) {
-                    // Get property def
-                    BOOL valueSet = [self setValue:components[1] forKey:components[0] inAttributedStringAttributes:attributes];
-                    if( !valueSet ) {
-                        ISSLogWarning(@"Unknown attributed string value `%@` for property `%@`", components[1], components[0]);
-                    }
+    }
+    return self;
+}
+
+- (void) setupPropertyParsersWith:(ISSStyleSheetParser*)styleSheetParser {
+    _styleSheetParser = styleSheetParser;
+    
+    __weak ISSStyleSheetPropertyParser* blockSelf = self;
+    
+    
+    // Property parser setup:
+    
+    /** -- String -- **/
+    ISSParser* defaultStringParser = [ISSParser parserWithBlock:^id(NSString* input, ISSParserStatus* status) {
+        status->match = YES;
+        return [self cleanedStringValue:input];
+    } andName:@"defaultStringParser"];
+    
+    ISSParser* cleanedQuotedStringParser = [styleSheetParser.quotedString transform:^id(id input) {
+        return [self cleanedStringValue:input];
+    } name:@"quotedStringParser"];
+    
+    ISSParser* localizedStringParser = [[styleSheetParser singleParameterFunctionParserWithNames:@[@"localized", @"L"] parameterParser:cleanedQuotedStringParser] transform:^id(id value) {
+        return [self localizedStringWithKey:value];
+    } name:@"localizedStringParser"];
+    
+    ISSParser* stringParser = [ISSParser choice:@[localizedStringParser, cleanedQuotedStringParser, defaultStringParser]];
+    
+    _typeToParser[ISSPropertyTypeString] = stringParser;
+    
+    
+    /** -- BOOL -- **/
+    ISSParser* boolValueParser = [self.styleSheetParser.identifier transform:^id(id value) {
+        return @([value boolValue]);
+    } name:@"bool"];
+    _typeToParser[ISSPropertyTypeBool] = [ISSParser choice:@[[self.styleSheetParser logicalExpressionParser], boolValueParser]];
+    
+    
+    /** -- Number -- **/
+    _typeToParser[ISSPropertyTypeNumber] = self.styleSheetParser.numberOrExpressionValue;
+    
+    
+    /** -- AttributedString -- **/
+    ISSParser* attributedStringAttributesParser = [[self.styleSheetParser parameterString] transform:^id(NSArray* values) {
+        NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
+        for(NSString* pairString in values) {
+            NSArray* components = [pairString iss_trimmedSplit:@":"];
+            if( components.count == 2 && [components[0] iss_hasData] && [components[1] iss_hasData] ) {
+                // Get property def
+                BOOL valueSet = [self setValue:components[1] forKey:components[0] inAttributedStringAttributes:attributes];
+                if( !valueSet ) {
+                    ISSLogWarning(@"Unknown attributed string value `%@` for property `%@`", components[1], components[0]);
                 }
             }
-            return attributes;
-        } name:@"attributedStringAttributesParser"];
-        
-        ISSParser* quotedOrLocalizedStringParser = [ISSParser choice:@[localizedStringParser, cleanedQuotedStringParser]];
-        
-        ISSParser* singleAttributedStringParser = [[ISSParser sequential:@[ [quotedOrLocalizedStringParser skipSurroundingSpaces], attributedStringAttributesParser ]] transform:^id(NSArray* values) {
-            return [[NSAttributedString alloc] initWithString:values[0] attributes:values[1]];
-        } name:@"singleAttributedStringParser"];
-        
-        ISSParser* delimeter = [ISSParser choice:@[self.styleSheetParser.comma, [ISSParser spaces]]];
-        ISSParser* attributedStringParser = [[[singleAttributedStringParser skipSurroundingSpaces] sepBy1:delimeter] transform:^id(NSArray* values) {
-            NSMutableAttributedString* mutableAttributedString = [[NSMutableAttributedString alloc] init];
-            for(NSAttributedString* attributedString in values) {
-                [mutableAttributedString appendAttributedString:attributedString];
+        }
+        return attributes;
+    } name:@"attributedStringAttributesParser"];
+    
+    ISSParser* quotedOrLocalizedStringParser = [ISSParser choice:@[localizedStringParser, cleanedQuotedStringParser]];
+    
+    ISSParser* singleAttributedStringParser = [[ISSParser sequential:@[ [quotedOrLocalizedStringParser skipSurroundingSpaces], attributedStringAttributesParser ]] transform:^id(NSArray* values) {
+        return [[NSAttributedString alloc] initWithString:values[0] attributes:values[1]];
+    } name:@"singleAttributedStringParser"];
+    
+    ISSParser* delimeter = [ISSParser choice:@[self.styleSheetParser.comma, [ISSParser spaces]]];
+    ISSParser* attributedStringParser = [[[singleAttributedStringParser skipSurroundingSpaces] sepBy1:delimeter] transform:^id(NSArray* values) {
+        NSMutableAttributedString* mutableAttributedString = [[NSMutableAttributedString alloc] init];
+        for(NSAttributedString* attributedString in values) {
+            [mutableAttributedString appendAttributedString:attributedString];
+        }
+        return mutableAttributedString;
+    } name:@"attributedStringParser"];
+    
+    _typeToParser[ISSPropertyTypeAttributedString] = attributedStringParser;
+    
+    
+    /** -- Text attributes -- **/
+    _typeToParser[ISSPropertyTypeTextAttributes] = attributedStringAttributesParser; // Reusing attributed string attributes parser
+    
+    
+    /** -- CGRect -- **/
+    ISSParser* rectValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"rect"] transform:^id(NSArray* c) {
+        CGRect rect = CGRectZero;
+        if( c.count == 4 ) rect = CGRectMake(iss_floatAt(c,0), iss_floatAt(c,1), iss_floatAt(c,2), iss_floatAt(c,3));
+        return [NSValue valueWithCGRect:rect];
+    } name:@"rect"];
+    ISSParser* cgRectFromStringParser = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
+        return [NSValue valueWithCGRect:CGRectFromString(value)];
+    }];
+    _typeToParser[ISSPropertyTypeRect] = [ISSParser choice:@[rectValueParser, cgRectFromStringParser]];
+    
+    
+    /** -- UIOffset -- **/
+    ISSParser* offsetValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"offset"] transform:^id(NSArray* c) {
+        UIOffset offset = UIOffsetZero;
+        if( c.count == 2 ) offset = UIOffsetMake(iss_floatAt(c,0), iss_floatAt(c,1));
+        else if( c.count == 1 ) offset = UIOffsetMake(iss_floatAt(c,0), iss_floatAt(c,0));
+        return [NSValue valueWithUIOffset:offset];
+    } name:@"offset"];
+    ISSParser* uiOffsetFromParser = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
+        return [NSValue valueWithUIOffset:UIOffsetFromString(value)];
+    }];
+    _typeToParser[ISSPropertyTypeOffset] = [ISSParser choice:@[offsetValueParser, uiOffsetFromParser]];
+    
+    
+    /** -- CGSize -- **/
+    ISSParser* sizeValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"size"] transform:^id(NSArray* c) {
+        CGSize size = CGSizeZero;
+        if( c.count == 2 ) size = CGSizeMake(iss_floatAt(c,0), iss_floatAt(c,1));
+        else if( c.count == 1 ) size = CGSizeMake(iss_floatAt(c,0), iss_floatAt(c,0));
+        return [NSValue valueWithCGSize:size];
+    } name:@"size"];
+    ISSParser* cgSizeFromStringParser = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
+        return [NSValue valueWithCGSize:CGSizeFromString(value)];
+    }];
+    _typeToParser[ISSPropertyTypeSize] = [ISSParser choice:@[sizeValueParser, cgSizeFromStringParser]];
+    
+    
+    /** -- CGPoint -- **/
+    ISSParser* pointValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"point"] transform:^id(NSArray* c) {
+        CGPoint point = CGPointZero;
+        if( c.count == 2 ) point = CGPointMake(iss_floatAt(c,0), iss_floatAt(c,1));
+        else if( c.count == 1 ) point = CGPointMake(iss_floatAt(c,0), iss_floatAt(c,0));
+        return [NSValue valueWithCGPoint:point];
+    } name:@"point"];
+    ISSParser* cgPointFromStringParser = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
+        return [NSValue valueWithCGPoint:CGPointFromString(value)];
+    }];
+    _typeToParser[ISSPropertyTypePoint] = [ISSParser choice:@[pointValueParser, cgPointFromStringParser]];
+    
+    
+    /** -- UIEdgeInsets -- **/
+    ISSParser* insetsValueParser = [[self simpleNumericParameterStringWithOptionalPrefix:@"insets"] transform:^id(NSArray* c) {
+        UIEdgeInsets insets = UIEdgeInsetsZero;
+        if( c.count == 4 ) insets = UIEdgeInsetsMake(iss_floatAt(c,0), iss_floatAt(c,1), iss_floatAt(c,2), iss_floatAt(c,3));
+        else if( c.count == 2 ) insets = UIEdgeInsetsMake(iss_floatAt(c,0), iss_floatAt(c,1), iss_floatAt(c,0), iss_floatAt(c,1));
+        else if( c.count == 1 ) insets = UIEdgeInsetsMake(iss_floatAt(c,0), iss_floatAt(c,0), iss_floatAt(c,0), iss_floatAt(c,0));
+        return [NSValue valueWithUIEdgeInsets:insets];
+    } name:@"insets"];
+    ISSParser* uiEdgeInsetsFromStringParser = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
+        return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsFromString(value)];
+    }];
+    _typeToParser[ISSPropertyTypeEdgeInsets] = [ISSParser choice:@[insetsValueParser, uiEdgeInsetsFromStringParser]];
+    
+    
+    /** -- UIImage (1) -- **/
+    // Ex: image.png
+    // Ex: image(image.png);
+    // Ex: image(image.png, 1, 2);
+    // Ex: image(image.png, 1, 2, 3, 4);
+    ISSParser* imageParser = [[self.styleSheetParser parameterStringWithPrefix:@"image"] transform:^id(NSArray* cc) {
+        UIImage* img = nil;
+        if( cc.count > 0 ) {
+            NSString* imageName = [cc[0] iss_trimQuotes];
+            img = [self imageNamed:imageName];
+            if( cc.count == 5 ) {
+                img = [img resizableImageWithCapInsets:UIEdgeInsetsMake([cc[1] floatValue], [cc[2] floatValue], [cc[3] floatValue], [cc[4] floatValue])];
             }
-            return mutableAttributedString;
-        } name:@"attributedStringParser"];
-        
-        self.typeToParser[ISSPropertyTypeAttributedString] = attributedStringParser;
-        
-        
-        /** -- Text attributes -- **/
-        self.typeToParser[ISSPropertyTypeTextAttributes] = attributedStringAttributesParser; // Reusing attributed string attributes parser
-        
-        
-        /** -- CGRect -- **/
-        self.typeToParser[ISSPropertyTypeRect] = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
-            return [NSValue valueWithCGRect:CGRectFromString(value)];
-        }];
-        
-        
-        /** -- UIOffset -- **/
-        self.typeToParser[ISSPropertyTypeOffset] = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
-            return [NSValue valueWithUIOffset:UIOffsetFromString(value)];
-        }];
-        
-        
-        /** -- CGSize -- **/
-        self.typeToParser[ISSPropertyTypeSize] = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
-            return [NSValue valueWithCGSize:CGSizeFromString(value)];
-        }];
-        
-        
-        /** -- CGPoint -- **/
-        self.typeToParser[ISSPropertyTypePoint] = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
-            return [NSValue valueWithCGPoint:CGPointFromString(value)];
-        }];
-        
-        
-        /** -- UIEdgeInsets -- **/
-        self.typeToParser[ISSPropertyTypeEdgeInsets] = [cleanedQuotedStringParser transform:^id _Nonnull(id  _Nonnull value) {
-            return [NSValue valueWithUIEdgeInsets:UIEdgeInsetsFromString(value)];
-        }];
-        
-        
-        /** -- UIImage (1) -- **/
-        // Ex: image.png
-        // Ex: image(image.png);
-        // Ex: image(image.png, 1, 2);
-        // Ex: image(image.png, 1, 2, 3, 4);
-        ISSParser* imageParser = [[self.styleSheetParser parameterStringWithPrefix:@"image"] transform:^id(NSArray* cc) {
-            UIImage* img = nil;
-            if( cc.count > 0 ) {
-                NSString* imageName = [cc[0] iss_trimQuotes];
-                img = [self imageNamed:imageName];
-                if( cc.count == 5 ) {
-                    img = [img resizableImageWithCapInsets:UIEdgeInsetsMake([cc[1] floatValue], [cc[2] floatValue], [cc[3] floatValue], [cc[4] floatValue])];
-                }
 #if TARGET_OS_TV == 0
-                else if( cc.count == 2 ) {
-                    img = [img stretchableImageWithLeftCapWidth:[cc[1] intValue] topCapHeight:[cc[2] intValue]];
-                }
+            else if( cc.count == 2 ) {
+                img = [img stretchableImageWithLeftCapWidth:[cc[1] intValue] topCapHeight:[cc[2] intValue]];
+            }
 #endif
-            }
-            if( img ) return img;
-            else return [NSNull null];
-        } name:@"image"];
-        
-        
-        /** -- UIColor / CGColor -- **/
-        NSArray* colorCatchAllParsers = [self colorCatchAllParser:imageParser];
-        NSArray* uiColorValueParsers = [self basicColorValueParsers];
-        ISSParser* colorPropertyParser = [self colorParser:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
-        self.typeToParser[ISSPropertyTypeColor] = colorPropertyParser;
-        self.typeToParser[ISSPropertyTypeCGColor] = [colorPropertyParser transform:^id (id value) {
-            return (id)((UIColor*)value).CGColor;
-        }];
-        
-        
-        /** -- UIImage (2) -- **/
-        ISSParser* imageParsers = [self imageParsers:imageParser colorValueParsers:uiColorValueParsers];
-        self.typeToParser[ISSPropertyTypeImage] = imageParsers;
-        
-        
-        /** -- CGAffineTransform -- **/
-        // Ex: rotate(90) scale(2,2) translate(100,100);
-        ISSParser* rotateValueParser = [[self simpleNumericParameterStringWithPrefix:@"rotate" optionalPrefix:NO] transform:^id(NSArray* values) {
-            CGFloat angle = [[values firstObject] floatValue];
-            angle = ((CGFloat)M_PI * angle / 180.0f);
-            return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeRotation(angle)];
-        } name:@"rotate"];
-        ISSParser* scaleValueParser = [[self simpleNumericParameterStringWithPrefix:@"scale" optionalPrefix:NO] transform:^id(NSArray* c) {
-            if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(iss_floatAt(c,0), iss_floatAt(c,1))];
-            else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(iss_floatAt(c,0), iss_floatAt(c,0))];
-            else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
-        } name:@"scale"];
-        ISSParser* translateValueParser = [[self simpleNumericParameterStringWithPrefix:@"translate" optionalPrefix:NO] transform:^id(NSArray* c) {
-            if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(iss_floatAt(c,0), iss_floatAt(c,1))];
-            else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(iss_floatAt(c,0), iss_floatAt(c,0))];
-            else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
-        } name:@"translate"];
-        ISSParser* transformValuesParser = [[[ISSParser choice:@[rotateValueParser, scaleValueParser, translateValueParser]] many] transform:^id(id value) {
-            CGAffineTransform transform = CGAffineTransformIdentity;
-            if( [value isKindOfClass:[NSArray class]] ) {
-                if( [value count] == 1 ) transform = [value[0] CGAffineTransformValue];
-                else {
-                    for(NSValue* transformVal in value) {
-                        transform = CGAffineTransformConcat(transform, transformVal.CGAffineTransformValue);
-                    }
+        }
+        if( img ) return img;
+        else return [NSNull null];
+    } name:@"image"];
+    
+    
+    /** -- UIColor / CGColor -- **/
+    NSArray* colorCatchAllParsers = [self colorCatchAllParser:imageParser];
+    NSArray* uiColorValueParsers = [self basicColorValueParsers];
+    ISSParser* colorPropertyParser = [self colorParser:uiColorValueParsers colorCatchAllParsers:colorCatchAllParsers];
+    _typeToParser[ISSPropertyTypeColor] = colorPropertyParser;
+    _typeToParser[ISSPropertyTypeCGColor] = [colorPropertyParser transform:^id (id value) {
+        return (id)((UIColor*)value).CGColor;
+    }];
+    
+    
+    /** -- UIImage (2) -- **/
+    ISSParser* imageParsers = [self imageParsers:imageParser colorValueParsers:uiColorValueParsers];
+    _typeToParser[ISSPropertyTypeImage] = imageParsers;
+    
+    
+    /** -- CGAffineTransform -- **/
+    // Ex: rotate(90) scale(2,2) translate(100,100);
+    ISSParser* rotateValueParser = [[self simpleNumericParameterStringWithPrefix:@"rotate" optionalPrefix:NO] transform:^id(NSArray* values) {
+        CGFloat angle = [[values firstObject] floatValue];
+        angle = ((CGFloat)M_PI * angle / 180.0f);
+        return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeRotation(angle)];
+    } name:@"rotate"];
+    ISSParser* scaleValueParser = [[self simpleNumericParameterStringWithPrefix:@"scale" optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(iss_floatAt(c,0), iss_floatAt(c,1))];
+        else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeScale(iss_floatAt(c,0), iss_floatAt(c,0))];
+        else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
+    } name:@"scale"];
+    ISSParser* translateValueParser = [[self simpleNumericParameterStringWithPrefix:@"translate" optionalPrefix:NO] transform:^id(NSArray* c) {
+        if( c.count == 2 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(iss_floatAt(c,0), iss_floatAt(c,1))];
+        else if( c.count == 1 ) return [NSValue valueWithCGAffineTransform:CGAffineTransformMakeTranslation(iss_floatAt(c,0), iss_floatAt(c,0))];
+        else return [NSValue valueWithCGAffineTransform:CGAffineTransformIdentity];
+    } name:@"translate"];
+    ISSParser* transformValuesParser = [[[ISSParser choice:@[rotateValueParser, scaleValueParser, translateValueParser]] many] transform:^id(id value) {
+        CGAffineTransform transform = CGAffineTransformIdentity;
+        if( [value isKindOfClass:[NSArray class]] ) {
+            if( [value count] == 1 ) transform = [value[0] CGAffineTransformValue];
+            else {
+                for(NSValue* transformVal in value) {
+                    transform = CGAffineTransformConcat(transform, transformVal.CGAffineTransformValue);
                 }
             }
-            return [NSValue valueWithCGAffineTransform:transform];
-        } name:@"transformValues"];
-        self.typeToParser[ISSPropertyTypeTransform] = transformValuesParser;
-        
-        
-        /** -- UIFont -- **/
-        // Ex: Helvetica 12
-        // Ex: bigger(@font, 1)
-        // Ex: smaller(@font, 1)
-        // Ex: fontWithSize(@font, 12)
-        ISSParser* commaOrSpace = [[ISSParser choice:@[[ISSParser space], self.styleSheetParser.comma]] many1];
-        ISSParser* remoteFontValueURLParser = [[ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]] transform:^id(id input) {
-            return [NSURL URLWithString:[input iss_trimQuotes]];
-        } name:@"remoteFontValueURLParser"];
-        ISSParser* remoteFontValueParser = [self.styleSheetParser singleParameterFunctionParserWithName:@"url" parameterParser:remoteFontValueURLParser];
-        ISSParser* fontNameParser = [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
-        ISSParser* fontValueParser = [ISSParser choice:@[remoteFontValueParser, self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
-        
-        ISSParser* fontParser = [[fontNameParser keepLeft:commaOrSpace] then:fontValueParser];
-        fontParser = [fontValueParser transform:^id(NSArray* values) {
+        }
+        return [NSValue valueWithCGAffineTransform:transform];
+    } name:@"transformValues"];
+    _typeToParser[ISSPropertyTypeTransform] = transformValuesParser;
+    
+    
+    /** -- UIFont -- **/
+    // Ex: Helvetica 12
+    // Ex: bigger(@font, 1)
+    // Ex: smaller(@font, 1)
+    // Ex: fontWithSize(@font, 12)
+    ISSParser* commaOrSpace = [[ISSParser choice:@[[ISSParser space], self.styleSheetParser.comma]] many1];
+    ISSParser* remoteFontValueURLParser = [[ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]] transform:^id(id input) {
+        return [NSURL URLWithString:[input iss_trimQuotes]];
+    } name:@"remoteFontValueURLParser"];
+    ISSParser* remoteFontValueParser = [self.styleSheetParser singleParameterFunctionParserWithName:@"url" parameterParser:remoteFontValueURLParser];
+    ISSParser* fontNameParser = [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
+    ISSParser* fontValueParser = [ISSParser choice:@[remoteFontValueParser, self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
+    
+    ISSParser* fontParser = [[fontNameParser keepLeft:commaOrSpace] then:fontValueParser];
+    fontParser = [fontParser transform:^id(NSArray* values) {
 #if TARGET_OS_TV == 0
-            CGFloat fontSize = [UIFont systemFontSize];
+        CGFloat fontSize = [UIFont systemFontSize];
 #else
-            CGFloat fontSize = 17;
+        CGFloat fontSize = 17;
 #endif
-            NSString* fontName = nil;
-            NSURL* remoteFontURL = nil;
-            if( [values isKindOfClass:NSArray.class] ) {
-                for(id value in values) {
-                    if( [value isKindOfClass:NSURL.class] ) {
-                        remoteFontURL = value;
-                        continue;
-                    }
-                    else if( ![value isKindOfClass:NSString.class] ) continue;
-                    
-                    NSString* stringVal = value;
-                    
-                    NSString* lc = [stringVal.lowercaseString iss_trim];
-                    if( [lc hasSuffix:@"pt"] || [lc hasSuffix:@"px"] ) {
-                        lc = [lc substringToIndex:lc.length-2];
-                    }
-                    
-                    if( lc.length > 0 ) {
-                        if( lc.iss_isNumeric ) {
-                            fontSize = [lc floatValue];
-                        } else { // If not pt, px or comma
-                            if( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) { // Fallback, if not url(...) format is used
-                                remoteFontURL = [NSURL URLWithString:[stringVal iss_trimQuotes]];
-                            } else {
-                                fontName = [stringVal iss_trimQuotes];
-                            }
+        NSString* fontName = nil;
+        NSURL* remoteFontURL = nil;
+        if( [values isKindOfClass:NSArray.class] ) {
+            for(id value in values) {
+                if( [value isKindOfClass:NSURL.class] ) {
+                    remoteFontURL = value;
+                    continue;
+                }
+                else if( ![value isKindOfClass:NSString.class] ) continue;
+                
+                NSString* stringVal = value;
+                
+                NSString* lc = [stringVal.lowercaseString iss_trim];
+                if( [lc hasSuffix:@"pt"] || [lc hasSuffix:@"px"] ) {
+                    lc = [lc substringToIndex:lc.length-2];
+                }
+                
+                if( lc.length > 0 ) {
+                    if( lc.iss_isNumeric ) {
+                        fontSize = [lc floatValue];
+                    } else { // If not pt, px or comma
+                        if( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) { // Fallback, if not url(...) format is used
+                            remoteFontURL = [NSURL URLWithString:[stringVal iss_trimQuotes]];
+                        } else {
+                            fontName = [stringVal iss_trimQuotes];
                         }
                     }
                 }
             }
-            
-            if( remoteFontURL ) return [ISSRemoteFont remoteFontWithURL:remoteFontURL fontSize:fontSize];
-            else if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
-            else return [UIFont systemFontOfSize:fontSize];
-        } name:@"font"];
-        
-        ISSParser* fontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],
-                                                                 fontParser, [ISSParser unichar:',' skipSpaces:YES], self.styleSheetParser.plainNumber, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value) {
-            UIFont* font = iss_elementOfTypeOrNil(value, 2, UIFont.class);
-            float floatValue = [iss_elementOrNil(value, 4) floatValue];
-            if( font ) {
-                if( [@"larger" iss_isEqualIgnoreCase:value[0]] || [@"bigger" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[font pointSize] + floatValue];
-                else if( [@"smaller" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[font pointSize] - floatValue];
-                else if( [@"fontWithSize" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:floatValue];
-                else return value[2];
-            }
-#if TARGET_OS_TV == 0
-            return [UIFont systemFontOfSize:[UIFont systemFontSize]];
-#else
-            return [UIFont systemFontOfSize:17];
-#endif
-        } name:@"fontFunctionParser"];
-        
-#if ISS_OS_VERSION_MAX_ALLOWED >= 110000
-        if (@available(iOS 11.0, *)) {
-            NSDictionary* textStyleMapping = @{@"body" : UIFontTextStyleBody,
-                                               @"callout" : UIFontTextStyleCallout,
-                                               @"caption1" : UIFontTextStyleCaption1,
-                                               @"caption2" : UIFontTextStyleCaption2,
-                                               @"footnote" : UIFontTextStyleFootnote,
-                                               @"headline" : UIFontTextStyleHeadline,
-                                               @"subheadline" : UIFontTextStyleSubheadline,
-                                               @"title1" : UIFontTextStyleTitle1,
-                                               @"title2" : UIFontTextStyleTitle2,
-                                               @"title3" : UIFontTextStyleTitle3};
-            
-            ISSParser* optionalTextStyle = [ISSParser optional:[ISSParser sequential:@[[ISSParser unichar:',' skipSpaces:YES], [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]]]]];
-            
-            //ISSParser* dynamicTypeFontFunctionParser = [[self.styleSheetParser parameterStringWithPrefix:@"scalableFont"] transform:^id(id value) {
-            ISSParser* dynamicTypeFontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],
-                                                                                fontValueParser, optionalTextStyle, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value) {
-                NSArray* values = [value iss_flattened];
-                UIFont* font = iss_elementOfTypeOrNil(values, 2, UIFont.class);
-                id styleRaw = iss_elementOrNil(values, 4);
-                UIFontTextStyle style = styleRaw ? textStyleMapping[styleRaw] : nil;
-                if ( font && style ) {
-                    return [[[UIFontMetrics alloc] initForTextStyle:style] scaledFontForFont:font];
-                } else if( font ) {
-                    return [UIFontMetrics.defaultMetrics scaledFontForFont:font];
-                }
-                return [UIFont systemFontOfSize:17];
-            } name:@"dynamicTypeFontFunctionParser"];
-            
-            self.typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[dynamicTypeFontFunctionParser, fontFunctionParser, fontParser]];
-        } else {
-            self.typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[fontFunctionParser, fontParser]];
         }
-#else
-        self.typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[fontFunctionParser, fontParser]];
-#endif
         
-        /** -- Enums -- **/
-        ISSParser* enumValueParser = [ISSParser choice:@[self.styleSheetParser.identifier, cleanedQuotedStringParser, defaultStringParser]];
-        self.typeToParser[ISSPropertyTypeEnumType] = [enumValueParser sepBy:commaOrSpace];
+        if( remoteFontURL ) return [ISSRemoteFont remoteFontWithURL:remoteFontURL fontSize:fontSize];
+        else if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
+        else return [UIFont systemFontOfSize:fontSize];
+    } name:@"font"];
+    
+    ISSParser* fontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],
+                                                             fontParser, [ISSParser unichar:',' skipSpaces:YES], self.styleSheetParser.plainNumber, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value) {
+        UIFont* font = iss_elementOfTypeOrNil(value, 2, UIFont.class);
+        float floatValue = [iss_elementOrNil(value, 4) floatValue];
+        if( font ) {
+            if( [@"larger" iss_isEqualIgnoreCase:value[0]] || [@"bigger" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[font pointSize] + floatValue];
+            else if( [@"smaller" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:[font pointSize] - floatValue];
+            else if( [@"fontWithSize" iss_isEqualIgnoreCase:value[0]] ) return [blockSelf fontWithSize:value[2] size:floatValue];
+            else return value[2];
+        }
+#if TARGET_OS_TV == 0
+        return [UIFont systemFontOfSize:[UIFont systemFontSize]];
+#else
+        return [UIFont systemFontOfSize:17];
+#endif
+    } name:@"fontFunctionParser"];
+    
+#if ISS_OS_VERSION_MAX_ALLOWED >= 110000
+    if (@available(iOS 11.0, *)) {
+        NSDictionary* textStyleMapping = @{@"body" : UIFontTextStyleBody,
+                                           @"callout" : UIFontTextStyleCallout,
+                                           @"caption1" : UIFontTextStyleCaption1,
+                                           @"caption2" : UIFontTextStyleCaption2,
+                                           @"footnote" : UIFontTextStyleFootnote,
+                                           @"headline" : UIFontTextStyleHeadline,
+                                           @"subheadline" : UIFontTextStyleSubheadline,
+                                           @"title1" : UIFontTextStyleTitle1,
+                                           @"title2" : UIFontTextStyleTitle2,
+                                           @"title3" : UIFontTextStyleTitle3};
+        
+        ISSParser* optionalTextStyle = [ISSParser optional:[ISSParser sequential:@[[ISSParser unichar:',' skipSpaces:YES], [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]]]]];
+        
+        //ISSParser* dynamicTypeFontFunctionParser = [[self.styleSheetParser parameterStringWithPrefix:@"scalableFont"] transform:^id(id value) {
+        ISSParser* dynamicTypeFontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],
+                                                                            fontValueParser, optionalTextStyle, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value) {
+            NSArray* values = [value iss_flattened];
+            UIFont* font = iss_elementOfTypeOrNil(values, 2, UIFont.class);
+            id styleRaw = iss_elementOrNil(values, 4);
+            UIFontTextStyle style = styleRaw ? textStyleMapping[styleRaw] : nil;
+            if ( font && style ) {
+                return [[[UIFontMetrics alloc] initForTextStyle:style] scaledFontForFont:font];
+            } else if( font ) {
+                return [UIFontMetrics.defaultMetrics scaledFontForFont:font];
+            }
+            return [UIFont systemFontOfSize:17];
+        } name:@"dynamicTypeFontFunctionParser"];
+        
+        _typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[dynamicTypeFontFunctionParser, fontFunctionParser, fontParser]];
+    } else {
+        _typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[fontFunctionParser, fontParser]];
     }
-    return self;
+#else
+    _typeToParser[ISSPropertyTypeFont] = [ISSParser choice:@[fontFunctionParser, fontParser]];
+#endif
+    
+    /** -- Enums -- **/
+    ISSParser* commaOrSpaceOrPipe = [[ISSParser choice:@[[ISSParser space], self.styleSheetParser.comma, [ISSParser unichar:'|']]] many1];
+    
+    ISSParser* enumValueParser = [ISSParser choice:@[self.styleSheetParser.identifier, cleanedQuotedStringParser, defaultStringParser]];
+    _typeToParser[ISSPropertyTypeEnumType] = [[enumValueParser sepBy:commaOrSpaceOrPipe] concat:@" "];
 }
 
 
@@ -627,7 +667,7 @@
     if( attr ) {
         id parsedValue;
         if (attr.propertyType == ISSPropertyTypeEnumType) {
-            parsedValue = attr.enumMapping[[rawValue lowercaseString]];
+            parsedValue = [attr.enumMapping enumValueFromString:rawValue];
         } else {
             parsedValue = [self.styleSheetParser parsePropertyValue:rawValue asType:attr.propertyType replaceVariableReferences:NO]; // Note: variables already replaced at this point...
         }

@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak, readonly) ISSStyleSheetParser* styleSheetParser;
 
-- (instancetype) init:(ISSStyleSheetParser*)styleSheetParser;
 
 - (ISSParser*) parserForPropertyType:(ISSPropertyType)propertyType;
 - (void) setParser:(ISSParser*)parser forPropertyType:(ISSPropertyType)propertyType;

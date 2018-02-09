@@ -22,9 +22,9 @@ static NSArray* flattenArray(NSArray* array) {
 }
 
 
-@implementation NSArray (GSSAdditions)
+@implementation NSArray (ISSAdditions)
 
-- (NSArray*) uss_flattened {
+- (NSArray*) iss_flattened {
     return flattenArray(self);
 }
 

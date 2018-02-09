@@ -259,7 +259,11 @@ ISSPseudoClassType const ISSPseudoClassTypeUnknown = @"unknown";
 }
 
 - (NSString*) displayDescription {
-    if( _a != 0 || _b != 0 ) {
+    ISSPseudoClassType t = _pseudoClassType;
+    BOOL stucturalParameterized = !(t == ISSPseudoClassTypeRoot || t == ISSPseudoClassTypeOnlyChild || t == ISSPseudoClassTypeFirstChild || t == ISSPseudoClassTypeLastChild ||
+        t == ISSPseudoClassTypeOnlyOfType || t == ISSPseudoClassTypeFirstOfType || t == ISSPseudoClassTypeLastOfType || t == ISSPseudoClassTypeEmpty);
+    
+    if( stucturalParameterized && (_a != 0 || _b != 0) ) {
         NSString* bSign = _b < 0 ? @"" : @"+";
         return [NSString stringWithFormat:@"%@(%ldn%@%ld)", _pseudoClassType, (long)_a, bSign, (long)_b];
     } else if (_parameter) {

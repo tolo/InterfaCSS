@@ -49,15 +49,18 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSPropertyDefinition* pr
 @interface ISSPropertyEnumValueMapping : NSObject
 
 @property (nonatomic, strong, readonly) NSDictionary* enumValues;
-@property (nonatomic, readonly) BOOL enumBitMaskType;
+@property (nonatomic, strong, readonly) NSString* enumBaseName;
 @property (nonatomic, strong, readonly, nullable) id defaultValue;
 
-- (instancetype) initWithEnumValues:(NSDictionary*)enumValues defaultValue:(nullable id)defaultValue;
-- (instancetype) initWithBitMaskEnumValues:(NSDictionary*)enumValues defaultValue:(nullable id)defaultValue;
+- (instancetype) initWithEnumValues:(NSDictionary*)enumValues enumBaseName:(NSString*)enumBaseName defaultValue:(nullable id)defaultValue;
 
 - (id) enumValueFromString:(NSString*)string;
 
 @end
+
+@interface ISSPropertyBitMaskEnumValueMapping : ISSPropertyEnumValueMapping
+@end
+
 
 
 /**
@@ -74,14 +77,24 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSPropertyDefinition* pr
 
 @property (nonatomic, readonly) ISSPropertyType type;
 
+@property (nonatomic, strong, readonly, nullable) ISSPropertyEnumValueMapping* enumValueMapping;
+
+@property (nonatomic, strong, readonly, nullable) NSArray<ISSPropertyParameterTransformer>* parameterTransformers;
+
 @property (nonatomic, copy, readonly, nullable) ISSPropertySetterBlock setterBlock;
 
+
+- (instancetype) init NS_UNAVAILABLE;
+
+- (instancetype) initCustomPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping
+                      parameterTransformers:(nullable NSArray<ISSPropertyParameterTransformer>*)parameterTransformers setterBlock:(nullable ISSPropertySetterBlock)setter NS_DESIGNATED_INITIALIZER;
 
 - (instancetype) initCustomPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setterBlock:(ISSPropertySetterBlock)setter;
 
 - (instancetype) initWithRuntimeProperty:(ISSRuntimeProperty*)runtimeProperty type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping;
 
-- (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector parameterTransformers:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers;
+- (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping
+                             parameterTransformers:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers;
 
 
 - (BOOL) setValue:(nullable id)value onTarget:(nullable id)target withParameters:(nullable NSArray*)params;

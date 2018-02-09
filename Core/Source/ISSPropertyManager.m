@@ -70,13 +70,16 @@
     return property;
 }
 
-- (void) registerPropertyWithName:(NSString*)name inClasses:(NSArray<Class>*)classes type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
+
+#pragma mark - Internal convenience property registration methods
+
+- (void) _register:(NSString*)name inClasses:(NSArray<Class>*)classes type:(ISSPropertyType)type enums:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
     for(Class clazz in classes) {
-        [self registerPropertyWithName:name inClass:clazz type:type enumValueMapping:enumValueMapping];
+        [self _register:name inClass:clazz type:type enums:enumValueMapping];
     }
 }
 
-- (ISSPropertyDefinition*) registerPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
+- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enums:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
     ISSRuntimeProperty* runtimeProperty = [ISSRuntimeIntrospectionUtils runtimePropertyWithName:name inClass:clazz lowercasedNames:YES];
     if( runtimeProperty ) {
         return [self registerProperty:[[ISSPropertyDefinition alloc] initWithRuntimeProperty:runtimeProperty type:type enumValueMapping:enumValueMapping] inClass:clazz];
@@ -84,11 +87,11 @@
     return nil;
 }
 
-- (ISSPropertyDefinition*) registerPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector parameterTransformers:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers {
-    return [self registerProperty:[[ISSPropertyDefinition alloc] initParameterizedPropertyWithName:name inClass:clazz type:type selector:selector parameterTransformers:parameterTransformers] inClass:clazz];
+- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector params:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers {
+    return [self registerProperty:[[ISSPropertyDefinition alloc] initParameterizedPropertyWithName:name inClass:clazz type:type selector:selector enumValueMapping:nil parameterTransformers:parameterTransformers] inClass:clazz];
 }
 
-- (ISSPropertyDefinition*) registerPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setterBlock:(ISSPropertySetterBlock)setter {
+- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setter:(ISSPropertySetterBlock)setter {
     return [self registerProperty:[[ISSPropertyDefinition alloc] initCustomPropertyWithName:name inClass:clazz type:type setterBlock:setter] inClass:clazz];
 }
 
@@ -136,8 +139,8 @@
         value = weakUpdatableValue.lastValue;
     }
 
-    BOOL result = property.setterBlock(property, targetElement.uiElement, value, propertyValue.parameters);
-
+    BOOL result = [property setValue:value onTarget:targetElement.uiElement withParameters:propertyValue.parameters];
+    
     if( !result ) {
         ISSLogDebug(@"Unable to apply property value to '%@' in '%@'", property.fqn, targetElement.uiElement);
     }
@@ -324,63 +327,67 @@
         _classesToTypeNames = [NSDictionary dictionaryWithDictionary:classesToNames];
         _typeNamesToClasses = [NSDictionary dictionaryWithDictionary:typeNamesToClasses];
 
+        
+        _propertiesByType = [NSMutableDictionary dictionary];
 
 
         #if ISS_OS_VERSION_MIN_REQUIRED < 90000
-        NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"highlighted" :
-                                                           @(UIControlStateNormal), @"selected" : @(UIControlStateSelected), @"disabled" : @(UIControlStateDisabled)};
+        NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"highlighted" : @(UIControlStateHighlighted),
+                                                       @"selected" : @(UIControlStateSelected), @"disabled" : @(UIControlStateDisabled)};
         #else
         NSDictionary* controlStateParametersValues = @{@"normal" : @(UIControlStateNormal), @"focused" : @(UIControlStateFocused), @"highlighted" : @(UIControlStateHighlighted),
                                                        @"selected" : @(UIControlStateSelected), @"disabled" : @(UIControlStateDisabled)};
         #endif
-        ISSPropertyEnumValueMapping* controlStateMapping = [[ISSPropertyEnumValueMapping alloc] initWithBitMaskEnumValues:controlStateParametersValues defaultValue:@(UIControlStateNormal)];
-
+        ISSPropertyEnumValueMapping* controlStateMapping = [[ISSPropertyBitMaskEnumValueMapping alloc] initWithEnumValues:controlStateParametersValues enumBaseName:@"UIControlState" defaultValue:@(UIControlStateNormal)];
+        
         ISSPropertyEnumValueMapping* contentModeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:
                               @{@"scaletofill" : @(UIViewContentModeScaleToFill), @"scaleaspectfit" : @(UIViewContentModeScaleAspectFit),
                                 @"scaleaspectfill" : @(UIViewContentModeScaleAspectFill), @"redraw" : @(UIViewContentModeRedraw), @"center" : @(UIViewContentModeCenter), @"top" : @(UIViewContentModeTop),
                                 @"bottom" : @(UIViewContentModeBottom), @"left" : @(UIViewContentModeLeft), @"right" : @(UIViewContentModeRight), @"topleft" : @(UIViewContentModeTopLeft),
-                                @"topright" : @(UIViewContentModeTopRight), @"bottomleft" : @(UIViewContentModeBottomLeft), @"bottomright" : @(UIViewContentModeBottomRight)} defaultValue:@(UIViewContentModeScaleToFill)];
-
-        ISSPropertyEnumValueMapping* viewAutoresizingMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{ @"none" : @(UIViewAutoresizingNone),
+                                @"topright" : @(UIViewContentModeTopRight), @"bottomleft" : @(UIViewContentModeBottomLeft), @"bottomright" : @(UIViewContentModeBottomRight)} enumBaseName:@"UIViewContentMode" defaultValue:@(UIViewContentModeScaleToFill)];
+        
+        ISSPropertyEnumValueMapping* viewAutoresizingMapping = [[ISSPropertyBitMaskEnumValueMapping alloc] initWithEnumValues:@{ @"none" : @(UIViewAutoresizingNone),
                                      @"width" : @(UIViewAutoresizingFlexibleWidth), @"flexibleWidth" : @(UIViewAutoresizingFlexibleWidth),
                                      @"height" : @(UIViewAutoresizingFlexibleHeight), @"flexibleHeight" : @(UIViewAutoresizingFlexibleHeight),
                                      @"bottom" : @(UIViewAutoresizingFlexibleBottomMargin), @"flexibleBottomMargin" : @(UIViewAutoresizingFlexibleBottomMargin),
                                      @"top" : @(UIViewAutoresizingFlexibleTopMargin), @"flexibleTopMargin" : @(UIViewAutoresizingFlexibleTopMargin),
                                      @"left" : @(UIViewAutoresizingFlexibleLeftMargin), @"flexibleLeftMargin" : @(UIViewAutoresizingFlexibleLeftMargin),
-                                     @"right" : @(UIViewAutoresizingFlexibleRightMargin), @"flexibleRightMargin" : @(UIViewAutoresizingFlexibleRightMargin)} defaultValue:@(UIViewAutoresizingNone)];
+                                     @"right" : @(UIViewAutoresizingFlexibleRightMargin), @"flexibleRightMargin" : @(UIViewAutoresizingFlexibleRightMargin)} enumBaseName:@"UIViewAutoresizing" defaultValue:@(UIViewAutoresizingNone)];
+        
+        ISSPropertyEnumValueMapping* tintAdjustmentModeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"automatic" : @(UIViewTintAdjustmentModeAutomatic),
+                                     @"normal" : @(UIViewTintAdjustmentModeNormal), @"dimmed" : @(UIViewTintAdjustmentModeDimmed)} enumBaseName:@"UIViewTintAdjustmentMode" defaultValue:@(UIViewTintAdjustmentModeAutomatic)];
 
-        ISSPropertyEnumValueMapping* tintAdjustmentModeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"automatic" : @(UIViewTintAdjustmentModeAutomatic), @"normal" : @(UIViewTintAdjustmentModeNormal),
-                                                                                                                           @"dimmed" : @(UIViewTintAdjustmentModeDimmed)} defaultValue:@(UIViewTintAdjustmentModeAutomatic)];
+        ISSPropertyEnumValueMapping* barMetricsMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIBarMetricsDefault), @"landscapePhone" : @(UIBarMetricsCompact), @"compact" : @(UIBarMetricsCompact),
+                                     @"landscapePhonePrompt" : @(UIBarMetricsCompactPrompt), @"compactPrompt" : @(UIBarMetricsCompactPrompt), @"defaultPrompt" : @(UIBarMetricsDefaultPrompt)} enumBaseName:@"UIBarMetrics" defaultValue:@(UIBarMetricsDefault)];
 
-        ISSPropertyEnumValueMapping* barMetricsMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"metricsDefault" : @(UIBarMetricsDefault), @"metricsLandscapePhone" : @(UIBarMetricsCompact), @"metricsCompact" : @(UIBarMetricsCompact),
-                                                        @"metricsLandscapePhonePrompt" : @(UIBarMetricsCompactPrompt), @"metricsCompactPrompt" : @(UIBarMetricsCompactPrompt), @"metricsDefaultPrompt" : @(UIBarMetricsDefaultPrompt)} defaultValue:@(UIBarMetricsDefault)];
+        ISSPropertyEnumValueMapping* barPositionMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"any" : @(UIBarPositionAny), @"bottom" : @(UIBarPositionBottom),
+                                                        @"top" : @(UIBarPositionTop), @"topAttached" : @(UIBarPositionTopAttached)} enumBaseName:@"UIBarPosition" defaultValue:@(UIBarPositionAny)];
 
-        ISSPropertyEnumValueMapping* barPositionMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"barPositionAny" : @(UIBarPositionAny), @"barPositionBottom" : @(UIBarPositionBottom),
-                                                        @"barPositionTop" : @(UIBarPositionTop), @"barPositionTopAttached" : @(UIBarPositionTopAttached)} defaultValue:@(UIBarPositionAny)];
-
-        ISSPropertyEnumValueMapping* segmentTypeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"segmentAny" : @(UISegmentedControlSegmentAny), @"segmentLeft" : @(UISegmentedControlSegmentLeft), @"segmentCenter" : @(UISegmentedControlSegmentCenter),
-                                                        @"segmentRight" : @(UISegmentedControlSegmentRight), @"segmentAlone" : @(UISegmentedControlSegmentAlone)} defaultValue:@(UISegmentedControlSegmentAny)];
+        ISSPropertyEnumValueMapping* segmentTypeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"any" : @(UISegmentedControlSegmentAny), @"left" : @(UISegmentedControlSegmentLeft), @"center" : @(UISegmentedControlSegmentCenter),
+                                                        @"right" : @(UISegmentedControlSegmentRight), @"alone" : @(UISegmentedControlSegmentAlone)} enumBaseName:@"UISegmentedControlSegment" defaultValue:@(UISegmentedControlSegmentAny)];
 
         ISSPropertyEnumValueMapping* dataDetectorTypesMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"all" : @(UIDataDetectorTypeAll), @"none" : @(UIDataDetectorTypeNone), @"address" : @(UIDataDetectorTypeAddress),
-                                                                                                                          @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)} defaultValue:@(UIDataDetectorTypeNone)];
+                                                        @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)} enumBaseName:@"UIDataDetectorType" defaultValue:@(UIDataDetectorTypeNone)];
 
-        ISSPropertyEnumValueMapping* textAlignmentMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"left" : @(NSTextAlignmentLeft), @"center" : @(NSTextAlignmentCenter), @"right" : @(NSTextAlignmentRight)} defaultValue:@(NSTextAlignmentLeft)];
-        ISSPropertyEnumValueMapping* viewModeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"never" : @(UITextFieldViewModeNever), @"always" : @(UITextFieldViewModeAlways), @"unlessEditing" : @(UITextFieldViewModeUnlessEditing), @"whileEditing" : @(UITextFieldViewModeWhileEditing)} defaultValue:@(UITextFieldViewModeNever)];
+        ISSPropertyEnumValueMapping* textAlignmentMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"left" : @(NSTextAlignmentLeft), @"center" : @(NSTextAlignmentCenter), @"right" : @(NSTextAlignmentRight)}
+                                                                                                       enumBaseName:@"NSTextAlignment" defaultValue:@(NSTextAlignmentLeft)];
+        ISSPropertyEnumValueMapping* viewModeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"never" : @(UITextFieldViewModeNever), @"always" : @(UITextFieldViewModeAlways),
+                                                    @"unlessEditing" : @(UITextFieldViewModeUnlessEditing), @"whileEditing" : @(UITextFieldViewModeWhileEditing)} enumBaseName:@"UITextFieldViewMode" defaultValue:@(UITextFieldViewModeNever)];
 
         #if TARGET_OS_TV == 0
         ISSPropertyEnumValueMapping* barStyleMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIBarStyleDefault), @"black" : @(UIBarStyleBlack),
-                                                                                                                 @"blackOpaque" : @(UIBarStyleBlackOpaque), @"blackTranslucent" : @(UIBarStyleBlackTranslucent)} defaultValue:@(UIBarStyleDefault)];
+                                                    @"blackOpaque" : @(UIBarStyleBlackOpaque), @"blackTranslucent" : @(UIBarStyleBlackTranslucent)} enumBaseName:@"UIBarStyle" defaultValue:@(UIBarStyleDefault)];
 
         ISSPropertyEnumValueMapping* accessoryTypeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellAccessoryNone), @"checkmark" : @(UITableViewCellAccessoryCheckmark), @"detailButton" : @(UITableViewCellAccessoryDetailButton),
-                                                                                  @"disclosureButton" : @(UITableViewCellAccessoryDetailDisclosureButton), @"disclosureIndicator" : @(UITableViewCellAccessoryDisclosureIndicator)} defaultValue:@(UITableViewCellAccessoryNone)];
+                                                @"disclosureButton" : @(UITableViewCellAccessoryDetailDisclosureButton), @"disclosureIndicator" : @(UITableViewCellAccessoryDisclosureIndicator)} enumBaseName:@"UITableViewCellAccessory" defaultValue:@(UITableViewCellAccessoryNone)];
 
-        NSDictionary* searchBarIconParameters = @{@"iconBookmark" : @(UISearchBarIconBookmark), @"iconClear" : @(UISearchBarIconClear),
-                                                  @"iconResultsList" : @(UISearchBarIconResultsList), @"iconSearch" : @(UISearchBarIconSearch)};
+        NSDictionary* searchBarIconParameters = @{@"bookmark" : @(UISearchBarIconBookmark), @"clear" : @(UISearchBarIconClear),
+                                                  @"resultsList" : @(UISearchBarIconResultsList), @"search" : @(UISearchBarIconSearch)};
         #else
-        NSDictionary* searchBarIconParameters = @{@"iconSearch" : @(UISearchBarIconSearch)};
+        NSDictionary* searchBarIconParameters = @{@"search" : @(UISearchBarIconSearch)};
         #endif
 
-        ISSPropertyEnumValueMapping* searchBarIconMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:searchBarIconParameters defaultValue:@(UISearchBarIconSearch)];
+        ISSPropertyEnumValueMapping* searchBarIconMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:searchBarIconParameters enumBaseName:@"UISearchBarIcon" defaultValue:@(UISearchBarIconSearch)];
 
 
         if (withStandardPropertyCustomizations) {
@@ -394,76 +401,76 @@
 
             /** UIView **/
             Class clazz = UIView.class;
-            [self registerPropertyWithName:@"autoresizingMask" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:viewAutoresizingMapping];
-            [self registerPropertyWithName:@"contentMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:contentModeMapping];
-            [self registerPropertyWithName:@"tintAdjustmentMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:tintAdjustmentModeMapping];
+            [self _register:@"autoresizingMask" inClass:clazz type:ISSPropertyTypeEnumType enums:viewAutoresizingMapping];
+            [self _register:@"contentMode" inClass:clazz type:ISSPropertyTypeEnumType enums:contentModeMapping];
+            [self _register:@"tintAdjustmentMode" inClass:clazz type:ISSPropertyTypeEnumType enums:tintAdjustmentModeMapping];
 
             /** UIControl **/
             clazz = UIControl.class;
-            [self registerPropertyWithName:@"contentVerticalAlignment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
+            [self _register:@"contentVerticalAlignment" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"center" : @(UIControlContentVerticalAlignmentCenter), @"top" : @(UIControlContentVerticalAlignmentTop),
-                    @"bottom" : @(UIControlContentVerticalAlignmentBottom), @"fill" : @(UIControlContentVerticalAlignmentFill)} defaultValue:@(UIControlContentVerticalAlignmentTop)]];
-            [self registerPropertyWithName:@"contentHorizontalAlignment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
+                    @"bottom" : @(UIControlContentVerticalAlignmentBottom), @"fill" : @(UIControlContentVerticalAlignmentFill)} enumBaseName:@"UIControlContentVerticalAlignment" defaultValue:@(UIControlContentVerticalAlignmentTop)]];
+            [self _register:@"contentHorizontalAlignment" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"center" : @(UIControlContentHorizontalAlignmentCenter), @"left" : @(UIControlContentHorizontalAlignmentLeft),
-                    @"right" : @(UIControlContentHorizontalAlignmentRight), @"fill" : @(UIControlContentHorizontalAlignmentFill)} defaultValue:@(UIControlContentHorizontalAlignmentCenter)]];
+                    @"right" : @(UIControlContentHorizontalAlignmentRight), @"fill" : @(UIControlContentHorizontalAlignmentFill)} enumBaseName:@"UIControlContentHorizontalAlignment" defaultValue:@(UIControlContentHorizontalAlignmentCenter)]];
 
             /** UIButton **/
             clazz = UIButton.class;
-            [self registerPropertyWithName:@"attributedTitle" inClass:clazz type:ISSPropertyTypeAttributedString selector:@selector(setAttributedTitle:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"image" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"title" inClass:clazz type:ISSPropertyTypeString selector:@selector(setTitle:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"titleColor" inClass:clazz type:ISSPropertyTypeColor selector:@selector(setTitleColor:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"titleShadowColor" inClass:clazz type:ISSPropertyTypeColor selector:@selector(setTitleShadowColor:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"attributedTitle" inClass:clazz type:ISSPropertyTypeAttributedString selector:@selector(setAttributedTitle:forState:) params:@[controlStateTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"image" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"title" inClass:clazz type:ISSPropertyTypeString selector:@selector(setTitle:forState:) params:@[controlStateTransformer]];
+            [self _register:@"titleColor" inClass:clazz type:ISSPropertyTypeColor selector:@selector(setTitleColor:forState:) params:@[controlStateTransformer]];
+            [self _register:@"titleShadowColor" inClass:clazz type:ISSPropertyTypeColor selector:@selector(setTitleShadowColor:forState:) params:@[controlStateTransformer]];
 
             /** UILabel **/
             clazz = UILabel.class;
-            [self registerPropertyWithName:@"baselineAdjustment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UIBaselineAdjustmentNone), @"alignBaselines" : @(UIBaselineAdjustmentAlignBaselines), @"alignCenters" : @(UIBaselineAdjustmentAlignCenters)} defaultValue:@(UIBaselineAdjustmentNone)]];
-            [self registerPropertyWithName:@"lineBreakMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
+            [self _register:@"baselineAdjustment" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UIBaselineAdjustmentNone), @"alignBaselines" : @(UIBaselineAdjustmentAlignBaselines), @"alignCenters" : @(UIBaselineAdjustmentAlignCenters)} enumBaseName:@"UIBaselineAdjustment" defaultValue:@(UIBaselineAdjustmentNone)]];
+            [self _register:@"lineBreakMode" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"wordWrap" : @(NSLineBreakByWordWrapping), @"wordWrapping" : @(NSLineBreakByWordWrapping),
                                                                        @"charWrap" : @(NSLineBreakByCharWrapping), @"charWrapping" : @(NSLineBreakByCharWrapping),
                                                                        @"clip" : @(NSLineBreakByClipping), @"clipping" : @(NSLineBreakByClipping),
                                                                        @"truncateHead" : @(NSLineBreakByTruncatingHead), @"truncatingHead" : @(NSLineBreakByTruncatingHead),
                                                                        @"truncateTail" : @(NSLineBreakByTruncatingTail), @"truncatingTail" : @(NSLineBreakByTruncatingTail),
-                                                                       @"truncateMiddle" : @(NSLineBreakByTruncatingMiddle), @"truncatingMiddle" : @(NSLineBreakByTruncatingMiddle)} defaultValue:@(NSLineBreakByTruncatingTail)]];
-            [self registerPropertyWithName:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:textAlignmentMapping];
+                                                                       @"truncateMiddle" : @(NSLineBreakByTruncatingMiddle), @"truncatingMiddle" : @(NSLineBreakByTruncatingMiddle)} enumBaseName:@"NSLineBreakBy" defaultValue:@(NSLineBreakByTruncatingTail)]];
+            [self _register:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enums:textAlignmentMapping];
 
             /** UISegmentedControl **/
             clazz = UISegmentedControl.class;
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:barMetrics:) parameterTransformers:@[controlStateTransformer, barMetricsTransformer]];
-            [self registerPropertyWithName:@"contentPositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setContentPositionAdjustment:forSegmentType:barMetrics:) parameterTransformers:@[segmentTypeTransformer, barMetricsTransformer]];
-            [self registerPropertyWithName:@"contentOffset" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setContentOffset:forSegmentAtIndex:) parameterTransformers:@[integerTransformer]];
-            [self registerPropertyWithName:@"dividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:) parameterTransformers:@[controlStateTransformer, controlStateTransformer, barMetricsTransformer]];
-            [self registerPropertyWithName:@"enabled" inClass:clazz type:ISSPropertyTypeBool selector:@selector(setEnabled:forSegmentAtIndex:) parameterTransformers:@[integerTransformer]];
-            [self registerPropertyWithName:@"image" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forSegmentAtIndex:) parameterTransformers:@[integerTransformer]];
-            [self registerPropertyWithName:@"title" inClass:clazz type:ISSPropertyTypeString selector:@selector(setTitle:forSegmentAtIndex:) parameterTransformers:@[integerTransformer]];
-            [self registerPropertyWithName:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setTitleTextAttributes:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"width" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setWidth:forSegmentAtIndex:) parameterTransformers:@[integerTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:barMetrics:) params:@[controlStateTransformer, barMetricsTransformer]];
+            [self _register:@"contentPositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setContentPositionAdjustment:forSegmentType:barMetrics:) params:@[segmentTypeTransformer, barMetricsTransformer]];
+            [self _register:@"contentOffset" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setContentOffset:forSegmentAtIndex:) params:@[integerTransformer]];
+            [self _register:@"dividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:barMetrics:) params:@[controlStateTransformer, controlStateTransformer, barMetricsTransformer]];
+            [self _register:@"enabled" inClass:clazz type:ISSPropertyTypeBool selector:@selector(setEnabled:forSegmentAtIndex:) params:@[integerTransformer]];
+            [self _register:@"image" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forSegmentAtIndex:) params:@[integerTransformer]];
+            [self _register:@"title" inClass:clazz type:ISSPropertyTypeString selector:@selector(setTitle:forSegmentAtIndex:) params:@[integerTransformer]];
+            [self _register:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setTitleTextAttributes:forState:) params:@[controlStateTransformer]];
+            [self _register:@"width" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setWidth:forSegmentAtIndex:) params:@[integerTransformer]];
 
             /** UISlider **/
             clazz = UISlider.class;
-            [self registerPropertyWithName:@"maximumTrackImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setMaximumTrackImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"minimumTrackImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setMinimumTrackImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"thumbImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setThumbImage:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"maximumTrackImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setMaximumTrackImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"minimumTrackImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setMinimumTrackImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"thumbImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setThumbImage:forState:) params:@[controlStateTransformer]];
 
             /** UIStepper **/
             clazz = UIStepper.class;
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"decrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDecrementImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"dividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:) parameterTransformers:@[controlStateTransformer, controlStateTransformer]];
-            [self registerPropertyWithName:@"incrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setIncrementImage:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"decrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDecrementImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"dividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:) params:@[controlStateTransformer, controlStateTransformer]];
+            [self _register:@"incrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setIncrementImage:forState:) params:@[controlStateTransformer]];
 
             /** UIActivityIndicatorView **/
             clazz = UIActivityIndicatorView.class;
             #if TARGET_OS_TV == 1
-            [self registerPropertyWithName:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
+            [self _register:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
             #else
-            [self registerPropertyWithName:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
+            [self _register:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} enumBaseName:@"UIActivityIndicatorViewStyle" defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
             #endif
-            [self registerPropertyWithName:@"animating" inClass:clazz type:ISSPropertyTypeBool setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+            [self _register:@"animating" inClass:clazz type:ISSPropertyTypeBool setter:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
                 [value boolValue] ? [target startAnimating] : [target stopAnimating];
                 return YES;
             }];
@@ -471,146 +478,146 @@
             /** UIProgressView **/
             clazz = UIProgressView.class;
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"progressViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIProgressViewStyleDefault), @"bar" : @(UIProgressViewStyleBar)} defaultValue:@(UIProgressViewStyleDefault)]];
+            [self _register:@"progressViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIProgressViewStyleDefault), @"bar" : @(UIProgressViewStyleBar)} enumBaseName:@"UIProgressViewStyle" defaultValue:@(UIProgressViewStyleDefault)]];
             #endif
 
             /** UIProgressView **/
             clazz = UITextField.class;
-            [self registerPropertyWithName:@"borderStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITextBorderStyleNone), @"bezel" : @(UITextBorderStyleBezel), @"line" : @(UITextBorderStyleLine), @"roundedRect" : @(UITextBorderStyleRoundedRect)} defaultValue:@(UITextBorderStyleNone)]];
-            [self registerPropertyWithName:@"defaultTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enumValueMapping:nil];
-            [self registerPropertyWithName:@"leftViewMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:viewModeMapping];
-            [self registerPropertyWithName:@"rightViewMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:viewModeMapping];
-            [self registerPropertyWithName:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:textAlignmentMapping];
+            [self _register:@"borderStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITextBorderStyleNone), @"bezel" : @(UITextBorderStyleBezel), @"line" : @(UITextBorderStyleLine), @"roundedRect" : @(UITextBorderStyleRoundedRect)} enumBaseName:@"UITextBorderStyle" defaultValue:@(UITextBorderStyleNone)]];
+            [self _register:@"defaultTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enums:nil];
+            [self _register:@"leftViewMode" inClass:clazz type:ISSPropertyTypeEnumType enums:viewModeMapping];
+            [self _register:@"rightViewMode" inClass:clazz type:ISSPropertyTypeEnumType enums:viewModeMapping];
+            [self _register:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enums:textAlignmentMapping];
 
             /** UITextView **/
             clazz = UITextView.class;
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"dataDetectorTypes" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:dataDetectorTypesMapping];
+            [self _register:@"dataDetectorTypes" inClass:clazz type:ISSPropertyTypeEnumType enums:dataDetectorTypesMapping];
             #endif
-            [self registerPropertyWithName:@"linkTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enumValueMapping:nil];
-            [self registerPropertyWithName:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:textAlignmentMapping];
-            [self registerPropertyWithName:@"typingAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enumValueMapping:nil];
+            [self _register:@"linkTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enums:nil];
+            [self _register:@"textAlignment" inClass:clazz type:ISSPropertyTypeEnumType enums:textAlignmentMapping];
+            [self _register:@"typingAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enums:nil];
 
             /** UIScrollView **/
             clazz = UIScrollView.class;
-            [self registerPropertyWithName:@"indicatorStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIScrollViewIndicatorStyleDefault), @"black" : @(UIScrollViewIndicatorStyleBlack), @"white" : @(UIScrollViewIndicatorStyleWhite)} defaultValue:@(UIScrollViewIndicatorStyleDefault)]];
-            [self registerPropertyWithName:@"decelerationRate" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"normal" : @(UIScrollViewDecelerationRateNormal), @"fast" : @(UIScrollViewDecelerationRateFast)} defaultValue:@(UIScrollViewDecelerationRateNormal)]];
-            [self registerPropertyWithName:@"keyboardDismissMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UIScrollViewKeyboardDismissModeNone), @"onDrag" : @(UIScrollViewKeyboardDismissModeOnDrag), @"interactive" : @(UIScrollViewKeyboardDismissModeInteractive)} defaultValue:@(UIScrollViewKeyboardDismissModeNone)]];
+            [self _register:@"indicatorStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIScrollViewIndicatorStyleDefault), @"black" : @(UIScrollViewIndicatorStyleBlack), @"white" : @(UIScrollViewIndicatorStyleWhite)} enumBaseName:@"UIScrollViewIndicatorStyle" defaultValue:@(UIScrollViewIndicatorStyleDefault)]];
+            [self _register:@"decelerationRate" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"normal" : @(UIScrollViewDecelerationRateNormal), @"fast" : @(UIScrollViewDecelerationRateFast)} enumBaseName:@"UIScrollViewDecelerationRate" defaultValue:@(UIScrollViewDecelerationRateNormal)]];
+            [self _register:@"keyboardDismissMode" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UIScrollViewKeyboardDismissModeNone), @"onDrag" : @(UIScrollViewKeyboardDismissModeOnDrag), @"interactive" : @(UIScrollViewKeyboardDismissModeInteractive)} enumBaseName:@"UIScrollViewKeyboardDismissMode" defaultValue:@(UIScrollViewKeyboardDismissModeNone)]];
 
             /** UITableView **/
             clazz = UITableView.class;
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"separatorStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine), @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)} defaultValue:@(UITableViewCellSeparatorStyleNone)]];
+            [self _register:@"separatorStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine), @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)} enumBaseName:@"UITableViewCellSeparatorStyle" defaultValue:@(UITableViewCellSeparatorStyleNone)]];
             #endif
 
             /** UITableViewCell **/
             clazz = UITableViewCell.class;
-            [self registerPropertyWithName:@"selectionStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSelectionStyleNone), @"default" : @(UITableViewCellSelectionStyleDefault), @"blue" : @(UITableViewCellSelectionStyleBlue), @"gray" : @(UITableViewCellSelectionStyleGray)} defaultValue:@(UITableViewCellSelectionStyleNone)]];
-            [self registerPropertyWithName:@"editingStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellEditingStyleNone), @"delete" : @(UITableViewCellEditingStyleDelete), @"insert" : @(UITableViewCellEditingStyleInsert)} defaultValue:@(UITableViewCellEditingStyleNone)]];
+            [self _register:@"selectionStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSelectionStyleNone), @"default" : @(UITableViewCellSelectionStyleDefault), @"blue" : @(UITableViewCellSelectionStyleBlue), @"gray" : @(UITableViewCellSelectionStyleGray)} enumBaseName:@"UITableViewCellSelectionStyle" defaultValue:@(UITableViewCellSelectionStyleNone)]];
+            [self _register:@"editingStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellEditingStyleNone), @"delete" : @(UITableViewCellEditingStyleDelete), @"insert" : @(UITableViewCellEditingStyleInsert)} enumBaseName:@"UITableViewCellEditingStyle" defaultValue:@(UITableViewCellEditingStyleNone)]];
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"accessoryType" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:accessoryTypeMapping];
-            [self registerPropertyWithName:@"editingAccessoryType" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:accessoryTypeMapping];
+            [self _register:@"accessoryType" inClass:clazz type:ISSPropertyTypeEnumType enums:accessoryTypeMapping];
+            [self _register:@"editingAccessoryType" inClass:clazz type:ISSPropertyTypeEnumType enums:accessoryTypeMapping];
             #endif
 
             /** UIWebView **/
             clazz = UIWebView.class;
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"dataDetectorTypes" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:dataDetectorTypesMapping];
-            [self registerPropertyWithName:@"paginationMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
+            [self _register:@"dataDetectorTypes" inClass:clazz type:ISSPropertyTypeEnumType enums:dataDetectorTypesMapping];
+            [self _register:@"paginationMode" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"unpaginated" : @(UIWebPaginationModeUnpaginated), @"lefttoright" : @(UIWebPaginationModeLeftToRight),
-                    @"toptobottom" : @(UIWebPaginationModeTopToBottom), @"bottomtotop" : @(UIWebPaginationModeBottomToTop), @"righttoleft" : @(UIWebPaginationModeRightToLeft)} defaultValue:@(UIWebPaginationModeUnpaginated)]];
-            [self registerPropertyWithName:@"paginationBreakingMode" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"page" : @(UIWebPaginationBreakingModePage), @"column" : @(UIWebPaginationBreakingModeColumn)} defaultValue:@(UIWebPaginationBreakingModePage)]];
+                    @"toptobottom" : @(UIWebPaginationModeTopToBottom), @"bottomtotop" : @(UIWebPaginationModeBottomToTop), @"righttoleft" : @(UIWebPaginationModeRightToLeft)} enumBaseName:@"UIWebPaginationMode" defaultValue:@(UIWebPaginationModeUnpaginated)]];
+            [self _register:@"paginationBreakingMode" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"page" : @(UIWebPaginationBreakingModePage), @"column" : @(UIWebPaginationBreakingModeColumn)} enumBaseName:@"UIWebPaginationBreakingMode" defaultValue:@(UIWebPaginationBreakingModePage)]];
             #endif
 
             /** UIBarItem **/
             clazz = UIBarItem.class;
-            [self registerPropertyWithName:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setTitleTextAttributes:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setTitleTextAttributes:forState:) params:@[controlStateTransformer]];
 
             /** UIBarButtonItem **/
             clazz = UIBarButtonItem.class;
             //setBackgroundImage:forState:style:barMetrics:
-            [self registerPropertyWithName:@"backButtonBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackButtonBackgroundImage:forState:barMetrics:) parameterTransformers:@[controlStateTransformer, barMetricsTransformer]];
-            [self registerPropertyWithName:@"backButtonBackgroundVerticalPositionAdjustment" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setBackButtonBackgroundVerticalPositionAdjustment:forBarMetrics:) parameterTransformers:@[barMetricsTransformer]];
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:barMetrics:) parameterTransformers:@[controlStateTransformer, barMetricsTransformer]];
-            [self registerPropertyWithName:@"backgroundVerticalPositionAdjustment" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setBackgroundVerticalPositionAdjustment:forBarMetrics:) parameterTransformers:@[barMetricsTransformer]];
-            [self registerPropertyWithName:@"backButtonTitlePositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setBackButtonTitlePositionAdjustment:forBarMetrics:) parameterTransformers:@[barMetricsTransformer]];
-            [self registerPropertyWithName:@"style" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"plain" : @(UIBarButtonItemStylePlain), @"done" : @(UIBarButtonItemStyleDone)} defaultValue:@(UIBarButtonItemStylePlain)]];
-            [self registerPropertyWithName:@"titlePositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setTitlePositionAdjustment:forBarMetrics:) parameterTransformers:@[barMetricsTransformer]];
+            [self _register:@"backButtonBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackButtonBackgroundImage:forState:barMetrics:) params:@[controlStateTransformer, barMetricsTransformer]];
+            [self _register:@"backButtonBackgroundVerticalPositionAdjustment" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setBackButtonBackgroundVerticalPositionAdjustment:forBarMetrics:) params:@[barMetricsTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forState:barMetrics:) params:@[controlStateTransformer, barMetricsTransformer]];
+            [self _register:@"backgroundVerticalPositionAdjustment" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setBackgroundVerticalPositionAdjustment:forBarMetrics:) params:@[barMetricsTransformer]];
+            [self _register:@"backButtonTitlePositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setBackButtonTitlePositionAdjustment:forBarMetrics:) params:@[barMetricsTransformer]];
+            [self _register:@"style" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"plain" : @(UIBarButtonItemStylePlain), @"done" : @(UIBarButtonItemStyleDone)} enumBaseName:@"UIBarButtonItemStyle" defaultValue:@(UIBarButtonItemStylePlain)]];
+            [self _register:@"titlePositionAdjustment" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setTitlePositionAdjustment:forBarMetrics:) params:@[barMetricsTransformer]];
 
 
             /** UISearchBar **/
             clazz = UISearchBar.class;
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forBarPosition:barMetrics:) parameterTransformers:@[barPositionTransformer, barMetricsTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forBarPosition:barMetrics:) params:@[barPositionTransformer, barMetricsTransformer]];
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:barStyleMapping];
+            [self _register:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:barStyleMapping];
             #endif
-            [self registerPropertyWithName:@"imageForSearchBarIcon" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forSearchBarIcon:state:) parameterTransformers:@[searchBarIconTransformer, controlStateTransformer]];
-            [self registerPropertyWithName:@"positionAdjustmentForSearchBarIcon" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setPositionAdjustment:forSearchBarIcon:) parameterTransformers:@[searchBarIconTransformer]];
-            [self registerPropertyWithName:@"scopeBarButtonBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setScopeBarButtonBackgroundImage:forState:) parameterTransformers:@[controlStateTransformer]];
-            [self registerPropertyWithName:@"scopeBarButtonDividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setScopeBarButtonDividerImage:forLeftSegmentState:rightSegmentState:) parameterTransformers:@[controlStateTransformer, controlStateTransformer]];
+            [self _register:@"imageForSearchBarIcon" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setImage:forSearchBarIcon:state:) params:@[searchBarIconTransformer, controlStateTransformer]];
+            [self _register:@"positionAdjustmentForSearchBarIcon" inClass:clazz type:ISSPropertyTypeOffset selector:@selector(setPositionAdjustment:forSearchBarIcon:) params:@[searchBarIconTransformer]];
+            [self _register:@"scopeBarButtonBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setScopeBarButtonBackgroundImage:forState:) params:@[controlStateTransformer]];
+            [self _register:@"scopeBarButtonDividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setScopeBarButtonDividerImage:forLeftSegmentState:rightSegmentState:) params:@[controlStateTransformer, controlStateTransformer]];
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"scopeBarButtonTitleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setScopeBarButtonTitleTextAttributes:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"scopeBarButtonTitleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setScopeBarButtonTitleTextAttributes:forState:) params:@[controlStateTransformer]];
             #endif
-            [self registerPropertyWithName:@"searchBarStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UISearchBarStyleDefault), @"minimal" : @(UISearchBarStyleMinimal), @"prominent" : @(UISearchBarStyleProminent)} defaultValue:@(UISearchBarStyleDefault)]];
-            [self registerPropertyWithName:@"searchFieldBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setSearchFieldBackgroundImage:forState:) parameterTransformers:@[controlStateTransformer]];
+            [self _register:@"searchBarStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UISearchBarStyleDefault), @"minimal" : @(UISearchBarStyleMinimal), @"prominent" : @(UISearchBarStyleProminent)} enumBaseName:@"UISearchBarStyle" defaultValue:@(UISearchBarStyleDefault)]];
+            [self _register:@"searchFieldBackgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setSearchFieldBackgroundImage:forState:) params:@[controlStateTransformer]];
 
             /** UINavigationBar **/
             clazz = UINavigationBar.class;
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forBarPosition:barMetrics:) parameterTransformers:@[barPositionTransformer, barMetricsTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forBarPosition:barMetrics:) params:@[barPositionTransformer, barMetricsTransformer]];
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:barStyleMapping];
+            [self _register:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:barStyleMapping];
             #endif
-            [self registerPropertyWithName:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enumValueMapping:nil];
+            [self _register:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enums:nil];
 
             /** UIToolbar **/
             clazz = UIToolbar.class;
-            [self registerPropertyWithName:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forToolbarPosition:barMetrics:) parameterTransformers:@[barPositionTransformer, barMetricsTransformer]];
+            [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forToolbarPosition:barMetrics:) params:@[barPositionTransformer, barMetricsTransformer]];
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:barStyleMapping];
+            [self _register:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:barStyleMapping];
             #endif
-            [self registerPropertyWithName:@"shadowImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setShadowImage:forToolbarPosition:) parameterTransformers:@[barPositionTransformer]];
+            [self _register:@"shadowImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setShadowImage:forToolbarPosition:) params:@[barPositionTransformer]];
 
             /** UITabBar **/
             clazz = UITabBar.class;
             #if TARGET_OS_TV == 0
-            [self registerPropertyWithName:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:barStyleMapping];
+            [self _register:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:barStyleMapping];
             #endif
-            [self registerPropertyWithName:@"itemPositioning" inClass:clazz type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"automatic" : @(UITabBarItemPositioningAutomatic), @"centered" : @(UITabBarItemPositioningCentered), @"fill" : @(UITabBarItemPositioningFill)} defaultValue:@(UITabBarItemPositioningAutomatic)]];
+            [self _register:@"itemPositioning" inClass:clazz type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"automatic" : @(UITabBarItemPositioningAutomatic), @"centered" : @(UITabBarItemPositioningCentered), @"fill" : @(UITabBarItemPositioningFill)} enumBaseName:@"UITabBarItemPositioning" defaultValue:@(UITabBarItemPositioningAutomatic)]];
 
 
             /** UITextInputTraits **/
             NSArray* classes = @[UITextField.class,  UITextView.class, UISearchBar.class];
-            [self registerPropertyWithName:@"autocapitalizationType" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
+            [self _register:@"autocapitalizationType" inClasses:classes type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITextAutocapitalizationTypeNone), @"allCharacters" : @(UITextAutocapitalizationTypeAllCharacters),
-                     @"sentences" : @(UITextAutocapitalizationTypeSentences), @"words" : @(UITextAutocapitalizationTypeWords)} defaultValue:@(UITextAutocapitalizationTypeNone)]];
-            [self registerPropertyWithName:@"autocorrectionType" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)} defaultValue:@(UITextAutocorrectionTypeDefault)]];
-            [self registerPropertyWithName:@"keyboardAppearance" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
+                     @"sentences" : @(UITextAutocapitalizationTypeSentences), @"words" : @(UITextAutocapitalizationTypeWords)} enumBaseName:@"UITextAutocapitalizationType" defaultValue:@(UITextAutocapitalizationTypeNone)]];
+            [self _register:@"autocorrectionType" inClasses:classes type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UITextAutocorrectionTypeDefault), @"no" : @(UITextAutocorrectionTypeNo), @"yes" : @(UITextAutocorrectionTypeYes)} enumBaseName:@"UITextAutocorrectionType" defaultValue:@(UITextAutocorrectionTypeDefault)]];
+            [self _register:@"keyboardAppearance" inClasses:classes type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIKeyboardAppearanceDefault), @"alert" : @(UIKeyboardAppearanceAlert),
-                                                                       @"dark" : @(UIKeyboardAppearanceDark), @"light" : @(UIKeyboardAppearanceLight)} defaultValue:@(UIKeyboardAppearanceDefault)]];
-            [self registerPropertyWithName:@"keyboardType" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
+                                                                       @"dark" : @(UIKeyboardAppearanceDark), @"light" : @(UIKeyboardAppearanceLight)} enumBaseName:@"UIKeyboardAppearance" defaultValue:@(UIKeyboardAppearanceDefault)]];
+            [self _register:@"keyboardType" inClasses:classes type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIKeyboardTypeDefault), @"alphabet" : @(UIKeyboardTypeAlphabet), @"asciiCapable" : @(UIKeyboardTypeASCIICapable),
                                                                        @"decimalPad" : @(UIKeyboardTypeDecimalPad), @"emailAddress" : @(UIKeyboardTypeEmailAddress), @"namePhonePad" : @(UIKeyboardTypeNamePhonePad),
                                                                        @"numberPad" : @(UIKeyboardTypeNumberPad), @"numbersAndPunctuation" : @(UIKeyboardTypeNumbersAndPunctuation), @"phonePad" : @(UIKeyboardTypePhonePad),
-                                                                       @"twitter" : @(UIKeyboardTypeTwitter), @"URL" : @(UIKeyboardTypeURL), @"webSearch" : @(UIKeyboardTypeWebSearch)} defaultValue:@(UIKeyboardTypeDefault)]];
-            [self registerPropertyWithName:@"returnKeyType" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
+                                                                       @"twitter" : @(UIKeyboardTypeTwitter), @"URL" : @(UIKeyboardTypeURL), @"webSearch" : @(UIKeyboardTypeWebSearch)} enumBaseName:@"UIKeyboardType" defaultValue:@(UIKeyboardTypeDefault)]];
+            [self _register:@"returnKeyType" inClasses:classes type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UIReturnKeyDefault), @"go" : @(UIReturnKeyGo), @"google" : @(UIReturnKeyGoogle), @"join" : @(UIReturnKeyJoin),
                                                                        @"next" : @(UIReturnKeyNext), @"route" : @(UIReturnKeyRoute), @"search" : @(UIReturnKeySearch), @"send" : @(UIReturnKeySend),
-                                                                       @"yahoo" : @(UIReturnKeyYahoo), @"done" : @(UIReturnKeyDone), @"emergencyCall" : @(UIReturnKeyEmergencyCall)} defaultValue:@(UIReturnKeyDefault)]];
-            [self registerPropertyWithName:@"spellCheckingType" inClasses:classes type:ISSPropertyTypeEnumType enumValueMapping:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UITextSpellCheckingTypeDefault), @"no" : @(UITextSpellCheckingTypeNo), @"yes" : @(UITextSpellCheckingTypeYes)} defaultValue:@(UITextSpellCheckingTypeDefault)]];
+                                                                       @"yahoo" : @(UIReturnKeyYahoo), @"done" : @(UIReturnKeyDone), @"emergencyCall" : @(UIReturnKeyEmergencyCall)} enumBaseName:@"UIReturnKey" defaultValue:@(UIReturnKeyDefault)]];
+            [self _register:@"spellCheckingType" inClasses:classes type:ISSPropertyTypeEnumType enums:
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"default" : @(UITextSpellCheckingTypeDefault), @"no" : @(UITextSpellCheckingTypeNo), @"yes" : @(UITextSpellCheckingTypeYes)} enumBaseName:@"UITextSpellCheckingType" defaultValue:@(UITextSpellCheckingTypeDefault)]];
         }
     }
     return self;

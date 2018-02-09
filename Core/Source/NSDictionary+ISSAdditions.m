@@ -6,7 +6,7 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import "NSDictionary+ISSDictionaryAdditions.h"
+#import "NSDictionary+ISSAdditions.h"
 
 @implementation NSDictionary (ISSDictionaryAdditions)
 

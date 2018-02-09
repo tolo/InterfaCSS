@@ -11,8 +11,9 @@
 		2785E25F18A8DCBB001D1104 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
 		2785E26018A8DCBB001D1104 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
 		27DDFCAF18B0CC3C00C4A6A1 /* libInterfaCSS-Core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */; };
+		8A0260F92028F14B00329C4C /* ISSStyleSheetParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A9F74782023575A001E90FB /* ISSStyleSheetParserTests.m */; };
 		8A03614E201A054800BA97F6 /* NSArray+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A03614C201A054800BA97F6 /* NSArray+ISSAdditions.m */; };
-		8A03614F201A054800BA97F6 /* NSArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */; };
+		8A03614F201A054800BA97F6 /* NSArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8A036152201A081100BA97F6 /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */; };
 		8A036153201A081100BA97F6 /* ISSNestedElementSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */; };
 		8A3296352021BBF4002259BD /* NSObject+ISSLogSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */; };
@@ -33,6 +34,9 @@
 		8A677FFB202461BA00E20D18 /* UIColor+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF7202461BA00E20D18 /* UIColor+ISSAdditions.h */; };
 		8A677FFC202461BA00E20D18 /* NSString+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */; };
 		8A677FFD202461BA00E20D18 /* UIColor+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF9202461BA00E20D18 /* UIColor+ISSAdditions.m */; };
+		8A83208E202D919000B7D3AA /* NSDictionary+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */; };
+		8A83208F202D919000B7D3AA /* NSDictionary+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */; };
+		8A832091202DC19900B7D3AA /* image.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A832090202DC19700B7D3AA /* image.png */; };
 		8A97EE012016104500BF210A /* ISSStyleSheetParser+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */; };
 		8A97EE1620161A0A00BF210A /* ISSStyleSheetParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F83733201096D50093373E /* ISSStyleSheetParser.m */; };
 		8A9F74792023575A001E90FB /* styleSheetWithBadData.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74742023575A001E90FB /* styleSheetWithBadData.css */; };
@@ -125,6 +129,9 @@
 		8A677FF7202461BA00E20D18 /* UIColor+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A677FF9202461BA00E20D18 /* UIColor+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+ISSAdditions.m"; sourceTree = "<group>"; };
+		8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+ISSAdditions.h"; sourceTree = "<group>"; };
+		8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+ISSAdditions.m"; sourceTree = "<group>"; };
+		8A832090202DC19700B7D3AA /* image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image.png; sourceTree = "<group>"; };
 		8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ISSStyleSheetParser+Protected.h"; sourceTree = "<group>"; };
 		8A9F74742023575A001E90FB /* styleSheetWithBadData.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetWithBadData.css; sourceTree = "<group>"; };
 		8A9F74752023575A001E90FB /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
@@ -147,6 +154,7 @@
 		B6BB5F4E9F40A1F154CB7C38 /* Pods-InterfaCSS Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS Tests/Pods-InterfaCSS Tests.release.xcconfig"; sourceTree = "<group>"; };
 		BAB419DEBE564B11F9255205 /* Pods-InterfaCSS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS/Pods-InterfaCSS.debug.xcconfig"; sourceTree = "<group>"; };
 		F600AF7620175C8200B44482 /* ISSMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSMacros.h; sourceTree = "<group>"; };
+		F6210140202C558A009A0A1D /* ISSTestMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSTestMacros.h; sourceTree = "<group>"; };
 		F648DB0F202277D20011012C /* ISSDownloadableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDownloadableResource.m; sourceTree = "<group>"; };
 		F648DB10202277D20011012C /* ISSRefreshableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRefreshableResource.h; sourceTree = "<group>"; };
 		F648DB11202277D30011012C /* ISSDateUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDateUtils.h; sourceTree = "<group>"; };
@@ -228,6 +236,8 @@
 			children = (
 				8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */,
 				8A03614C201A054800BA97F6 /* NSArray+ISSAdditions.m */,
+				8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */,
+				8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */,
 				8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */,
 				8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */,
 				8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */,
@@ -243,6 +253,7 @@
 		8A9F74732023575A001E90FB /* TestData */ = {
 			isa = PBXGroup;
 			children = (
+				8A832090202DC19700B7D3AA /* image.png */,
 				8A9F74742023575A001E90FB /* styleSheetWithBadData.css */,
 				8A9F74752023575A001E90FB /* styleSheetStructure.css */,
 				8A9F74762023575A001E90FB /* styleSheetPropertyValues.css */,
@@ -311,6 +322,7 @@
 				8A9F74732023575A001E90FB /* TestData */,
 				8A9F74772023575A001E90FB /* ISSSelectorTests.m */,
 				8A9F74782023575A001E90FB /* ISSStyleSheetParserTests.m */,
+				F6210140202C558A009A0A1D /* ISSTestMacros.h */,
 			);
 			path = Test;
 			sourceTree = "<group>";
@@ -417,6 +429,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A83208E202D919000B7D3AA /* NSDictionary+ISSAdditions.h in Headers */,
 				8A97EE012016104500BF210A /* ISSStyleSheetParser+Protected.h in Headers */,
 				8AA14132202326D40058B23B /* ISSElementStylingProxy.h in Headers */,
 				8A32963E2021E045002259BD /* ISSElementStylingProxy+Protected.h in Headers */,
@@ -532,6 +545,7 @@
 				8A9F74792023575A001E90FB /* styleSheetWithBadData.css in Resources */,
 				8A9F747B2023575A001E90FB /* styleSheetPropertyValues.css in Resources */,
 				8A9F747A2023575A001E90FB /* styleSheetStructure.css in Resources */,
+				8A832091202DC19900B7D3AA /* image.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,6 +556,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8A0260F92028F14B00329C4C /* ISSStyleSheetParserTests.m in Sources */,
 				8A9F747C2023575A001E90FB /* ISSSelectorTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -568,6 +583,7 @@
 				8A387FC72010D8810011BD52 /* ISSPseudoClass.m in Sources */,
 				F6F837632010B0EC0093373E /* ISSRuleset.m in Sources */,
 				8A97EE1620161A0A00BF210A /* ISSStyleSheetParser.m in Sources */,
+				8A83208F202D919000B7D3AA /* NSDictionary+ISSAdditions.m in Sources */,
 				8A32963C2021BBF4002259BD /* UIDevice+ISSAdditions.m in Sources */,
 				F6F8376D2010B1000093373E /* ISSParser.m in Sources */,
 				8AEE849D2020745300567B11 /* ISSStylingManager.m in Sources */,

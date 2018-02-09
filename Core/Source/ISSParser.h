@@ -66,6 +66,7 @@ typedef id _Nonnull (^ISSParserTransformerBlock)(id value);
 - (ISSParser*) sepByKeep:(ISSParser*)delimiterParser;
 - (ISSParser*) sepBy1Keep:(ISSParser*)delimiterParser;
 
+- (ISSParser*) concat:(NSString*)separator;
 - (ISSParser*) concat;
 - (ISSParser*) concatMany;
 - (ISSParser*) concatMany1;

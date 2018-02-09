@@ -249,12 +249,20 @@
     } andName:@"sepBy"];
 }
 
-- (ISSParser*) concat {
+- (ISSParser*) concat:(NSString*)separator {
     ISSParser* concat = [self transform:^id(id value) {
-        return [value componentsJoinedByString:@""];
+        if( [value isKindOfClass:NSArray.class] ) {
+            return [[value iss_flattened] componentsJoinedByString:separator];
+        } else {
+            return value;
+        }
     }];
     concat.name = @"concat";
     return concat;
+}
+
+- (ISSParser*) concat {
+    return [self concat:@""];
 }
 
 - (ISSParser*) concatMany {

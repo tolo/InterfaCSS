@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ISSStylingManager* stylingManager;
 
+- (ISSPropertyDefinition*) findPropertyWithName:(NSString*)name inClass:(Class)clazz;
 
 /**
  * Returns the canonical type class for the given class, i.e. the closest super class that represents a valid type selector. For instance, for all `UIView`

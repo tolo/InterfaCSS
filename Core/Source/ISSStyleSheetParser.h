@@ -10,7 +10,7 @@
 
 #import "ISSPropertyDefinition.h"
 
-@class ISSParser, ISSStyleSheetManager;
+@class ISSParser, ISSStyleSheetManager, ISSStyleSheetParser;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ISSStyleSheetPropertyParsingDelegate
 
+- (void) setupPropertyParsersWith:(ISSStyleSheetParser*)styleSheetParser;
 - (id) parsePropertyValue:(NSString*)propertyValue ofType:(ISSPropertyType)type;
 
 @end

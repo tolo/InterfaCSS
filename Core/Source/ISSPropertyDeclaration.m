@@ -76,22 +76,28 @@ NSObject* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 #pragma mark - Property value tranform
 
 - (id) valueForProperty:(ISSPropertyDefinition*)property {
-    NSString* fqn = property.fqn;
-    id value = self.cachedTransformedValues[fqn];
+    return [self valueForPropertyType:property.type enumValueMapping:property.enumValueMapping valueCacheKey:property.fqn];
+}
+
+- (id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(NSString*)valueCacheKey {
+    id value = valueCacheKey ? self.cachedTransformedValues[valueCacheKey] : nil;
     if( !value ) {
         BOOL containsVariables = NO;
-        value = self.valueTransformationBlock(self, property.type, &containsVariables);
+        value = self.valueTransformationBlock(self, propertyType, &containsVariables);
+        
         if( !value ) {
-            ISSLogWarning(@"Cannot apply property value for %@ - empty property value after transform! Value before transform: '%@'.", fqn, _rawValue);
+            ISSLogWarning(@"Cannot apply property value for %@(%@) - empty property value after transform! Value before transform: '%@'.", self.propertyName, valueCacheKey, _rawValue);
             value = [NSNull null];
+        } else if ( enumValueMapping ) {
+            value = [enumValueMapping enumValueFromString:value];
         }
         
         if( containsVariables ) {
-            ISSLogTrace(@"Value for %@ not cacheable - contains variable references (%@)", fqn, _rawValue);
-        } else if( self.cachedTransformedValues ) {
-            self.cachedTransformedValues[fqn] = value;
-        } else {
-            self.cachedTransformedValues = [NSMutableDictionary dictionaryWithObject:value forKey:fqn];
+            ISSLogTrace(@"Value for %@(%@) not cacheable - contains variable references (%@)", self.propertyName, valueCacheKey, _rawValue);
+        } else if ( valueCacheKey && self.cachedTransformedValues ) {
+            self.cachedTransformedValues[valueCacheKey] = value;
+        } else if ( valueCacheKey ) {
+            self.cachedTransformedValues = [NSMutableDictionary dictionaryWithObject:value forKey:valueCacheKey];
         }
     } else if( value == [NSNull null] ) {
         return nil;

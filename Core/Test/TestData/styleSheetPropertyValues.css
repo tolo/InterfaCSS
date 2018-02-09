@@ -12,7 +12,7 @@
 
 .simple {
     alpha : 0.33;
-    layer.cornerRadius: 5;
+    tag: 5;
     autoresizingMask: width height left right top bottom;
     clipsToBounds: YES;
     contentMode: bottomRight;
@@ -24,10 +24,10 @@
     contentInset: insets(10, 20, 30, 40);
     center: point(5, 6);
     frame: rect(1,2,3,4);
-    bounds: size(10,20);
+    bounds: "{{1,2},{3,4}}";
     color: rgb(128, 128, 128);
     tintColor: #ffffff;
-    titleColor(selectedHighlighted)  : blue;
+    titleColor(selected highlighted)  : blue;
     textColor : rgba(64, 64, 64, 0.5);
     shadowColor: red;
     transform: rotate(10) scale(20,30) translate(40,50);

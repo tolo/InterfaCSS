@@ -229,15 +229,10 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 }
 
 - (nullable id) parsePropertyValue:(NSString*)value asType:(ISSPropertyType)type replaceVariableReferences:(BOOL)replaceVariableReferences didReplaceReplaceVariableReferences:(BOOL*)didReplace {
-    if( type != ISSPropertyTypeEnumType ) {
-        if( replaceVariableReferences ) {
-            value = [self replaceVariableReferences:value didReplace:didReplace];
-        }
-        return [self.propertyParser parsePropertyValue:value ofType:type];
-    } else {
-        ISSLogWarning(@"Enum property type not allowed in %s", __PRETTY_FUNCTION__);
-        return nil;
+    if( replaceVariableReferences ) {
+        value = [self replaceVariableReferences:value didReplace:didReplace];
     }
+    return [self.propertyParser parsePropertyValue:value ofType:type];
 }
 
 
@@ -608,7 +603,8 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
         
         
         // Finally - create property parser, if needed
-        _propertyParser = propertyParser ?: [[ISSStyleSheetPropertyParser alloc] init:self];
+        _propertyParser = propertyParser ?: [[ISSStyleSheetPropertyParser alloc] init];
+        [_propertyParser setupPropertyParsersWith:self];
     }
     return self;
 }

@@ -11,6 +11,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ISSStylingManager.h"
+#import "ISSPropertyManager.h"
 #import "ISSStyleSheetManager.h"
 #import "ISSStyleSheetParser.h"
 #import "ISSStyleSheetPropertyParser.h"
@@ -22,6 +23,11 @@
 #import "ISSSelectorChain.h"
 #import "ISSSelector.h"
 #import "ISSElementStylingProxy.h"
+
+#import "NSString+ISSAdditions.h"
+#import "UIColor+ISSAdditions.h"
+
+#import "ISSTestMacros.h"
 
 
 @interface ISSStyleSheetPropertyTestParser : ISSStyleSheetPropertyParser
@@ -92,22 +98,31 @@ static ISSStylingManager* defaultStyler;
     return [[self getAllPropertyDeclarationsForStyleClass:styleClass inStyleSheet:stylesheet] firstObject];
 }
 
-- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromDeclarations:(ISSRuleset*)declarations getDeclarations:(BOOL)getDeclarations {
+//- (NSArray*) getPropertyDeclarationsWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset {
+//    return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
+//}
+//
+//- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset forType:(ISSPropertyType)type {
+//    return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:type onlyDeclarations:NO];
+//}
+
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset forType:(ISSPropertyType)type onlyDeclarations:(BOOL)onlyDeclarations {
     NSMutableArray* values = [NSMutableArray array];
     
     for(NSString* name in names) {
         id value = nil;
-        for(ISSPropertyDeclaration* d in declarations.properties) {
-            NSString* propertyName = d.property.name;
-            if( d.nestedElementKeyPath && ![d.nestedElementKeyPath isEqualToString:@"layer"] ) {
-                propertyName = [[d.nestedElementKeyPath stringByAppendingString:@"."] stringByAppendingString:propertyName];
-            }
+//        for(ISSPropertyDeclaration* d in declarations.properties) {
+        for(ISSPropertyDeclaration* d in ruleset.properties) {
+            NSString* propertyName = d.propertyName; // d.property.name;
+//            if( d.nestedElementKeyPath && ![d.nestedElementKeyPath isEqualToString:@"layer"] ) {
+//                propertyName = [[d.nestedElementKeyPath stringByAppendingString:@"."] stringByAppendingString:propertyName];
+//            }
             
-            if( [propertyName iss_isEqualIgnoreCase:name] || [d.property.allNames containsObject:[name lowercaseString]] ) {
-                if( getDeclarations ) value = d;
-                else {
-                    [d transformValueIfNeeded];
-                    value = d.propertyValue;
+            if( [propertyName iss_isEqualIgnoreCase:name] ) {
+                if( onlyDeclarations ) {
+                    value = d;
+                } else {
+                    value = [d valueForPropertyType:type enumValueMapping:nil valueCacheKey:nil];
                 }
             }
         }
@@ -118,17 +133,17 @@ static ISSStylingManager* defaultStyler;
     return values;
 }
 
-- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
-    ISSRuleset* declarations = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass forType:(ISSPropertyType)type onlyDeclarations:(BOOL)onlyDeclarations {
+    ISSRuleset* ruleset = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
     
-    return [self getPropertyValuesWithNames:names fromDeclarations:declarations getDeclarations:getDeclarations];
+    return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:type onlyDeclarations:onlyDeclarations];
 }
 
-- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass {
-    return [self getPropertyValuesWithNames:names fromStyleClass:styleClass getDeclarations:NO];
+- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass forType:(ISSPropertyType)type {
+    return [self getPropertyValuesWithNames:names fromStyleClass:styleClass forType:type onlyDeclarations:NO];
 }
 
-- (NSArray*) getAllPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
+/*- (NSArray*) getAllPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
     NSArray* allDeclarations = [self getAllPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
     
     NSMutableArray* result = [NSMutableArray array];
@@ -136,11 +151,15 @@ static ISSStylingManager* defaultStyler;
         [result addObjectsFromArray:[self getPropertyValuesWithNames:names fromDeclarations:declarations getDeclarations:getDeclarations]];
     }
     return result;
+}*/
+
+
+- (id) getSimplePropertyValueWithName:(NSString*)name forType:(ISSPropertyType)type {
+    return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple" forType:type] firstObject];
 }
 
-
-- (id) getSimplePropertyValueWithName:(NSString*)name {
-    return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple"] firstObject];
+- (ISSPropertyDeclaration*) getSimplePropertyDeclarationWithName:(NSString*)name {
+    return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple" forType:ISSPropertyTypeUnknown onlyDeclarations:YES] firstObject];
 }
 
 - (UIColor*) colorOfFirstPixel:(UIImage*)image {
@@ -160,7 +179,12 @@ static ISSStylingManager* defaultStyler;
     free(pixelData);
     
     return [UIColor colorWithRed:r/255.0f green:g/255.0f blue:b/255.0f alpha:a/255.0f];
-    
+}
+
+- (BOOL) compareImage:(UIImage*)image1 withImage:(UIImage*)image2 {
+    NSData* image1Data = UIImagePNGRepresentation(image1);
+    NSData* image2Data = UIImagePNGRepresentation(image2);
+    return [image1Data isEqualToData:image2Data];
 }
 
 - (BOOL) compareColorWithTolerance:(UIColor*)color1 color2:(UIColor*)color2 {
@@ -186,12 +210,12 @@ static ISSStylingManager* defaultStyler;
     ISSRuleset* declarations = result[0];
     XCTAssertEqual(declarations.properties.count, (NSUInteger)1, @"Expected one property declaration");
     ISSPropertyDeclaration* declaration = declarations.properties[0];
-    XCTAssertEqualObjects(declaration.property.name, @"alpha", @"Expected property alpha");
+    XCTAssertEqualObjects(declaration.propertyName, @"alpha", @"Expected property alpha");
     
     declarations = result[1];
     XCTAssertEqual(declarations.properties.count, (NSUInteger)1, @"Expected one property declaration");
     declaration = declarations.properties[0];
-    XCTAssertEqualObjects(declaration.property.name, @"clipsToBounds", @"Expected property clipsToBounds");
+    ISSAssertEqualIgnoringCase(declaration.propertyName, @"clipsToBounds", @"Expected property clipsToBounds");
 }
 
 
@@ -211,11 +235,12 @@ static ISSStylingManager* defaultStyler;
         [d.selectorChains enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             [chains addObject:[obj displayDescription]];
         }];
-        NSString* selectorDescription = [chains componentsJoinedByString:@", "];
+        NSString* selectorDescription = [[chains componentsJoinedByString:@", "] lowercaseString];
         
         ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
-        [decl transformValueIfNeeded];
-        if( decl && [decl.propertyValue isEqual:@(0.666)] ) {
+        id propertyValue = [decl valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil];
+        //[decl transformValueIfNeeded];
+        if( decl && [propertyValue isEqual:@(0.666)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
                 [expectedSelectors removeObject:selectorDescription];
             } else {
@@ -234,63 +259,67 @@ static ISSStylingManager* defaultStyler;
 
 
 - (void) testNumberPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"alpha"];
+    id value = [self getSimplePropertyValueWithName:@"alpha" forType:ISSPropertyTypeNumber];
     ISSAssertEqualFloats([value floatValue], 0.33f, @"Expected value '0.33' for property alpha");
     
-    value = [self getSimplePropertyValueWithName:@"cornerRadius"];
+    value = [self getSimplePropertyValueWithName:@"tag" forType:ISSPropertyTypeNumber];
     XCTAssertEqualObjects(value, @(5), @"Expected value '5' for property cornerRadius");
 }
 
 - (void) testBooleanPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"clipsToBounds"];
+    id value = [self getSimplePropertyValueWithName:@"clipsToBounds" forType:ISSPropertyTypeBool];
     XCTAssertEqualObjects(value, @YES, @"Expected value 'YES' for property clipsToBounds");
 }
 
 - (void) testStringPropertyValue {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"prompt"] fromStyleClass:@"simple"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"prompt"] fromStyleClass:@"simple" forType:ISSPropertyTypeString];
     XCTAssertEqualObjects(values[0], @"Text's:", @"Expected value 'Text:' for property text");
     XCTAssertEqualObjects(values[1], @"Title", @"Expected value 'Title' for property title");
     XCTAssertEqualObjects(values[2], @"Prompt", @"Expected value 'Prompt' for property prompt");
 }
 
 - (void) testLocalizedStringPropertyValue {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title", @"attributedText"] fromStyleClass:@"localizedStrings"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"title"] fromStyleClass:@"localizedStrings" forType:ISSPropertyTypeString];
     XCTAssertEqualObjects(values[0], @"Text.localized");
     XCTAssertEqualObjects(values[1], @"Title.localized");
-    XCTAssertEqualObjects([values[2] string], @"text1.localized-text2.localized");
+}
+
+- (void) testLocalizedAttributedStringPropertyValue {
+    NSArray* values = [self getPropertyValuesWithNames:@[@"attributedText"] fromStyleClass:@"localizedStrings" forType:ISSPropertyTypeAttributedString];
+    XCTAssertEqualObjects([values[0] string], @"text1.localized-text2.localized");
 }
 
 - (void) testStringsWithEscapes {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"attributedText"] fromStyleClass:@"stringsWithEscapes"];
-    XCTAssertEqualObjects(values[0], @"dr \"evil\" rules");
-    XCTAssertEqualObjects([values[1] string], @"dr \"evil\" rules, and so does austin \"danger\" powers");
+    NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"attributedText"] fromStyleClass:@"stringsWithEscapes" forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
+    XCTAssertEqualObjects([values[0] valueForPropertyType:ISSPropertyTypeString enumValueMapping:nil valueCacheKey:nil], @"dr \"evil\" rules");
+    XCTAssertEqualObjects([[values[1] valueForPropertyType:ISSPropertyTypeAttributedString enumValueMapping:nil valueCacheKey:nil] string], @"dr \"evil\" rules, and so does austin \"danger\" powers");
 }
 
 - (void) testOffsetPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"searchTextPositionAdjustment"];
+    id value = [self getSimplePropertyValueWithName:@"searchTextPositionAdjustment" forType:ISSPropertyTypeOffset];
     UIOffset offset = [value isKindOfClass:NSValue.class] ? [value UIOffsetValue] : UIOffsetZero;
     XCTAssertTrue(UIOffsetEqualToOffset(offset, UIOffsetMake(1, 2)), @"Expected UIOffset value of '{1, 2}' for property searchTextPositionAdjustment, got: %@", value);
 }
 
 - (void) testSizePropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"contentSize"];
+    id value = [self getSimplePropertyValueWithName:@"contentSize" forType:ISSPropertyTypeSize];
     CGSize size = [value isKindOfClass:NSValue.class] ? [value CGSizeValue] : CGSizeZero;
     XCTAssertTrue(CGSizeEqualToSize(size, CGSizeMake(3, 4)), @"Expected CGSize value of '{3, 4}' for property contentSize, got: %@", value);
 }
 
 - (void) testInsetPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"contentInset"];
+    id value = [self getSimplePropertyValueWithName:@"contentInset" forType:ISSPropertyTypeEdgeInsets];
     UIEdgeInsets insets = [value isKindOfClass:NSValue.class] ? [value UIEdgeInsetsValue] : UIEdgeInsetsZero;
     XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsMake(10, 20, 30, 40)), @"Expected UIEdgeInsets value of '{10, 20, 30, 40}' for property contentInset, got: %@", value);
 }
 
 - (void) testPointPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"center"];
-    CGPoint point = [value isKindOfClass:ISSPointValue.class] ? [value point] : CGPointZero;
+    id value = [self getSimplePropertyValueWithName:@"center" forType:ISSPropertyTypePoint];
+    CGPoint point = [value isKindOfClass:NSValue.class] ? [value CGPointValue] : CGPointZero;
     XCTAssertTrue(CGPointEqualToPoint(point, CGPointMake(5, 6)), @"Expected CGPoint value of '{5, 6}' for property center, got: %@", value);
 }
 
-- (void) testParentRelativePointPropertyValue {
+/*- (void) testParentRelativePointPropertyValue {
     id value = [[self getPropertyValuesWithNames:@[@"center"] fromStyleClass:@"point1"] firstObject];
 
     UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
@@ -312,21 +341,21 @@ static ISSStylingManager* defaultStyler;
     ISSPointValue* pointValue = [value isKindOfClass:ISSPointValue.class] ? value : nil;
     CGPoint point = [pointValue pointForView:view];
     XCTAssertTrue(CGPointEqualToPoint(point, CGPointMake(200, 100)), @"Expected CGPoint value of '{150, 50}' for property center, got: %@", value);
-}
+}*/
 
 - (void) testAbsoluteRectPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"simple"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"simple" forType:ISSPropertyTypeRect];
 
     id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    XCTAssertTrue(CGRectEqualToRect(rectValue.rect, CGRectMake(1, 2, 3, 4)), @"Expected CGRect value of '{1, 2, 3, 4}' for property frame, got: %@", value);
+    CGRect rectValue = [value isKindOfClass:NSValue.class] ? [value CGRectValue] : CGRectZero;
+    XCTAssertTrue(CGRectEqualToRect(rectValue, CGRectMake(1, 2, 3, 4)), @"Expected CGRect value of '{{1, 2}, {3, 4}}' for property frame, got: %@", value);
     
     value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    XCTAssertTrue(CGRectEqualToRect(rectValue.rect, CGRectMake(0, 0, 10, 20)), @"Expected CGRect value of '{0, 0, 10, 20}' for property bounds, got: %@", value);
+    rectValue = [value isKindOfClass:NSValue.class] ? [value CGRectValue] : CGRectZero;
+    XCTAssertTrue(CGRectEqualToRect(rectValue, CGRectMake(1, 2, 3, 4)), @"Expected CGRect value of '{{1, 2}, {3, 4}}' for property bounds, got: %@", value);
 }
 
-- (void) testParentInsetRectPropertyValues {
+/*- (void) testParentInsetRectPropertyValues {
     NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect1"];
     
     UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
@@ -414,10 +443,10 @@ static ISSStylingManager* defaultStyler;
     rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
     rect = [rectValue rectForView:view];
     XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(40, 20, 80, 120)), @"Expected CGRect value of '{40, 20, 80, 120}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}
+}*/
 
 - (void) testUIColorPropertyValue {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"simple"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"simple" forType:ISSPropertyTypeColor];
     XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:128 G:128 B:128]);
     XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:255 G:255 B:255]);
     XCTAssertEqualObjects(values[2], [UIColor iss_colorWithR:64 G:64 B:64 A:0.5]);
@@ -425,7 +454,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testRGBAHexColorPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsRGBA"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsRGBA" forType:ISSPropertyTypeColor];
     XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:64 G:128 B:176 A:0]);
     XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:0 G:255 B:128 A:1]);
     XCTAssertEqualObjects(values[2], [UIColor iss_colorWithR:0 G:0 B:0 A:128/255.0]);
@@ -435,7 +464,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testCompactHexColorPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsCompact"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"backgroundColor", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"hexColorsCompact" forType:ISSPropertyTypeColor];
     XCTAssertEqualObjects(values[0], [UIColor iss_colorWithR:0 G:0 B:0]);
     XCTAssertEqualObjects(values[1], [UIColor iss_colorWithR:255 G:255 B:255]);
     XCTAssertEqualObjects(values[2], [UIColor colorWithRed:0 green:0 blue:0 alpha:8/15.0f]);
@@ -445,7 +474,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testUIColorFunctionPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"textColor", @"tintColor", @"shadowColor", @"sectionIndexColor", @"separatorColor"] fromStyleClass:@"colorfunctions"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"titleColor", @"textColor", @"tintColor", @"shadowColor", @"sectionIndexColor", @"separatorColor"] fromStyleClass:@"colorfunctions" forType:ISSPropertyTypeColor];
     UIColor* sourceColor = [UIColor iss_colorWithHexString:@"112233"];
     XCTAssertEqualObjects(values[0], [sourceColor iss_colorByIncreasingBrightnessBy:50.0f]);
     XCTAssertEqualObjects(values[1], [sourceColor iss_colorByIncreasingBrightnessBy:-50.0f]);
@@ -460,14 +489,18 @@ static ISSStylingManager* defaultStyler;
     ISSRuleset* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"styleSheetPropertyValues"];
     ISSPropertyDeclaration* decl = nil;
     for(ISSPropertyDeclaration* d in declarations.properties) {
-        if( [d.property.name isEqualToString:@"titleColor"] ) decl = d;
+        if( [d.propertyName iss_isEqualIgnoreCase:@"titleColor"] ) decl = d;
     }
     
     XCTAssertEqual((NSUInteger)1, decl.parameters.count, @"Expected one parameter");
-    XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), decl.parameters[0], @"Expected UIControlStateSelected|UIControlStateHighlighted");
+    
+    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
+    id enumValue = def.parameterTransformers[0](def, [decl.parameters firstObject]);
+    
+    XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), enumValue, @"Expected UIControlStateSelected|UIControlStateHighlighted");
 }
 
-- (void) testPropertyPrefixes {
+/*- (void) testPropertyPrefixes {
     // Test layer prefix properties
     NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" getDeclarations:YES];
     UIView* view = [[UIView alloc] init];
@@ -488,10 +521,10 @@ static ISSStylingManager* defaultStyler;
     for(id value in values) {
         XCTAssertEqualObjects(value, @(0.42));
     }
-}
+}*/
 
 - (void) testTransformPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"transform"];
+    id value = [self getSimplePropertyValueWithName:@"transform" forType:ISSPropertyTypeTransform];
     CGAffineTransform transform = [value CGAffineTransformValue];
     CGAffineTransform t1 = CGAffineTransformMakeRotation((CGFloat)M_PI * 10 / 180.0f);
     CGAffineTransform t2 = CGAffineTransformMakeScale(20,30);
@@ -502,7 +535,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testAttributedStringPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"attributedText"];
+    id value = [self getSimplePropertyValueWithName:@"attributedText" forType:ISSPropertyTypeAttributedString];
     
     NSDictionary* attrs1 = [value attributesAtIndex:0 effectiveRange:nil];
     NSDictionary* attrs2 = @{
@@ -519,7 +552,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testAttributedStringPropertyValueConsistingOfMultipleStrings {
-    id value = [self getSimplePropertyValueWithName:@"attributedTitle"];
+    id value = [self getSimplePropertyValueWithName:@"attributedTitle" forType:ISSPropertyTypeAttributedString];
     
     NSDictionary* attrs1 = [value attributesAtIndex:0 effectiveRange:nil];
     NSDictionary* attrs1e = @{
@@ -540,55 +573,61 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testEnumPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"contentMode"];
-    XCTAssertEqual(UIViewContentModeBottomRight, [value integerValue], @"Unexpected contentMode value");
+    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"contentMode" inClass:UIView.class];
+    ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"contentMode"];
+    id enumValue = [decl valueForProperty:def];
+    XCTAssertEqual(UIViewContentModeBottomRight, [enumValue integerValue], @"Unexpected contentMode value");
 }
 
 - (void) testEnumBitMaskPropertyValue {
-    id value = [self getSimplePropertyValueWithName:@"autoresizingMask"];
+    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
+    ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"autoresizingMask"];
+    id enumValue = [decl valueForProperty:def];
+    
     UIViewAutoresizing autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight |
         UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    XCTAssertEqual(autoresizingMask, [value unsignedIntegerValue], @"Unexpected autoresizingMask value");
+    XCTAssertEqual(autoresizingMask, [enumValue unsignedIntegerValue], @"Unexpected autoresizingMask value");
 }
 
 - (void) testFontPropertyValues {
-    id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font1"] firstObject];
+    id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font1" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:14], @"Unexpected font value");
     
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font2"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font2" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:15], @"Font function 'bigger' not applied correctly");
     
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font3"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font3" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:13], @"Font function 'smaller' not applied correctly");
     
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font4"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font4" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:10], @"Font function 'fontWithSize' not applied correctly");
 
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font5"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font5" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"HelveticaNeue-Medium" size:5], @"Unexpected font value");
 
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font6"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font6" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
 
-    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font7"] firstObject];
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font7" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage", @"shadowImage", @"progressImage", @"trackImage", @"highlightedImage", @"onImage", @"offImage"] fromStyleClass:@"image1"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage", @"shadowImage", @"progressImage", @"trackImage", @"highlightedImage", @"onImage", @"offImage"]
+                                        fromStyleClass:@"image1" forType:ISSPropertyTypeImage];
     
-    UIImage* img = [(id)parser imageNamed:@"image.png"];
-    UIColor* imgColor = [self colorOfFirstPixel:img];
+    UIImage* refImg = [(id)parser.propertyParser imageNamed:@"image.png"];
+    NSData* refImgData = UIImagePNGRepresentation(refImg);
     
     for (id value in values) {
         XCTAssertTrue([value isKindOfClass:UIImage.class], @"Expected image");
-        UIColor* actual = [self colorOfFirstPixel:value];
-        XCTAssertEqualObjects(imgColor, actual, @"Unexpected color value for image");
+        NSData* imageData = UIImagePNGRepresentation(value);
+        XCTAssertEqualObjects(imageData, refImgData, @"Unexpected color value for image");
     }
 }
 
 - (void) testImageFromColorFunctionPropertyValue {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage"] fromStyleClass:@"imageColorFunctions"];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"image", @"backgroundImage"] fromStyleClass:@"imageColorFunctions" forType:ISSPropertyTypeImage];
 
     UIColor* sourceColor = [UIColor iss_colorWithHexString:@"112233"];
     
@@ -601,33 +640,36 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testFullEnumNames {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"lineBreakMode", @"titleColor"] fromStyleClass:@"fullEnumNames" getDeclarations:YES];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"lineBreakMode", @"titleColor"] fromStyleClass:@"fullEnumNames" forType:ISSPropertyTypeEnumType onlyDeclarations:YES];
     XCTAssertEqual(values.count, 3u, @"Unexpected value count");
+    
+    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
+    id enumValue = [values[0] valueForProperty:def];
+    XCTAssertEqualObjects(enumValue, @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
+    
+    def = [styler.propertyManager findPropertyWithName:@"lineBreakMode" inClass:UILabel.class];
+    enumValue = [values[1] valueForProperty:def];
+    XCTAssertEqualObjects(enumValue, @(NSLineBreakByWordWrapping), @"Unexpected propety value");
 
-    [values[0] transformValueIfNeeded];
-    XCTAssertEqualObjects([values[0] propertyValue], @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
-    [values[1] transformValueIfNeeded];
-    XCTAssertEqualObjects([values[1] propertyValue], @(NSLineBreakByWordWrapping), @"Unexpected propety value");
-    XCTAssertEqualObjects(((NSArray*)[values[2] parameters])[0], @(UIControlStateSelected), @"Unexpected propety value");
+    def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
+    enumValue = def.parameterTransformers[0](def, [(NSArray*)[values[2] parameters] firstObject]);
+    XCTAssertEqualObjects(enumValue, @(UIControlStateSelected), @"Unexpected propety value");
 }
 
 - (void) testNumericExpressions {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"hidden", @"alpha", @"cornerRadius", @"contentSize"] fromStyleClass:@"numericExpressions" getDeclarations:YES];
+    NSArray* values = [self getPropertyValuesWithNames:@[@"hidden", @"alpha", @"cornerRadius", @"contentSize"] fromStyleClass:@"numericExpressions" forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
     
-    [values[0] transformValueIfNeeded];
-    XCTAssertEqualObjects([values[0] propertyValue], @(YES));
+    XCTAssertEqualObjects([values[0] valueForPropertyType:ISSPropertyTypeBool enumValueMapping:nil valueCacheKey:nil], @(YES));
     
-    [values[1] transformValueIfNeeded];
-    XCTAssertEqualObjects([values[1] propertyValue], @(0.5));
+    XCTAssertEqualObjects([values[1] valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil], @(0.5));
     
-    [values[2] transformValueIfNeeded];
-    XCTAssertEqualObjects([values[2] propertyValue], @(142));
+    XCTAssertEqualObjects([values[2] valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil], @(142));
     
-    [values[3] transformValueIfNeeded];
-    CGSize size = [[values[3] propertyValue] CGSizeValue];
+    CGSize size = [[values[3] valueForPropertyType:ISSPropertyTypeSize enumValueMapping:nil valueCacheKey:nil] CGSizeValue];
     XCTAssertTrue(CGSizeEqualToSize(size, CGSizeMake(42, 100)));
 }
 
+/*
 - (void) testISSLayoutParentRelative {
     ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative1"] firstObject];
 
@@ -735,9 +777,10 @@ static ISSStylingManager* defaultStyler;
     
     XCTAssertEqualObjects(parsedLayout, layout);
 }
+*/
 
 - (void) testNestedVariable {
-    id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"nestedVariableClass"] firstObject];
+    id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"nestedVariableClass" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"GillSans" size:42]);
 }
 

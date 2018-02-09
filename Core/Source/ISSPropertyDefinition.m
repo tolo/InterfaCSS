@@ -17,7 +17,7 @@
 #import "ISSRuntimeProperty.h"
 
 #import "NSObject+ISSLogSupport.h"
-
+#import "NSDictionary+ISSAdditions.h"
 
 
 ISSPropertyType const ISSPropertyTypeString = @"String";
@@ -42,51 +42,52 @@ ISSPropertyType const ISSPropertyTypeUnknown = @"Unknown";
 
 @implementation ISSPropertyEnumValueMapping
 
-- (instancetype) initWithEnumValues:(NSDictionary*)enumValues defaultValue:(nullable id)defaultValue {
+- (instancetype) initWithEnumValues:(NSDictionary*)enumValues enumBaseName:(NSString*)enumBaseName defaultValue:(nullable id)defaultValue {
     if (self = [super init]) {
-        _enumValues = enumValues;
-        _enumBitMaskType = NO;
+        _enumValues = [enumValues iss_dictionaryWithLowerCaseKeys];
+        _enumBaseName = [enumBaseName lowercaseString];
         _defaultValue = defaultValue;
-    }
-    return self;
-}
-
-- (instancetype) initWithBitMaskEnumValues:(NSDictionary*)enumValues defaultValue:(nullable id)defaultValue {
-    if (self = [super init]) {
-        _enumValues = enumValues;
-        _enumBitMaskType = YES;
-        _defaultValue = defaultValue;
-    }
-    return self;
-}
-
-- (instancetype) initWithEnumValues:(NSDictionary*)enumValues enumBitMaskType:(BOOL)enumBitMaskType {
-    if (self = [super init]) {
-        _enumValues = enumValues;
-        _enumBitMaskType = enumBitMaskType;
     }
     return self;
 }
 
 - (id) enumValueFromString:(NSString*)string {
-    if( self.enumBitMaskType ) {
-        NSArray* values = [[string lowercaseString] componentsSeparatedByString:@" "];
-        NSNumber* result = self.defaultValue;
-        for(NSString* value in values) {
-            id enumValue = self.enumValues[value];
-            if( enumValue ) {
-                NSUInteger constVal = [enumValue unsignedIntegerValue];
-                if( result ) result = @([result unsignedIntegerValue] | constVal);
-                else result = @(constVal);
-            } else {
-                [self iss_logWarning:@"Unrecognized enum value: '%@'", value];
-            }
-        }
-        return result;
-        
-    } else {
-        return self.enumValues[[string lowercaseString]] ?: self.defaultValue;
+    NSString* lcEnumName = [string lowercaseString];
+    id value = self.enumValues[lcEnumName];
+    if ( !value && [lcEnumName hasPrefix:self.enumBaseName] ) {
+        value = self.enumValues[[lcEnumName substringFromIndex:self.enumBaseName.length]];
     }
+    return value ?: self.defaultValue;
+}
+
+@end
+
+@implementation ISSPropertyBitMaskEnumValueMapping : ISSPropertyEnumValueMapping
+
+static NSCharacterSet* bitMaskSeparator;
+
++ (NSCharacterSet*) bitMaskEnumValueSeparator {
+    static dispatch_once_t rfc1123DateFormatterOnceToken;
+    dispatch_once(&rfc1123DateFormatterOnceToken, ^{
+        bitMaskSeparator = [NSCharacterSet characterSetWithCharactersInString:@" |"];
+    });
+    return bitMaskSeparator;
+}
+
+- (id) enumValueFromString:(NSString*)string {
+    NSArray* stringValues = [[string lowercaseString] componentsSeparatedByCharactersInSet:[ISSPropertyBitMaskEnumValueMapping bitMaskEnumValueSeparator]];
+    NSNumber* result = nil;
+    for(NSString* stringValue in stringValues) {
+        id enumValue = [super enumValueFromString:stringValue];
+        if( enumValue ) {
+            NSUInteger constVal = [enumValue unsignedIntegerValue];
+            if( result ) result = @([result unsignedIntegerValue] | constVal);
+            else result = @(constVal);
+        } else {
+            [self iss_logWarning:@"Unrecognized enum value: '%@'", stringValue];
+        }
+    }
+    return result ?: self.defaultValue;
 }
 
 @end
@@ -94,25 +95,34 @@ ISSPropertyType const ISSPropertyTypeUnknown = @"Unknown";
 
 @implementation ISSPropertyDefinition
 
-- (instancetype) initCustomPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setterBlock:(ISSPropertySetterBlock)setter {
+- (instancetype) init {
+    @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, init not allowed!" userInfo:nil]);
+}
+
+- (instancetype) initCustomPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enumValueMapping:(ISSPropertyEnumValueMapping*)enumValueMapping parameterTransformers:(NSArray*)parameterTransformers setterBlock:(ISSPropertySetterBlock)setter {
     if (self = [super init]) {
         _name = name;
         _declaredInClass = clazz;
         _type = type;
+        _enumValueMapping = enumValueMapping;
+        _parameterTransformers = parameterTransformers;
         _setterBlock = setter;
     }
     return self;
 }
 
+- (instancetype) initCustomPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setterBlock:(ISSPropertySetterBlock)setter {
+    return [self initCustomPropertyWithName:name inClass:clazz type:type enumValueMapping:nil parameterTransformers:nil setterBlock:setter];
+}
+
 - (instancetype) initWithRuntimeProperty:(ISSRuntimeProperty*)runtimeProperty type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
-    return [self initCustomPropertyWithName:runtimeProperty.propertyName inClass:runtimeProperty.foundInClass type:type setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
-        id effectiveValue = enumValueMapping ? [enumValueMapping enumValueFromString:value] : value;
-        return [ISSRuntimeIntrospectionUtils invokeSetterForRuntimeProperty:runtimeProperty withValue:effectiveValue inObject:target];
+    return [self initCustomPropertyWithName:runtimeProperty.propertyName inClass:runtimeProperty.foundInClass type:type enumValueMapping:enumValueMapping parameterTransformers:nil setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+        return [ISSRuntimeIntrospectionUtils invokeSetterForRuntimeProperty:runtimeProperty withValue:value inObject:target];
     }];
 }
 
-- (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector parameterTransformers:(NSArray*)parameterTransformers {
-    return [self initCustomPropertyWithName:name inClass:clazz type:type setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+- (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping parameterTransformers:(NSArray*)parameterTransformers {
+    return [self initCustomPropertyWithName:name inClass:clazz type:type enumValueMapping:enumValueMapping parameterTransformers:parameterTransformers setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
         NSMutableArray* arguments = [NSMutableArray arrayWithObject:value];
         for(int i=0; i<parameterTransformers.count; i++) {
             ISSPropertyParameterTransformer transformer = parameterTransformers[i];
@@ -122,12 +132,13 @@ ISSPropertyType const ISSPropertyTypeUnknown = @"Unknown";
     }];
 }
 
+
 - (NSString*) fqn {
     return [NSString stringWithFormat:@"%@.%@", NSStringFromClass(self.declaredInClass), self.name];
 }
 
 
-- (BOOL) setValue:(nullable id)value onTarget:(nullable id)target withParameters:(nullable NSArray*)params {
+- (BOOL) setValue:(id)value onTarget:(id)target withParameters:(NSArray*)params {
     return self.setterBlock(self, target, value, params);
 }
 

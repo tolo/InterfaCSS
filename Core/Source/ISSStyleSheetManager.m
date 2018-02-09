@@ -94,6 +94,8 @@
                   ISSPseudoClassTypeEmpty
         ]];
         
+        _styleSheetsVariables = [NSMutableDictionary dictionary];
+        
         _styleSheetParser = parser ?: [[ISSStyleSheetParser alloc] init];
         _styleSheetParser.styleSheetManager = self;
     }
@@ -361,6 +363,7 @@
 #pragma mark - Pseudo class customization support
 
 - (ISSPseudoClassType) pseudoClassTypeFromString:(NSString*)typeAsString {
+    typeAsString = [typeAsString stringByReplacingOccurrencesOfString:@"-" withString:@""];
     return [_pseudoClassTypes member:[typeAsString lowercaseString]] ?: ISSPseudoClassTypeUnknown;
 }
 
