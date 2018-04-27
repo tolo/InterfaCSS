@@ -212,10 +212,10 @@ ISSPseudoClassType const ISSPseudoClassTypeUnknown = @"unknown";
     else if ( t == ISSPseudoClassTypeMinOSVersion ) return [UIDevice iss_versionGreaterOrEqualTo:_parameter];
     else if ( t == ISSPseudoClassTypeMaxOSVersion ) return [UIDevice iss_versionLessOrEqualTo:_parameter];
     else if ( t == ISSPseudoClassTypeDeviceModel ) return [[UIDevice iss_deviceModelId] hasPrefix:_parameter];
-    else if ( t == ISSPseudoClassTypeScreenWidth ) return ISS_EQUAL_FLT(self.screenNativeWidth, [_parameter floatValue]);
+    else if ( t == ISSPseudoClassTypeScreenWidth ) return ISS_ISEQUAL_FLT(self.screenNativeWidth, [_parameter floatValue]);
     else if ( t == ISSPseudoClassTypeScreenWidthLessThan ) return self.screenNativeWidth < [_parameter floatValue];
     else if ( t == ISSPseudoClassTypeScreenWidthGreaterThan ) return self.screenNativeWidth > [_parameter floatValue];
-    else if ( t == ISSPseudoClassTypeScreenHeight ) return ISS_EQUAL_FLT(self.screenNativeHeight, [_parameter floatValue]);
+    else if ( t == ISSPseudoClassTypeScreenHeight ) return ISS_ISEQUAL_FLT(self.screenNativeHeight, [_parameter floatValue]);
     else if ( t == ISSPseudoClassTypeScreenHeightLessThan ) return self.screenNativeHeight < [_parameter floatValue];
     else if ( t == ISSPseudoClassTypeScreenHeightGreaterThan ) return self.screenNativeHeight > [_parameter floatValue];
 

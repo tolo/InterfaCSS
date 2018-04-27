@@ -10,7 +10,8 @@
 #define ISSMacros_h
 
 
-#define ISS_EQUAL_FLT(x, y) (fabs((x) - (y)) < FLT_EPSILON)
+#define ISS_ISEQUAL(x,y) ((x == y) || (x != nil && [x isEqual:y]))
+#define ISS_ISEQUAL_FLT(x, y) (fabs((x) - (y)) < FLT_EPSILON)
 
 
 #ifndef ISS_OS_VERSION_MIN_REQUIRED

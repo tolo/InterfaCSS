@@ -15,8 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 extern NSArray* iss_nonNullElementArray(NSArray* array);
-extern id iss_elementOrNil(NSArray* array, NSUInteger index);
-extern id iss_elementOfTypeOrNil(NSArray* array, NSUInteger index, Class clazz);
+extern __nullable id iss_elementOrNil(NSArray* array, NSUInteger index);
+extern __nullable id iss_elementOfTypeOrNil(NSArray* array, NSUInteger index, Class clazz);
 extern float iss_floatAt(NSArray* array, NSUInteger index);
 
 

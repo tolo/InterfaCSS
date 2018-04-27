@@ -165,12 +165,6 @@
         }
     }
     
-//    if( [InterfaCSS sharedInstance].useSelectorSpecificity ) {
-//        [str appendString:@" (specificity: "];
-//        [str appendFormat:@"%d", (int)self.specificity];
-//        [str appendString:@")"];
-//    }
-    
     return str;
 }
 

@@ -30,11 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ISSStyleSheetScope* scope; // The scope used by the parent stylesheet...
 
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties;
-- (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties extendedDeclarationSelectorChain:(nullable ISSSelectorChain*)extendedDeclarationSelectorChain;
+- (instancetype) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties;
+- (instancetype) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties extendedDeclarationSelectorChain:(nullable ISSSelectorChain*)extendedDeclarationSelectorChain;
 
 - (BOOL) matchesElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
-- (ISSRuleset*) propertyDeclarationsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (nullable ISSRuleset*) propertyDeclarationsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 - (BOOL) containsSelectorChain:(ISSSelectorChain*)selectorChain;
 

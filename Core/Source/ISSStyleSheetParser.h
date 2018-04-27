@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ISSStyleSheetPropertyParsingDelegate
 
 - (void) setupPropertyParsersWith:(ISSStyleSheetParser*)styleSheetParser;
-- (id) parsePropertyValue:(NSString*)propertyValue ofType:(ISSPropertyType)type;
+- (nullable id) parsePropertyValue:(NSString*)propertyValue ofType:(ISSPropertyType)type;
 
 @end
 

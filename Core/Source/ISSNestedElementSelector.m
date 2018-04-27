@@ -27,7 +27,6 @@
 }
 
 - (BOOL) matchesElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
-// TODO: Rewrite - pass reference to element styling manager in styling context
     ISSElementStylingProxy* parentDetails = [stylingContext.stylingManager stylingProxyFor:elementDetails.ownerElement];
     NSString* validParentKeyPath = parentDetails.validNestedElements[self.nestedElementKeyPath];
 

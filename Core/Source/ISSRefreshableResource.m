@@ -59,7 +59,7 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
     if( _fileChangeSource ) {
         __weak ISSRefreshableResource* weakSelf = self;
         dispatch_source_set_event_handler(_fileChangeSource, ^() {
-            unsigned long const data = dispatch_source_get_data(_fileChangeSource);
+            unsigned long const data = dispatch_source_get_data(self->_fileChangeSource);
             dispatch_async(dispatch_get_main_queue(), ^{
                 callbackBlock(weakSelf);
                 if( data & DISPATCH_VNODE_DELETE ) {
@@ -104,21 +104,21 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
 - (void) performHeadRequest:(NSMutableURLRequest*)request completionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     [request setHTTPMethod:@"HEAD"];
 
-    [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
-                           completionHandler:^(NSURLResponse* response, NSData* data, NSError* error) {
+    NSURLSessionTask* task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+        completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         BOOL signalErrorOccurred = NO;
         if ( error == nil ) {
             NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
             if( 200 == httpURLResponse.statusCode ) {
                 NSString* updatedETag = httpURLResponse.allHeaderFields[@"ETag"];
-                BOOL eTagModified = _eTag != nil && ![_eTag isEqualToString:updatedETag];
+                BOOL eTagModified = self->_eTag != nil && ![self->_eTag isEqualToString:updatedETag];
                 NSDate* updatedLastModified = [self parseLastModifiedFromResponse:httpURLResponse];
-                BOOL lastModifiedModified = _lastModified != nil && ![_lastModified isEqualToDate:updatedLastModified];
+                BOOL lastModifiedModified = self->_lastModified != nil && ![self->_lastModified isEqualToDate:updatedLastModified];
                 if( eTagModified || lastModifiedModified ) { // In case server didn't honor etag/last modified
                     ISSLogDebug(@"Remote resource modified - executing get request");
                     [self performGetRequest:request completionHandler:completionHandler];
                 } else {
-                    ISSLogTrace(@"Remote resource NOT modified - %@/%@, %@/%@", _eTag, updatedETag, _lastModified, updatedLastModified);
+                    ISSLogTrace(@"Remote resource NOT modified - %@/%@, %@/%@", self->_eTag, updatedETag, self->_lastModified, updatedLastModified);
                 }
             } else if( 304 == httpURLResponse.statusCode ) {
                 ISSLogTrace(@"Remote resource not modified");
@@ -142,20 +142,21 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
         }
         else [self resetErrorOccurred];
     }];
+    [task resume];
 }
 
 - (void) performGetRequest:(NSMutableURLRequest*)request completionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler {
     [request setHTTPMethod:@"GET"];
 
-    [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc] init]
-       completionHandler:^(NSURLResponse* response, NSData* data, NSError* error) {
+    NSURLSessionTask* task = [[NSURLSession sharedSession] dataTaskWithRequest:request
+       completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
            BOOL signalErrorOccurred = NO;
            if ( error == nil ) {
                NSHTTPURLResponse* httpURLResponse = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse*)response : nil;
                if( 200 == httpURLResponse.statusCode ) {
                    ISSLogDebug(@"Remote resource downloaded - parsing response data");
-                   _eTag = httpURLResponse.allHeaderFields[@"ETag"];
-                   _lastModified = [self parseLastModifiedFromResponse:httpURLResponse];
+                   self->_eTag = httpURLResponse.allHeaderFields[@"ETag"];
+                   self->_lastModified = [self parseLastModifiedFromResponse:httpURLResponse];
 
                    NSString* encodingName = [httpURLResponse textEncodingName];
                    NSStringEncoding encoding = NSUTF8StringEncoding;
@@ -192,6 +193,7 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
            }
            else [self resetErrorOccurred];
        }];
+    [task resume];
 }
 
 - (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler refreshIntervalDuringError:(NSTimeInterval)refreshIntervalDuringError force:(BOOL)force {

@@ -38,12 +38,12 @@ extern NSObject* const ISSPropertyDeclarationUseCurrentValue;
 @property (nonatomic, copy, nullable) ISSPropertyValueTransformationBlock valueTransformationBlock;
 
 
-- (instancetype) initWithPropertyName:(NSString*)name nestedElementKeyPath:(NSString*)nestedElementKeyPath;
-- (instancetype) initWithPropertyName:(NSString*)name parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath;
+- (instancetype) initWithPropertyName:(NSString*)name nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
+- (instancetype) initWithPropertyName:(NSString*)name parameters:(nullable NSArray*)parameters nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
 - (instancetype) initWithNestedElementKeyPathToRegister:(NSString*)nestedElementKeyPath;
 
-- (id) valueForProperty:(ISSPropertyDefinition*)property;
-- (id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(nullable NSString*)valueCacheKey;
+- (nullable id) valueForProperty:(ISSPropertyDefinition*)property;
+- (nullable id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(nullable NSString*)valueCacheKey;
 
 @end
 

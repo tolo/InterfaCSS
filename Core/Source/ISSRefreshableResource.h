@@ -25,7 +25,7 @@ typedef void (^ISSRefreshableResourceLoadCompletionBlock)(BOOL success,  NSStrin
 @property (nonatomic, readonly) NSURL* resourceURL;
 @property (nonatomic, readonly) BOOL usingLocalFileChangeMonitoring;
 @property (nonatomic, readonly) BOOL hasErrorOccurred;
-@property (nonatomic, readonly) NSError* lastError;
+@property (nonatomic, readonly, nullable) NSError* lastError;
 
 
 - (instancetype) initWithURL:(NSURL*)url;

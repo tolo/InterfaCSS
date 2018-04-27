@@ -16,8 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class ISSStyleSheetManager, ISSElementStylingProxy, ISSStylingContext, ISSRuleset, ISSSelectorChain, ISSPropertyDeclarations, ISSStyleSheet;
 
 
-//typedef BOOL (^ISSStyleSheetScopeMatcher)(ISSElementStylingProxy* elementDetails);
-
 typedef BOOL (^ISSStyleSheetMatcher)(ISSStyleSheet* styleSheet);
 
 
@@ -42,43 +40,13 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 @end
 
 
-///**
-// * Class representing a scope for limiting to which views styles in a stylesheet should be applied.
-// */
-//@interface ISSStyleSheetScope : NSObject
-//
-///** Scope limited to views under a view with the specified element ID. */
-//+ (ISSStyleSheetScope*) scopeWithElementId:(NSString*)elementId;
-//
-///** Scope limited to views in the direct view hierarchy (i.e. excluding child view controllers) of view controllers with the specified class. */
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass;
-//
-///** Scope limited to views in the view hierarchy of view controllers with the specified class. If `includeChildViewControllers` is `NO`, the scope is limited
-//* to the direct view hierarchy of the view controller - if `YES`, views in child view controllers are also included. */
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass includeChildViewControllers:(BOOL)includeChildViewControllers;
-//
-///** Scope limited to views in the direct view hierarchy (i.e. excluding child view controllers) of view controllers with the specified classes. */
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses;
-//
-///** Scope limited to views in the view hierarchy of view controllers with the specified classes. If `includeChildViewControllers` is `NO`, the scope is limited
-//* to the direct view hierarchy of the view controller - if `YES`, views in child view controllers are also included. */
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses includeChildViewControllers:(BOOL)includeChildViewControllers;
-//
-///** Creates a scope with a custom matcher. */
-//+ (ISSStyleSheetScope*) scopeWithMatcher:(ISSStyleSheetScopeMatcher)matcher;
-//
-//- (BOOL) elementInScope:(ISSElementStylingProxy*)elementDetails;
-//
-//@end
-
-
 /**
  * Represents a loaded stylesheet.
  */
 @interface ISSStyleSheet : ISSRefreshableResource
 
 @property (nonatomic, strong, readonly) NSString* name;
-@property (nonatomic, strong, readonly) NSString* group;
+@property (nonatomic, strong, readonly, nullable) NSString* group;
 @property (nonatomic, strong, readonly) NSURL* styleSheetURL;
 
 @property (nonatomic, strong, readonly, nullable) NSArray<ISSRuleset*>* rulesets;

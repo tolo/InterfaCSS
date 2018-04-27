@@ -24,7 +24,7 @@ typedef id _Nonnull (^ISSPropertySetterInvocationValueBlock)(ISSRuntimeProperty*
 
 + (Class _Nullable) classWithName:(NSString*)className;
 
-+ (SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz;
++ (nullable SEL) findSelectorWithCaseInsensitiveName:(NSString*)name inClass:(Class)clazz;
 
 + (void) invokeSingleObjectArgumentSelector:(SEL)selector inObject:(id)object parameter:(id)parameter;
 

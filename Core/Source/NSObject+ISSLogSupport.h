@@ -8,9 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-
-#define ISS_ISEQUAL(x,y) ((x == y) || (x != nil && [x isEqual:y])) // TODO: Move!
-
 #define ISS_LOG_LEVEL_NONE      0
 #define ISS_LOG_LEVEL_WARNING   1
 #define ISS_LOG_LEVEL_DEBUG     2

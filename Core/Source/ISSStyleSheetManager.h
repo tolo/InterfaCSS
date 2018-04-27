@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Selector creation support
 
-- (ISSSelector*) createSelectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
+- (nullable ISSSelector*) createSelectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
     
 
 #pragma mark - Pseudo class customization support

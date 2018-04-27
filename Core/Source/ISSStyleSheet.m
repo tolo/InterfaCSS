@@ -59,72 +59,11 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 @end
 
 
+@interface ISSStyleSheet ()
 
-//@implementation ISSStyleSheetScope {
-//    ISSStyleSheetScopeMatcher _matcher;
-//}
+@property (nonatomic, readwrite, nullable) NSArray* declarations;
 
-// TODO: Review and possibly simplify...
-
-//+ (ISSStyleSheetScope*) scopeWithElementId:(NSString*)elementId {
-//    return [[self alloc] initWithMatcher:^(ISSElementStylingProxy* elementDetails) {
-//        if( [elementDetails.elementId isEqualToString:elementId] ) return YES;
-//        else {
-//            return (BOOL)([[InterfaCSS sharedInstance] superviewWithElementId:elementId inView:elementDetails.uiElement] != nil);
-//        }
-//    }];
-//}
-//
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass {
-//    return [self scopeWithViewControllerClass:viewControllerClass includeChildViewControllers:NO];
-//}
-//
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClass:(Class)viewControllerClass includeChildViewControllers:(BOOL)includeChildViewControllers {
-//    return [[self alloc] initWithMatcher:^(ISSElementStylingProxy* elementDetails) {
-//        UIViewController* parent = elementDetails.closestViewController;
-//        while(parent != nil) {
-//            if( [parent isKindOfClass:viewControllerClass] ) return YES;
-//            else if( !includeChildViewControllers ) return NO;
-//            parent = parent.parentViewController;
-//        }
-//        return NO;
-//    }];
-//}
-//
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses {
-//    return [self scopeWithViewControllerClasses:viewControllerClasses includeChildViewControllers:NO];
-//}
-//
-//+ (ISSStyleSheetScope*) scopeWithViewControllerClasses:(NSArray*)viewControllerClasses includeChildViewControllers:(BOOL)includeChildViewControllers {
-//    return [[self alloc] initWithMatcher:^(ISSElementStylingProxy* elementDetails) {
-//        UIViewController* parent = elementDetails.closestViewController;
-//        while(parent != nil) {
-//            for(Class clazz in viewControllerClasses) {
-//                if( [parent isKindOfClass:clazz] ) return YES;
-//            }
-//            if( !includeChildViewControllers ) return NO;
-//            parent = parent.parentViewController;
-//        }
-//        return NO;
-//    }];
-//}
-//
-//+ (ISSStyleSheetScope*) scopeWithMatcher:(ISSStyleSheetScopeMatcher)matcher {
-//    return [[self alloc] initWithMatcher:matcher ];
-//}
-//
-//- (instancetype) initWithMatcher:(ISSStyleSheetScopeMatcher)matcher {
-//    if( self = [super init] ) {
-//        _matcher = matcher;
-//    }
-//    return self;
-//}
-//
-//- (BOOL) elementInScope:(ISSElementStylingProxy*)elementDetails {
-//    return _matcher(elementDetails);
-//}
-//
-//@end
+@end
 
 
 @implementation ISSStyleSheet {
@@ -149,24 +88,6 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
     return self;
 }
 
-//- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations {
-//    return [self initWithStyleSheetURL:styleSheetURL declarations:declarations refreshable:NO];
-//}
-//
-//- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable {
-//        return [self initWithStyleSheetURL:styleSheetURL declarations:declarations refreshable:refreshable scope:nil];
-//}
-//
-//- (id) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(NSArray*)declarations refreshable:(BOOL)refreshable scope:(ISSStyleSheetScope*)scope {
-//   if ( (self = [super initWithURL:styleSheetURL]) ) {
-//       _declarations = declarations;
-//       _refreshable = refreshable;
-//       _active = YES;
-//       _scope = scope;
-//   }
-//   return self;
-//}
-
 
 #pragma mark - Properties
 
@@ -187,9 +108,6 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
     
-//    if( self.scope && ![self.scope elementInScope:elementDetails] ) {
-//        ISSLogTrace(@"Element not in scope - skipping: %@", elementDetails.uiElement);
-//    }
     for (ISSRuleset* ruleset in self.rulesets) {
         ISSRuleset* matchingDeclarationBlock = [ruleset propertyDeclarationsMatchingElement:elementDetails stylingContext:stylingContext];
         if ( matchingDeclarationBlock ) {
@@ -219,8 +137,8 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
             NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
             NSMutableArray* declarations = [styleSheetManager.styleSheetParser parse:responseString];
             if( declarations ) {
-                BOOL hasDeclarations = _declarations != nil;
-                _declarations = declarations;
+                BOOL hasDeclarations = self.declarations != nil;
+                self.declarations = declarations;
 
                 if( hasDeclarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
                 else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
