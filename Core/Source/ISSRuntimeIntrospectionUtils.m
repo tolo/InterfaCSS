@@ -421,7 +421,7 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
         memset(valueBuffer, 0, bufferSize);
         
         if( [value isKindOfClass:NSValue.class] ) {
-            if (@available(iOS 11.0, *)) {
+            if (@available(iOS 11.0, tvOS 11.0, *)) {
                 [value getValue:valueBuffer size:bufferSize];
             } else {
                 [value getValue:valueBuffer];

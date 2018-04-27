@@ -196,6 +196,7 @@ ISSPseudoClassType const ISSPseudoClassTypeUnknown = @"unknown";
     id uiElement = elementDetails.uiElement;
     ISSPseudoClassType t = _pseudoClassType;
     
+    #if TARGET_OS_TV == 0
     if ( t == ISSPseudoClassTypeInterfaceOrientationLandscape ) return UIInterfaceOrientationIsLandscape([self currentInterfaceOrientationForDevice:elementDetails]);
     else if ( t == ISSPseudoClassTypeInterfaceOrientationLandscapeLeft ) return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeLeft;
     else if ( t == ISSPseudoClassTypeInterfaceOrientationLandscapeRight ) return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationLandscapeRight;
@@ -204,6 +205,9 @@ ISSPseudoClassType const ISSPseudoClassTypeUnknown = @"unknown";
     else if ( t == ISSPseudoClassTypeInterfaceOrientationPortraitUpsideDown ) return [self currentInterfaceOrientationForDevice:elementDetails] == UIInterfaceOrientationPortraitUpsideDown;
     
     else if ( t == ISSPseudoClassTypeUserInterfaceIdiomPad ) return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
+    #else
+    if ( t == ISSPseudoClassTypeUserInterfaceIdiomPad ) return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
+    #endif
     else if ( t == ISSPseudoClassTypeUserInterfaceIdiomPhone ) return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
     #if TARGET_OS_TV == 1
     else if ( t == ISSPseudoClassTypeUserInterfaceIdiomTV) return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomTV;

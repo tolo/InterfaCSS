@@ -366,8 +366,10 @@
         ISSPropertyEnumValueMapping* segmentTypeMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"any" : @(UISegmentedControlSegmentAny), @"left" : @(UISegmentedControlSegmentLeft), @"center" : @(UISegmentedControlSegmentCenter),
                                                         @"right" : @(UISegmentedControlSegmentRight), @"alone" : @(UISegmentedControlSegmentAlone)} enumBaseName:@"UISegmentedControlSegment" defaultValue:@(UISegmentedControlSegmentAny)];
 
+        #if TARGET_OS_TV == 0
         ISSPropertyEnumValueMapping* dataDetectorTypesMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"all" : @(UIDataDetectorTypeAll), @"none" : @(UIDataDetectorTypeNone), @"address" : @(UIDataDetectorTypeAddress),
                                                         @"calendarEvent" : @(UIDataDetectorTypeCalendarEvent), @"link" : @(UIDataDetectorTypeLink), @"phoneNumber" : @(UIDataDetectorTypePhoneNumber)} enumBaseName:@"UIDataDetectorType" defaultValue:@(UIDataDetectorTypeNone)];
+        #endif
 
         ISSPropertyEnumValueMapping* textAlignmentMapping = [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"left" : @(NSTextAlignmentLeft), @"center" : @(NSTextAlignmentCenter), @"right" : @(NSTextAlignmentRight)}
                                                                                                        enumBaseName:@"NSTextAlignment" defaultValue:@(NSTextAlignmentLeft)];
@@ -448,6 +450,7 @@
             [self _register:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes selector:@selector(setTitleTextAttributes:forState:) params:@[controlStateTransformer]];
             [self _register:@"width" inClass:clazz type:ISSPropertyTypeNumber selector:@selector(setWidth:forSegmentAtIndex:) params:@[integerTransformer]];
 
+            #if TARGET_OS_TV == 0
             /** UISlider **/
             clazz = UISlider.class;
             [self _register:@"maximumTrackImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setMaximumTrackImage:forState:) params:@[controlStateTransformer]];
@@ -460,12 +463,13 @@
             [self _register:@"decrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDecrementImage:forState:) params:@[controlStateTransformer]];
             [self _register:@"dividerImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setDividerImage:forLeftSegmentState:rightSegmentState:) params:@[controlStateTransformer, controlStateTransformer]];
             [self _register:@"incrementImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setIncrementImage:forState:) params:@[controlStateTransformer]];
+            #endif
 
             /** UIActivityIndicatorView **/
             clazz = UIActivityIndicatorView.class;
             #if TARGET_OS_TV == 1
             [self _register:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} enumBaseName:@"UIActivityIndicatorViewStyle" defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
             #else
             [self _register:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} enumBaseName:@"UIActivityIndicatorViewStyle" defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
@@ -528,8 +532,8 @@
             #endif
 
             /** UIWebView **/
-            clazz = UIWebView.class;
             #if TARGET_OS_TV == 0
+            clazz = UIWebView.class;
             [self _register:@"dataDetectorTypes" inClass:clazz type:ISSPropertyTypeEnumType enums:dataDetectorTypesMapping];
             [self _register:@"paginationMode" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"unpaginated" : @(UIWebPaginationModeUnpaginated), @"lefttoright" : @(UIWebPaginationModeLeftToRight),
@@ -581,12 +585,12 @@
             [self _register:@"titleTextAttributes" inClass:clazz type:ISSPropertyTypeTextAttributes enums:nil];
 
             /** UIToolbar **/
+            #if TARGET_OS_TV == 0
             clazz = UIToolbar.class;
             [self _register:@"backgroundImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setBackgroundImage:forToolbarPosition:barMetrics:) params:@[barPositionTransformer, barMetricsTransformer]];
-            #if TARGET_OS_TV == 0
             [self _register:@"barStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:barStyleMapping];
-            #endif
             [self _register:@"shadowImage" inClass:clazz type:ISSPropertyTypeImage selector:@selector(setShadowImage:forToolbarPosition:) params:@[barPositionTransformer]];
+            #endif
 
             /** UITabBar **/
             clazz = UITabBar.class;

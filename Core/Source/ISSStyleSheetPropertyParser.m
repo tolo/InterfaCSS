@@ -403,7 +403,7 @@
     } name:@"fontFunctionParser"];
     
 #if ISS_OS_VERSION_MAX_ALLOWED >= 110000
-    if (@available(iOS 11.0, *)) {
+    if (@available(iOS 11.0, tvOS 11.0, *)) {
         NSDictionary* textStyleMapping = @{@"body" : UIFontTextStyleBody,
                                            @"callout" : UIFontTextStyleCallout,
                                            @"caption1" : UIFontTextStyleCaption1,

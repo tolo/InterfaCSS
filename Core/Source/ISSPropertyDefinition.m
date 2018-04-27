@@ -128,7 +128,8 @@ static NSCharacterSet* bitMaskSeparator;
             ISSPropertyParameterTransformer transformer = parameterTransformers[i];
             [arguments addObject:transformer(property, i< parameters.count ? parameters[i] : [NSNull null])];
         }
-        return [ISSRuntimeIntrospectionUtils invokeInstanceSelector:selector withArguments:arguments inObject:target];
+        [ISSRuntimeIntrospectionUtils invokeInstanceSelector:selector withArguments:arguments inObject:target];
+        return YES;
     }];
 }
 
