@@ -170,7 +170,7 @@ static NSDictionary* tagToClass;
     }
     
     if( issLayoutValue ) {
-        ISSLayout* layout = [[InterfaCSS interfaCSS].parser transformValue:issLayoutValue asPropertyType:ISSPropertyTypeLayout];
+        ISSLayout* layout = [[InterfaCSS sharedInstance].parser transformValue:issLayoutValue asPropertyType:ISSPropertyTypeLayout];
         if( layout ) {
             ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
             details.layout = layout;
@@ -346,9 +346,9 @@ static NSDictionary* tagToClass;
     // Topmost prototype end tag - register prototype
     else if( currentPrototype ) {
         if( currentPrototype.prototypeScopeParent ) {
-            [[InterfaCSS interfaCSS] registerPrototype:currentPrototype inElement:superViewObject];
+            [[InterfaCSS sharedInstance] registerPrototype:currentPrototype inElement:superViewObject];
         } else {
-            [[InterfaCSS interfaCSS] registerPrototype:currentPrototype];
+            [[InterfaCSS sharedInstance] registerPrototype:currentPrototype];
         }
     }
     // Child view end tag

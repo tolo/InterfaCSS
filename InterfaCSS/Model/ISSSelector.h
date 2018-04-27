@@ -35,11 +35,11 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
 
 @property (nonatomic, readonly) NSString* displayDescription;
 
-+ (instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId pseudoClasses:(nullable NSArray*)pseudoClasses;
-+ (instancetype) selectorWithType:(nullable NSString*)type styleClass:(nullable NSString*)styleClass pseudoClasses:(nullable NSArray*)pseudoClasses;
-+ (instancetype) selectorWithType:(nullable NSString*)type styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
-+ (instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClass:(nullable NSString*)styleClass pseudoClasses:(nullable NSArray*)pseudoClasses;
-+ (instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
++ (nullable instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId pseudoClasses:(nullable NSArray*)pseudoClasses;
++ (nullable instancetype) selectorWithType:(nullable NSString*)type styleClass:(nullable NSString*)styleClass pseudoClasses:(nullable NSArray*)pseudoClasses;
++ (nullable instancetype) selectorWithType:(nullable NSString*)type styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
++ (nullable instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClass:(nullable NSString*)styleClass pseudoClasses:(nullable NSArray*)pseudoClasses;
++ (nullable instancetype) selectorWithType:(nullable NSString*)type elementId:(nullable NSString*)elementId styleClasses:(nullable NSArray*)styleClasses pseudoClasses:(nullable NSArray*)pseudoClasses;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 

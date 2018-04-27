@@ -13,7 +13,7 @@
 #import "ISSUIElementDetails.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 
-#define ISS [InterfaCSS interfaCSS]
+#define ISS [InterfaCSS sharedInstance]
 
 
 @implementation UIView (InterfaCSS)
@@ -136,7 +136,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 
 - (void) setStyleClassesISS:(NSSet*)classes animated:(BOOL)animated {
     [ISS setStyleClasses:classes forUIElement:self];
-    if ( !ISS.useManualStyling ) [self scheduleApplyStylingISS:animated];
+    if ( !ISS.useManualStyling ) [ISS scheduleApplyStyling:self animated:animated];
 }
 
 - (void) setStyleClassISS:(NSString*)styleClass animated:(BOOL)animated {
@@ -162,7 +162,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 - (BOOL) addStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( ![self hasStyleClassISS:styleClass] ) {
         [ISS addStyleClass:styleClass forUIElement:self];
-        if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
+        if( scheduleStyling ) [ISS scheduleApplyStyling:self animated:animated];
         return YES;
     }
     return NO;
@@ -183,7 +183,7 @@ static void iss_didMoveToWindowIntercepted(id self, SEL _cmd) {
 - (BOOL) removeStyleClassISS:(NSString*)styleClass animated:(BOOL)animated scheduleStyling:(BOOL)scheduleStyling {
     if( [self hasStyleClassISS:styleClass] ) {
         [ISS removeStyleClass:styleClass forUIElement:self];
-        if( scheduleStyling ) [self scheduleApplyStylingISS:animated];
+        if( scheduleStyling ) [ISS scheduleApplyStyling:self animated:animated];
         return YES;
     }
     return NO;

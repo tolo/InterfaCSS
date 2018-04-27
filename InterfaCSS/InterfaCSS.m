@@ -58,6 +58,7 @@ static InterfaCSS* singleton = nil;
 
 
 @implementation InterfaCSS {
+    __nullable id<ISSStyleSheetParser> _parser;
     BOOL deviceIsRotating;
 }
 
@@ -108,7 +109,7 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
 }
 
 - (id) init {
-    @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, use +[InterfaCSS interfaCSS] instead!" userInfo:nil]);
+    @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, use +[InterfaCSS sharedInstance] instead!" userInfo:nil]);
 }
 
 - (id) initInternal {
@@ -508,13 +509,13 @@ static void setupForInitialState(InterfaCSS* interfaCSS) {
         uiElementDetails.stylingScheduled = YES; // Flag reset in [applyStyling:includeSubViews:force:]
 
         if ( animated && force ) {
-            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimationAndForce:) withObject:uiElement afterDelay:0];
+            [[InterfaCSS sharedInstance] performSelector:@selector(applyStylingWithAnimationAndForce:) withObject:uiElement afterDelay:0];
         } else if ( animated ) {
-            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
+            [[InterfaCSS sharedInstance] performSelector:@selector(applyStylingWithAnimation:) withObject:uiElement afterDelay:0];
         } else if ( force ) {
-            [[InterfaCSS interfaCSS] performSelector:@selector(applyStylingWithForce:) withObject:uiElement afterDelay:0];
+            [[InterfaCSS sharedInstance] performSelector:@selector(applyStylingWithForce:) withObject:uiElement afterDelay:0];
         } else {
-            [[InterfaCSS interfaCSS] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
+            [[InterfaCSS sharedInstance] performSelector:@selector(applyStyling:) withObject:uiElement afterDelay:0];
         }
     }
 }

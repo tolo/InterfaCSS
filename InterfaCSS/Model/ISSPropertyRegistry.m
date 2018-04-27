@@ -61,7 +61,7 @@ static ISSPropertyDefinition* pea(NSString* name, NSArray* aliases, NSDictionary
 }
 
 static ISSPropertyDefinition* peo(NSString* name, NSDictionary* enumValues) {
-    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil];
+    return [[ISSPropertyDefinition alloc] initWithName:name aliases:nil type:ISSPropertyTypeEnumType enumValues:enumValues enumBitMaskType:YES setterBlock:nil parameterEnumValues:nil useIntrospection:NO];
 }
 
 static ISSPropertyDefinition* peos(NSString* name, NSDictionary* enumValues, ISSPropertySetterBlock setterBlock) {
@@ -551,14 +551,14 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
 
     ISSPropertyDefinition* font = pp(S(font), controlStateParametersValues, ISSPropertyTypeFont, ^(SetterBlockParamList) {
         if( [viewObject isKindOfClass:UIButton.class] ) {
-            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
+            if( [InterfaCSS sharedInstance].preventOverwriteOfAttributedTextAttributes && [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {
                 [viewObject titleLabel].font = value;
             }
         }
         else if( [viewObject respondsToSelector:@selector(setFont:)] ) {
-            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
+            if( [InterfaCSS sharedInstance].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
                     && [[viewObject attributedText] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting font for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {
@@ -574,7 +574,7 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
 
     ISSPropertySetterBlock uiButtonTitleColorBlock = ^(SetterBlockParamList) {
         BOOL success = YES;
-        if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] &&
+        if( [InterfaCSS sharedInstance].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(currentAttributedTitle)] &&
                 [[viewObject currentAttributedTitle] iss_hasAttributes] ) {
             ISSLogTrace(@"NOT setting titleColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
         } else {
@@ -590,7 +590,7 @@ static void createSegmentIfNeeded(UISegmentedControl* segmentedControl, NSUInteg
             return uiButtonTitleColorBlock(p, viewObject, value, parameters);
         }
         else if( [viewObject respondsToSelector:@selector(setTextColor:)] ) {
-            if( [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
+            if( [InterfaCSS sharedInstance].preventOverwriteOfAttributedTextAttributes && [viewObject respondsToSelector:@selector(attributedText)]
                                 && [[viewObject attributedText] iss_hasAttributes] ) {
                 ISSLogTrace(@"NOT setting textColor for %@ - preventOverwriteOfAttributedTextAttributes is enabled", viewObject);
             } else {

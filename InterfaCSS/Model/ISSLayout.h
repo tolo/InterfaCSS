@@ -56,7 +56,7 @@ typedef NS_ENUM(NSInteger, ISSLayoutType) {
 
 @property (nonatomic, readonly) ISSLayoutAttribute targetAttribute;
 
-@property (nonatomic, strong, readonly) NSString* relativeElementId;
+@property (nonatomic, nullable, strong, readonly) NSString* relativeElementId;
 @property (nonatomic, readonly) ISSLayoutAttribute relativeAttribute;
 
 @property (nonatomic) CGFloat multiplier;

@@ -15,13 +15,13 @@
 @implementation UIView (ISSPrototypeReusableView)
 
 - (BOOL) initializedFromPrototypeISS {
-    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self];
     NSNumber* cellInitializedISS = elementDetails.additionalDetails[ISSPrototypeViewInitializedKey];
     return [cellInitializedISS boolValue];
 }
 
 - (void) setInitializedFromPrototypeISS:(BOOL)initializedFromPrototype {
-    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self];
     elementDetails.additionalDetails[ISSPrototypeViewInitializedKey] = @(initializedFromPrototype);
 }
 

@@ -44,7 +44,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-typedef NSArray* _Nonnull (^SubViewBlock)();
+typedef NSArray* _Nonnull (^SubViewBlock)(void);
 
 /**
  * Factory class that enables building of view hierarchies in a concise and convenient way. Note that all the methods of this class support setting multiple

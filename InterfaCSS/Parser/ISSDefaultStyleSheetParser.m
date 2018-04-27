@@ -467,7 +467,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
             id variableName = nil;
             if( variableNameRange.length > 0 ) {
                 variableName = [propertyValue substringWithRange:variableNameRange];
-                variableValue = [[InterfaCSS interfaCSS] valueOfStyleSheetVariableWithName:variableName];
+                variableValue = [[InterfaCSS sharedInstance] valueOfStyleSheetVariableWithName:variableName];
             }
             if( variableValue ) {
                 variableValue = [variableValue iss_trimQuotes];
@@ -781,7 +781,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
 
     /** -- AttributedString -- **/
     NSMutableDictionary* attributedStringProperties = [NSMutableDictionary dictionary];
-    for(ISSPropertyDefinition* def in [[InterfaCSS interfaCSS].propertyRegistry typePropertyDefinitions:ISSPropertyTypeAttributedString]) {
+    for(ISSPropertyDefinition* def in [[InterfaCSS sharedInstance].propertyRegistry typePropertyDefinitions:ISSPropertyTypeAttributedString]) {
         for(NSString* lowerCaseAlias in def.allNames) {
             attributedStringProperties[lowerCaseAlias] = def;
         }
@@ -1356,7 +1356,7 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         /** Variables **/
         validVariableNameSet = [ISSParser iss_validIdentifierCharsSet];
         ISSParser* variableParser = [[ISSParser iss_propertyPairParser:YES] transform:^id(id value) {
-            [[InterfaCSS interfaCSS] setValue:value[1] forStyleSheetVariableWithName:value[0]];
+            [[InterfaCSS sharedInstance] setValue:value[1] forStyleSheetVariableWithName:value[0]];
             return [NSNull null];
         } name:@"variableParser"];
 

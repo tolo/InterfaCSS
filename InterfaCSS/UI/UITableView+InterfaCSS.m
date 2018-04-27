@@ -16,7 +16,7 @@
 
 - (id) dequeueReusableCellWithIdentifierISS:(NSString*)reuseIdentifier forIndexPath:(NSIndexPath*)indexPath {
     id cell = [self dequeueReusableCellWithIdentifier:reuseIdentifier forIndexPath:indexPath];
-    ISSUIElementDetails* elementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell];
+    ISSUIElementDetails* elementDetails = [[InterfaCSS sharedInstance] detailsForUIElement:cell];
     elementDetails.additionalDetails[ISSIndexPathKey] = indexPath;
     return cell;
 }

@@ -76,7 +76,7 @@
 
 + (ISSRootView*) rootViewWithId:(NSString*)elementId andStyleClass:(NSString*)styleClass withOwner:(id)owner andSubViews:(SubViewBlock)subViewBlock {
     ISSRootView* rootView = [self setupView:[[ISSRootView alloc] init] withId:elementId andStyleClass:styleClass andSubViews:subViewBlock];
-    if( owner ) [[InterfaCSS interfaCSS] autoPopulatePropertiesInViewHierarchyFromView:rootView inOwner:owner];
+    if( owner ) [[InterfaCSS sharedInstance] autoPopulatePropertiesInViewHierarchyFromView:rootView inOwner:owner];
     return rootView;
 }
 
@@ -95,7 +95,7 @@
         return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData fileOwner:fileOwner wrapRoot:wrapRoot];
     } else {
         ISSLogWarning(@"Unable to load view definitions from file '%@'", url);
-        return nil;
+        return [[ISSRootView alloc] init];
     }
 }
 
@@ -109,7 +109,7 @@
         return [ISSViewHierarchyParser parseViewHierarchyFromData:fileData fileOwner:fileOwner wrapRoot:wrapRoot];
     } else {
         ISSLogWarning(@"Unable to load view definitions from file '%@'", fileName);
-        return nil;
+        return [[ISSRootView alloc] init];
     }
 }
 

@@ -62,10 +62,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** 
  * Gets the shared InterfaCSS instance.
- *
- * @deprecated use `[InterfaCSS sharedInstance]`.
  */
-+ (InterfaCSS*) interfaCSS;
++ (InterfaCSS*) interfaCSS __deprecated_msg("use `[InterfaCSS sharedInstance]`");
 
 /**
  * Gets the shared InterfaCSS instance.

@@ -18,7 +18,7 @@ typedef UIView* _Nullable (^ViewBuilderBlock)(UIView* _Nullable superview);
  */
 @interface ISSViewPrototype : NSObject
 
-@property (nonatomic, strong, readonly) NSString* name;
+@property (nonatomic, strong, readonly, nullable) NSString* name;
 
 @property (nonatomic, strong, readonly, nullable) NSString* propertyName;
 @property (nonatomic) BOOL implicitPropertyName;
@@ -29,7 +29,7 @@ typedef UIView* _Nullable (^ViewBuilderBlock)(UIView* _Nullable superview);
 
 @property (nonatomic) BOOL prototypeScopeParent;
 
-+ (instancetype) prototypeWithName:(NSString*)name propertyName:(nullable NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
++ (instancetype) prototypeWithName:(nullable NSString*)name propertyName:(nullable NSString*)propertyName addAsSubView:(BOOL)addAsSubView viewBuilderBlock:(ViewBuilderBlock)viewBuilderBlock;
 
 - (nullable UIView*) createViewObjectFromPrototypeWithParent:(nullable id)parentObject;
 

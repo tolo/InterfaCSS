@@ -26,7 +26,7 @@
     if( !parentDetails ) return nil;
     else if( [selector matchesElement:parentDetails stylingContext:stylingContext] ) return parentDetails;
     else {
-        ISSUIElementDetails* grandParentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:parentDetails.parentElement];
+        ISSUIElementDetails* grandParentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:parentDetails.parentElement];
         return [self findMatchingDescendantSelectorParent:grandParentDetails forSelector:selector stylingContext:stylingContext];
     }
 }
@@ -43,7 +43,7 @@
     NSInteger index = [subviews indexOfObject:elementDetails.uiElement];
     if( index != NSNotFound && (index-1) >= 0 ) {
         UIView* sibling = subviews[(NSUInteger) (index - 1)];
-        ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
+        ISSUIElementDetails* siblingDetails = [[InterfaCSS sharedInstance] detailsForUIElement:sibling];
         if( [selector matchesElement:siblingDetails stylingContext:stylingContext] ) return siblingDetails;
     }
     return nil;
@@ -52,7 +52,7 @@
 + (ISSUIElementDetails*) findMatchingGeneralSiblingTo:(ISSUIElementDetails*)elementDetails inParent:(ISSUIElementDetails*)parentDetails
                                           forSelector:(ISSSelector*)selector stylingContext:(ISSStylingContext*)stylingContext {
     for(UIView* sibling in parentDetails.view.subviews) {
-        ISSUIElementDetails* siblingDetails = [[InterfaCSS interfaCSS] detailsForUIElement:sibling];
+        ISSUIElementDetails* siblingDetails = [[InterfaCSS sharedInstance] detailsForUIElement:sibling];
         if( sibling != elementDetails.uiElement && [selector matchesElement:siblingDetails stylingContext:stylingContext] ) return siblingDetails;
     }
     return nil;
@@ -184,9 +184,9 @@
             
             ISSUIElementDetails* nextParentUIElementDetails;
             if ( _nestedElenentSelectorChain && i == remainingCount ) { // In case last selector is ISSNestedElementSelector, we need to use ownerElement instead of parentElement
-                nextParentUIElementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nextUIElementDetails.ownerElement];
+                nextParentUIElementDetails = [[InterfaCSS sharedInstance] detailsForUIElement:nextUIElementDetails.ownerElement];
             } else {
-                nextParentUIElementDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nextUIElementDetails.parentElement];
+                nextParentUIElementDetails = [[InterfaCSS sharedInstance] detailsForUIElement:nextUIElementDetails.parentElement];
             }
             
             nextUIElementDetails = [ISSSelectorChain matchElement:nextUIElementDetails parentElement:nextParentUIElementDetails selector:selector

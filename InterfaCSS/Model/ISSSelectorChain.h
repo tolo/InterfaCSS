@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL hasPseudoClassSelector;
 @property (nonatomic, readonly) NSUInteger specificity;
 
-+ (instancetype) selectorChainWithSelector:(ISSSelector*)selector;
-+ (instancetype) selectorChainWithComponents:(NSArray*)selectorComponents;
++ (nullable instancetype) selectorChainWithSelector:(ISSSelector*)selector;
++ (nullable instancetype) selectorChainWithComponents:(NSArray*)selectorComponents;
 
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelector:(ISSSelector*)selector;
 - (ISSSelectorChain*) selectorChainByAddingDescendantSelectorChain:(ISSSelectorChain*)selectorChain;

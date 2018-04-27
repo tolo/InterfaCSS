@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSSet*) propertyDefinitionsForType:(ISSPropertyType)propertyType;
 - (NSSet*) propertyDefinitionsForViewClass:(Class)viewClass;
-- (ISSPropertyDefinition*) propertyDefinitionForProperty:(NSString*)propertyName inClass:(Class)viewClass;
+- (nullable ISSPropertyDefinition*) propertyDefinitionForProperty:(NSString*)propertyName inClass:(Class)viewClass;
 
 - (NSSet*) typePropertyDefinitions:(ISSPropertyType)propertyType;
 

@@ -179,7 +179,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     if( self.elementId || self.customElementStyleIdentity ) return; // If element uses element Id, or custom style id, elementStyleIdentityPath will have been set by call above, and will only contain the element Id itself
     
     if( self.parentElement ) {
-        ISSUIElementDetails* parentDetails = [[InterfaCSS interfaCSS] detailsForUIElement:self.parentElement];
+        ISSUIElementDetails* parentDetails = [[InterfaCSS sharedInstance] detailsForUIElement:self.parentElement];
         NSString* parentStyleIdentityPath = parentDetails.elementStyleIdentityPath;
         // Check if an ancestor has an element id (i.e. style identity path will contain #someParentElementId) - this information will be used to determine if styles can be cacheable or not
         self.ancestorHasElementId = [parentStyleIdentityPath hasPrefix:@"#"] || [parentStyleIdentityPath rangeOfString:@" #"].location != NSNotFound;
@@ -248,11 +248,6 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
 
 - (void) resetCachedData {
     [self resetCachedData:YES];
-}
-
-/// @deprecated
-- (void) resetCachedViewHierarchyRelatedData {
-    [self resetCachedData:NO];
 }
 
 - (UIView*) view {
@@ -522,7 +517,7 @@ NSString* const ISSUIElementDetailsResetCachedDataNotificationName = @"ISSUIElem
     for(NSString* nestedElementKeyPath in self.validNestedElements.allValues) {
         id nestedElement = [self.uiElement valueForKeyPath:nestedElementKeyPath];
         if( nestedElement && nestedElement != self.uiElement && nestedElement != self.parentElement ) { // Do quick initial sanity checks for circular relationship
-            ISSUIElementDetails* childDetails = [[InterfaCSS interfaCSS] detailsForUIElement:nestedElement];
+            ISSUIElementDetails* childDetails = [[InterfaCSS sharedInstance] detailsForUIElement:nestedElement];
             
             BOOL circularReference = NO;
             if( childDetails.ownerElement ) {

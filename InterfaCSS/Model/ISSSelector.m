@@ -70,14 +70,14 @@
         if( [type isEqualToString:@"*"] ) wildcardType = YES;
         else {
             ISSPropertyRegistry* registry = [InterfaCSS sharedInstance].propertyRegistry;
-            typeClass = [registry canonicalTypeClassForType:type registerIfNotFound:[InterfaCSS interfaCSS].allowAutomaticRegistrationOfCustomTypeSelectorClasses];
+            typeClass = [registry canonicalTypeClassForType:type registerIfNotFound:[InterfaCSS sharedInstance].allowAutomaticRegistrationOfCustomTypeSelectorClasses];
         }
     }
 
     if( typeClass || wildcardType || elementId || styleClasses.count ) {
         return [[self alloc] initWithType:typeClass wildcardType:wildcardType elementId:elementId styleClasses:styleClasses pseudoClasses:pseudoClasses];
     } else if( [type iss_hasData] ) {
-        if( [InterfaCSS interfaCSS].useLenientSelectorParsing ) {
+        if( [InterfaCSS sharedInstance].useLenientSelectorParsing ) {
             ISSLogWarning(@"Unrecognized type: '%@' - using type as style class instead", type);
             return [[self alloc] initWithType:nil wildcardType:NO elementId:nil styleClasses:@[type] pseudoClasses:pseudoClasses];
         } else {

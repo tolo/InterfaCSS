@@ -110,7 +110,7 @@ For larger apps, it's usually a good idea to split up the styles on different st
 
 ```objective-c
 ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:BraveNewViewController.class];
-[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"stylesForOnePartOfTheApp.css" withScope:scope];
+[[InterfaCSS sharedInstance] loadStyleSheetFromMainBundleFile:@"stylesForOnePartOfTheApp.css" withScope:scope];
 ```
 
 #### *Hot deployment* of your stylesheets (for development)
@@ -118,9 +118,9 @@ To make development simpler and faster, try using an auto-refreshable stylesheet
 
 ```objective-c
 /* For local (simulator) use, you can for instance load the actual css file used in your project as an auto-refreshable stylesheet: */
-[[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromLocalFile:@"/Users/username/myCoolXcodeProject/myDazzlingStyles.css"];
+[[InterfaCSS sharedInstance] loadRefreshableStyleSheetFromLocalFile:@"/Users/username/myCoolXcodeProject/myDazzlingStyles.css"];
 /* Or if you want to be able to run on a device, you can for instance simply upload the file to your cloud provider of choice: */
-[[InterfaCSS interfaCSS] loadRefreshableStyleSheetFromURL:
+[[InterfaCSS sharedInstance] loadRefreshableStyleSheetFromURL:
    [NSURL URLWithString:@"http://www.mygroovycloudprovider.com/user/directory/mymyDazzlingStyles.css"]];
 ```
 
@@ -146,7 +146,7 @@ Checking out the sample code is a good way to get a feel for how InterfaCSS is u
 
 ### Setup InterfaCSS in your app
 
-* Load a stylesheet, like this: `[[InterfaCSS interfaCSS] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your **app delegate**, when your app is first launched, but if you have a lot of stylesheets it's better to defer loading of the stylesheets to when you actually need them (`loadView` of a particular view controller might be a better place in this case).
+* Load a stylesheet, like this: `[[InterfaCSS sharedInstance] loadStyleSheetFromMainBundleFile:@"myDazzlingStyles.css"];`. A good place to do this is in your **app delegate**, when your app is first launched, but if you have a lot of stylesheets it's better to defer loading of the stylesheets to when you actually need them (`loadView` of a particular view controller might be a better place in this case).
 
 * Start adding styles. As with most new things, it's best to start small. For instance, don't start with adding crazily complex selectors like `UIView + UITableView:nthoftype(5n+1) UITableViewCell:odd .class1 > .class2:landscape`.
 

@@ -145,10 +145,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Schedules an asynchronous re-styling of this view. If `animated` is `YES`, the re-styling will be performed within an animation block.
- *
- * @deprecated Replaced by scheduleApplyStylingWithAnimationISS
  */
-- (void) scheduleApplyStylingISS:(BOOL)animated;
+- (void) scheduleApplyStylingISS:(BOOL)animated __deprecated_msg("Replaced by scheduleApplyStylingWithAnimationISS");
 
 /**
  * Schedules an asynchronous re-styling of this view. The re-styling will be performed within an animation block.

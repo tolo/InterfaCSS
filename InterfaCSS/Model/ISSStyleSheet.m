@@ -86,9 +86,14 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 @end
 
 
-@implementation ISSStyleSheet {
-    NSArray* _declarations;
-}
+@interface ISSStyleSheet ()
+
+@property (nonatomic, readwrite, nullable) NSArray* declarations;
+
+@end
+
+
+@implementation ISSStyleSheet
 
 
 #pragma mark - Lifecycle
@@ -158,8 +163,8 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
             NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
             NSMutableArray* declarations = [[InterfaCSS sharedInstance].parser parse:responseString];
             if( declarations ) {
-                BOOL hasDeclarations = _declarations != nil;
-                _declarations = declarations;
+                BOOL hasDeclarations = self.declarations != nil;
+                self.declarations = declarations;
 
                 if( hasDeclarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
                 else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));

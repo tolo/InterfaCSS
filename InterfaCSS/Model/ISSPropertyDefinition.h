@@ -13,8 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ISSPropertyDefinition;
 
-/** @deprecated */
-typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id _Nullable value, NSArray* _Nullable parameters);
+typedef void (^PropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id _Nullable value, NSArray* _Nullable parameters) __deprecated;
 
 typedef BOOL (^ISSPropertySetterBlock)(ISSPropertyDefinition* property, id viewObject, id _Nullable value, NSArray* _Nullable parameters);
 
@@ -101,11 +100,10 @@ typedef NS_ENUM(NSInteger, ISSPropertyType) {
  * If this is an enum property, specify the enum values in the `enumValues` parameter. If the enum values are of a bit mask type, specify `YES` in the `enumBitMaskType` parameter.
  * If this is a parameterized property, specify the parameter value transformation dictionary in `parameterEnumValues`.
  * To use a custom handling for setting the property value - specify a property setter block in the `setterBlock` parameter.
- *
- * @deprecated due to deprecation of setter block type.
  */
 - (id) initWithName:(NSString*)name aliases:(nullable NSArray*)aliases type:(ISSPropertyType)type enumValues:(nullable NSDictionary*)enumValues
-    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(nullable PropertySetterBlock)setterBlock parameterEnumValues:(nullable NSDictionary*)parameterEnumValues;
+    enumBitMaskType:(BOOL)enumBitMaskType setterBlock:(nullable PropertySetterBlock)setterBlock parameterEnumValues:(nullable NSDictionary*)parameterEnumValues 
+    __deprecated_msg("Due to deprecation of setter block type`");
 
 /**
  * Creates a property definition with an optional number of aliases, that optionally can set it's value via introspection (i.e. use declared or default setter method for property), instead of using KVC.

@@ -95,7 +95,7 @@
 
 + (void) loadDefaultStylesheet {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"interfaCSSTests" ofType:@"css"];
-    [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path];
+    [[InterfaCSS sharedInstance] loadStyleSheetFromFile:path];
 }
 
 + (void) setUp {
@@ -149,7 +149,7 @@
 
 - (void) testVariableReuse {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"interfaCSSTests-variables" ofType:@"css"];
-    [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path];
+    [[InterfaCSS sharedInstance] loadStyleSheetFromFile:path];
     
     UIView* rootView = [[UIView alloc] init];
     [rootView addStyleClassISS:@"reuseTest"];
@@ -169,7 +169,7 @@
 - (void) applyStyle:(NSString*)style onView:(UIView*)view andExpectAlpha:(CGFloat)alpha {
     [view addStyleClassISS:style];
     [view applyStylingISS];
-    [[InterfaCSS interfaCSS] logMatchingStyleDeclarationsForUIElement:view];
+    [[InterfaCSS sharedInstance] logMatchingStyleDeclarationsForUIElement:view];
     NSLog(@"%@ - view.alpha: %f", style, view.alpha);
     ISSAssertEqualFloats(view.alpha, alpha, @"Unexpected property value");
 }
@@ -212,7 +212,7 @@
 }
 
 - (void) testAttributedTextIntegrity {
-    [InterfaCSS interfaCSS].preventOverwriteOfAttributedTextAttributes = YES;
+    [InterfaCSS sharedInstance].preventOverwriteOfAttributedTextAttributes = YES;
 
     UILabel* label = [[UILabel alloc] init];
     UILabel* label2 = [[UILabel alloc] init];
@@ -349,13 +349,13 @@
     UILabel* label = [[UILabel alloc] init];
     [view addSubview:label];
     
-    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:label];
     XCTAssertFalse(details.stylesCacheable, @"Expected styles to be NOT cacheable");
     
     UIWindow* window = [[UIWindow alloc] init];
     [window addSubview:view];
     
-    details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    details = [[InterfaCSS sharedInstance] detailsForUIElement:label];
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
 }
 
@@ -363,7 +363,7 @@
     UIView* view = [[UIView alloc] init];
     view.customStylingIdentityISS = @"custom";
     
-    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:view];
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
 }
 
@@ -373,7 +373,7 @@
     UILabel* label = [[UILabel alloc] init];
     [view addSubview:label];
     
-    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:label];
     [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
 }
@@ -386,13 +386,13 @@
     UIWindow* window = [[UIWindow alloc] init];
     [window addSubview:view];
     
-    ISSUIElementDetails* details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:label];
     [details elementStyleIdentityPath]; // Make sure styling identity is built
     XCTAssertTrue(details.stylesCacheable, @"Expected styles to be cacheable");
     
     view.customStylingIdentityISS = @"custom";
     
-    details = [[InterfaCSS interfaCSS] detailsForUIElement:label];
+    details = [[InterfaCSS sharedInstance] detailsForUIElement:label];
     
     XCTAssertTrue([details.elementStyleIdentityPath hasPrefix:@"@custom"], @"Expected styles identity to begin with custom style identity of parent");
 
@@ -416,7 +416,7 @@
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"viewDefinitionTest" ofType:@"xml"];
     [ISSViewBuilder loadViewHierarchyFromFile:path fileOwner:fileOwner];
     
-    id p = [[InterfaCSS interfaCSS] viewFromPrototypeWithName:@"prototype1"];
+    id p = [[InterfaCSS sharedInstance] viewFromPrototypeWithName:@"prototype1"];
     
     XCTAssertNotNil(p);
     XCTAssertTrue([p isKindOfClass:CustomView1.class]);
@@ -441,7 +441,7 @@
     [ISSViewBuilder loadViewHierarchyFromFile:path fileOwner:fileOwner];
     
     // Load prototype to trigger execution of prototype view block, and call to delegate
-    [[InterfaCSS interfaCSS] viewFromPrototypeWithName:@"prototype1"];
+    [[InterfaCSS sharedInstance] viewFromPrototypeWithName:@"prototype1"];
     
     XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeId], @"CustomView1Id");
     XCTAssertEqualObjects(fileOwner.customView1Properties[ISSViewDefinitionFileAttributeClass], @"prototype1");
@@ -618,17 +618,17 @@
 
 - (void) testPrefixedPropertyOnNonUIViewClass {
     UIBarButtonItem* item = [[UIBarButtonItem alloc] initWithCustomView:[[UIView alloc] init]];
-    [[InterfaCSS interfaCSS] addStyleClass:@"prefixedPropertyOnNonUIViewClass" forUIElement:item];
+    [[InterfaCSS sharedInstance] addStyleClass:@"prefixedPropertyOnNonUIViewClass" forUIElement:item];
     
-    [[InterfaCSS interfaCSS] applyStyling:item];
+    [[InterfaCSS sharedInstance] applyStyling:item];
     
     ISSAssertEqualFloats(item.customView.alpha, 0.5f);
 }
 
 - (void) testNestedPropertyNotDirectChildView {
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@""];
-    [[InterfaCSS interfaCSS] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
-    [[InterfaCSS interfaCSS] applyStyling:cell];
+    [[InterfaCSS sharedInstance] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
+    [[InterfaCSS sharedInstance] applyStyling:cell];
     
     XCTAssertEqual(cell.textLabel.enabled, NO);
     XCTAssertEqual(cell.detailTextLabel.enabled, YES);
@@ -638,11 +638,11 @@
 
 - (void) testNestedPropertiesOfSameTypeUsesDifferentStyleIdentities {
     UITableViewCell* cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@""];
-    [[InterfaCSS interfaCSS] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
-    [[InterfaCSS interfaCSS] applyStyling:cell];
+    [[InterfaCSS sharedInstance] addStyleClass:@"nestedPropertyNotDirectChildView" forUIElement:cell];
+    [[InterfaCSS sharedInstance] applyStyling:cell];
     
-    ISSUIElementDetails* textLabelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell.textLabel];
-    ISSUIElementDetails* detailTextLabelDetails = [[InterfaCSS interfaCSS] detailsForUIElement:cell.detailTextLabel];
+    ISSUIElementDetails* textLabelDetails = [[InterfaCSS sharedInstance] detailsForUIElement:cell.textLabel];
+    ISSUIElementDetails* detailTextLabelDetails = [[InterfaCSS sharedInstance] detailsForUIElement:cell.detailTextLabel];
     
     XCTAssertNotEqualObjects(textLabelDetails.elementStyleIdentityPath, detailTextLabelDetails.elementStyleIdentityPath);
 }
@@ -758,7 +758,7 @@
     // Load stylesheet with a scope that limits it to only CustomViewContoller
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"scopedStyles" ofType:@"css"];
     ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:CustomViewController.class];
-    ISSStyleSheet* stylesheet = [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path withScope:scope];
+    ISSStyleSheet* stylesheet = [[InterfaCSS sharedInstance] loadStyleSheetFromFile:path withScope:scope];
     
     [root.view applyStylingISS];
     
@@ -811,13 +811,13 @@
     [root.view addSubview:custom.view];
     
     // Make sure view hierarchy is initialized (needed for firstElementMatchingScope / visitViewHierarchyFromView)
-    [[InterfaCSS interfaCSS] initViewHierarchyForView:root.view];
+    [[InterfaCSS sharedInstance] initViewHierarchyForView:root.view];
     [root.view applyStylingISS];
     
     // Load stylesheet with a scope that limits it to only CustomViewContoller
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:@"scopedStyles" ofType:@"css"];
     ISSStyleSheetScope* scope = [ISSStyleSheetScope scopeWithViewControllerClass:CustomViewController.class];
-    [[InterfaCSS interfaCSS] loadStyleSheetFromFile:path withScope:scope];
+    [[InterfaCSS sharedInstance] loadStyleSheetFromFile:path withScope:scope];
     
     ISSAssertEqualFloats(0.5, customLabel.alpha);
 }

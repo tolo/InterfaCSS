@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(nullable NSArray*)properties extendedDeclarationSelectorChain:(nullable ISSSelectorChain*)extendedDeclarationSelectorChain;
 
 - (BOOL) matchesElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
-- (ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (nullable ISSPropertyDeclarations*) propertyDeclarationsMatchingElement:(ISSUIElementDetails*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 - (BOOL) containsSelectorChain:(ISSSelectorChain*)selectorChain;
 
