@@ -18,4 +18,10 @@
     return result;
 }
 
+- (NSDictionary*) iss_dictionaryByAddingValue:(id)value forKey:(NSString*)key {
+    NSMutableDictionary* dict = [self mutableCopy];
+    dict[key] = value;
+    return [dict copy];
+}
+
 @end

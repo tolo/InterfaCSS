@@ -12,38 +12,32 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSPropertyDeclaration, ISSElementStylingProxy;
+@class ISSPropertyDeclaration, ISSElementStylingProxy, ISSStyleSheetManager;
 
 
-typedef id _Nullable (^ISSPropertyValueTransformationBlock)(ISSPropertyDeclaration* propertyDeclaration, ISSPropertyType propertyType, BOOL* containsVariables);
+extern NSString* const ISSPropertyDeclarationUseCurrentValue;
 
-
-extern NSObject* const ISSPropertyDeclarationUseCurrentValue;
-
-
+// TODO: Rename to ISSPropertyValue?
 
 /**
- * Represents the declaration of a property in a stylesheet (i.e. name and value etc).
+ * Represents the declaration of a property name/value pair in a stylesheet (i.e. name and value etc).
  */
 @interface ISSPropertyDeclaration : NSObject<NSCopying>
 
-@property (nonatomic, readonly, nullable) NSString* propertyName;
-@property (nonatomic, readonly, nullable) NSString* nestedElementKeyPath;
+@property (nonatomic, strong, readonly, nullable) NSString* propertyName;
+@property (nonatomic, strong, readonly, nullable) NSString* nestedElementKeyPath;
 @property (nonatomic, readonly) BOOL isNestedElementKeyPathRegistrationPlaceholder;
+@property (nonatomic, strong, readonly) NSString* fqn;
 
-@property (nonatomic, readonly, nullable) NSArray* parameters;
-
-@property (nonatomic, strong, nullable) id rawValue;
+@property (nonatomic, strong, readonly, nullable) NSString* rawValue;
 @property (nonatomic, readonly) BOOL useCurrentValue;
-@property (nonatomic, copy, nullable) ISSPropertyValueTransformationBlock valueTransformationBlock;
 
+@property (nonatomic, strong, readonly, nullable) NSArray<NSString*>* rawParameters;
 
-- (instancetype) initWithPropertyName:(NSString*)name nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
-- (instancetype) initWithPropertyName:(NSString*)name parameters:(nullable NSArray*)parameters nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
+@property (nonatomic, strong, readonly) NSString* stringRepresentation;
+
+- (instancetype) initWithPropertyName:(NSString*)name rawValue:(nullable NSString*)rawValue rawParameters:(nullable NSArray<NSString*>*)rawParameters nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
 - (instancetype) initWithNestedElementKeyPathToRegister:(NSString*)nestedElementKeyPath;
-
-- (nullable id) valueForProperty:(ISSPropertyDefinition*)property;
-- (nullable id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(nullable NSString*)valueCacheKey;
 
 @end
 

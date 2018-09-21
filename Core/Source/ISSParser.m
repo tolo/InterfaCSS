@@ -64,7 +64,7 @@
         NSMutableArray* sequentialResult = nil;
         NSUInteger i = status->index;
         for(ISSParser* parser in parsers) {
-            ISSParserStatus parserStatus = {.match = NO, .index = i};
+            ISSParserStatus parserStatus = {.match = NO, .index = i, .context = status->context};
             id parserResult = [parser parse:input status:&parserStatus];
             if( parserStatus.match ) {
                 i = parserStatus.index;
@@ -99,7 +99,7 @@
 }
 
 - (ISSParser*) keepLeft:(ISSParser*)parser {
-    ISSParser* keepLeft = [[ISSParser sequential:@[self, parser]] transform:^id(NSArray* sequentialResult) {
+    ISSParser* keepLeft = [[ISSParser sequential:@[self, parser]] transform:^id(NSArray* sequentialResult, void* context) {
         return sequentialResult[0];
     }];
     keepLeft.name = @"keepLeft";
@@ -107,7 +107,7 @@
 }
 
 - (ISSParser*) keepRight:(ISSParser*)parser {
-    ISSParser* keepRight = [[ISSParser sequential:@[self, parser]] transform:^id(NSArray* sequentialResult) {
+    ISSParser* keepRight = [[ISSParser sequential:@[self, parser]] transform:^id(NSArray* sequentialResult, void* context) {
         return sequentialResult[1];
     }];
     keepRight.name = @"keepRight";
@@ -115,7 +115,7 @@
 }
 
 - (ISSParser*) between:(ISSParser*)left and:(ISSParser*)right {
-    ISSParser* between = [[ISSParser sequential:@[left, self, right]] transform:^id(NSArray* sequentialResult) {
+    ISSParser* between = [[ISSParser sequential:@[left, self, right]] transform:^id(NSArray* sequentialResult, void* context) {
         return sequentialResult[1];
     }];
     between.name = @"between";
@@ -216,7 +216,7 @@
         id lastSeparator = nil;
         
         while (i < len) {
-            ISSParserStatus parserStatus = {.match = NO, .index = i};
+            ISSParserStatus parserStatus = {.match = NO, .index = i, .context = status->context};
             
             if( parsingDelimiter ) {
                 id value = [delimiterParser parse:input status:&parserStatus];
@@ -241,7 +241,7 @@
         }
         
         if( results.count >= minCount ) {
-            *status = (ISSParserStatus){.match = YES, .index = lastValidIndex};
+            *status = (ISSParserStatus){.match = YES, .index = lastValidIndex, .context = status->context};
             return results;
         } else {
             return [NSNull null];
@@ -250,7 +250,7 @@
 }
 
 - (ISSParser*) concat:(NSString*)separator {
-    ISSParser* concat = [self transform:^id(id value) {
+    ISSParser* concat = [self transform:^id(id value, void* context) {
         if( [value isKindOfClass:NSArray.class] ) {
             return [[value iss_flattened] componentsJoinedByString:separator];
         } else {
@@ -288,7 +288,7 @@
     return [ISSParser parserWithBlock:^id (NSString* input, ISSParserStatus* status) {
         id value = [self parse:input status:status];
         if( status->match ) {
-            return transformer(value);
+            return transformer(value, status->context);
         } else {
             return [NSNull null];
         }
@@ -335,7 +335,7 @@
         }
         
         NSString* value = [input substringWithRange:NSMakeRange(status->index, i - status->index)];
-        *status = (ISSParserStatus){.match = YES, .index = i};
+        *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
         return value;
     } andName:[NSString stringWithFormat:@"stringEQIgnoringCase(%@)", matcherString]];
 }
@@ -359,7 +359,7 @@
         NSUInteger i = status->index;
         ISSParserSkipSpaceAndNewLines(input);
         if ( (i - status->index) >= minCount ) {
-            *status = (ISSParserStatus){.match = YES, .index = i};
+            *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
         }
         return [NSNull null];
     } andName:@"spaces"];
@@ -387,7 +387,7 @@
             i++;
             if( skipSpaces ) ISSParserSkipSpaceAndNewLines(input);
             
-            *status = (ISSParserStatus){.match = YES, .index = i};
+            *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
             return [NSString stringWithFormat:@"%C", c];
         }
         return [NSNull null];
@@ -451,7 +451,7 @@
             }
         }
         
-        *status = (ISSParserStatus){.match = YES, .index = i};
+        *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
         return string;
     } andName:[NSString stringWithFormat:@"stringWithEscapesUpToUnichar(%C)", c]];
 }
@@ -522,7 +522,7 @@
             if( skipPastEndChar ) {
                 i++; // Increment past termination char
             }
-            *status = (ISSParserStatus){.match = YES, .index = i};
+            *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
             return value;
         } else {
             return [NSNull null];

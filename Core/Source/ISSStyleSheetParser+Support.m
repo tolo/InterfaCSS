@@ -44,7 +44,7 @@
 
 - (ISSParser*) logicalExpressionParser {
     NSCharacterSet* invertedCharacterSet = [self.mathExpressionCharsSet invertedSet];
-    return [[ISSParser takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value) {
+    return [[ISSParser takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value, void* context) {
         NSPredicate* expr = [NSPredicate predicateWithFormat:value];
         return @([expr evaluateWithObject:nil]);
     }];
@@ -52,7 +52,7 @@
 
 - (ISSParser*) mathExpressionParser {
     NSCharacterSet* invertedCharacterSet = [self.mathExpressionCharsSet invertedSet];
-    return [[ISSParser takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value) {
+    return [[ISSParser takeUntilInSet:invertedCharacterSet minCount:1] transform:^id(id value, void* context) {
         return [self parseMathExpression:value];
     }];
 }
@@ -103,7 +103,7 @@
                         [parameters addObject:parameterString];
                         i++;
                         
-                        *status = (ISSParserStatus){.match = YES, .index = i};
+                        *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
                         return parameters;
                     }
                     else if ( i != NSNotFound ) {
@@ -126,7 +126,7 @@
         ISSParserSkipSpaceAndNewLines(input); // Skip space
         
         for(NSString* prefix in prefixes) {
-            ISSParserStatus prefixStatus = (ISSParserStatus){.match = NO, .index = i};
+            ISSParserStatus prefixStatus = (ISSParserStatus){.match = NO, .index = i, .context = status->context};
             id result = [self partialParameterStringWithPrefix:prefix input:input status:&prefixStatus];
             if( prefixStatus.match ) {
                 *status = prefixStatus;
@@ -142,7 +142,7 @@
         NSUInteger i = status->index;
         ISSParserSkipSpaceAndNewLines(input); // Skip space
         
-        ISSParserStatus prefixStatus = (ISSParserStatus){.match = NO, .index = i};
+        ISSParserStatus prefixStatus = (ISSParserStatus){.match = NO, .index = i, .context = status->context};
         id result = [self partialParameterStringWithPrefix:prefix input:input status:&prefixStatus];
         if( prefixStatus.match ) {
             *status = prefixStatus;
@@ -201,7 +201,7 @@
         
         if( (i - status->index) > 0 ) {
             NSString* value = [input substringWithRange:NSMakeRange(status->index, i - status->index)];
-            *status = (ISSParserStatus){.match = YES, .index = i};
+            *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
             return value;
         } else {
             return [NSNull null];
@@ -255,7 +255,7 @@
                 
                 if( commentMatch ) {
                     NSString* value = [input substringWithRange:NSMakeRange(commentBeginIndex, commentEndIndex-commentBeginIndex)];
-                    *status = (ISSParserStatus){.match = YES, .index = i};
+                    *status = (ISSParserStatus){.match = YES, .index = i, .context = status->context};
                     return value;
                 }
             }
@@ -345,7 +345,7 @@
             NSString* name = nil;
             if( forVariableDefinition ) {
                 ISSParser* parser = [ISSParser takeWhileInSet:[self validIdentifierCharsSet]];
-                ISSParserStatus nameStatus = {.match = NO, .index = i};
+                ISSParserStatus nameStatus = {.match = NO, .index = i, .context = status->context};
                 name = [parser parse:input status:&nameStatus];
                 i = nameStatus.index;
                 
@@ -367,7 +367,7 @@
                 // Parse value:
                 NSString* value = [self parseEscapedAndParameterizedStringUpToChar:';' orChar:0 inString:input index:&i];
                 if( value ) {
-                    *status = (ISSParserStatus){.match = YES, .index = i + 1};
+                    *status = (ISSParserStatus){.match = YES, .index = i + 1, .context = status->context};
                     return @[name, value];
                 }
             }

@@ -8,6 +8,8 @@
 
 #import "ISSPropertyDeclaration.h"
 
+#import "ISSStyleSheetManager.h"
+
 #import "ISSPropertyDefinition.h"
 #import "NSString+ISSAdditions.h"
 #import "NSObject+ISSLogSupport.h"
@@ -16,33 +18,19 @@
 #import "ISSUpdatableValue.h"
 
 
-NSObject* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
-
-
-@interface ISSPropertyDeclaration ()
-
-@property (nonatomic, strong) NSMutableDictionary* cachedTransformedValues; // TODO: Cache must be clearable (when variables change for instance)
-
-@end
+NSString* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 
 
 @implementation ISSPropertyDeclaration
 
 #pragma mark - Initialization
 
-- (instancetype) initWithPropertyName:(NSString*)name nestedElementKeyPath:(NSString*)nestedElementKeyPath {
+- (instancetype) initWithPropertyName:(NSString*)name rawValue:(NSString*)rawValue rawParameters:(NSArray<NSString*>*)rawParameters nestedElementKeyPath:(NSString*)nestedElementKeyPath {
     if ( self = [super init] ) {
-        _nestedElementKeyPath = nestedElementKeyPath;
         _propertyName = name;
-    }
-    return self;
-}
-
-- (instancetype) initWithPropertyName:(NSString*)name parameters:(NSArray*)parameters nestedElementKeyPath:(NSString*)nestedElementKeyPath {
-    if ( self = [super init] ) {
+        _rawValue = rawValue;
+        _rawParameters = rawParameters;
         _nestedElementKeyPath = nestedElementKeyPath;
-        _propertyName = name;
-        _parameters = parameters;
     }
     return self;
 }
@@ -55,10 +43,7 @@ NSObject* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 }
 
 - (id) copyWithZone:(NSZone*)zone {
-    ISSPropertyDeclaration* propertyValue = [[(id) self.class allocWithZone:zone] initWithPropertyName:self.propertyName parameters:self.parameters nestedElementKeyPath:self.nestedElementKeyPath];
-    propertyValue.rawValue = self.rawValue;
-    propertyValue.valueTransformationBlock = self.valueTransformationBlock;
-    return propertyValue;
+    return [[(id) self.class allocWithZone:zone] initWithPropertyName:self.propertyName rawValue:self.rawValue rawParameters:self.rawParameters nestedElementKeyPath:self.nestedElementKeyPath];
 }
 
 
@@ -72,67 +57,45 @@ NSObject* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
     return _rawValue == ISSPropertyDeclarationUseCurrentValue;
 }
 
-
-#pragma mark - Property value tranform
-
-- (id) valueForProperty:(ISSPropertyDefinition*)property {
-    return [self valueForPropertyType:property.type enumValueMapping:property.enumValueMapping valueCacheKey:property.fqn];
+- (NSString*) fqn {
+    if( self.isNestedElementKeyPathRegistrationPlaceholder ) {
+        return _nestedElementKeyPath ?: @"";
+    }
+    if( _nestedElementKeyPath ) {
+        return [[_nestedElementKeyPath stringByAppendingString:@"."] stringByAppendingString:_propertyName];
+    }
+    return _propertyName ?: @"";
 }
 
-- (id) valueForPropertyType:(ISSPropertyType)propertyType enumValueMapping:(ISSPropertyEnumValueMapping*)enumValueMapping valueCacheKey:(NSString*)valueCacheKey {
-    id value = valueCacheKey ? self.cachedTransformedValues[valueCacheKey] : nil;
-    if( !value ) {
-        BOOL containsVariables = NO;
-        value = self.valueTransformationBlock(self, propertyType, &containsVariables);
-        
-        if( !value ) {
-            ISSLogWarning(@"Cannot apply property value for %@(%@) - empty property value after transform! Value before transform: '%@'.", self.propertyName, valueCacheKey, _rawValue);
-            value = [NSNull null];
-        } else if ( enumValueMapping ) {
-            value = [enumValueMapping enumValueFromString:value];
-        }
-        
-        if( containsVariables ) {
-            ISSLogTrace(@"Value for %@(%@) not cacheable - contains variable references (%@)", self.propertyName, valueCacheKey, _rawValue);
-        } else if ( valueCacheKey && self.cachedTransformedValues ) {
-            self.cachedTransformedValues[valueCacheKey] = value;
-        } else if ( valueCacheKey ) {
-            self.cachedTransformedValues = [NSMutableDictionary dictionaryWithObject:value forKey:valueCacheKey];
-        }
-    } else if( value == [NSNull null] ) {
-        return nil;
+- (NSString*) stringRepresentation {
+    NSMutableString* str = [[NSMutableString alloc] initWithString:self.fqn];
+    if( self.rawParameters ) {
+        [str appendFormat:@"(%@)", [self.rawParameters componentsJoinedByString:@", "]];
     }
-    return value;
+    if( self.rawValue ) {
+        [str appendFormat:@" = %@;", self.rawValue];
+    }
+    return [str copy];
 }
 
 
 #pragma mark - NSObject overrides
 
 - (NSString*) description {
-    if( self.parameters.count ) {
-        NSString* paramDesc = [[[self.parameters description] stringByReplacingOccurrencesOfString:@" " withString:@""] stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-        return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@ %@]", self.propertyName, paramDesc];
-    }
-    else return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@]", self.propertyName];
+    return [NSString stringWithFormat:@"ISSPropertyDeclaration[%@]", self.stringRepresentation];
 }
 
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
     else if( [object isKindOfClass:ISSPropertyDeclaration.class] ) {
         ISSPropertyDeclaration* other = object;
-        BOOL result = NO;
-        if( [NSString iss_string:other.propertyName isEqualToString:self.propertyName] && [NSString iss_string:other.nestedElementKeyPath isEqualToString:self.nestedElementKeyPath] ) {
-            if( other.parameters == self.parameters ) result = YES;
-            else result = [other.parameters isEqualToArray:self.parameters];
-        }
-        return result && (other.isNestedElementKeyPathRegistrationPlaceholder == self.isNestedElementKeyPathRegistrationPlaceholder) &&
-        ((other.rawValue == self.rawValue) || [other.rawValue isEqual:self.rawValue]);
+        return [self.stringRepresentation isEqualToString:other.stringRepresentation];
     }
     return NO;
 }
 
 - (NSUInteger) hash {
-    return self.propertyName.hash;
+    return self.fqn.hash;
 }
 
 @end

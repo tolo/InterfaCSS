@@ -531,9 +531,6 @@
 }
 
 - (void) testUsingNonUIKitClassAsType {
-    // Enable automatic registration of type classes whenever they are encountered in selectors
-    //[InterfaCSS sharedInstance].allowAutomaticRegistrationOfCustomTypeSelectorClasses = YES;
-    
     ISSSelector* customClassTypeSelector = [self selectorWithType:@"MyCustomView" styleClass:nil pseudoClasses:nil];
     ISSSelectorChain* customClassTypeSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[customClassTypeSelector]];
     
@@ -566,9 +563,6 @@
 }
 
 - (void) testViewControllerAsTypeSelector {
-    // For this test case, we will use manual registration of type classes instead of doing it automatically
-    //[InterfaCSS sharedInstance].allowAutomaticRegistrationOfCustomTypeSelectorClasses = NO;
-    
     SomeViewController* vc = [[SomeViewController alloc] init];
 
 

@@ -8,9 +8,17 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSArray (ISSAdditions)
 
 - (NSArray*) iss_flattened;
+
+- (NSArray*) iss_trimStringElements;
+
+- (NSArray*) iss_map:(id (^)(id element))mapFunc;
+
+- (NSArray*) iss_filter:(BOOL (^)(id element))filterFunc;
 
 @end
 
@@ -19,3 +27,5 @@
 - (void) iss_addAndReplaceUniqueObjectsInArray:(NSArray*)array;
 
 @end
+
+NS_ASSUME_NONNULL_END

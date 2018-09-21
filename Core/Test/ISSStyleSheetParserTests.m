@@ -76,17 +76,32 @@ static ISSStylingManager* defaultStyler;
 
 #pragma mark - Utils
 
-- (NSArray*) parseStyleSheet:(NSString*)name {
+- (ISSStyleSheetContent*) parseStyleSheet:(NSString*)name {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:name ofType:@"css"];
-    NSString* styleSheetData = [NSString stringWithContentsOfFile:path usedEncoding:nil error:nil];
-    return [parser parse:styleSheetData];
+    return [styler.styleSheetManager loadStyleSheetFromFile:path].content;
+}
+
+- (nullable id) valueForProperty:(ISSPropertyDeclaration*)propertyValue in:(ISSPropertyDefinition*)property {
+    return [self parsePropertyValue:propertyValue.rawValue forPropertyType:property.type enumValueMapping:property.enumValueMapping];
+}
+
+- (nullable id) parsePropertyValue:(NSString*)rawValue forPropertyType:(ISSPropertyType)propertyType {
+    return [self parsePropertyValue:rawValue forPropertyType:propertyType enumValueMapping:nil];
+}
+
+- (nullable id) parsePropertyValue:(NSString*)rawValue forPropertyType:(ISSPropertyType)propertyType enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
+    id value = [styler.styleSheetManager parsePropertyValue:rawValue asType:propertyType didReplaceVariableReferences:nil];
+    if ( enumValueMapping ) {
+        value = [enumValueMapping enumValueFromString:value];
+    }
+    return value;
 }
 
 - (NSArray*) getAllPropertyDeclarationsForStyleClass:(NSString*)styleClass inStyleSheet:(NSString*)stylesheet {
-    NSArray* result = [self parseStyleSheet:stylesheet];
+    ISSStyleSheetContent* result = [self parseStyleSheet:stylesheet];
     
     NSMutableArray* declarations = [NSMutableArray array];
-    for (ISSRuleset* d in result) {
+    for (ISSRuleset* d in result.rulesets) {
         if( [[[d.selectorChains[0] selectorComponents][0] styleClass] isEqualToString:styleClass] ) {
             [declarations addObject:d];
         }
@@ -98,31 +113,19 @@ static ISSStylingManager* defaultStyler;
     return [[self getAllPropertyDeclarationsForStyleClass:styleClass inStyleSheet:stylesheet] firstObject];
 }
 
-//- (NSArray*) getPropertyDeclarationsWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset {
-//    return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
-//}
-//
-//- (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset forType:(ISSPropertyType)type {
-//    return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:type onlyDeclarations:NO];
-//}
-
 - (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromRuleset:(ISSRuleset*)ruleset forType:(ISSPropertyType)type onlyDeclarations:(BOOL)onlyDeclarations {
     NSMutableArray* values = [NSMutableArray array];
     
     for(NSString* name in names) {
         id value = nil;
-//        for(ISSPropertyDeclaration* d in declarations.properties) {
         for(ISSPropertyDeclaration* d in ruleset.properties) {
             NSString* propertyName = d.propertyName; // d.property.name;
-//            if( d.nestedElementKeyPath && ![d.nestedElementKeyPath isEqualToString:@"layer"] ) {
-//                propertyName = [[d.nestedElementKeyPath stringByAppendingString:@"."] stringByAppendingString:propertyName];
-//            }
-            
+
             if( [propertyName iss_isEqualIgnoreCase:name] ) {
                 if( onlyDeclarations ) {
                     value = d;
                 } else {
-                    value = [d valueForPropertyType:type enumValueMapping:nil valueCacheKey:nil];
+                    value = [styler.styleSheetManager parsePropertyValue:d.rawValue asType:type didReplaceVariableReferences:nil];
                 }
             }
         }
@@ -142,17 +145,6 @@ static ISSStylingManager* defaultStyler;
 - (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass forType:(ISSPropertyType)type {
     return [self getPropertyValuesWithNames:names fromStyleClass:styleClass forType:type onlyDeclarations:NO];
 }
-
-/*- (NSArray*) getAllPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass getDeclarations:(BOOL)getDeclarations {
-    NSArray* allDeclarations = [self getAllPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
-    
-    NSMutableArray* result = [NSMutableArray array];
-    for(ISSRuleset* declarations in allDeclarations) {
-        [result addObjectsFromArray:[self getPropertyValuesWithNames:names fromDeclarations:declarations getDeclarations:getDeclarations]];
-    }
-    return result;
-}*/
-
 
 - (id) getSimplePropertyValueWithName:(NSString*)name forType:(ISSPropertyType)type {
     return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple" forType:type] firstObject];
@@ -203,7 +195,8 @@ static ISSStylingManager* defaultStyler;
 #pragma mark - Tests - bad data
 
 - (void) testStyleSheetWithBadData {
-    NSArray* result = [self parseStyleSheet:@"styleSheetWithBadData"];
+    ISSStyleSheetContent* content = [self parseStyleSheet:@"styleSheetWithBadData"];
+    NSArray* result = content.rulesets;
     
     XCTAssertEqual(result.count, (NSUInteger)2, @"Expected two entries");
     
@@ -222,7 +215,8 @@ static ISSStylingManager* defaultStyler;
 #pragma mark - Tests - structure
 
 - (void) testStylesheetStructure {
-    NSArray* result = [self parseStyleSheet:@"styleSheetStructure"];
+    ISSStyleSheetContent* content = [self parseStyleSheet:@"styleSheetStructure"];
+    NSArray* result = content.rulesets;
     NSMutableSet* expectedSelectors = [[NSMutableSet alloc] initWithArray:@[@"uilabel", @"uilabel.class1", @"uilabel#identity.class1", @"uilabel#identity.class1.class2", @"#identity.class1", @".class1", @".class1.class2",
                                                                             @"uiview .class1 .class2", @"uiview .class1.class2",
                                                                             @"uilabel, uilabel.class1, .class1, uiview .class1 .class2", @"uilabel, uilabel.class1.class2, .class1, uiview .class1.class2 .class3",
@@ -238,7 +232,7 @@ static ISSStylingManager* defaultStyler;
         NSString* selectorDescription = [[chains componentsJoinedByString:@", "] lowercaseString];
         
         ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
-        id propertyValue = [decl valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil];
+        id propertyValue = [self parsePropertyValue:decl.rawValue forPropertyType:ISSPropertyTypeNumber enumValueMapping:nil];
         //[decl transformValueIfNeeded];
         if( decl && [propertyValue isEqual:@(0.666)] ) {
             if( [expectedSelectors containsObject:selectorDescription] ) {
@@ -291,8 +285,8 @@ static ISSStylingManager* defaultStyler;
 
 - (void) testStringsWithEscapes {
     NSArray* values = [self getPropertyValuesWithNames:@[@"text", @"attributedText"] fromStyleClass:@"stringsWithEscapes" forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
-    XCTAssertEqualObjects([values[0] valueForPropertyType:ISSPropertyTypeString enumValueMapping:nil valueCacheKey:nil], @"dr \"evil\" rules");
-    XCTAssertEqualObjects([[values[1] valueForPropertyType:ISSPropertyTypeAttributedString enumValueMapping:nil valueCacheKey:nil] string], @"dr \"evil\" rules, and so does austin \"danger\" powers");
+    XCTAssertEqualObjects([self parsePropertyValue:[values[0] rawValue] forPropertyType:ISSPropertyTypeString], @"dr \"evil\" rules");
+    XCTAssertEqualObjects([[self parsePropertyValue:[values[1] rawValue] forPropertyType:ISSPropertyTypeAttributedString] string], @"dr \"evil\" rules, and so does austin \"danger\" powers");
 }
 
 - (void) testOffsetPropertyValue {
@@ -319,30 +313,6 @@ static ISSStylingManager* defaultStyler;
     XCTAssertTrue(CGPointEqualToPoint(point, CGPointMake(5, 6)), @"Expected CGPoint value of '{5, 6}' for property center, got: %@", value);
 }
 
-/*- (void) testParentRelativePointPropertyValue {
-    id value = [[self getPropertyValuesWithNames:@[@"center"] fromStyleClass:@"point1"] firstObject];
-
-    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    ISSPointValue* pointValue = [value isKindOfClass:ISSPointValue.class] ? value : nil;
-    CGPoint point = [pointValue pointForView:view];
-    XCTAssertTrue(CGPointEqualToPoint(point, CGPointMake(150, 50)), @"Expected CGPoint value of '{150, 50}' for property center, got: %@", value);
-}
-
-- (void) testWindowRelativePointPropertyValue {
-    id value = [[self getPropertyValuesWithNames:@[@"center"] fromStyleClass:@"point2"] firstObject];
-    
-    UIWindow* parent = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    ISSPointValue* pointValue = [value isKindOfClass:ISSPointValue.class] ? value : nil;
-    CGPoint point = [pointValue pointForView:view];
-    XCTAssertTrue(CGPointEqualToPoint(point, CGPointMake(200, 100)), @"Expected CGPoint value of '{150, 50}' for property center, got: %@", value);
-}*/
-
 - (void) testAbsoluteRectPropertyValues {
     NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"simple" forType:ISSPropertyTypeRect];
 
@@ -354,96 +324,6 @@ static ISSStylingManager* defaultStyler;
     rectValue = [value isKindOfClass:NSValue.class] ? [value CGRectValue] : CGRectZero;
     XCTAssertTrue(CGRectEqualToRect(rectValue, CGRectMake(1, 2, 3, 4)), @"Expected CGRect value of '{{1, 2}, {3, 4}}' for property bounds, got: %@", value);
 }
-
-/*- (void) testParentInsetRectPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect1"];
-    
-    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    CGRect rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(10, 10, 180, 180)), @"Expected CGRect value of '{10, 10, 180, 180}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-    
-    value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(20, 10, 140, 160)), @"Expected CGRect value of '{20, 10, 140, 170}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}
-
-- (void) testWindowInsetRectPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect2"];
-    
-    UIWindow* parent = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    CGRect rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(10, 10, 280, 280)), @"Expected CGRect value of '{10, 10, 180, 180}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-    
-    value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(20, 10, 240, 260)), @"Expected CGRect value of '{20, 10, 140, 170}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}
-
-- (void) testRelativeRectPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect3"];
-    
-    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    CGRect rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(10, 20, 20, 40)), @"Expected CGRect value of '{10, 20, 20, 40}' for property frame, got: %@(%@)", NSStringFromCGRect(rect), value);
-    
-    value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(110, 80, 60, 80)), @"Expected CGRect value of '{110, 80, 60, 80}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}
-
-- (void) testAutoRelativeRectPropertyValues {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect4"];
-    
-    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    CGRect rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(20, 40, 180, 160)), @"Expected CGRect value of '{20, 40, 180, 160}' for property frame, got: %@(%@)", NSStringFromCGRect(rect), value);
-    
-    value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(100, 0, 95, 200)), @"Expected CGRect value of '{100, 0, 95, 200}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}
-
-- (void) testAutoRelativeRectPropertyValues2 {
-    NSArray* values = [self getPropertyValuesWithNames:@[@"frame", @"bounds"] fromStyleClass:@"rect5"];
-    
-    UIView* parent = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
-    UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
-    [parent addSubview:view];
-    
-    id value = [values firstObject];
-    ISSRectValue* rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    CGRect rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(40, 20, 80, 120)), @"Expected CGRect value of '{40, 20, 80, 120}' for property frame, got: %@(%@)", NSStringFromCGRect(rect), value);
-    
-    value = [values lastObject];
-    rectValue = [value isKindOfClass:ISSRectValue.class] ? value : nil;
-    rect = [rectValue rectForView:view];
-    XCTAssertTrue(CGRectEqualToRect(rect, CGRectMake(40, 20, 80, 120)), @"Expected CGRect value of '{40, 20, 80, 120}' for property bounds, got: %@(%@)", NSStringFromCGRect(rect), value);
-}*/
 
 - (void) testUIColorPropertyValue {
     NSArray* values = [self getPropertyValuesWithNames:@[@"color", @"tintColor", @"textColor", @"shadowColor"] fromStyleClass:@"simple" forType:ISSPropertyTypeColor];
@@ -491,37 +371,14 @@ static ISSStylingManager* defaultStyler;
     for(ISSPropertyDeclaration* d in declarations.properties) {
         if( [d.propertyName iss_isEqualIgnoreCase:@"titleColor"] ) decl = d;
     }
-    
-    XCTAssertEqual((NSUInteger)1, decl.parameters.count, @"Expected one parameter");
+
+    XCTAssertEqual((NSUInteger)1, decl.rawParameters.count, @"Expected one parameter");
     
     ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
-    id enumValue = def.parameterTransformers[0](def, [decl.parameters firstObject]);
+    id enumValue = def.parameterTransformers[0](def, [decl.rawParameters firstObject]);
     
     XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), enumValue, @"Expected UIControlStateSelected|UIControlStateHighlighted");
 }
-
-/*- (void) testPropertyPrefixes {
-    // Test layer prefix properties
-    NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" getDeclarations:YES];
-    UIView* view = [[UIView alloc] init];
-    ISSElementStylingProxy* details = [[InterfaCSS sharedInstance] stylingProxyFor:view];
-    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:details];
-    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:details];
-    ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
-    ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
-    
-    
-    // Test other valid property prefixes
-    values = [self getAllPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
-                                                         @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
-                                                         @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
-                                                   @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes" getDeclarations:NO];
-
-    XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
-    for(id value in values) {
-        XCTAssertEqualObjects(value, @(0.42));
-    }
-}*/
 
 - (void) testTransformPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"transform" forType:ISSPropertyTypeTransform];
@@ -575,14 +432,14 @@ static ISSStylingManager* defaultStyler;
 - (void) testEnumPropertyValue {
     ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"contentMode" inClass:UIView.class];
     ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"contentMode"];
-    id enumValue = [decl valueForProperty:def];
+    id enumValue = [self valueForProperty:decl in:def];
     XCTAssertEqual(UIViewContentModeBottomRight, [enumValue integerValue], @"Unexpected contentMode value");
 }
 
 - (void) testEnumBitMaskPropertyValue {
     ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
     ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"autoresizingMask"];
-    id enumValue = [decl valueForProperty:def];
+    id enumValue = [self valueForProperty:decl in:def];
     
     UIViewAutoresizing autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight |
         UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -644,143 +501,36 @@ static ISSStylingManager* defaultStyler;
     XCTAssertEqual(values.count, 3u, @"Unexpected value count");
     
     ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
-    id enumValue = [values[0] valueForProperty:def];
+    id enumValue = [self valueForProperty:values[0] in:def];
     XCTAssertEqualObjects(enumValue, @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
     
     def = [styler.propertyManager findPropertyWithName:@"lineBreakMode" inClass:UILabel.class];
-    enumValue = [values[1] valueForProperty:def];
+    enumValue = [self valueForProperty:values[1] in:def];
     XCTAssertEqualObjects(enumValue, @(NSLineBreakByWordWrapping), @"Unexpected propety value");
 
     def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
-    enumValue = def.parameterTransformers[0](def, [(NSArray*)[values[2] parameters] firstObject]);
+    enumValue = def.parameterTransformers[0](def, [(NSArray*)[values[2] rawParameters] firstObject]);
     XCTAssertEqualObjects(enumValue, @(UIControlStateSelected), @"Unexpected propety value");
 }
 
 - (void) testNumericExpressions {
     NSArray* values = [self getPropertyValuesWithNames:@[@"hidden", @"alpha", @"cornerRadius", @"contentSize"] fromStyleClass:@"numericExpressions" forType:ISSPropertyTypeUnknown onlyDeclarations:YES];
-    
-    XCTAssertEqualObjects([values[0] valueForPropertyType:ISSPropertyTypeBool enumValueMapping:nil valueCacheKey:nil], @(YES));
-    
-    XCTAssertEqualObjects([values[1] valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil], @(0.5));
-    
-    XCTAssertEqualObjects([values[2] valueForPropertyType:ISSPropertyTypeNumber enumValueMapping:nil valueCacheKey:nil], @(142));
-    
-    CGSize size = [[values[3] valueForPropertyType:ISSPropertyTypeSize enumValueMapping:nil valueCacheKey:nil] CGSizeValue];
+
+    XCTAssertEqualObjects([self parsePropertyValue:[values[0] rawValue] forPropertyType:ISSPropertyTypeBool], @(YES));
+
+    XCTAssertEqualObjects([self parsePropertyValue:[values[1] rawValue] forPropertyType:ISSPropertyTypeNumber], @(0.5));
+
+    XCTAssertEqualObjects([self parsePropertyValue:[values[2] rawValue] forPropertyType:ISSPropertyTypeNumber], @(142));
+
+    CGSize size = [[self parsePropertyValue:[values[3] rawValue] forPropertyType:ISSPropertyTypeSize] CGSizeValue];
     XCTAssertTrue(CGSizeEqualToSize(size, CGSizeMake(42, 100)));
 }
 
-/*
-- (void) testISSLayoutParentRelative {
-    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative1"] firstObject];
-
-    ISSLayout* layout = [[ISSLayout alloc] init];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeCenterX multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeCenterX];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeCenterY multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeCenterY];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentRelative2"] firstObject];
-    
-    layout = [[ISSLayout alloc] init];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeWidth multiplier:2.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeHeight multiplier:1.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeLeft];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeTop];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-}
-
-- (void) testISSLayoutElementRelative {
-    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutElementRelative1"] firstObject];
-    
-    ISSLayout* layout = [[ISSLayout alloc] init];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeBottom];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutElementRelative2"] firstObject];
-    
-    layout = [[ISSLayout alloc] init];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeWidth inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeHeight inElement:@"elementFoo" multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeTop];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-}
-
-- (void) testISSLayoutSizeToFit {
-    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentSizeToFit1"] firstObject];
-    
-    ISSLayout* layout = [[ISSLayout alloc] init];
-    layout.layoutType = ISSLayoutTypeSizeToFit;
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue constantValue:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeRight multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeBottom multiplier:1.0f constant:100] forTargetAttribute:ISSLayoutAttributeTop];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutParentSizeToFit2"] firstObject];
-    
-    layout = [[ISSLayout alloc] init];
-    layout.layoutType = ISSLayoutTypeSizeToFit;
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeWidth multiplier:2.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeHeight multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttributeInParent:ISSLayoutAttributeLeft multiplier:3.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToLayoutGuide:ISSLayoutGuideBottom multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-}
-
-- (void) testISSLayoutImplicitAttributes {
-    ISSLayout* parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes1"] firstObject];
-    
-    ISSLayout* layout = [[ISSLayout alloc] init];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeWidth inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeWidth];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeHeight inElement:@"elementFoo" multiplier:2.0f constant:100] forTargetAttribute:ISSLayoutAttributeHeight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeCenterX inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeCenterX];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeCenterY inElement:@"elementFoo" multiplier:1.0f constant:-100] forTargetAttribute:ISSLayoutAttributeCenterY];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes2"] firstObject];
-    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeCenterX), @(ISSLayoutAttributeCenterY)]];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeTop];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes3"] firstObject];
-    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeLeft), @(ISSLayoutAttributeTop)]];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeBottom inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeTop];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes4"] firstObject];
-    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeRight), @(ISSLayoutAttributeTop)]];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeRight inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeLeft];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-    
-    parsedLayout = [[self getPropertyValuesWithNames:@[@"layout"] fromStyleClass:@"layoutImplicitAttributes5"] firstObject];
-    [layout removeValuesForLayoutAttributes:@[@(ISSLayoutAttributeLeft), @(ISSLayoutAttributeBottom)]];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeLeft inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeRight];
-    [layout setLayoutAttributeValue:[ISSLayoutAttributeValue valueRelativeToAttribute:ISSLayoutAttributeTop inElement:@"elementFoo" multiplier:1.0f constant:0] forTargetAttribute:ISSLayoutAttributeBottom];
-    
-    XCTAssertEqualObjects(parsedLayout, layout);
-}
-*/
-
 - (void) testNestedVariable {
     id value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"nestedVariableClass" forType:ISSPropertyTypeFont] firstObject];
+    XCTAssertEqualObjects(value, [UIFont fontWithName:@"GillSans" size:42]);
+
+    value = [styler.styleSheetManager transformedValueOfStyleSheetVariableWithName:@"nestedVariable" asPropertyType:ISSPropertyTypeFont];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"GillSans" size:42]);
 }
 

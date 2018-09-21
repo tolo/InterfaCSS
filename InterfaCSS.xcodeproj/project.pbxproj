@@ -67,7 +67,11 @@
 		F65D52E014F7B12A0034E496 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
 		F66C15F82011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */; };
 		F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */; };
+		F696F863215166D7003D5345 /* ISSStyleSheetParserSyntax.h in Headers */ = {isa = PBXBuildFile; fileRef = F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */; };
+		F696F864215166D7003D5345 /* ISSStyleSheetParserSyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */; };
 		F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
+		F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
+		F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
 		F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
 		F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */; };
 		F6F837582010AAE60093373E /* ISSRuntimeIntrospectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837562010AAE60093373E /* ISSRuntimeIntrospectionUtils.h */; };
@@ -101,7 +105,7 @@
 /* Begin PBXFileReference section */
 		2785E25C18A8DCBB001D1104 /* InterfaCSS-Core Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "InterfaCSS-Core Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27AC9F1C18F33FDF00A4182D /* CHANGES.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = CHANGES.md; sourceTree = "<group>"; };
-		27AC9F1D18F33FDF00A4182D /* InterfaCSS.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = InterfaCSS.podspec; sourceTree = "<group>"; };
+		27AC9F1D18F33FDF00A4182D /* InterfaCSS.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = InterfaCSS.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		27AC9F1E18F33FDF00A4182D /* README.markdown */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 		8A03614C201A054800BA97F6 /* NSArray+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+ISSAdditions.m"; sourceTree = "<group>"; };
 		8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+ISSAdditions.h"; sourceTree = "<group>"; };
@@ -159,7 +163,11 @@
 		F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetPropertyParser.h; sourceTree = "<group>"; };
 		F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetPropertyParser.m; sourceTree = "<group>"; };
+		F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParserSyntax.h; sourceTree = "<group>"; };
+		F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserSyntax.m; sourceTree = "<group>"; };
 		F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParser.h; sourceTree = "<group>"; };
+		F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetContent.h; sourceTree = "<group>"; };
+		F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetContent.m; sourceTree = "<group>"; };
 		F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libInterfaCSS-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F5FC1A14F5683B008E647E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -324,6 +332,8 @@
 		F6F837402010A2000093373E /* Parser */ = {
 			isa = PBXGroup;
 			children = (
+				F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */,
+				F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */,
 				F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */,
 				8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */,
 				F6F83733201096D50093373E /* ISSStyleSheetParser.m */,
@@ -354,6 +364,8 @@
 				8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */,
 				F6F837432010A2E90093373E /* ISSSelectorChain.h */,
 				F6F837442010A2E90093373E /* ISSSelectorChain.m */,
+				F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */,
+				F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */,
 				F6F837452010A2E90093373E /* ISSStyleSheet.h */,
 				F6F837462010A2E90093373E /* ISSStyleSheet.m */,
 			);
@@ -433,9 +445,11 @@
 				8A32963A2021BBF4002259BD /* UIDevice+ISSAdditions.h in Headers */,
 				F6F837642010B0EC0093373E /* ISSPropertyDeclaration.h in Headers */,
 				8AD712B120230BE000C0FB05 /* ISSUpdatableValue.h in Headers */,
+				F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */,
 				8A387FC82010D8810011BD52 /* ISSPseudoClass.h in Headers */,
 				8AA1412E2023256F0058B23B /* ISSRemoteFont.h in Headers */,
 				F6F8376A2010B0EC0093373E /* ISSStyleSheet.h in Headers */,
+				F696F863215166D7003D5345 /* ISSStyleSheetParserSyntax.h in Headers */,
 				8AA1412B2023256F0058B23B /* ISSPropertyManager.h in Headers */,
 				F600AF7720175C8200B44482 /* ISSMacros.h in Headers */,
 				8A03614F201A054800BA97F6 /* NSArray+ISSAdditions.h in Headers */,
@@ -550,12 +564,14 @@
 				F6F837692010B0EC0093373E /* ISSSelectorChain.m in Sources */,
 				8A387FC42010D87B0011BD52 /* ISSPropertyDefinition.m in Sources */,
 				8A387FBC2010C7EF0011BD52 /* ISSStylingContext.m in Sources */,
+				F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */,
 				F6F837592010AAE60093373E /* ISSRuntimeIntrospectionUtils.m in Sources */,
 				8A036153201A081100BA97F6 /* ISSNestedElementSelector.m in Sources */,
 				F6F837672010B0EC0093373E /* ISSSelector.m in Sources */,
 				8AA14131202326D40058B23B /* ISSElementStylingProxy.m in Sources */,
 				8AC2F3722023A6E50042D80C /* ISSStyleSheetParser+Support.m in Sources */,
 				F648DB19202277D30011012C /* ISSRefreshableResource.m in Sources */,
+				F696F864215166D7003D5345 /* ISSStyleSheetParserSyntax.m in Sources */,
 				8A3296362021BBF4002259BD /* NSObject+ISSLogSupport.m in Sources */,
 				8AA1412C2023256F0058B23B /* ISSRemoteFont.m in Sources */,
 				8AD712B220230BE000C0FB05 /* ISSUpdatableValue.m in Sources */,

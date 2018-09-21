@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class ISSStylingManager;
+@class ISSStylingManager, ISSRefreshableResource;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -17,24 +17,34 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString* const ISSRefreshableResourceErrorDomain;
 
 
+typedef void (^ISSRefreshableResourceObserverBlock)(ISSRefreshableResource* refreshableResource);
 typedef void (^ISSRefreshableResourceLoadCompletionBlock)(BOOL success,  NSString* _Nullable responseString, NSError* _Nullable error);
 
 
 @interface ISSRefreshableResource : NSObject
 
 @property (nonatomic, readonly) NSURL* resourceURL;
-@property (nonatomic, readonly) BOOL usingLocalFileChangeMonitoring;
+
 @property (nonatomic, readonly) BOOL hasErrorOccurred;
 @property (nonatomic, readonly, nullable) NSError* lastError;
 
+@property (nonatomic, readonly) BOOL resourceModificationMonitoringSupported;
+@property (nonatomic, readonly) BOOL resourceModificationMonitoringEnabled;
 
 - (instancetype) initWithURL:(NSURL*)url;
 
-- (void) startMonitoringLocalFileChanges:(void (^)(ISSRefreshableResource*))callbackBlock;
-- (void) endMonitoringLocalFileChanges;
+- (void) startMonitoringResourceModification:(ISSRefreshableResourceObserverBlock)modificationObserver;
+- (void) endMonitoringResourceModification;
 
 - (void) refreshWithCompletionHandler:(ISSRefreshableResourceLoadCompletionBlock)completionHandler refreshIntervalDuringError:(NSTimeInterval)refreshIntervalDuringError force:(BOOL)force;
 
+@end
+
+
+@interface ISSRefreshableLocalResource : ISSRefreshableResource
+@end
+
+@interface ISSRefreshableRemoteResource : ISSRefreshableResource
 @end
 
 

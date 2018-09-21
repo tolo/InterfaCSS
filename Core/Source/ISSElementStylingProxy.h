@@ -12,9 +12,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-// TODO: Rename to ISSElementStylingProxy? And move methods fron old UIView+InterfaCSS category here?
-
-
 @class ISSUpdatableValue, ISSPropertyDeclaration, ISSStylingManager, ISSUpdatableValueObserver, ISSElementStylingProxy;
 
 

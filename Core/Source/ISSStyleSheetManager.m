@@ -10,6 +10,7 @@
 
 #import "ISSStylingManager.h"
 #import "ISSStyleSheetParser.h"
+#import "ISSStyleSheetParserSyntax.h"
 #import "ISSPropertyManager.h"
 
 #import "ISSStyleSheet.h"
@@ -21,14 +22,15 @@
 
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSAdditions.h"
+#import "NSArray+ISSAdditions.h"
 
 
 @interface ISSStyleSheetManager ()
 
 @property (nonatomic, strong) NSMutableArray* styleSheets;
-@property (nonatomic, readonly) NSArray* effectiveStylesheets;
+@property (nonatomic, readonly) NSArray* activeStylesheets;
 
-@property (nonatomic, strong) NSMutableDictionary* styleSheetsVariables;
+@property (nonatomic, strong) NSMutableDictionary* runtimeStyleSheetsVariables;
 
 @property (nonatomic, strong) NSSet<ISSPseudoClassType>* pseudoClassTypes;
 
@@ -93,11 +95,13 @@
                   ISSPseudoClassTypeLastOfType,
                   ISSPseudoClassTypeEmpty
         ]];
-        
-        _styleSheetsVariables = [NSMutableDictionary dictionary];
-        
+
         _styleSheetParser = parser ?: [[ISSStyleSheetParser alloc] init];
         _styleSheetParser.styleSheetManager = self;
+
+        _styleSheets = [NSMutableArray array];
+
+        _runtimeStyleSheetsVariables = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -134,19 +138,13 @@
 
 #pragma mark - Stylesheets
 
-//- (void) refreshStylingForStyleSheet:(ISSStyleSheet*)styleSheet {
-//    if( styleSheet.scope ) [self.stylingManager refreshStylingForScope:styleSheet.scope];
-//    else [self.stylingManager refreshStyling];
-//}
 
-//- (ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFile withScope:(ISSStyleSheetScope*)scope {
-- (ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFile withName:(NSString*)name group:(NSString*)groupName {
+- (ISSStyleSheet*) loadStyleSheetFromLocalFileURL:(NSURL*)styleSheetFile withName:(NSString*)name group:(NSString*)groupName {
     ISSStyleSheet* styleSheet = nil;
     
     for(ISSStyleSheet* existingStyleSheet in self.styleSheets) {
         if( [existingStyleSheet.styleSheetURL isEqual:styleSheetFile] ) {
             ISSLogDebug(@"Stylesheet %@ already loaded", styleSheetFile);
-//            if( scope ) existingStyleSheet.scope = scope;
             return existingStyleSheet;
         }
     }
@@ -156,14 +154,13 @@
     
     if( styleSheetData ) {
         NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-        NSMutableArray* declarations = [self.styleSheetParser parse:styleSheetData];
+        ISSStyleSheetContent* styleSheetContent = [self.styleSheetParser parse:styleSheetData];
         ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [styleSheetFile lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
         
-        if( declarations ) {
-            styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile name:name group:groupName declarations:declarations refreshable:NO];
+        if( styleSheetContent ) {
+            styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetFile name:name group:groupName content:styleSheetContent];
             [self.styleSheets addObject:styleSheet];
-            
-//            [self refreshStylingForStyleSheet:styleSheet];
+
             [self.stylingManager clearAllCachedStyles];
         }
     } else {
@@ -180,7 +177,7 @@
 - (ISSStyleSheet*) loadNamedStyleSheet:(NSString*)name group:(NSString*)groupName fromMainBundleFile:(NSString*)styleSheetFileName {
     NSURL* url = [[NSBundle mainBundle] URLForResource:styleSheetFileName withExtension:nil];
     if( url ) {
-        return [self loadStyleSheetFromFileURL:url withName:name group:groupName];
+        return [self loadStyleSheetFromLocalFileURL:url withName:name group:groupName];
     } else {
         ISSLogWarning(@"Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName);
         return nil;
@@ -193,7 +190,7 @@
 
 - (nullable ISSStyleSheet*) loadNamedStyleSheet:(nullable NSString*)name group:(nullable NSString*)groupName fromFile:(NSString*)styleSheetFilePath {
     if( [[NSFileManager defaultManager] fileExistsAtPath:styleSheetFilePath] ) {
-        return [self loadStyleSheetFromFileURL:[NSURL fileURLWithPath:styleSheetFilePath] withName:name group:groupName];
+        return [self loadStyleSheetFromLocalFileURL:[NSURL fileURLWithPath:styleSheetFilePath] withName:name group:groupName];
     } else {
         ISSLogWarning(@"Unable to load stylesheet '%@' - file not found!", styleSheetFilePath);
         return nil;
@@ -205,20 +202,20 @@
 }
 
 - (ISSStyleSheet*) loadRefreshableNamedStyleSheet:(NSString*)name group:(NSString*)groupName fromURL:(NSURL*)styleSheetURL {
-    ISSStyleSheet* styleSheet = [[ISSStyleSheet alloc] initWithStyleSheetURL:styleSheetURL name:name group:groupName declarations:nil refreshable:YES];
+    ISSRefreshableStyleSheet* styleSheet = [[ISSRefreshableStyleSheet alloc] initWithStyleSheetURL:styleSheetURL name:name group:groupName content:nil];
     [self.styleSheets addObject:styleSheet];
     [self reloadRefreshableStyleSheet:styleSheet force:NO];
     
-    BOOL usingFileMonitoring = NO;
-    if( styleSheetURL.isFileURL ) { // If local file URL - attempt to use file monitoring instead of polling
+    BOOL usingStyleSheetModificationMonitoring = NO;
+    if( styleSheet.styleSheetModificationMonitoringSupported ) { // Attempt to use file monitoring instead of polling, if supported
         __weak ISSStyleSheetManager* weakSelf = self;
-        [styleSheet startMonitoringLocalFileChanges:^(ISSRefreshableResource* refreshed) {
+        [styleSheet startMonitoringStyleSheetModification:^(ISSRefreshableStyleSheet* refreshed) {
             [weakSelf reloadRefreshableStyleSheet:styleSheet force:YES];
         }];
-        usingFileMonitoring = styleSheet.usingLocalFileChangeMonitoring;
+        usingStyleSheetModificationMonitoring = styleSheet.styleSheetModificationMonitoringEnabled;
     }
-    
-    if( !usingFileMonitoring ) {
+
+    if( !usingStyleSheetModificationMonitoring ) {
         [self enableAutoRefreshTimer];
     }
     
@@ -230,78 +227,57 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:ISSWillRefreshStyleSheetsNotification object:nil];
     
     for(ISSStyleSheet* styleSheet in self.styleSheets) {
-        if( styleSheet.refreshable && styleSheet.active && !styleSheet.usingLocalFileChangeMonitoring ) { // Attempt to get updated stylesheet
-            [self doReloadRefreshableStyleSheet:styleSheet force:force];
+        ISSRefreshableStyleSheet* refreshableStylesheet = [styleSheet isKindOfClass: ISSRefreshableStyleSheet.class] ? (ISSRefreshableStyleSheet*)styleSheet : nil;
+        if( refreshableStylesheet.active && !refreshableStylesheet.styleSheetModificationMonitoringEnabled ) { // Attempt to get updated stylesheet
+            [self doReloadRefreshableStyleSheet:refreshableStylesheet force:force];
         }
     }
 }
 
-- (void) reloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet force:(BOOL)force {
+- (void) reloadRefreshableStyleSheet:(ISSRefreshableStyleSheet*)styleSheet force:(BOOL)force {
     [[NSNotificationCenter defaultCenter] postNotificationName:ISSWillRefreshStyleSheetsNotification object:styleSheet];
     
     [self doReloadRefreshableStyleSheet:styleSheet force:force];
 }
 
-- (void) doReloadRefreshableStyleSheet:(ISSStyleSheet*)styleSheet force:(BOOL)force {
+- (void) doReloadRefreshableStyleSheet:(ISSRefreshableStyleSheet*)styleSheet force:(BOOL)force {
     [styleSheet refreshStylesheetWith:self andCompletionHandler:^{
-//        [self refreshStylingForStyleSheet:styleSheet];
+        [self.styleSheets removeObject:styleSheet];
+        [self.styleSheets addObject:styleSheet]; // Make stylesheet "last added/updated"
         [[NSNotificationCenter defaultCenter] postNotificationName:ISSDidRefreshStyleSheetNotification object:styleSheet];
     } force:force];
 }
 
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
     [self.styleSheets removeObject:styleSheet];
-    if( styleSheet.usingLocalFileChangeMonitoring ) {
-        [styleSheet endMonitoringLocalFileChanges];
-    }
-//    if( refreshStyling ) [self refreshStylingForStyleSheet:styleSheet];
-//    else
+    [styleSheet unload];
     [self.stylingManager clearAllCachedStyles];
 }
 
 - (void) unloadAllStyleSheets:(BOOL)refreshStyling {
     [self.styleSheets removeAllObjects];
-//    if( refreshStyling ) [self.stylingManager refreshStyling];
-//    else
     [self.stylingManager clearAllCachedStyles];
 }
 
-- (NSArray*) effectiveStylesheets {
-    NSMutableArray* effective = [NSMutableArray array];
-    NSMutableArray* refreshable = [NSMutableArray array];
-    
-    for(ISSStyleSheet* styleSheet in self.styleSheets) {
-        if( styleSheet.active ) {
-            if( styleSheet.refreshable && self.processRefreshableStylesheetsLast ) {
-                [refreshable addObject:styleSheet];
-            } else {
-                [effective addObject:styleSheet];
-            }
-        }
-    }
-    
-    if( self.processRefreshableStylesheetsLast ) {
-        [effective addObjectsFromArray:refreshable];
-    }
-    
-    return effective;
+- (NSArray*) activeStylesheets {
+    return [self.styleSheets iss_filter:^BOOL(ISSStyleSheet* styleSheet) {
+        return styleSheet.active;
+    }];
 }
 
 
 
-- (NSArray<ISSRuleset*>*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
+- (ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     NSMutableArray* declarations = [[NSMutableArray alloc] init];
     
-    for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
+    for (ISSStyleSheet* styleSheet in self.activeStylesheets) {
         // Find all matching (or potentially matching, i.e. pseudo class) style declarations
-        NSArray<ISSRuleset*>* styleSheetRulesets = [styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
+        ISSRulesets* styleSheetRulesets = [styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
         if ( styleSheetRulesets ) {
             for(ISSRuleset* ruleset in styleSheetRulesets) {
-//                ruleset.scope = styleSheet.scope; // Hang on to the scope (for later reference)...
-                
                 // Get reference to inherited declarations, if any:
                 if ( ruleset.extendedDeclarationSelectorChain && !ruleset.extendedDeclaration ) {
-                    for (ISSStyleSheet* s in self.effectiveStylesheets) {
+                    for (ISSStyleSheet* s in self.activeStylesheets) {
                         ruleset.extendedDeclaration = [s findPropertyDeclarationsWithSelectorChain:ruleset.extendedDeclarationSelectorChain];
                         if (ruleset.extendedDeclaration) break;
                     }
@@ -315,20 +291,77 @@
 }
 
 
+
 #pragma mark - Variables
 
 - (NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName {
-    return self.styleSheetsVariables[variableName];
-}
-
-- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType {
-    NSString* value = self.styleSheetsVariables[variableName];
-    if( value ) return [self.styleSheetParser.propertyParser parsePropertyValue:value ofType:propertyType];
-    else return nil;
+    NSString* value = self.runtimeStyleSheetsVariables[variableName];
+    if( value == nil ) {
+        for (ISSStyleSheet* styleSheet in [self.activeStylesheets reverseObjectEnumerator]) {
+            value = styleSheet.content.variables[variableName];
+            if( value != nil ) break;
+        }
+    }
+    return value;
 }
 
 - (void) setValue:(NSString*)value forStyleSheetVariableWithName:(NSString*)variableName {
-    self.styleSheetsVariables[variableName] = value;
+    self.runtimeStyleSheetsVariables[variableName] = value;
+}
+
+- (NSString*) replaceVariableReferences:(NSString*)propertyValue didReplace:(BOOL*)didReplace {
+    NSUInteger location = 0;
+
+    while( location < propertyValue.length ) {
+        // Replace any variable references
+        NSRange atRange = [propertyValue rangeOfString:@"@" options:0 range:NSMakeRange(location, propertyValue.length - location)];
+        if( atRange.location != NSNotFound ) {
+            location = atRange.location + atRange.length;
+
+            // @ found, get variable name
+            NSRange variableNameRange = NSMakeRange(location, 0);
+            for(NSUInteger i=location; i<propertyValue.length; i++) {
+                if( [[ISSStyleSheetParserSyntax shared].validIdentifierCharsSet characterIsMember:[propertyValue characterAtIndex:i]] ) {
+                    variableNameRange.length++;
+                } else break;
+            }
+
+            id variableValue = nil;
+            id variableName = nil;
+            if( variableNameRange.length > 0 ) {
+                variableName = [propertyValue substringWithRange:variableNameRange];
+                variableValue = [self valueOfStyleSheetVariableWithName:variableName];
+            }
+            if( variableValue ) {
+                variableValue = [variableValue iss_trimQuotes];
+                variableValue = [self replaceVariableReferences:variableValue didReplace:didReplace]; // Resolve nested variables
+
+                // Replace variable occurrence in propertyValue string with variableValue string
+                propertyValue = [propertyValue stringByReplacingCharactersInRange:NSMakeRange(atRange.location, variableNameRange.length+1)
+                                                                       withString:variableValue];
+                location += [variableValue length];
+
+                if( didReplace ) *didReplace = YES;
+            } else {
+                ISSLogWarning(@"Unrecognized property variable: %@ (property value: %@)", variableName, propertyValue);
+                location += variableNameRange.length;
+            }
+        } else break;
+    }
+
+    return propertyValue;
+}
+
+- (id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType {
+    NSString* value = [self valueOfStyleSheetVariableWithName:variableName];
+    if( value ) value = [self replaceVariableReferences:value didReplace:NULL];
+    if( value ) return [self.styleSheetParser parsePropertyValue:value asType:propertyType];
+    else return nil;
+}
+
+- (id) parsePropertyValue:(NSString*)value asType:(ISSPropertyType)type didReplaceVariableReferences:(BOOL*)didReplace {
+    value = [self replaceVariableReferences:value didReplace:didReplace];
+    return [self.styleSheetParser parsePropertyValue:value asType:type];
 }
 
 
@@ -380,8 +413,8 @@
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;
     ISSStylingContext* stylingContext = [[ISSStylingContext alloc] initWithStylingManager:self.stylingManager styleSheetScope:styleSheetScope];
-    for (ISSStyleSheet* styleSheet in self.effectiveStylesheets) {
-        NSArray<ISSRuleset*>* matchingDeclarations = [[styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext] mutableCopy];
+    for (ISSStyleSheet* styleSheet in self.activeStylesheets) {
+        ISSRulesets* matchingDeclarations = [[styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext] mutableCopy];
         NSMutableArray* descriptions = [NSMutableArray array];
         if( matchingDeclarations.count ) {
             [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {

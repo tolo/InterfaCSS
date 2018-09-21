@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSString (ISSStringAdditions)
 
 + (BOOL) iss_string:(NSString*)string1 isEqualToString:(NSString*)string2;
@@ -36,3 +38,5 @@
 + (NSString*) iss_stringFromUTF32Char:(UTF32Char)unicodeChar;
 
 @end
+
+NS_ASSUME_NONNULL_END

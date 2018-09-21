@@ -8,8 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSDictionary (ISSDictionaryAdditions)
 
 - (NSDictionary*) iss_dictionaryWithLowerCaseKeys;
 
+- (NSDictionary*) iss_dictionaryByAddingValue:(id)value forKey:(id)key;
+
 @end
+
+NS_ASSUME_NONNULL_END

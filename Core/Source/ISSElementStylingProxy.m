@@ -52,7 +52,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
 
 @property (nonatomic, weak, readwrite) UIViewController* closestViewController;
 
-@property (nonatomic, strong) NSMutableDictionary* observedUpdatableValues;
+@property (nonatomic, strong) NSMutableDictionary<NSString*, ISSUpdatableValueObserver*>* observedUpdatableValues;
 
 @property (nonatomic, readwrite) BOOL isVisiting;
 @property (nonatomic) const void* visitorScope;
@@ -374,7 +374,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
 }
 
 - (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyDeclaration*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block {
-    ISSUpdatableValueObserver* existingObserver = self.observedUpdatableValues[propertyDeclaration];
+    ISSUpdatableValueObserver* existingObserver = self.observedUpdatableValues[propertyDeclaration.fqn];
     if( [value isEqual:existingObserver.value] ) return existingObserver;
     
     if( !self.observedUpdatableValues ) {

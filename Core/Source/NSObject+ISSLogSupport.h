@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 #define ISS_LOG_LEVEL_NONE      0
 #define ISS_LOG_LEVEL_WARNING   1
 #define ISS_LOG_LEVEL_DEBUG     2
@@ -29,3 +31,5 @@
 - (void) iss_logWarning:(NSString*)format, ...;
 
 @end
+
+NS_ASSUME_NONNULL_END

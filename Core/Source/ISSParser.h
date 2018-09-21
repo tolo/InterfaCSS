@@ -18,12 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 typedef struct ISSParserStatus {
     BOOL match;
     NSUInteger index;
+    void* _Nullable context;
 } ISSParserStatus;
 
 
 typedef id _Nonnull (^ISSParserBlock)(NSString* input, ISSParserStatus* status);
 typedef BOOL (^ISSParserMatchCondition)(unichar c);
-typedef id _Nonnull (^ISSParserTransformerBlock)(id value);
+typedef id _Nonnull (^ISSParserTransformerBlock)(id value, void* context);
 
 
 /**

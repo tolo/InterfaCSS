@@ -12,6 +12,7 @@
 
 #import "ISSPropertyDefinition.h"
 #import "ISSPseudoClass.h"
+#import "ISSStyleSheetContent.h"
 
 
 #pragma mark - Common notification definitions
@@ -38,11 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) NSTimeInterval stylesheetAutoRefreshInterval;
 
-/**
- * Flag indicating if refreshable stylesheets always should be processed after "normal" stylesheets, and thereby always being able to override those. Default is `YES`.
- */
-@property (nonatomic) BOOL processRefreshableStylesheetsLast;
-
 
 - (instancetype) init;
 - (instancetype) initWithStyleSheetParser:(nullable ISSStyleSheetParser*)parser NS_DESIGNATED_INITIALIZER;
@@ -56,13 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName;
 - (nullable ISSStyleSheet*) loadNamedStyleSheet:(nullable NSString*)name group:(nullable NSString*)groupName fromMainBundleFile:(NSString*)styleSheetFileName;
-//- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName withScope:(nullable ISSStyleSheetScope*)scope;
 
 /**
  * Loads a stylesheet from an absolute file path.
  */
 - (nullable ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath;
-//- (nullable ISSStyleSheet*) loadStyleSheetFromFile:(NSString*)styleSheetFilePath withScope:(nullable ISSStyleSheetScope*)scope;
 - (nullable ISSStyleSheet*) loadNamedStyleSheet:(nullable NSString*)name group:(nullable NSString*)groupName fromFile:(NSString*)styleSheetFilePath;
 
 /**
@@ -70,15 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Note: Refreshable stylesheets are only intended for use during development, and not in production.
  */
 - (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
-//- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL withScope:(nullable ISSStyleSheetScope*)scope;
 - (nullable ISSStyleSheet*) loadRefreshableNamedStyleSheet:(nullable NSString*)name group:(nullable NSString*)groupName fromURL:(NSURL*)styleSheetFileURL;
-
-/**
- * Loads an auto-refreshable stylesheet from a local file path, and starts monitoring the file for changes.
- * Note: Refreshable stylesheets are only intended for use during development, and not in production.
- */
-//- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath;
-//- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromLocalFile:(NSString*)styleSheetFilePath withScope:(nullable ISSStyleSheetScope*)scope;
 
 /** Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified. */
 - (void) reloadRefreshableStyleSheets:(BOOL)force;
@@ -101,11 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 
-- (NSArray<ISSRuleset*>*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 
-
-#pragma mark - Variable access
+#pragma mark - Variables and property parsing
 
 /**
  * Returns the raw value of the stylesheet variable with the specified name.
@@ -113,14 +98,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString*) valueOfStyleSheetVariableWithName:(NSString*)variableName;
 
 /**
+ * Sets the raw value of the stylesheet variable with the specified name.
+ */
+- (void) setValue:(nullable NSString*)value forStyleSheetVariableWithName:(NSString*)variableName;
+
+- (NSString*) replaceVariableReferences:(NSString*)propertyValue didReplace:(nullable BOOL*)didReplace;
+
+/**
  * Returns the value of the stylesheet variable with the specified name, transformed to the specified type.
  */
 - (nullable id) transformedValueOfStyleSheetVariableWithName:(NSString*)variableName asPropertyType:(ISSPropertyType)propertyType;
 
-/**
- * Sets the raw value of the stylesheet variable with the specified name.
- */
-- (void) setValue:(nullable NSString*)value forStyleSheetVariableWithName:(NSString*)variableName;
+- (nullable id) parsePropertyValue:(NSString*)value asType:(ISSPropertyType)type didReplaceVariableReferences:(nullable BOOL*)didReplace;
 
 
 #pragma mark - Selector creation support

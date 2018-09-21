@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UIColor (ISSColorAdditions)
 
 + (UIColor*) iss_colorWithR:(NSInteger)r G:(NSInteger)g B:(NSInteger)b;
@@ -21,10 +23,12 @@
 - (UIColor*) iss_colorByIncreasingSaturationBy:(CGFloat)amount;
 - (UIColor*) iss_colorByIncreasingAlphaBy:(CGFloat)amount;
 
-+ (UIImage*) iss_colorAsUIImage:(UIColor*)color;
-- (UIImage*) iss_asUIImage;
++ (nullable UIImage*) iss_colorAsUIImage:(UIColor*)color;
+- (nullable UIImage*) iss_asUIImage;
 
-- (UIImage*) iss_topDownLinearGradientImageToColor:(UIColor*)color height:(CGFloat)height;
-- (UIColor*) iss_topDownLinearGradientToColor:(UIColor*)color height:(CGFloat)height;
+- (nullable UIImage*) iss_topDownLinearGradientImageToColor:(UIColor*)color height:(CGFloat)height;
+- (nullable UIColor*) iss_topDownLinearGradientToColor:(UIColor*)color height:(CGFloat)height;
 
 @end
+
+NS_ASSUME_NONNULL_END

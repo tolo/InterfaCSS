@@ -138,7 +138,9 @@ static inline CGFloat adjustWithAbsoluteAmount(CGFloat value, CGFloat adjustAmou
 }
 
 - (UIColor*) iss_topDownLinearGradientToColor:(UIColor*)color height:(CGFloat)height {
-    return [UIColor colorWithPatternImage:[self iss_topDownLinearGradientImageToColor:color height:height]];
+    UIImage* image = [self iss_topDownLinearGradientImageToColor:color height:height];
+    if (image) return [UIColor colorWithPatternImage:image];
+    else return nil;
 }
 
 @end

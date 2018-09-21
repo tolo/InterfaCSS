@@ -8,6 +8,9 @@
 
 #import "ISSPropertyManager.h"
 
+#import "ISSStylingManager.h"
+#import "ISSStyleSheetManager.h"
+
 #import "ISSPropertyDeclaration.h"
 #import "ISSPropertyDefinition.h"
 #import "ISSElementStylingProxy.h"
@@ -17,10 +20,28 @@
 
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSAdditions.h"
+#import "NSArray+ISSAdditions.h"
 
 
 #define resistanceIsFutile (id <NSCopying>)
 
+
+typedef NSArray ISSPropertyValueAndParametersTuple;
+@interface NSArray (ISSPropertyManager)
+@property (nonatomic, readonly, nullable) id propertyValue;
+@property (nonatomic, readonly, nullable) NSArray* propertyParameters;
+@end
+@implementation NSArray (ISSPropertyManager)
++ (ISSPropertyValueAndParametersTuple*) tupleWithPropertyValue:(id)propertyValue andPropertyParameters:(NSArray*)propertyParameters {
+    return @[propertyValue ?: [NSNull null], propertyParameters ?: [NSNull null]];
+}
+- (id) propertyValue {
+    return self[0] != [NSNull null] ? self[0] : nil;
+}
+- (NSArray*) propertyParameters {
+    return self[1] != [NSNull null] ? self[0] : nil;
+}
+@end
 
 
 #pragma mark - ISSPropertyManager
@@ -32,6 +53,8 @@
 
 @property (nonatomic, strong) NSDictionary* classesToTypeNames;
 @property (nonatomic, strong) NSDictionary* typeNamesToClasses;
+
+@property (nonatomic, strong) NSMutableDictionary<NSString*, ISSPropertyValueAndParametersTuple*>* cachedTransformedProperties;
 
 @end
 
@@ -98,48 +121,68 @@
 
 #pragma mark - Apply property value
 
-- (BOOL) applyPropertyValue:(ISSPropertyDeclaration*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement {
-    if( propertyValue.useCurrentValue ) {
-        ISSLogTrace(@"Property value not changed - using existing value for '%@' in '%@'", propertyValue.propertyName, targetElement);
+- (BOOL) applyPropertyValue:(ISSPropertyDeclaration*)propertyDeclaration onTarget:(ISSElementStylingProxy*)targetElement {
+    if( propertyDeclaration.useCurrentValue ) {
+        ISSLogTrace(@"Property value not changed - using existing value for '%@' in '%@'", propertyDeclaration.propertyName, targetElement);
         return YES;
     }
 
-    if( propertyValue.isNestedElementKeyPathRegistrationPlaceholder ) {
-        NSString* keyPath = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:propertyValue.nestedElementKeyPath inClass:[targetElement.uiElement class]];
+    if( propertyDeclaration.isNestedElementKeyPathRegistrationPlaceholder ) {
+        NSString* keyPath = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:propertyDeclaration.nestedElementKeyPath inClass:[targetElement.uiElement class]];
         if( keyPath ) {
             [targetElement addValidNestedElementKeyPath:keyPath];
         } else {
-            ISSLogWarning(@"Unable to resolve keypath '%@' in '%@'", propertyValue.nestedElementKeyPath, targetElement);
+            ISSLogWarning(@"Unable to resolve keypath '%@' in '%@'", propertyDeclaration.nestedElementKeyPath, targetElement);
         }
         return keyPath != nil;
     }
 
-    ISSPropertyDefinition* property = [self findPropertyWithName:propertyValue.propertyName inClass:[targetElement.uiElement class]];
+    ISSPropertyDefinition* property = [self findPropertyWithName:propertyDeclaration.propertyName inClass:[targetElement.uiElement class]];
     if( !property ) {
-        ISSLogWarning(@"Cannot apply property value - unknown property (%@)!", propertyValue);
+        ISSLogWarning(@"Cannot apply property value - unknown property (%@)!", propertyDeclaration);
         return NO;
     }
 
-    id value = [propertyValue valueForProperty:property];
+    ISSPropertyValueAndParametersTuple* cachedData = self.cachedTransformedProperties[propertyDeclaration.stringRepresentation];
+    id value = cachedData.propertyValue;
+    NSArray* params = cachedData.propertyParameters;
+    if( cachedData == nil ) {
+        //id value = [propertyValue valueForProperty:property];
+        //ISSPropertyValueAndParameters* valueAndParams = [propertyDeclaration transformedValueAndParametersForProperty:property withStyleSheetManager:self.stylingManager.styleSheetManager];
+        BOOL valueContainsVariables = NO;
+        value = [self.stylingManager.styleSheetManager parsePropertyValue:propertyDeclaration.rawValue asType:property.type didReplaceVariableReferences:&valueContainsVariables];
 
-    if( !value ) {
-        ISSLogWarning(@"Cannot apply property value to '%@' in '%@' - value is nil!", property.fqn, targetElement);
-        return NO;
+        if( !value ) {
+            ISSLogWarning(@"Cannot apply property value to '%@' in '%@' - value is nil!", property.fqn, targetElement);
+            return NO;
+        }
+
+        __block BOOL paramsContainsVariables = NO;
+        if( propertyDeclaration.rawParameters ) {
+            NSArray<NSString*>* rawParams = [propertyDeclaration.rawParameters iss_map:^(NSString* element) {
+                return [self.stylingManager.styleSheetManager replaceVariableReferences:element didReplace:&paramsContainsVariables];
+            }];
+            params = [property transformParameters:rawParams];
+        }
+
+        if( !valueContainsVariables && !paramsContainsVariables ) { // TODO: Instead of skipping caching when variables are present - consider clearing cache when variables are changed
+            self.cachedTransformedProperties[propertyDeclaration.stringRepresentation] = [ISSPropertyValueAndParametersTuple tupleWithPropertyValue:value andPropertyParameters:params];
+        }
     }
 
     if( [value isKindOfClass:ISSUpdatableValue.class] ) {
         __weak ISSUpdatableValue* weakUpdatableValue = value;
         __weak ISSPropertyDefinition* weakProperty = property;
-        __weak ISSPropertyDeclaration* weakPropertyValue = propertyValue;
+        //__weak ISSPropertyDeclaration* weakPropertyDeclaration = propertyDeclaration;
         __weak ISSElementStylingProxy* weakElement = targetElement;
-        [targetElement addObserverForValue:weakUpdatableValue inProperty:propertyValue withBlock:^(NSNotification* note) {
-            weakProperty.setterBlock(weakProperty, weakElement.uiElement, weakUpdatableValue, weakPropertyValue.parameters);
+        [targetElement addObserverForValue:weakUpdatableValue inProperty:propertyDeclaration withBlock:^(NSNotification* note) {
+            weakProperty.setterBlock(weakProperty, weakElement.uiElement, weakUpdatableValue, params);
         }];
         [weakUpdatableValue requestUpdate];
         value = weakUpdatableValue.lastValue;
     }
 
-    BOOL result = [property setValue:value onTarget:targetElement.uiElement withParameters:propertyValue.parameters];
+    BOOL result = [property setValue:value onTarget:targetElement.uiElement withParameters:params];
     
     if( !result ) {
         ISSLogDebug(@"Unable to apply property value to '%@' in '%@'", property.fqn, targetElement.uiElement);
@@ -327,8 +370,9 @@
         _classesToTypeNames = [NSDictionary dictionaryWithDictionary:classesToNames];
         _typeNamesToClasses = [NSDictionary dictionaryWithDictionary:typeNamesToClasses];
 
-        
         _propertiesByType = [NSMutableDictionary dictionary];
+
+        _cachedTransformedProperties = [NSMutableDictionary dictionary];
 
 
         #if ISS_OS_VERSION_MIN_REQUIRED < 90000

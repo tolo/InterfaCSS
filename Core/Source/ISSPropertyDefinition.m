@@ -123,11 +123,7 @@ static NSCharacterSet* bitMaskSeparator;
 
 - (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping parameterTransformers:(NSArray*)parameterTransformers {
     return [self initCustomPropertyWithName:name inClass:clazz type:type enumValueMapping:enumValueMapping parameterTransformers:parameterTransformers setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
-        NSMutableArray* arguments = [NSMutableArray arrayWithObject:value];
-        for(int i=0; i<parameterTransformers.count; i++) {
-            ISSPropertyParameterTransformer transformer = parameterTransformers[i];
-            [arguments addObject:transformer(property, i< parameters.count ? parameters[i] : [NSNull null])];
-        }
+        NSArray* arguments = [[NSArray arrayWithObject:value] arrayByAddingObjectsFromArray:parameters ?: @[]];
         [ISSRuntimeIntrospectionUtils invokeInstanceSelector:selector withArguments:arguments inObject:target];
         return YES;
     }];
@@ -138,6 +134,14 @@ static NSCharacterSet* bitMaskSeparator;
     return [NSString stringWithFormat:@"%@.%@", NSStringFromClass(self.declaredInClass), self.name];
 }
 
+- (NSArray*) transformParameters:(NSArray*)rawParams {
+    NSMutableArray* transformedParameters = [NSMutableArray array];
+    for(int i=0; i<self.parameterTransformers.count; i++) {
+        ISSPropertyParameterTransformer transformer = self.parameterTransformers[i];
+        [transformedParameters addObject:transformer(self, i < rawParams.count ? rawParams[i] : [NSNull null])];
+    }
+    return transformedParameters;
+}
 
 - (BOOL) setValue:(id)value onTarget:(id)target withParameters:(NSArray*)params {
     return self.setterBlock(self, target, value, params);

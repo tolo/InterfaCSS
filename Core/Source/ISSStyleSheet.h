@@ -8,12 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ISSRefreshableResource.h"
+#import "ISSStyleSheetContent.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSStyleSheetManager, ISSElementStylingProxy, ISSStylingContext, ISSRuleset, ISSSelectorChain, ISSPropertyDeclarations, ISSStyleSheet;
+@class ISSStyleSheetManager, ISSElementStylingProxy, ISSStylingContext, ISSRuleset, ISSSelectorChain, ISSPropertyDeclarations, ISSStyleSheet, ISSRefreshableStyleSheet, ISSRefreshableResource;
 
 
 typedef BOOL (^ISSStyleSheetMatcher)(ISSStyleSheet* styleSheet);
@@ -43,25 +44,43 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 /**
  * Represents a loaded stylesheet.
  */
-@interface ISSStyleSheet : ISSRefreshableResource
+@interface ISSStyleSheet : NSObject
 
 @property (nonatomic, strong, readonly) NSString* name;
 @property (nonatomic, strong, readonly, nullable) NSString* group;
 @property (nonatomic, strong, readonly) NSURL* styleSheetURL;
 
-@property (nonatomic, strong, readonly, nullable) NSArray<ISSRuleset*>* rulesets;
+@property (nonatomic, strong, readonly, nullable) ISSStyleSheetContent* content;
 
 @property (nonatomic) BOOL active;
 @property (nonatomic, readonly) BOOL refreshable;
 
 @property (nonatomic, strong, readonly) NSString* displayDescription;
 
-- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable;
-- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(nullable NSString*)name group:(nullable NSString*)groupName declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable;
+- (instancetype) init NS_UNAVAILABLE;
+- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL content:(nullable ISSStyleSheetContent*)content;
+- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(nullable NSString*)name group:(nullable NSString*)groupName content:(nullable ISSStyleSheetContent*)content NS_DESIGNATED_INITIALIZER;
 
-- (nullable NSArray<ISSRuleset*>*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
+- (nullable ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext;
 
 - (nullable ISSRuleset*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain;
+
+- (void) unload;
+
+@end
+
+
+typedef void (^ISSRefreshableStyleSheetObserverBlock)(ISSRefreshableStyleSheet* refreshedStylesheet);
+
+
+@interface ISSRefreshableStyleSheet : ISSStyleSheet
+
+@property (nonatomic, strong, readonly) ISSRefreshableResource* refreshableResource;
+
+@property (nonatomic, readonly) BOOL styleSheetModificationMonitoringSupported;
+@property (nonatomic, readonly) BOOL styleSheetModificationMonitoringEnabled;
+
+- (void) startMonitoringStyleSheetModification:(ISSRefreshableStyleSheetObserverBlock)modificationObserver;
 
 - (void) refreshStylesheetWith:(ISSStyleSheetManager*)styleSheetManager andCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force;
 

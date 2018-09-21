@@ -97,6 +97,8 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSPropertyDefinition* pr
                              parameterTransformers:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers;
 
 
+- (NSArray*) transformParameters:(NSArray*)rawParams;
+
 - (BOOL) setValue:(nullable id)value onTarget:(nullable id)target withParameters:(nullable NSArray*)params;
 
 

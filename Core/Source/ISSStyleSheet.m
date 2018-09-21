@@ -14,6 +14,7 @@
 #import "ISSRuleset.h"
 #import "ISSStylingContext.h"
 #import "ISSElementStylingProxy.h"
+#import "ISSRefreshableResource.h"
 
 #import "NSObject+ISSLogSupport.h"
 #import "NSArray+ISSAdditions.h"
@@ -59,28 +60,32 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 @end
 
 
+#pragma mark - ISSStyleSheet
+
 @interface ISSStyleSheet ()
 
-@property (nonatomic, readwrite, nullable) NSArray* declarations;
+@property (nonatomic, strong, readwrite, nullable) ISSStyleSheetContent* content;
 
 @end
 
 
-@implementation ISSStyleSheet {
-    NSArray* _declarations;
-}
-
+@implementation ISSStyleSheet
 
 #pragma mark - Lifecycle
 
-- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable {
-    return [self initWithStyleSheetURL:styleSheetURL name:nil group:nil declarations:declarations refreshable:refreshable];
+- (instancetype) init {
+    @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, init not allowed!" userInfo:nil]);
 }
 
-- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(NSString*)name group:(NSString*)groupName declarations:(nullable NSArray*)declarations refreshable:(BOOL)refreshable {
-    if ( (self = [super initWithURL:styleSheetURL]) ) {
-        _declarations = declarations;
-        _refreshable = refreshable;
+- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL content:(ISSStyleSheetContent*)content {
+    return [self initWithStyleSheetURL:styleSheetURL name:nil group:nil content:content];
+}
+
+- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(NSString*)name group:(NSString*)groupName content:(ISSStyleSheetContent*)content {
+    //if ( (self = [super initWithURL:styleSheetURL]) ) {
+    if ( self = [super init] ) {
+        _styleSheetURL = styleSheetURL;
+        _content = content;
         _active = YES;
         _name = name ?: [styleSheetURL lastPathComponent];
         _group = groupName;
@@ -88,17 +93,19 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
     return self;
 }
 
+- (void) unload {}
+
 
 #pragma mark - Properties
 
-- (NSURL*) styleSheetURL {
-    return self.resourceURL;
+- (BOOL) refreshable {
+    return NO;
 }
 
 
 #pragma mark - Matching
 
-- (NSArray<ISSRuleset*>*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
+- (ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     if ( stylingContext.styleSheetScope && ![stylingContext.styleSheetScope containsStyleSheet:self] ) {
         ISSLogTrace(@"Stylesheet not in scope - skipping for element: %@", elementDetails.uiElement);
         return nil;
@@ -108,7 +115,7 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
     
-    for (ISSRuleset* ruleset in self.rulesets) {
+    for (ISSRuleset* ruleset in self.content.rulesets) {
         ISSRuleset* matchingDeclarationBlock = [ruleset propertyDeclarationsMatchingElement:elementDetails stylingContext:stylingContext];
         if ( matchingDeclarationBlock ) {
             ISSLogTrace(@"Matching declarations: %@", matchingDeclarationBlock);
@@ -120,39 +127,12 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 }
 
 - (ISSRuleset*) findPropertyDeclarationsWithSelectorChain:(ISSSelectorChain*)selectorChain {
-    for (ISSRuleset* declarations in _declarations) {
-        if ( [declarations containsSelectorChain:selectorChain] ) {
-            return declarations;
+    for (ISSRuleset* ruleset in self.content.rulesets) {
+        if ( [ruleset containsSelectorChain:selectorChain] ) {
+            return ruleset;
         }
     }
     return nil;
-}
-
-
-#pragma mark - Refreshable stylesheet methods
-
-- (void) refreshStylesheetWith:(ISSStyleSheetManager*)styleSheetManager andCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force {
-    [super refreshWithCompletionHandler:^(BOOL success, NSString* responseString, NSError* error) {
-        if( success ) {
-            NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
-            NSMutableArray* declarations = [styleSheetManager.styleSheetParser parse:responseString];
-            if( declarations ) {
-                BOOL hasDeclarations = self.declarations != nil;
-                self.declarations = declarations;
-
-                if( hasDeclarations ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
-                else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
-
-                completionHandler();
-            } else {
-                ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
-            }
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshedNotification object:self];
-        } else {
-            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshFailedNotification object:self];
-        }
-    } refreshIntervalDuringError:styleSheetManager.stylesheetAutoRefreshInterval * 3 force:force];
 }
 
 
@@ -160,8 +140,8 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
 - (NSString*) displayDescription {
     NSMutableString* str = [NSMutableString string];
-    for(ISSRuleset* declarations in _declarations) {
-        NSString* descr = declarations.displayDescription;
+    for(ISSRuleset* ruleset in self.content.rulesets) {
+        NSString* descr = ruleset.displayDescription;
         descr = [descr stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"];
         if( str.length == 0 ) [str appendFormat:@"\n\t%@", descr];
         else [str appendFormat:@", \n\t%@", descr];
@@ -171,7 +151,87 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 }
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"ISSStyleSheet[%@, %ld decls]", self.styleSheetURL.lastPathComponent, (long)self.rulesets.count];
+    return [NSString stringWithFormat:@"ISSStyleSheet[%@, %ld decls]", self.styleSheetURL.lastPathComponent, (long)self.content.rulesets.count];
 }
 
 @end
+
+
+#pragma mark - ISSRefreshableStyleSheet
+
+@implementation ISSRefreshableStyleSheet
+
+- (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(NSString*)name group:(NSString*)groupName content:(nullable ISSStyleSheetContent*)content {
+    if ( self = [super initWithStyleSheetURL:styleSheetURL name:name group:groupName content:content] ) {
+        if( styleSheetURL.isFileURL ) {
+            _refreshableResource = [[ISSRefreshableLocalResource alloc] initWithURL:styleSheetURL];
+        } else {
+            _refreshableResource = [[ISSRefreshableRemoteResource alloc] initWithURL:styleSheetURL];
+        }
+    }
+    return self;
+}
+
+
+#pragma mark - Properties
+
+- (BOOL) refreshable {
+    return YES;
+}
+
+- (BOOL) styleSheetModificationMonitoringSupported {
+    return self.refreshableResource.resourceModificationMonitoringSupported;
+}
+
+- (BOOL) styleSheetModificationMonitoringEnabled {
+    return self.refreshableResource.resourceModificationMonitoringEnabled;
+}
+
+//- (ISSRulesets*) rulesets {
+//    return self.content.rulesets;
+//}
+
+
+#pragma mark - ISSStyleSheet overrides
+
+- (void) unload {
+    [self.refreshableResource endMonitoringResourceModification];
+}
+
+
+#pragma mark - Refreshable stylesheet methods
+
+- (void) startMonitoringStyleSheetModification:(ISSRefreshableStyleSheetObserverBlock)modificationObserver {
+    __weak ISSRefreshableStyleSheet* weakSelf = self;
+    [self.refreshableResource startMonitoringResourceModification:^(ISSRefreshableResource* _Nonnull refreshableResource) {
+        modificationObserver(weakSelf);
+    }];
+}
+
+- (void) refreshStylesheetWith:(ISSStyleSheetManager*)styleSheetManager andCompletionHandler:(void (^)(void))completionHandler force:(BOOL)force {
+    [self.refreshableResource refreshWithCompletionHandler:^(BOOL success, NSString* responseString, NSError* error) {
+        if( success ) {
+            NSTimeInterval t = [NSDate timeIntervalSinceReferenceDate];
+            ISSStyleSheetContent* styleSheetContent = [styleSheetManager.styleSheetParser parse:responseString];
+            if( styleSheetContent ) {
+                BOOL hasRulesets = self.content != nil;
+                self.content = styleSheetContent;
+
+                if( hasRulesets ) ISSLogDebug(@"Reloaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+                else ISSLogDebug(@"Loaded stylesheet '%@' in %f seconds", [self.styleSheetURL lastPathComponent], ([NSDate timeIntervalSinceReferenceDate] - t));
+
+                completionHandler();
+            } else {
+                ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
+            }
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshedNotification object:self];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshFailedNotification object:self];
+        }
+    } refreshIntervalDuringError:styleSheetManager.stylesheetAutoRefreshInterval * 3 force:force];
+}
+
+
+@end
+
