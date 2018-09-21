@@ -1,5 +1,5 @@
 //
-//  ISSPropertyDefinition.h
+//  ISSProperty.h
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
@@ -10,9 +10,6 @@
 
 
 NS_ASSUME_NONNULL_BEGIN
-
-
-// TODO: Rename to ISSProperty
 
 
 typedef NSString* ISSPropertyType NS_EXTENSIBLE_STRING_ENUM;
@@ -39,11 +36,11 @@ extern ISSPropertyType const ISSPropertyTypeUnknown;
 
 
 
-@class ISSPropertyDefinition, ISSRuntimeProperty;
+@class ISSProperty, ISSRuntimeProperty;
 
 
-typedef BOOL (^ISSPropertySetterBlock)(ISSPropertyDefinition* property, id target, id _Nullable value, NSArray* _Nullable parameters);
-typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSPropertyDefinition* property, NSString* parameterStringValue);
+typedef BOOL (^ISSPropertySetterBlock)(ISSProperty* property, id target, id _Nullable value, NSArray* _Nullable parameters);
+typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NSString* parameterStringValue);
 
 
 @interface ISSPropertyEnumValueMapping : NSObject
@@ -64,10 +61,9 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSPropertyDefinition* pr
 
 
 /**
- * Represents the definition of a property that can be declared in a stylesheet. This class is also the repository for all available property definitions
- * supported by InterfaCSS.
+ * Represents the definition of a property that can be declared in a stylesheet. 
  */
-@interface ISSPropertyDefinition : NSObject
+@interface ISSProperty : NSObject
 
 @property (nonatomic, readonly) NSString* name;
 

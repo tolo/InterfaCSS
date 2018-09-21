@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 
 @class ISSParser, ISSStyleSheetManager, ISSStyleSheetParser, ISSStyleSheetContent;
 
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /**
- * Parses the specified stylesheet data into an array of `ISSPropertyDeclarations` objects.
+ * Parses the specified stylesheet data into an array of `ISSRuleset` objects.
  */
 - (nullable ISSStyleSheetContent*) parse:(NSString*)styleSheetData; // TODO: Async
 

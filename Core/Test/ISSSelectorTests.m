@@ -17,8 +17,8 @@
 
 #import "ISSElementStylingProxy.h"
 #import "ISSRuleset.h"
-#import "ISSPropertyDeclaration.h"
-#import "ISSPropertyDefinition.h"
+#import "ISSPropertyValue.h"
+#import "ISSProperty.h"
 #import "ISSSelectorChain.h"
 #import "ISSSelector.h"
 #import "ISSPseudoClass.h"

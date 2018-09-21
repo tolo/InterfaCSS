@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSUpdatableValue, ISSPropertyDeclaration, ISSStylingManager, ISSUpdatableValueObserver, ISSElementStylingProxy;
+@class ISSUpdatableValue, ISSPropertyValue, ISSStylingManager, ISSUpdatableValueObserver, ISSElementStylingProxy, ISSRuleset;
 
 
 #pragma mark - Block type definitions
@@ -54,7 +54,7 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 @property (nonatomic, strong, nullable) NSString* customElementStyleIdentity;
 @property (nonatomic, readonly) BOOL ancestorUsesCustomElementStyleIdentity;
 
-@property (nonatomic, weak, nullable) NSArray* cachedDeclarations; // Optimization for quick access to cached declarations
+@property (nonatomic, weak, nullable) NSArray<ISSRuleset*>* cachedRulesets; // Optimization for quick access to cached declarations
 @property (nonatomic) BOOL stylesFullyResolved;
 
 @property (nonatomic) BOOL stylingApplied; // Indicates if styles have been applied to element  // TODO: Maybe we don't need this in core...
@@ -86,7 +86,7 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 - (nullable id) childElementForKeyPath:(NSString*)keyPath;
 - (BOOL) addValidNestedElementKeyPath:(NSString*)keyPath;
 
-- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyDeclaration*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block;
+- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyValue*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block;
 
 - (nullable id) visitExclusivelyWithScope:(const void*)scope visitorBlock:(ISSElementStylingProxyVisitorBlock)visitorBlock;
 

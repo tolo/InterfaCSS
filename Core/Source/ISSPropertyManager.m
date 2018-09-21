@@ -11,8 +11,8 @@
 #import "ISSStylingManager.h"
 #import "ISSStyleSheetManager.h"
 
-#import "ISSPropertyDeclaration.h"
-#import "ISSPropertyDefinition.h"
+#import "ISSPropertyValue.h"
+#import "ISSProperty.h"
 #import "ISSElementStylingProxy.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSRuntimeProperty.h"
@@ -63,16 +63,16 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 #pragma mark -
 
-- (ISSPropertyDefinition*) findPropertyWithName:(NSString*)name inClass:(Class)clazz {
+- (ISSProperty*) findPropertyWithName:(NSString*)name inClass:(Class)clazz {
     NSString* canonicalType = [self canonicalTypeForClass:clazz];
     NSMutableDictionary* properties = self.propertiesByType[canonicalType];
     NSString* lcName = [name lowercaseString];
-    ISSPropertyDefinition* property = properties[lcName];
+    ISSProperty* property = properties[lcName];
     if( !property ) {
         NSDictionary* runtimeProperties = [ISSRuntimeIntrospectionUtils runtimePropertiesForClass:clazz lowercasedNames:YES];
         ISSRuntimeProperty* runtimeProperty = runtimeProperties[lcName];
         if( runtimeProperty ) {
-            property = [[ISSPropertyDefinition alloc] initWithRuntimeProperty:runtimeProperty type:[self runtimePropertyToPropertyType:runtimeProperty] enumValueMapping:nil];
+            property = [[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:[self runtimePropertyToPropertyType:runtimeProperty] enumValueMapping:nil];
             self.propertiesByType[canonicalType] = properties;
         }
     }
@@ -82,7 +82,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 #pragma mark - Property registration
 
-- (ISSPropertyDefinition*) registerProperty:(ISSPropertyDefinition*)property inClass:(Class)clazz {
+- (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz {
     NSString* typeName = [self registerCanonicalTypeClass:clazz]; // Register canonical type, if needed
     NSMutableDictionary* properties = self.propertiesByType[typeName];
     if (properties) {
@@ -102,55 +102,55 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
     }
 }
 
-- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enums:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
+- (ISSProperty*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type enums:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
     ISSRuntimeProperty* runtimeProperty = [ISSRuntimeIntrospectionUtils runtimePropertyWithName:name inClass:clazz lowercasedNames:YES];
     if( runtimeProperty ) {
-        return [self registerProperty:[[ISSPropertyDefinition alloc] initWithRuntimeProperty:runtimeProperty type:type enumValueMapping:enumValueMapping] inClass:clazz];
+        return [self registerProperty:[[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:type enumValueMapping:enumValueMapping] inClass:clazz];
     }
     return nil;
 }
 
-- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector params:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers {
-    return [self registerProperty:[[ISSPropertyDefinition alloc] initParameterizedPropertyWithName:name inClass:clazz type:type selector:selector enumValueMapping:nil parameterTransformers:parameterTransformers] inClass:clazz];
+- (ISSProperty*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector params:(NSArray<ISSPropertyParameterTransformer>*)parameterTransformers {
+    return [self registerProperty:[[ISSProperty alloc] initParameterizedPropertyWithName:name inClass:clazz type:type selector:selector enumValueMapping:nil parameterTransformers:parameterTransformers] inClass:clazz];
 }
 
-- (ISSPropertyDefinition*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setter:(ISSPropertySetterBlock)setter {
-    return [self registerProperty:[[ISSPropertyDefinition alloc] initCustomPropertyWithName:name inClass:clazz type:type setterBlock:setter] inClass:clazz];
+- (ISSProperty*) _register:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type setter:(ISSPropertySetterBlock)setter {
+    return [self registerProperty:[[ISSProperty alloc] initCustomPropertyWithName:name inClass:clazz type:type setterBlock:setter] inClass:clazz];
 }
 
 
 #pragma mark - Apply property value
 
-- (BOOL) applyPropertyValue:(ISSPropertyDeclaration*)propertyDeclaration onTarget:(ISSElementStylingProxy*)targetElement {
-    if( propertyDeclaration.useCurrentValue ) {
-        ISSLogTrace(@"Property value not changed - using existing value for '%@' in '%@'", propertyDeclaration.propertyName, targetElement);
+- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement {
+    if( propertyValue.useCurrentValue ) {
+        ISSLogTrace(@"Property value not changed - using existing value for '%@' in '%@'", propertyValue.propertyName, targetElement);
         return YES;
     }
 
-    if( propertyDeclaration.isNestedElementKeyPathRegistrationPlaceholder ) {
-        NSString* keyPath = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:propertyDeclaration.nestedElementKeyPath inClass:[targetElement.uiElement class]];
+    if( propertyValue.isNestedElementKeyPathRegistrationPlaceholder ) {
+        NSString* keyPath = [ISSRuntimeIntrospectionUtils validKeyPathForCaseInsensitivePath:propertyValue.nestedElementKeyPath inClass:[targetElement.uiElement class]];
         if( keyPath ) {
             [targetElement addValidNestedElementKeyPath:keyPath];
         } else {
-            ISSLogWarning(@"Unable to resolve keypath '%@' in '%@'", propertyDeclaration.nestedElementKeyPath, targetElement);
+            ISSLogWarning(@"Unable to resolve keypath '%@' in '%@'", propertyValue.nestedElementKeyPath, targetElement);
         }
         return keyPath != nil;
     }
 
-    ISSPropertyDefinition* property = [self findPropertyWithName:propertyDeclaration.propertyName inClass:[targetElement.uiElement class]];
+    ISSProperty* property = [self findPropertyWithName:propertyValue.propertyName inClass:[targetElement.uiElement class]];
     if( !property ) {
-        ISSLogWarning(@"Cannot apply property value - unknown property (%@)!", propertyDeclaration);
+        ISSLogWarning(@"Cannot apply property value - unknown property (%@)!", propertyValue);
         return NO;
     }
 
-    ISSPropertyValueAndParametersTuple* cachedData = self.cachedTransformedProperties[propertyDeclaration.stringRepresentation];
+    ISSPropertyValueAndParametersTuple* cachedData = self.cachedTransformedProperties[propertyValue.stringRepresentation];
     id value = cachedData.propertyValue;
     NSArray* params = cachedData.propertyParameters;
     if( cachedData == nil ) {
         //id value = [propertyValue valueForProperty:property];
-        //ISSPropertyValueAndParameters* valueAndParams = [propertyDeclaration transformedValueAndParametersForProperty:property withStyleSheetManager:self.stylingManager.styleSheetManager];
+        //ISSPropertyValueAndParameters* valueAndParams = [propertyValue transformedValueAndParametersForProperty:property withStyleSheetManager:self.stylingManager.styleSheetManager];
         BOOL valueContainsVariables = NO;
-        value = [self.stylingManager.styleSheetManager parsePropertyValue:propertyDeclaration.rawValue asType:property.type didReplaceVariableReferences:&valueContainsVariables];
+        value = [self.stylingManager.styleSheetManager parsePropertyValue:propertyValue.rawValue asType:property.type didReplaceVariableReferences:&valueContainsVariables];
 
         if( !value ) {
             ISSLogWarning(@"Cannot apply property value to '%@' in '%@' - value is nil!", property.fqn, targetElement);
@@ -158,24 +158,24 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
         }
 
         __block BOOL paramsContainsVariables = NO;
-        if( propertyDeclaration.rawParameters ) {
-            NSArray<NSString*>* rawParams = [propertyDeclaration.rawParameters iss_map:^(NSString* element) {
+        if( propertyValue.rawParameters ) {
+            NSArray<NSString*>* rawParams = [propertyValue.rawParameters iss_map:^(NSString* element) {
                 return [self.stylingManager.styleSheetManager replaceVariableReferences:element didReplace:&paramsContainsVariables];
             }];
             params = [property transformParameters:rawParams];
         }
 
         if( !valueContainsVariables && !paramsContainsVariables ) { // TODO: Instead of skipping caching when variables are present - consider clearing cache when variables are changed
-            self.cachedTransformedProperties[propertyDeclaration.stringRepresentation] = [ISSPropertyValueAndParametersTuple tupleWithPropertyValue:value andPropertyParameters:params];
+            self.cachedTransformedProperties[propertyValue.stringRepresentation] = [ISSPropertyValueAndParametersTuple tupleWithPropertyValue:value andPropertyParameters:params];
         }
     }
 
     if( [value isKindOfClass:ISSUpdatableValue.class] ) {
         __weak ISSUpdatableValue* weakUpdatableValue = value;
-        __weak ISSPropertyDefinition* weakProperty = property;
-        //__weak ISSPropertyDeclaration* weakPropertyDeclaration = propertyDeclaration;
+        __weak ISSProperty* weakProperty = property;
+        //__weak ISSPropertyDeclaration* weakPropertyDeclaration = propertyValue;
         __weak ISSElementStylingProxy* weakElement = targetElement;
-        [targetElement addObserverForValue:weakUpdatableValue inProperty:propertyDeclaration withBlock:^(NSNotification* note) {
+        [targetElement addObserverForValue:weakUpdatableValue inProperty:propertyValue withBlock:^(NSNotification* note) {
             weakProperty.setterBlock(weakProperty, weakElement.uiElement, weakUpdatableValue, params);
         }];
         [weakUpdatableValue requestUpdate];
@@ -309,7 +309,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 
 
-#pragma mark - initialization - setup of property definitions
+#pragma mark - initialization - setup of properties
 
 - (instancetype) init {
     return [self init:YES];
@@ -437,12 +437,12 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 
         if (withStandardPropertyCustomizations) {
-            ISSPropertyParameterTransformer controlStateTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return [controlStateMapping enumValueFromString:parameterStringValue]; };
-            ISSPropertyParameterTransformer barMetricsTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return [barMetricsMapping enumValueFromString:parameterStringValue]; };
-            ISSPropertyParameterTransformer barPositionTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return [barPositionMapping enumValueFromString:parameterStringValue]; };
-            ISSPropertyParameterTransformer integerTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return @([parameterStringValue integerValue]); };
-            ISSPropertyParameterTransformer segmentTypeTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return [segmentTypeMapping enumValueFromString:parameterStringValue]; };
-            ISSPropertyParameterTransformer searchBarIconTransformer = ^(ISSPropertyDefinition* property, NSString* parameterStringValue) { return [searchBarIconMapping enumValueFromString:parameterStringValue]; };
+            ISSPropertyParameterTransformer controlStateTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return [controlStateMapping enumValueFromString:parameterStringValue]; };
+            ISSPropertyParameterTransformer barMetricsTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return [barMetricsMapping enumValueFromString:parameterStringValue]; };
+            ISSPropertyParameterTransformer barPositionTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return [barPositionMapping enumValueFromString:parameterStringValue]; };
+            ISSPropertyParameterTransformer integerTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return @([parameterStringValue integerValue]); };
+            ISSPropertyParameterTransformer segmentTypeTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return [segmentTypeMapping enumValueFromString:parameterStringValue]; };
+            ISSPropertyParameterTransformer searchBarIconTransformer = ^(ISSProperty* property, NSString* parameterStringValue) { return [searchBarIconMapping enumValueFromString:parameterStringValue]; };
 
 
             /** UIView **/
@@ -518,7 +518,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
             [self _register:@"activityIndicatorViewStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
                 [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"gray" : @(UIActivityIndicatorViewStyleGray), @"white" : @(UIActivityIndicatorViewStyleWhite), @"whiteLarge" : @(UIActivityIndicatorViewStyleWhiteLarge)} enumBaseName:@"UIActivityIndicatorViewStyle" defaultValue:@(UIActivityIndicatorViewStyleWhite)]];
             #endif
-            [self _register:@"animating" inClass:clazz type:ISSPropertyTypeBool setter:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+            [self _register:@"animating" inClass:clazz type:ISSPropertyTypeBool setter:^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
                 [value boolValue] ? [target startAnimating] : [target stopAnimating];
                 return YES;
             }];

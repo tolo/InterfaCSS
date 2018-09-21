@@ -13,7 +13,7 @@
 #import "ISSStylingManager.h"
 #import "ISSPropertyManager.h"
 
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSUpdatableValue.h"
 
@@ -95,7 +95,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     self.stylingApplied = NO;
     self.stylesFullyResolved = NO;
     self.stylingStatic = NO;
-    self.cachedDeclarations = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
+    self.cachedRulesets = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
     
     self.cachedStylingInformationDirty = NO;
 }
@@ -119,7 +119,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     copy.customElementStyleIdentity = self.customElementStyleIdentity;
     copy.ancestorUsesCustomElementStyleIdentity = self.ancestorUsesCustomElementStyleIdentity;
 
-    copy.cachedDeclarations = self.cachedDeclarations;
+    copy.cachedRulesets = self.cachedRulesets;
     
     copy.canonicalType = self.canonicalType;
     copy.styleClasses = self.styleClasses;
@@ -373,7 +373,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     return YES;
 }
 
-- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyDeclaration*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block {
+- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyValue*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block {
     ISSUpdatableValueObserver* existingObserver = self.observedUpdatableValues[propertyDeclaration.fqn];
     if( [value isEqual:existingObserver.value] ) return existingObserver;
     

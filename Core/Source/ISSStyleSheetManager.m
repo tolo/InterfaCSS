@@ -268,14 +268,14 @@
 
 
 - (ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
-    NSMutableArray* declarations = [[NSMutableArray alloc] init];
+    NSMutableArray* rulesets = [[NSMutableArray alloc] init];
     
     for (ISSStyleSheet* styleSheet in self.activeStylesheets) {
-        // Find all matching (or potentially matching, i.e. pseudo class) style declarations
+        // Find all matching (or potentially matching, i.e. pseudo class) rulesets
         ISSRulesets* styleSheetRulesets = [styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
         if ( styleSheetRulesets ) {
             for(ISSRuleset* ruleset in styleSheetRulesets) {
-                // Get reference to inherited declarations, if any:
+                // Get reference to inherited rulesets, if any:
                 if ( ruleset.extendedDeclarationSelectorChain && !ruleset.extendedDeclaration ) {
                     for (ISSStyleSheet* s in self.activeStylesheets) {
                         ruleset.extendedDeclaration = [s findPropertyDeclarationsWithSelectorChain:ruleset.extendedDeclarationSelectorChain];
@@ -283,11 +283,11 @@
                     }
                 }
             }
-            [declarations addObjectsFromArray:styleSheetRulesets];
+            [rulesets addObjectsFromArray:styleSheetRulesets];
         }
     }
     
-    return [declarations copy];
+    return [rulesets copy];
 }
 
 
@@ -407,18 +407,18 @@
 
 #pragma mark - Debugging support
 
-- (void) logMatchingStyleDeclarationsForUIElement:(ISSElementStylingProxy*)elementDetails styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
-    NSString* objectIdentity = [NSString stringWithFormat:@"<%@: %p>", [elementDetails.uiElement class], (__bridge void*)elementDetails.uiElement];
+- (void) logMatchingRulesetsForElement:(ISSElementStylingProxy*)element styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
+    NSString* objectIdentity = [NSString stringWithFormat:@"<%@: %p>", [element.uiElement class], (__bridge void*)element.uiElement];
     
     NSMutableSet* existingSelectorChains = [[NSMutableSet alloc] init];
     BOOL match = NO;
     ISSStylingContext* stylingContext = [[ISSStylingContext alloc] initWithStylingManager:self.stylingManager styleSheetScope:styleSheetScope];
     for (ISSStyleSheet* styleSheet in self.activeStylesheets) {
-        ISSRulesets* matchingDeclarations = [[styleSheet rulesetsMatchingElement:elementDetails stylingContext:stylingContext] mutableCopy];
+        ISSRulesets* matchingDeclarations = [[styleSheet rulesetsMatchingElement:element stylingContext:stylingContext] mutableCopy];
         NSMutableArray* descriptions = [NSMutableArray array];
         if( matchingDeclarations.count ) {
-            [matchingDeclarations enumerateObjectsUsingBlock:^(id declarationObj, NSUInteger idx1, BOOL *stop1) {
-                NSMutableArray* chainsCopy = [((ISSRuleset*)declarationObj).selectorChains mutableCopy];
+            [matchingDeclarations enumerateObjectsUsingBlock:^(id ruleset, NSUInteger idx1, BOOL *stop1) {
+                NSMutableArray* chainsCopy = [((ISSRuleset*)ruleset).selectorChains mutableCopy];
                 [chainsCopy enumerateObjectsUsingBlock:^(id chainObj, NSUInteger idx2, BOOL *stop2) {
                     if( [existingSelectorChains containsObject:chainObj] ) chainsCopy[idx2] =  [NSString stringWithFormat:@"%@ (WARNING - DUPLICATE)", [chainObj displayDescription]];
                     else chainsCopy[idx2] = [chainObj displayDescription];
@@ -428,11 +428,11 @@
                 [descriptions addObject:[NSString stringWithFormat:@"%@ {...}", [chainsCopy componentsJoinedByString:@", "]]];
             }];
             
-            NSLog(@"Declarations in '%@' matching %@: [\n\t%@\n]", styleSheet.styleSheetURL.lastPathComponent, objectIdentity, [descriptions componentsJoinedByString:@", \n\t"]);
+            NSLog(@"Rulesets in '%@' matching %@: [\n\t%@\n]", styleSheet.styleSheetURL.lastPathComponent, objectIdentity, [descriptions componentsJoinedByString:@", \n\t"]);
             match = YES;
         }
     }
-    if( !match ) NSLog(@"No declarations match %@", objectIdentity);
+    if( !match ) NSLog(@"No rulesets match %@", objectIdentity);
 }
 
 @end

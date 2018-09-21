@@ -1,28 +1,27 @@
 //
-//  ISSPropertyDeclaration.h
+//  ISSPropertyValue.h
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSPropertyDeclaration, ISSElementStylingProxy, ISSStyleSheetManager;
+@class ISSPropertyValue, ISSElementStylingProxy, ISSStyleSheetManager;
 
 
 extern NSString* const ISSPropertyDeclarationUseCurrentValue;
 
-// TODO: Rename to ISSPropertyValue?
 
 /**
- * Represents the declaration of a property name/value pair in a stylesheet (i.e. name and value etc).
+ * Represents the declaration of a property name/value pair in a stylesheet.
  */
-@interface ISSPropertyDeclaration : NSObject<NSCopying>
+@interface ISSPropertyValue : NSObject<NSCopying>
 
 @property (nonatomic, strong, readonly, nullable) NSString* propertyName;
 @property (nonatomic, strong, readonly, nullable) NSString* nestedElementKeyPath;

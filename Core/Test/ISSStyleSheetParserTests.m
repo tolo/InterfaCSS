@@ -18,8 +18,8 @@
 #import "ISSParser.h"
 
 #import "ISSRuleset.h"
-#import "ISSPropertyDeclaration.h"
-#import "ISSPropertyDefinition.h"
+#import "ISSPropertyValue.h"
+#import "ISSProperty.h"
 #import "ISSSelectorChain.h"
 #import "ISSSelector.h"
 #import "ISSElementStylingProxy.h"
@@ -81,7 +81,7 @@ static ISSStylingManager* defaultStyler;
     return [styler.styleSheetManager loadStyleSheetFromFile:path].content;
 }
 
-- (nullable id) valueForProperty:(ISSPropertyDeclaration*)propertyValue in:(ISSPropertyDefinition*)property {
+- (nullable id) valueForProperty:(ISSPropertyValue*)propertyValue in:(ISSProperty*)property {
     return [self parsePropertyValue:propertyValue.rawValue forPropertyType:property.type enumValueMapping:property.enumValueMapping];
 }
 
@@ -118,7 +118,7 @@ static ISSStylingManager* defaultStyler;
     
     for(NSString* name in names) {
         id value = nil;
-        for(ISSPropertyDeclaration* d in ruleset.properties) {
+        for(ISSPropertyValue* d in ruleset.properties) {
             NSString* propertyName = d.propertyName; // d.property.name;
 
             if( [propertyName iss_isEqualIgnoreCase:name] ) {
@@ -150,7 +150,7 @@ static ISSStylingManager* defaultStyler;
     return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple" forType:type] firstObject];
 }
 
-- (ISSPropertyDeclaration*) getSimplePropertyDeclarationWithName:(NSString*)name {
+- (ISSPropertyValue*) getSimplePropertyDeclarationWithName:(NSString*)name {
     return [[self getPropertyValuesWithNames:@[name] fromStyleClass:@"simple" forType:ISSPropertyTypeUnknown onlyDeclarations:YES] firstObject];
 }
 
@@ -202,7 +202,7 @@ static ISSStylingManager* defaultStyler;
     
     ISSRuleset* declarations = result[0];
     XCTAssertEqual(declarations.properties.count, (NSUInteger)1, @"Expected one property declaration");
-    ISSPropertyDeclaration* declaration = declarations.properties[0];
+    ISSPropertyValue* declaration = declarations.properties[0];
     XCTAssertEqualObjects(declaration.propertyName, @"alpha", @"Expected property alpha");
     
     declarations = result[1];
@@ -231,7 +231,7 @@ static ISSStylingManager* defaultStyler;
         }];
         NSString* selectorDescription = [[chains componentsJoinedByString:@", "] lowercaseString];
         
-        ISSPropertyDeclaration* decl = d.properties.count ? d.properties[0] : nil;
+        ISSPropertyValue* decl = d.properties.count ? d.properties[0] : nil;
         id propertyValue = [self parsePropertyValue:decl.rawValue forPropertyType:ISSPropertyTypeNumber enumValueMapping:nil];
         //[decl transformValueIfNeeded];
         if( decl && [propertyValue isEqual:@(0.666)] ) {
@@ -367,14 +367,14 @@ static ISSStylingManager* defaultStyler;
 
 - (void) testParameterizedProperty {
     ISSRuleset* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"styleSheetPropertyValues"];
-    ISSPropertyDeclaration* decl = nil;
-    for(ISSPropertyDeclaration* d in declarations.properties) {
+    ISSPropertyValue* decl = nil;
+    for(ISSPropertyValue* d in declarations.properties) {
         if( [d.propertyName iss_isEqualIgnoreCase:@"titleColor"] ) decl = d;
     }
 
     XCTAssertEqual((NSUInteger)1, decl.rawParameters.count, @"Expected one parameter");
     
-    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
+    ISSProperty* def = [styler.propertyManager findPropertyWithName:@"titleColor" inClass:UIButton.class];
     id enumValue = def.parameterTransformers[0](def, [decl.rawParameters firstObject]);
     
     XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), enumValue, @"Expected UIControlStateSelected|UIControlStateHighlighted");
@@ -430,15 +430,15 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testEnumPropertyValue {
-    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"contentMode" inClass:UIView.class];
-    ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"contentMode"];
+    ISSProperty* def = [styler.propertyManager findPropertyWithName:@"contentMode" inClass:UIView.class];
+    ISSPropertyValue* decl = [self getSimplePropertyDeclarationWithName:@"contentMode"];
     id enumValue = [self valueForProperty:decl in:def];
     XCTAssertEqual(UIViewContentModeBottomRight, [enumValue integerValue], @"Unexpected contentMode value");
 }
 
 - (void) testEnumBitMaskPropertyValue {
-    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
-    ISSPropertyDeclaration* decl = [self getSimplePropertyDeclarationWithName:@"autoresizingMask"];
+    ISSProperty* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
+    ISSPropertyValue* decl = [self getSimplePropertyDeclarationWithName:@"autoresizingMask"];
     id enumValue = [self valueForProperty:decl in:def];
     
     UIViewAutoresizing autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight |
@@ -500,7 +500,7 @@ static ISSStylingManager* defaultStyler;
     NSArray* values = [self getPropertyValuesWithNames:@[@"autoresizingMask", @"lineBreakMode", @"titleColor"] fromStyleClass:@"fullEnumNames" forType:ISSPropertyTypeEnumType onlyDeclarations:YES];
     XCTAssertEqual(values.count, 3u, @"Unexpected value count");
     
-    ISSPropertyDefinition* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
+    ISSProperty* def = [styler.propertyManager findPropertyWithName:@"autoresizingMask" inClass:UIView.class];
     id enumValue = [self valueForProperty:values[0] in:def];
     XCTAssertEqualObjects(enumValue, @(UIViewAutoresizingFlexibleWidth), @"Unexpected propety value");
     

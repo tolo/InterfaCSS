@@ -23,8 +23,8 @@
 		8A3296402021F974002259BD /* ISSStyler.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963F2021F974002259BD /* ISSStyler.h */; };
 		8A387FBC2010C7EF0011BD52 /* ISSStylingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */; };
 		8A387FBD2010C7EF0011BD52 /* ISSStylingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */; };
-		8A387FC22010D87B0011BD52 /* ISSPropertyDefinition.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBF2010D87B0011BD52 /* ISSPropertyDefinition.h */; };
-		8A387FC42010D87B0011BD52 /* ISSPropertyDefinition.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FC12010D87B0011BD52 /* ISSPropertyDefinition.m */; };
+		8A387FC22010D87B0011BD52 /* ISSProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBF2010D87B0011BD52 /* ISSProperty.h */; };
+		8A387FC42010D87B0011BD52 /* ISSProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FC12010D87B0011BD52 /* ISSProperty.m */; };
 		8A387FC72010D8810011BD52 /* ISSPseudoClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FC52010D8810011BD52 /* ISSPseudoClass.m */; };
 		8A387FC82010D8810011BD52 /* ISSPseudoClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FC62010D8810011BD52 /* ISSPseudoClass.h */; };
 		8A387FCC2010DEE60011BD52 /* ISSStyleSheetManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */; };
@@ -80,8 +80,8 @@
 		F6F8375D2010AD970093373E /* ISSRuntimeProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F8375A2010AB2B0093373E /* ISSRuntimeProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F6F837622010B0EC0093373E /* ISSRuleset.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F8375E2010B0880093373E /* ISSRuleset.h */; };
 		F6F837632010B0EC0093373E /* ISSRuleset.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8375F2010B0880093373E /* ISSRuleset.m */; };
-		F6F837642010B0EC0093373E /* ISSPropertyDeclaration.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837512010A9620093373E /* ISSPropertyDeclaration.h */; };
-		F6F837652010B0EC0093373E /* ISSPropertyDeclaration.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837502010A9620093373E /* ISSPropertyDeclaration.m */; };
+		F6F837642010B0EC0093373E /* ISSPropertyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837512010A9620093373E /* ISSPropertyValue.h */; };
+		F6F837652010B0EC0093373E /* ISSPropertyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837502010A9620093373E /* ISSPropertyValue.m */; };
 		F6F837662010B0EC0093373E /* ISSSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837482010A2E90093373E /* ISSSelector.h */; };
 		F6F837672010B0EC0093373E /* ISSSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837472010A2E90093373E /* ISSSelector.m */; };
 		F6F837682010B0EC0093373E /* ISSSelectorChain.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837432010A2E90093373E /* ISSSelectorChain.h */; };
@@ -119,8 +119,8 @@
 		8A32963F2021F974002259BD /* ISSStyler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyler.h; sourceTree = "<group>"; };
 		8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingContext.m; sourceTree = "<group>"; };
 		8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingContext.h; sourceTree = "<group>"; };
-		8A387FBF2010D87B0011BD52 /* ISSPropertyDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDefinition.h; sourceTree = "<group>"; };
-		8A387FC12010D87B0011BD52 /* ISSPropertyDefinition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDefinition.m; sourceTree = "<group>"; };
+		8A387FBF2010D87B0011BD52 /* ISSProperty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSProperty.h; sourceTree = "<group>"; };
+		8A387FC12010D87B0011BD52 /* ISSProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSProperty.m; sourceTree = "<group>"; };
 		8A387FC52010D8810011BD52 /* ISSPseudoClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPseudoClass.m; sourceTree = "<group>"; };
 		8A387FC62010D8810011BD52 /* ISSPseudoClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPseudoClass.h; sourceTree = "<group>"; };
 		8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetManager.h; sourceTree = "<group>"; };
@@ -182,8 +182,8 @@
 		F6F837462010A2E90093373E /* ISSStyleSheet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheet.m; sourceTree = "<group>"; };
 		F6F837472010A2E90093373E /* ISSSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSSelector.m; sourceTree = "<group>"; };
 		F6F837482010A2E90093373E /* ISSSelector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSSelector.h; sourceTree = "<group>"; };
-		F6F837502010A9620093373E /* ISSPropertyDeclaration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyDeclaration.m; sourceTree = "<group>"; };
-		F6F837512010A9620093373E /* ISSPropertyDeclaration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyDeclaration.h; sourceTree = "<group>"; };
+		F6F837502010A9620093373E /* ISSPropertyValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyValue.m; sourceTree = "<group>"; };
+		F6F837512010A9620093373E /* ISSPropertyValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPropertyValue.h; sourceTree = "<group>"; };
 		F6F837562010AAE60093373E /* ISSRuntimeIntrospectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRuntimeIntrospectionUtils.h; sourceTree = "<group>"; };
 		F6F837572010AAE60093373E /* ISSRuntimeIntrospectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRuntimeIntrospectionUtils.m; sourceTree = "<group>"; };
 		F6F8375A2010AB2B0093373E /* ISSRuntimeProperty.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSRuntimeProperty.h; sourceTree = "<group>"; };
@@ -224,8 +224,8 @@
 				8AA141292023256F0058B23B /* ISSPropertyManager.m */,
 				8AA1412A2023256F0058B23B /* ISSRemoteFont.h */,
 				8AA141282023256F0058B23B /* ISSRemoteFont.m */,
-				8A387FBF2010D87B0011BD52 /* ISSPropertyDefinition.h */,
-				8A387FC12010D87B0011BD52 /* ISSPropertyDefinition.m */,
+				8A387FBF2010D87B0011BD52 /* ISSProperty.h */,
+				8A387FC12010D87B0011BD52 /* ISSProperty.m */,
 				8AD712AF20230BDF00C0FB05 /* ISSUpdatableValue.h */,
 				8AD712B020230BDF00C0FB05 /* ISSUpdatableValue.m */,
 			);
@@ -356,8 +356,8 @@
 				8A387FC52010D8810011BD52 /* ISSPseudoClass.m */,
 				F6F8375E2010B0880093373E /* ISSRuleset.h */,
 				F6F8375F2010B0880093373E /* ISSRuleset.m */,
-				F6F837512010A9620093373E /* ISSPropertyDeclaration.h */,
-				F6F837502010A9620093373E /* ISSPropertyDeclaration.m */,
+				F6F837512010A9620093373E /* ISSPropertyValue.h */,
+				F6F837502010A9620093373E /* ISSPropertyValue.m */,
 				F6F837482010A2E90093373E /* ISSSelector.h */,
 				F6F837472010A2E90093373E /* ISSSelector.m */,
 				8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */,
@@ -434,7 +434,7 @@
 				F6F837682010B0EC0093373E /* ISSSelectorChain.h in Headers */,
 				F6F837622010B0EC0093373E /* ISSRuleset.h in Headers */,
 				F6F8375D2010AD970093373E /* ISSRuntimeProperty.h in Headers */,
-				8A387FC22010D87B0011BD52 /* ISSPropertyDefinition.h in Headers */,
+				8A387FC22010D87B0011BD52 /* ISSProperty.h in Headers */,
 				8A036152201A081100BA97F6 /* ISSNestedElementSelector.h in Headers */,
 				F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */,
 				8AD712B5202310EE00C0FB05 /* ISSNotificationObserver.h in Headers */,
@@ -443,7 +443,7 @@
 				8A3296352021BBF4002259BD /* NSObject+ISSLogSupport.h in Headers */,
 				F66C15F82011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h in Headers */,
 				8A32963A2021BBF4002259BD /* UIDevice+ISSAdditions.h in Headers */,
-				F6F837642010B0EC0093373E /* ISSPropertyDeclaration.h in Headers */,
+				F6F837642010B0EC0093373E /* ISSPropertyValue.h in Headers */,
 				8AD712B120230BE000C0FB05 /* ISSUpdatableValue.h in Headers */,
 				F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */,
 				8A387FC82010D8810011BD52 /* ISSPseudoClass.h in Headers */,
@@ -562,7 +562,7 @@
 				8A677FFA202461BA00E20D18 /* NSString+ISSAdditions.m in Sources */,
 				8AA1412D2023256F0058B23B /* ISSPropertyManager.m in Sources */,
 				F6F837692010B0EC0093373E /* ISSSelectorChain.m in Sources */,
-				8A387FC42010D87B0011BD52 /* ISSPropertyDefinition.m in Sources */,
+				8A387FC42010D87B0011BD52 /* ISSProperty.m in Sources */,
 				8A387FBC2010C7EF0011BD52 /* ISSStylingContext.m in Sources */,
 				F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */,
 				F6F837592010AAE60093373E /* ISSRuntimeIntrospectionUtils.m in Sources */,
@@ -588,7 +588,7 @@
 				8A387FCD2010DEE60011BD52 /* ISSStyleSheetManager.m in Sources */,
 				8A03614E201A054800BA97F6 /* NSArray+ISSAdditions.m in Sources */,
 				F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */,
-				F6F837652010B0EC0093373E /* ISSPropertyDeclaration.m in Sources */,
+				F6F837652010B0EC0093373E /* ISSPropertyValue.m in Sources */,
 				8AD712B6202310EE00C0FB05 /* ISSNotificationObserver.m in Sources */,
 				F648DB15202277D30011012C /* ISSDownloadableResource.m in Sources */,
 				8A677FFD202461BA00E20D18 /* UIColor+ISSAdditions.m in Sources */,

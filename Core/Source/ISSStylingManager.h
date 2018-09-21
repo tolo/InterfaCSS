@@ -26,7 +26,7 @@
 //extern NSString* _Nonnull const ISSDidRefreshStyleSheetNotification;
 
 #import "ISSStyler.h"
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 #import "ISSStyleSheet.h"
 #import "NSObject+ISSLogSupport.h"
 
@@ -99,9 +99,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Debugging support
 
 /**
- * Logs the active style declarations for the specified UI element.
+ * Logs the active rulesets for the specified UI element.
  */
-- (void) logMatchingStyleDeclarationsForUIElement:(id)uiElement styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
+- (void) logMatchingRulesetsForElement:(id)uiElement styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
 
 @end
 

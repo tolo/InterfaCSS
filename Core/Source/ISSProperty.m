@@ -1,5 +1,5 @@
 //
-//  ISSPropertyDefinition.m
+//  ISSProperty.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
@@ -8,11 +8,11 @@
 
 #import <objc/runtime.h>
 
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 
 #import "ISSPropertyManager.h"
 
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSRuntimeProperty.h"
 
@@ -93,7 +93,7 @@ static NSCharacterSet* bitMaskSeparator;
 @end
 
 
-@implementation ISSPropertyDefinition
+@implementation ISSProperty
 
 - (instancetype) init {
     @throw([NSException exceptionWithName:NSInternalInconsistencyException reason:@"Hold on there professor, init not allowed!" userInfo:nil]);
@@ -116,13 +116,13 @@ static NSCharacterSet* bitMaskSeparator;
 }
 
 - (instancetype) initWithRuntimeProperty:(ISSRuntimeProperty*)runtimeProperty type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
-    return [self initCustomPropertyWithName:runtimeProperty.propertyName inClass:runtimeProperty.foundInClass type:type enumValueMapping:enumValueMapping parameterTransformers:nil setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+    return [self initCustomPropertyWithName:runtimeProperty.propertyName inClass:runtimeProperty.foundInClass type:type enumValueMapping:enumValueMapping parameterTransformers:nil setterBlock:^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
         return [ISSRuntimeIntrospectionUtils invokeSetterForRuntimeProperty:runtimeProperty withValue:value inObject:target];
     }];
 }
 
 - (instancetype) initParameterizedPropertyWithName:(NSString*)name inClass:(Class)clazz type:(ISSPropertyType)type selector:(SEL)selector enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping parameterTransformers:(NSArray*)parameterTransformers {
-    return [self initCustomPropertyWithName:name inClass:clazz type:type enumValueMapping:enumValueMapping parameterTransformers:parameterTransformers setterBlock:^BOOL(ISSPropertyDefinition* property, id target, id value, NSArray* parameters) {
+    return [self initCustomPropertyWithName:name inClass:clazz type:type enumValueMapping:enumValueMapping parameterTransformers:parameterTransformers setterBlock:^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
         NSArray* arguments = [[NSArray arrayWithObject:value] arrayByAddingObjectsFromArray:parameters ?: @[]];
         [ISSRuntimeIntrospectionUtils invokeInstanceSelector:selector withArguments:arguments inObject:target];
         return YES;
@@ -151,14 +151,14 @@ static NSCharacterSet* bitMaskSeparator;
 #pragma mark - NSObject overrides
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"ISSPropertyDefinition[%@]", self.fqn];
+    return [NSString stringWithFormat:@"ISSProperty[%@]", self.fqn];
 }
 
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
-    else return [object isKindOfClass:ISSPropertyDefinition.class] &&
-           [self.fqn isEqualToString:((ISSPropertyDefinition*)object).fqn] &&
-           self.type == ((ISSPropertyDefinition*)object).type;
+    else return [object isKindOfClass:ISSProperty.class] &&
+           [self.fqn isEqualToString:((ISSProperty*)object).fqn] &&
+           self.type == ((ISSProperty*)object).type;
 }
 
 - (NSUInteger) hash {

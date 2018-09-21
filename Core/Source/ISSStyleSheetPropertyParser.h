@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ISSStyleSheetParser.h"
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 
 @class ISSParser;
 

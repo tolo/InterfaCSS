@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ISSPropertyDefinition.h"
-@class ISSPropertyDeclaration, ISSElementStylingProxy, ISSStylingManager;
+#import "ISSProperty.h"
+@class ISSPropertyValue, ISSElementStylingProxy, ISSStylingManager;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ISSStylingManager* stylingManager;
 
-- (nullable ISSPropertyDefinition*) findPropertyWithName:(NSString*)name inClass:(Class)clazz;
+- (nullable ISSProperty*) findPropertyWithName:(NSString*)name inClass:(Class)clazz;
 
 /**
  * Returns the canonical type class for the given class, i.e. the closest super class that represents a valid type selector. For instance, for all `UIView`
@@ -44,12 +44,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /**
- * Registers a custom property definition.
+ * Registers a custom property.
  */
-- (ISSPropertyDefinition*) registerProperty:(ISSPropertyDefinition*)property inClass:(Class)clazz;
+- (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz;
 
 
-- (BOOL) applyPropertyValue:(ISSPropertyDeclaration*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement;
+- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement;
 
 
 - (ISSPropertyType) runtimePropertyToPropertyType:(ISSRuntimeProperty*)runtimeProperty;

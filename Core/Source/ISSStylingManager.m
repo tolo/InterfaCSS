@@ -12,9 +12,9 @@
 #import "ISSPropertyManager.h"
 
 #import "ISSStyleSheet.h"
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 #import "ISSElementStylingProxy+Protected.h"
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 #import "ISSRuleset.h"
 #import "ISSSelectorChain.h"
 #import "ISSRuntimeIntrospectionUtils.h"
@@ -132,34 +132,34 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
 - (NSArray*) effectiveStylesForUIElement:(ISSElementStylingProxy*)elementDetails force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     // First - get cached declarations stored using weak reference on ISSElementStylingProxy object
-    NSArray* cachedDeclarations = elementDetails.cachedDeclarations;
+    NSArray* cachedRulesets = elementDetails.cachedRulesets;
 
     // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes)
     // This makes it possible to reuse identical style information in sibling elements for instance.
-    if( !cachedDeclarations ) {
-        cachedDeclarations = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
-        elementDetails.cachedDeclarations = cachedDeclarations;
+    if( !cachedRulesets ) {
+        cachedRulesets = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
+        elementDetails.cachedRulesets = cachedRulesets;
     }
     
-     if ( !cachedDeclarations ) { // Otherwise - build styles
+     if ( !cachedRulesets ) { // Otherwise - build styles
         ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentityPath);
 
         elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been cleared, to make sure element is re-styled
 
         // Perform full stylesheet scan to get matching style classes, but ignore pseudo classes at this stage
         ISSStylingContext* stylingContext = [ISSStylingContext contextIgnoringPseudoClasses:self styleSheetScope:styleSheetScope];
-        cachedDeclarations = [self.styleSheetManager rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
+        cachedRulesets = [self.styleSheetManager rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
         
         if( stylingContext.containsPartiallyMatchedDeclarations ) {
-            ISSLogTrace(@"Found %d matching declarations, and at least one partially matching declaration, for '%@'.", cachedDeclarations.count, elementDetails.elementStyleIdentityPath);
+            ISSLogTrace(@"Found %d matching declarations, and at least one partially matching declaration, for '%@'.", cachedRulesets.count, elementDetails.elementStyleIdentityPath);
         } else {
-            ISSLogTrace(@"Found %d matching declarations for '%@'", cachedDeclarations.count, elementDetails.elementStyleIdentityPath);
+            ISSLogTrace(@"Found %d matching declarations for '%@'", cachedRulesets.count, elementDetails.elementStyleIdentityPath);
         }
         
         // If selector specificity is enabled...
 //        if( self.useSelectorSpecificity ) {
             // ...sort declarations on specificity
-            cachedDeclarations = [cachedDeclarations sortedArrayWithOptions:NSSortStable usingComparator:^NSComparisonResult(ISSRuleset* ruleset1, ISSRuleset* ruleset2) {
+            cachedRulesets = [cachedRulesets sortedArrayWithOptions:NSSortStable usingComparator:^NSComparisonResult(ISSRuleset* ruleset1, ISSRuleset* ruleset2) {
                 if ( ruleset1.specificity > ruleset2.specificity ) return NSOrderedDescending;
                 if ( ruleset1.specificity < ruleset2.specificity ) return NSOrderedAscending;
                 return NSOrderedSame;
@@ -172,8 +172,8 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         // Only add declarations to cache if styles are cacheable for element (i.e. either added to window, or part of a view hierachy that has an root element with an element Id), or,
         // if there were no styles that would match if the element was placed under a different parent (i.e. partial matches)
         if( elementDetails.stylesCacheable || elementDetails.stylesFullyResolved ) {
-            [self.cachedStyleDeclarationsForElements setObject:cachedDeclarations forKey:elementDetails.elementStyleIdentityPath];
-            elementDetails.cachedDeclarations = cachedDeclarations;
+            [self.cachedStyleDeclarationsForElements setObject:cachedRulesets forKey:elementDetails.elementStyleIdentityPath];
+            elementDetails.cachedRulesets = cachedRulesets;
         } else {
             ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentityPath);
         }
@@ -191,17 +191,13 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         BOOL containsPseudoClassSelector = NO;
         ISSStylingContext* stylingContext = [[ISSStylingContext alloc] init];
         NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
-        for (ISSRuleset* declarations in cachedDeclarations) {
-//            // Verify that element is in scope:
-//            if ( declarations.scope != nil && ![declarations.scope elementInScope:elementDetails] ) {
-//                continue;
-//            }
+        for (ISSRuleset* ruleset in cachedRulesets) {
             // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
-            if ( !declarations.containsPseudoClassSelector || [declarations matchesElement:elementDetails stylingContext:stylingContext] ) {
-                [viewStyles iss_addAndReplaceUniqueObjectsInArray:declarations.properties];
+            if ( !ruleset.containsPseudoClassSelector || [ruleset matchesElement:elementDetails stylingContext:stylingContext] ) {
+                [viewStyles iss_addAndReplaceUniqueObjectsInArray:ruleset.properties];
             }
 
-            containsPseudoClassSelector = containsPseudoClassSelector || declarations.containsPseudoClassSelector;
+            containsPseudoClassSelector = containsPseudoClassSelector || ruleset.containsPseudoClassSelector;
         }
         elementDetails.stylingStatic = !containsPseudoClassSelector; // Record in elementDetails if declarations contain pseudo classes, and thus needs constant re-evaluation (i.e. not static)
 
@@ -225,7 +221,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
             styles = elementDetails.willApplyStylingBlock(styles);
         }
 
-        for (ISSPropertyDeclaration* propertyDeclaration in styles) {
+        for (ISSPropertyValue* propertyDeclaration in styles) {
 //            if( [elementDetails.disabledProperties containsObject:propertyDeclaration.property] ) {
 //                ISSLogTrace(@"Skipping setting of %@ - property disabled on %@", propertyDeclaration, elementDetails.uiElement);
 //            } else {
@@ -599,9 +595,9 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
 #pragma mark - Debugging support
 
-- (void) logMatchingStyleDeclarationsForUIElement:(id)uiElement styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
+- (void) logMatchingRulesetsForElement:(id)uiElement styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     ISSElementStylingProxy* elementDetails = [self stylingProxyFor:uiElement];
-    [self.styleSheetManager logMatchingStyleDeclarationsForUIElement:elementDetails styleSheetScope:styleSheetScope];
+    [self.styleSheetManager logMatchingRulesetsForElement:elementDetails styleSheetScope:styleSheetScope];
 }
 
 @end

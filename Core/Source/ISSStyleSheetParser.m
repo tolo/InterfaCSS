@@ -21,7 +21,7 @@
 
 #import "ISSSelector.h"
 #import "ISSSelectorChain.h"
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 #import "ISSRuleset.h"
 #import "ISSNestedElementSelector.h"
 #import "ISSPseudoClass.h"
@@ -170,7 +170,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
     return [self.propertyParser parsePropertyValue:value ofType:type];
 }
 
-- (ISSPropertyDeclaration*) transformPropertyPair:(NSArray*)propertyPair {
+- (ISSPropertyValue*) transformPropertyPair:(NSArray*)propertyPair {
     NSString* propertyNameString = propertyPair[0];
     NSString* propertyValue = [propertyPair[1] iss_trim];
     NSArray<NSString*>* parameters = nil;
@@ -202,7 +202,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
         propertyValue = ISSPropertyDeclarationUseCurrentValue;
     }
 
-    return [[ISSPropertyDeclaration alloc] initWithPropertyName:propertyNameString rawValue:propertyValue rawParameters:parameters nestedElementKeyPath:prefixKeyPath];
+    return [[ISSPropertyValue alloc] initWithPropertyName:propertyNameString rawValue:propertyValue rawParameters:parameters nestedElementKeyPath:prefixKeyPath];
 }
 
 
@@ -232,7 +232,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
     
     /** -- Property pair -- **/
     ISSParser* propertyPairParser = [[self propertyPairParser:NO] transform:^id(id value, void* context) {
-        ISSPropertyDeclaration* declaration = [blockSelf transformPropertyPair:value];
+        ISSPropertyValue* declaration = [blockSelf transformPropertyPair:value];
         // If this declaration contains a reference to a nested element - return a nested ruleset declaration containing the property declaration, instead of the property declaration itself
         if( declaration.nestedElementKeyPath ) {
             ISSSelector* nestedElementSelector = [ISSNestedElementSelector selectorWithNestedElementKeyPath:declaration.nestedElementKeyPath];
@@ -240,7 +240,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
             ISSRulesetDeclaration* ruleset = [ISSRulesetDeclaration rulesetWithSelectorChains:[@[chain] mutableCopy]];
             ruleset.properties = [@[declaration] mutableCopy];
             
-            return @[[[ISSPropertyDeclaration alloc] initWithNestedElementKeyPathToRegister:declaration.nestedElementKeyPath], ruleset];
+            return @[[[ISSPropertyValue alloc] initWithNestedElementKeyPathToRegister:declaration.nestedElementKeyPath], ruleset];
         } else {
             return declaration;
         }
@@ -545,7 +545,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 
 #pragma mark - Property declaration processing (setup of nested declarations)
 
-- (void) processProperties:(NSMutableArray*)properties withSelectorChains:(NSArray*)_selectorChains andAddToDeclarations:(NSMutableArray*)declarations {
+- (void) processProperties:(NSMutableArray*)properties withSelectorChains:(NSArray*)_selectorChains andAddToRulesets:(NSMutableArray*)rulesets {
     NSMutableArray* nestedDeclarations = [[NSMutableArray alloc] init];
     // Make sure selector chains are valid
     NSArray* selectorChains = [_selectorChains filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary* bindings) {
@@ -553,7 +553,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
     }]];
     
     if( selectorChains.count ) {
-        NSMutableArray* propertyDeclarations = [[NSMutableArray alloc] init];
+        NSMutableArray* propertyValues = [[NSMutableArray alloc] init];
         ISSSelectorChain* extendedDeclarationSelectorChain = nil;
 
         for(id entry in properties) {
@@ -561,7 +561,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 
             // Bad data:
             if( [entry isKindOfClass:ISSStyleSheetParserBadData.class] ) {
-                ISSLogWarning(@"Warning! %@ - in declaration: %@", entry, [[[ISSRuleset alloc] initWithSelectorChains:selectorChains andProperties:nil] displayDescription:NO]);
+                ISSLogWarning(@"Warning! %@ - in ruleset: %@", entry, [[[ISSRuleset alloc] initWithSelectorChains:selectorChains andProperties:nil] displayDescription:NO]);
             }
             // Nested property declaration (ISSSelectorChainsDeclaration):
             else if( rulesetDeclaration ) {
@@ -577,27 +577,27 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 
                 [nestedDeclarations addObject:@[rulesetDeclaration.properties, nestedSelectorChains]];
                 
-                // Add placeholder property definition for registration of nested element key path:
+                // Add placeholder property value for registration of nested element key path:
                 if( rulesetDeclaration.nestedElementKeyPath ) {
-                    [propertyDeclarations addObject:[[ISSPropertyDeclaration alloc] initWithNestedElementKeyPathToRegister:rulesetDeclaration.nestedElementKeyPath]];
+                    [propertyValues addObject:[[ISSPropertyValue alloc] initWithNestedElementKeyPathToRegister:rulesetDeclaration.nestedElementKeyPath]];
                 }
             }
             // ISSDeclarationExtension
             else if( [entry isKindOfClass:ISSDeclarationExtension.class] ) {
                 extendedDeclarationSelectorChain = ((ISSDeclarationExtension*)entry).extendedDeclaration;
             }
-            // ISSPropertyDeclaration
+            // ISSPropertyValue
             else {
-                [propertyDeclarations addObject:entry];
+                [propertyValues addObject:entry];
             }
         }
 
-        // Add declaration
-        [declarations addObject:[[ISSRuleset alloc] initWithSelectorChains:selectorChains andProperties:propertyDeclarations extendedDeclarationSelectorChain:extendedDeclarationSelectorChain]];
+        // Add ruleset
+        [rulesets addObject:[[ISSRuleset alloc] initWithSelectorChains:selectorChains andProperties:propertyValues extendedDeclarationSelectorChain:extendedDeclarationSelectorChain]];
 
-        // Process nested declarations
+        // Process nested rulesets
         for(NSArray* declarationPair in nestedDeclarations) {
-            [self processProperties:declarationPair[0] withSelectorChains:declarationPair[1] andAddToDeclarations:declarations];
+            [self processProperties:declarationPair[0] withSelectorChains:declarationPair[1] andAddToRulesets:rulesets];
         }
     } else {
         ISSLogWarning(@"No valid selector chains in declaration (count before validation: %d) - properties: %@", _selectorChains.count, properties);
@@ -620,7 +620,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
             // Valid declaration:
             if( [element isKindOfClass:[ISSRulesetDeclaration class]] ) {
                 ISSRulesetDeclaration* rulesetDeclaration = element;
-                [self processProperties:rulesetDeclaration.properties withSelectorChains:rulesetDeclaration.chains andAddToDeclarations:rulesets];
+                [self processProperties:rulesetDeclaration.properties withSelectorChains:rulesetDeclaration.chains andAddToRulesets:rulesets];
                 lastElement = element;
             }
             // Bad data:

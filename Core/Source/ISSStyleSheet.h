@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSStyleSheetManager, ISSElementStylingProxy, ISSStylingContext, ISSRuleset, ISSSelectorChain, ISSPropertyDeclarations, ISSStyleSheet, ISSRefreshableStyleSheet, ISSRefreshableResource;
+@class ISSStyleSheetManager, ISSElementStylingProxy, ISSStylingContext, ISSRuleset, ISSSelectorChain, ISSRuleset, ISSStyleSheet, ISSRefreshableStyleSheet, ISSRefreshableResource;
 
 
 typedef BOOL (^ISSStyleSheetMatcher)(ISSStyleSheet* styleSheet);

@@ -10,7 +10,7 @@
 
 @class ISSStylingManager, ISSStyleSheetParser, ISSElementStylingProxy, ISSStyleSheet, ISSRuleset, ISSStyleSheetScope, ISSSelector;
 
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 #import "ISSPseudoClass.h"
 #import "ISSStyleSheetContent.h"
 
@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Debugging support
 
-- (void) logMatchingStyleDeclarationsForUIElement:(ISSElementStylingProxy*)elementDetails styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
+- (void) logMatchingRulesetsForElement:(ISSElementStylingProxy*)elementDetails styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
 
 @end
 

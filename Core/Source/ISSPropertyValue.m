@@ -1,16 +1,16 @@
 //
-//  ISSPropertyDeclaration.m
+//  ISSPropertyValue.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 
 #import "ISSStyleSheetManager.h"
 
-#import "ISSPropertyDefinition.h"
+#import "ISSProperty.h"
 #import "NSString+ISSAdditions.h"
 #import "NSObject+ISSLogSupport.h"
 #import "ISSDownloadableResource.h"
@@ -21,7 +21,7 @@
 NSString* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 
 
-@implementation ISSPropertyDeclaration
+@implementation ISSPropertyValue
 
 #pragma mark - Initialization
 
@@ -87,8 +87,8 @@ NSString* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 
 - (BOOL) isEqual:(id)object {
     if( object == self ) return YES;
-    else if( [object isKindOfClass:ISSPropertyDeclaration.class] ) {
-        ISSPropertyDeclaration* other = object;
+    else if( [object isKindOfClass:ISSPropertyValue.class] ) {
+        ISSPropertyValue* other = object;
         return [self.stringRepresentation isEqualToString:other.stringRepresentation];
     }
     return NO;

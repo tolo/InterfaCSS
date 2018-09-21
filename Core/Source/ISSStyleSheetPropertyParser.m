@@ -12,8 +12,8 @@
 #import "ISSStyleSheetParser+Support.h"
 
 #import "ISSParser.h"
-#import "ISSPropertyDefinition.h"
-#import "ISSPropertyDeclaration.h"
+#import "ISSProperty.h"
+#import "ISSPropertyValue.h"
 #import "ISSNestedElementSelector.h"
 #import "ISSSelectorChain.h"
 #import "ISSRuntimeIntrospectionUtils.h"

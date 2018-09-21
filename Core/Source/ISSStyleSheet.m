@@ -111,14 +111,14 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
         return nil;
     }
     
-    ISSLogTrace(@"Getting matching declarations for %@:", elementDetails.uiElement);
+    ISSLogTrace(@"Getting matching rulesets for %@:", elementDetails.uiElement);
 
     NSMutableArray* matchingDeclarations = [[NSMutableArray alloc] init];
     
     for (ISSRuleset* ruleset in self.content.rulesets) {
-        ISSRuleset* matchingDeclarationBlock = [ruleset propertyDeclarationsMatchingElement:elementDetails stylingContext:stylingContext];
+        ISSRuleset* matchingDeclarationBlock = [ruleset rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
         if ( matchingDeclarationBlock ) {
-            ISSLogTrace(@"Matching declarations: %@", matchingDeclarationBlock);
+            ISSLogTrace(@"Matching rulesets: %@", matchingDeclarationBlock);
             [matchingDeclarations addObject:matchingDeclarationBlock];
         }
     }
@@ -222,7 +222,7 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
                 completionHandler();
             } else {
-                ISSLogDebug(@"Remote stylesheet didn't contain any declarations!");
+                ISSLogDebug(@"Remote stylesheet didn't contain any rulesets!");
             }
 
             [[NSNotificationCenter defaultCenter] postNotificationName:ISSStyleSheetRefreshedNotification object:self];

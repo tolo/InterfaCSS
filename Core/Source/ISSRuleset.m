@@ -1,5 +1,5 @@
 //
-//  ISSPropertyDeclarations.m
+//  ISSRuleset.m
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
@@ -11,14 +11,14 @@
 #import "ISSSelectorChain.h"
 #import "ISSElementStylingProxy.h"
 #import "ISSStylingContext.h"
-#import "ISSPropertyDeclaration.h"
+#import "ISSPropertyValue.h"
 
 
 @implementation ISSRuleset {
     NSArray* _properties;
 }
 
-#pragma mark - ISSPropertyDeclarations interface
+#pragma mark - ISSRuleset interface
 
 
 - (id) initWithSelectorChains:(NSArray*)selectorChains andProperties:(NSArray*)properties {
@@ -56,7 +56,7 @@
     return NO;
 }
 
-- (ISSRuleset*) propertyDeclarationsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
+- (ISSRuleset*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
     NSMutableArray* matchingChains = self.containsPseudoClassSelector ? [NSMutableArray array] : nil;
     for(ISSSelectorChain* selectorChain in _selectorChains) {
         if ( [selectorChain matchesElement:elementDetails stylingContext:stylingContext] ) {
@@ -105,7 +105,7 @@
 
 
 - (NSString*) description {
-    return [NSString stringWithFormat:@"ISSPropertyDeclarations[%@]", self.displayDescription];
+    return [NSString stringWithFormat:@"ISSRuleset[%@]", self.displayDescription];
 }
 
 - (BOOL) isEqual:(id)object {
