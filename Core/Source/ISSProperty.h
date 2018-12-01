@@ -20,6 +20,7 @@ extern ISSPropertyType const ISSPropertyTypeAttributedString;
 extern ISSPropertyType const ISSPropertyTypeTextAttributes;
 extern ISSPropertyType const ISSPropertyTypeBool;
 extern ISSPropertyType const ISSPropertyTypeNumber;
+extern ISSPropertyType const ISSPropertyTypeRelativeNumber;
 extern ISSPropertyType const ISSPropertyTypeOffset;
 extern ISSPropertyType const ISSPropertyTypeRect;
 extern ISSPropertyType const ISSPropertyTypeSize;
@@ -66,6 +67,7 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NS
 @interface ISSProperty : NSObject
 
 @property (nonatomic, readonly) NSString* name;
+@property (nonatomic, readonly) NSString* normalizedName;
 
 @property (nonatomic, strong, readonly) Class declaredInClass;
 
@@ -97,7 +99,12 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NS
 
 - (BOOL) setValue:(nullable id)value onTarget:(nullable id)target withParameters:(nullable NSArray*)params;
 
++ (NSString*) normalizePropertyName:(NSString*)name;
 
 @end
+
+// TODO: Compound property support
+//@interface ISSCompoundProperty : ISSProperty
+//@end
 
 NS_ASSUME_NONNULL_END

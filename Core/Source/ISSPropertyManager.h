@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ISSProperty.h"
-@class ISSPropertyValue, ISSElementStylingProxy, ISSStylingManager;
+@class ISSPropertyValue, ISSElementStylingProxy, ISSStylingManager, ISSStyleSheetScope;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The property registry keeps track on all properties that can be set through stylesheets.
  */
+NS_SWIFT_NAME(PropertyManager)
 @interface ISSPropertyManager : NSObject
 
 @property (nonatomic, weak) ISSStylingManager* stylingManager;
@@ -47,9 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
  * Registers a custom property.
  */
 - (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz;
+- (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz replaceExisting:(BOOL)replaceExisting;
 
 
-- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement;
+- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement styleSheetScope:(ISSStyleSheetScope*)scope;
 
 
 - (ISSPropertyType) runtimePropertyToPropertyType:(ISSRuntimeProperty*)runtimeProperty;

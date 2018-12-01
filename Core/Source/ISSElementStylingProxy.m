@@ -6,11 +6,11 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import "ISSElementStylingProxy+Protected.h"
+#import "ISSElementStylingProxy.h"
 
 #import <objc/runtime.h>
 
-#import "ISSStylingManager.h"
+#import "ISSStyler.h"
 #import "ISSPropertyManager.h"
 
 #import "ISSPropertyValue.h"
@@ -20,19 +20,24 @@
 #import "NSString+ISSAdditions.h"
 
 
-NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName = @"ISSMarkCachedStylingInformationAsDirtyNotificationName";
+NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotification = @"ISSMarkCachedStylingInformationAsDirtyNotification";
 
 
 @implementation NSObject (ISSElementStylingProxy)
 
-@dynamic iss_stylingProxy;
+@dynamic interfaCSS;
 
-- (void) iss_setStylingProxy:(ISSElementStylingProxy*)elementDetailsISS {
-     objc_setAssociatedObject(self, @selector(iss_stylingProxy), elementDetailsISS, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void) setInterfaCSS:(ISSElementStylingProxy*)stylingProxy {
+    objc_setAssociatedObject(self, @selector(interfaCSS), stylingProxy, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (ISSElementStylingProxy*) iss_stylingProxy {
-    return objc_getAssociatedObject(self, @selector(iss_stylingProxy));
+- (ISSElementStylingProxy*) interfaCSS {
+    ISSElementStylingProxy* stylingProxy =  objc_getAssociatedObject(self, @selector(interfaCSS));
+    if( !stylingProxy ) {
+        stylingProxy = [[ISSElementStylingProxy alloc] initWithUIElement:self];
+        [self setInterfaCSS:stylingProxy];
+    }
+    return stylingProxy;
 }
 
 @end
@@ -72,31 +77,31 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
         
         [self parentElement]; // Make sure weak reference to super view is set directly
 
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(markCachedStylingInformationAsDirty) name:ISSMarkCachedStylingInformationAsDirtyNotificationName object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(markCachedStylingInformationAsDirty) name:ISSMarkCachedStylingInformationAsDirtyNotification object:nil];
     }
     return self;
 }
 
 - (void) dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:ISSMarkCachedStylingInformationAsDirtyNotificationName object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ISSMarkCachedStylingInformationAsDirtyNotification object:nil];
 }
 
-- (void) resetWith:(ISSStylingManager*)stylingManager {
-    self.canonicalType = [stylingManager.propertyManager canonicalTypeClassForClass:[self.uiElement class]] ?: [self.uiElement class];
+- (void) resetWith:(id<ISSStyler>)styler {
+    self.canonicalType = [styler.propertyManager canonicalTypeClassForClass:[self.uiElement class]] ?: [self.uiElement class];
     self.validNestedElements = nil;
     
     // Identity and structure:
     self.elementStyleIdentity = [self createElementStyleIdentity];
     self.elementStyleIdentityPath = nil; // Will result in re-evaluation of elementStyleIdentityPath, ancestorHasElementId and ancestorUsesCustomElementStyleIdentity in method below:
-    [self updateElementStyleIdentityPathIfNeededWith:stylingManager];
+    [self updateElementStyleIdentityPathIfNeeded];
     self.closestViewController = nil;
     
     // Reset fields related to style caching
     self.stylingApplied = NO;
     self.stylesFullyResolved = NO;
     self.stylingStatic = NO;
-    self.cachedRulesets = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
-    
+//    self.cachedRulesets = nil; // Note: this just clears a weak ref - cache will still remain in class InterfaCSS (unless cleared at the same time)
+
     self.cachedStylingInformationDirty = NO;
 }
 
@@ -119,8 +124,8 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     copy.customElementStyleIdentity = self.customElementStyleIdentity;
     copy.ancestorUsesCustomElementStyleIdentity = self.ancestorUsesCustomElementStyleIdentity;
 
-    copy.cachedRulesets = self.cachedRulesets;
-    
+//    copy.cachedRulesets = self.cachedRulesets;
+
     copy.canonicalType = self.canonicalType;
     copy.styleClasses = self.styleClasses;
 
@@ -173,7 +178,8 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     }
 }
 
-- (NSString*) updateElementStyleIdentityPathIfNeededWith:(ISSStylingManager*)stylingManager {
+- (NSString*) updateElementStyleIdentityPathIfNeeded {
+    // TODO: cleanup
     // Update style identity of element, if needed
 //    [self elementStyleIdentity];
     if ( self.elementStyleIdentityPath ) return self.elementStyleIdentityPath;
@@ -182,15 +188,15 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     
     if( self.parentElement ) {
 //        ISSElementStylingProxy* parentDetails = [[InterfaCSS interfaCSS] stylingProxyFor:self.parentElement];
-        ISSElementStylingProxy* parentDetails = [stylingManager stylingProxyFor:self.parentElement];
+        ISSElementStylingProxy* parentProxy = [self.parentElement interfaCSS];
 //        NSString* parentStyleIdentityPath = parentDetails.elementStyleIdentityPath;
-        NSString* parentStyleIdentityPath = [parentDetails updateElementStyleIdentityPathIfNeededWith:stylingManager];
+        NSString* parentStyleIdentityPath = [parentProxy updateElementStyleIdentityPathIfNeeded];
         // Check if an ancestor has an element id (i.e. style identity path will contain #someParentElementId) - this information will be used to determine if styles can be cacheable or not
         self.ancestorHasElementId = [parentStyleIdentityPath hasPrefix:@"#"] || [parentStyleIdentityPath rangeOfString:@" #"].location != NSNotFound;
         self.ancestorUsesCustomElementStyleIdentity = [parentStyleIdentityPath hasPrefix:@"@"] || [parentStyleIdentityPath rangeOfString:@" @"].location != NSNotFound;
         
         // Concatenate parent elementStyleIdentityPath of parent with the elementStyleIdentity of this element, separated by a space:
-        if( parentStyleIdentityPath ) self.elementStyleIdentityPath = [NSString stringWithFormat:@"%@ %@", parentDetails.elementStyleIdentityPath, self.elementStyleIdentity];
+        if( parentStyleIdentityPath ) self.elementStyleIdentityPath = [NSString stringWithFormat:@"%@ %@", parentProxy.elementStyleIdentityPath, self.elementStyleIdentity];
         else self.elementStyleIdentityPath = self.elementStyleIdentity;
     } else {
         self.ancestorHasElementId = NO;
@@ -218,7 +224,7 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
 
 
 + (void) markAllCachedStylingInformationAsDirty {
-    [[NSNotificationCenter defaultCenter] postNotificationName:ISSMarkCachedStylingInformationAsDirtyNotificationName object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:ISSMarkCachedStylingInformationAsDirtyNotification object:nil];
 }
 
 - (void) markCachedStylingInformationAsDirty {
@@ -339,6 +345,12 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName 
     [self setStyleClasses:newClasses];
 }
 
+- (void) style {
+    // TODO: Style with shared styling manager
+}
+- (void) styleWith:(id<ISSStyler>)styler {
+    [styler applyStyling:self.uiElement];
+}
 
 #pragma mark - Custom styling identity
 

@@ -25,13 +25,8 @@
 
 typedef id (^ISSViewHierarchyVisitorBlock)(id viewObject, ISSElementStylingProxy* elementDetails, BOOL* stop);
 
-NSString* const ISSWillRefreshStyleSheetsNotification = @"ISSWillRefreshStyleSheetsNotification";
-NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetNotification";
 
-
-
-//static ISSStylingManager* sharedISSStylingManager = nil;
-
+static ISSStylingManager* sharedISSStylingManager = nil;
 
 
 @interface ISSDelegatingStyler : NSObject <ISSStyler>
@@ -39,13 +34,13 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 @property (nonatomic, weak, readonly) ISSStylingManager* stylingManager;
 @property (nonatomic, strong, readonly) ISSStyleSheetScope* styleSheetScope;
 
-- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
+- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(ISSStyleSheetScope*)styleSheetScope;
 
 @end
 
 @implementation ISSDelegatingStyler
 
-- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope {
+- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     if (self = [super init]) {
         _stylingManager = stylingManager;
         _styleSheetScope = styleSheetScope;
@@ -53,6 +48,20 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
     return self;
 }
 
+- (ISSPropertyManager*) propertyManager {
+    return self.stylingManager.propertyManager;
+}
+
+- (ISSStyleSheetManager*) styleSheetManager {
+    return self.stylingManager.styleSheetManager;
+}
+
+- (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope includeCurrent:(BOOL)includeCurrent {
+    if (includeCurrent) {
+        styleSheetScope = [self.styleSheetScope scopeByIncludingScope:styleSheetScope];
+    }
+    return [[ISSDelegatingStyler alloc] initWithStylingManager:self.stylingManager styleSheetScope:styleSheetScope];
+}
 
 - (nullable ISSElementStylingProxy*) stylingProxyFor:(id)uiElement {
     return [self.stylingManager stylingProxyFor:uiElement];
@@ -90,14 +99,14 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
 #pragma mark - Creation & destruction
 
-//+ (ISSStylingManager*) shared {
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        sharedISSStylingManager = [[ISSStylingManager alloc] init];
-//    });
-//
-//    return sharedISSStylingManager;
-//}
++ (ISSStylingManager*) shared {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedISSStylingManager = [[ISSStylingManager alloc] init];
+    });
+
+    return sharedISSStylingManager;
+}
 
 - (instancetype) init {
     return [self initWithPropertyRegistry:nil styleSheetManager:nil];
@@ -128,26 +137,38 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 }
 
 
+#pragma mark - ISSStyler
+
+- (ISSStyleSheetScope*) styleSheetScope {
+    return [ISSStyleSheetScope defaultGroupScope];
+}
+
+- (ISSStylingManager*) stylingManager {
+    return self;
+}
+
+
 #pragma mark - Styling - Style matching and application
 
 - (NSArray*) effectiveStylesForUIElement:(ISSElementStylingProxy*)elementDetails force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     // First - get cached declarations stored using weak reference on ISSElementStylingProxy object
-    NSArray* cachedRulesets = elementDetails.cachedRulesets;
+//    NSArray* cachedRulesets = elementDetails.cachedRulesets;
+// TODO: Is caching even possible,
 
     // If not found - get cached declarations that matches element style identity (i.e. unique hierarchy/path of classes and style classes)
     // This makes it possible to reuse identical style information in sibling elements for instance.
-    if( !cachedRulesets ) {
-        cachedRulesets = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
-        elementDetails.cachedRulesets = cachedRulesets;
-    }
-    
+//    if( !cachedRulesets ) {
+        NSArray* cachedRulesets = [self.cachedStyleDeclarationsForElements objectForKey:elementDetails.elementStyleIdentityPath];
+//        elementDetails.cachedRulesets = cachedRulesets;
+//    }
+
      if ( !cachedRulesets ) { // Otherwise - build styles
         ISSLogTrace(@"FULL stylesheet scan for '%@'", elementDetails.elementStyleIdentityPath);
 
         elementDetails.stylingApplied = NO; // Reset 'stylingApplied' flag if declaration cache has been cleared, to make sure element is re-styled
 
         // Perform full stylesheet scan to get matching style classes, but ignore pseudo classes at this stage
-        ISSStylingContext* stylingContext = [ISSStylingContext contextIgnoringPseudoClasses:self styleSheetScope:styleSheetScope];
+        ISSStylingContext* stylingContext = [[ISSStylingContext alloc] initWithStylingManager:self styleSheetScope:styleSheetScope ignorePseudoClasses:YES];
         cachedRulesets = [self.styleSheetManager rulesetsMatchingElement:elementDetails stylingContext:stylingContext];
         
         if( stylingContext.containsPartiallyMatchedDeclarations ) {
@@ -171,9 +192,9 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         
         // Only add declarations to cache if styles are cacheable for element (i.e. either added to window, or part of a view hierachy that has an root element with an element Id), or,
         // if there were no styles that would match if the element was placed under a different parent (i.e. partial matches)
-        if( elementDetails.stylesCacheable || elementDetails.stylesFullyResolved ) {
+        if( stylingContext.stylesCacheable && (elementDetails.stylesCacheable || elementDetails.stylesFullyResolved) ) {
             [self.cachedStyleDeclarationsForElements setObject:cachedRulesets forKey:elementDetails.elementStyleIdentityPath];
-            elementDetails.cachedRulesets = cachedRulesets;
+//            elementDetails.cachedRulesets = cachedRulesets;
         } else {
             ISSLogTrace(@"Can NOT cache styles for '%@'", elementDetails.elementStyleIdentityPath);
         }
@@ -189,8 +210,8 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         
         // Process declarations to see which styles currently match
         BOOL containsPseudoClassSelector = NO;
-        ISSStylingContext* stylingContext = [[ISSStylingContext alloc] init];
-        NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
+        ISSStylingContext* stylingContext = [[ISSStylingContext alloc] initWithStylingManager:self styleSheetScope:styleSheetScope];
+        NSMutableArray* viewStyles = [[NSMutableArray alloc] initWithArray:elementDetails.inlineStyle ?: @[]];
         for (ISSRuleset* ruleset in cachedRulesets) {
             // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
             if ( !ruleset.containsPseudoClassSelector || [ruleset matchesElement:elementDetails stylingContext:stylingContext] ) {
@@ -225,7 +246,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 //            if( [elementDetails.disabledProperties containsObject:propertyDeclaration.property] ) {
 //                ISSLogTrace(@"Skipping setting of %@ - property disabled on %@", propertyDeclaration, elementDetails.uiElement);
 //            } else {
-            [self.propertyManager applyPropertyValue:propertyDeclaration onTarget:elementDetails];
+            [self.propertyManager applyPropertyValue:propertyDeclaration onTarget:elementDetails styleSheetScope:styleSheetScope];
 //            }
         }
 
@@ -238,36 +259,37 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
 #pragma mark - Styling - Elememt styling proxy
 
-- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement create:(BOOL)create {
+//- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement create:(BOOL)create {
+- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement {
     if( !uiElement ) return nil;
 
-    ISSElementStylingProxy* stylingProxy = [uiElement iss_stylingProxy];
-    if( !stylingProxy && create ) {
-        stylingProxy = [[ISSElementStylingProxy alloc] initWithUIElement:uiElement];
-        [stylingProxy resetWith:self];
-        [uiElement iss_setStylingProxy:stylingProxy];
-    }
-
-    return stylingProxy;
+//    ISSElementStylingProxy* stylingProxy = [uiElement interfaCSS];
+//    if( !stylingProxy && create ) {
+//        stylingProxy = [[ISSElementStylingProxy alloc] initWithUIElement:uiElement];
+//        [stylingProxy resetWith:self];
+//        [uiElement iss_setStylingProxy:stylingProxy];
+//    }
+//
+//    return stylingProxy;
+    return [uiElement interfaCSS];
 }
+//
+//- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement {
+//    return [self stylingProxyFor:uiElement create:YES];
+//}
 
-- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement {
-    return [self stylingProxyFor:uiElement create:YES];
-}
 
-
-#pragma mark - Styling - Elememt styling proxy conveience methods
-
-- (ISSElementStylingProxy*) objectForKeyedSubscript:(id)uiElement {
-    return [self stylingProxyFor:uiElement create:YES];
-}
+//#pragma mark - Styling - Elememt styling proxy conveience methods
+//
+//- (ISSElementStylingProxy*) objectForKeyedSubscript:(id)uiElement {
+//    return [self stylingProxyFor:uiElement create:YES];
+//}
 
 
 #pragma mark - Styling - Caching
 
 - (void) clearCachedStylingInformationFor:(id)uiElement includeSubViews:(BOOL)includeSubViews {
-    ISSElementStylingProxy* element = [self stylingProxyFor:uiElement create:NO];
-    [self clearCachedStylingInformationFor:element includeRoot:YES includeSubViews:includeSubViews];
+    [self clearCachedStylingInformationFor:[uiElement interfaCSS] includeRoot:YES includeSubViews:includeSubViews];
 }
 
 - (void) clearCachedStylingInformationFor:(ISSElementStylingProxy*)rootElement includeRoot:(BOOL)includeRoot includeSubViews:(BOOL)includeSubViews {
@@ -313,7 +335,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 - (void) applyStyling:(id)uiElement includeSubViews:(BOOL)includeSubViews force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     if( !uiElement ) return;
 
-    ISSElementStylingProxy* stylingProxy = [self stylingProxyFor:uiElement];
+    ISSElementStylingProxy* stylingProxy = [uiElement interfaCSS];
     [self applyStylingWithDetails:stylingProxy includeSubViews:includeSubViews force:force styleSheetScope:styleSheetScope];
 }
 
@@ -350,12 +372,11 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         ISSLogTrace(@"Cached styling information for element of %@ dirty - resetting cached styling information", element);
         [self clearCachedStylingInformationFor:element includeRoot:YES includeSubViews:NO];
 //        element.cachedStylingInformationDirty = NO;
-        
-        
+
         // If not including subviews, make sure child elements are marked dirty
         if( !includeSubViews ) {
             for(id subView in [self childElementsForElement:element]) {
-                [self stylingProxyFor:subView].cachedStylingInformationDirty = YES;
+                [subView interfaCSS].cachedStylingInformationDirty = YES;
             }
         }
     }
@@ -364,7 +385,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
     if( includeSubViews ) { // Process subviews
         for(id subView in [self childElementsForElement:element]) {
-            ISSElementStylingProxy* subViewDetails = [self stylingProxyFor:subView];
+            ISSElementStylingProxy* subViewDetails = [subView interfaCSS];
             if (dirty) subViewDetails.cachedStylingInformationDirty = YES;
             
             [self applyStylingWithDetails:subViewDetails includeSubViews:YES force:force styleSheetScope:styleSheetScope];
@@ -372,7 +393,10 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
     }
 }
 
-- (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope {
+- (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope includeCurrent:(BOOL)includeCurrent {
+    if (includeCurrent) {
+        styleSheetScope = [self.styleSheetScope scopeByIncludingScope:styleSheetScope];
+    }
     return [[ISSDelegatingStyler alloc] initWithStylingManager:self styleSheetScope:styleSheetScope];
 }
 
@@ -380,8 +404,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 #pragma mark - View hierarchy traversing
 
 - (id) visitViewHierarchyFromRootView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock {
-    BOOL stop = NO;
-    return [self visitViewHierarchyFromRootElement:[self stylingProxyFor:view create:NO] scope:_cmd includeRoot:YES visitorBlock:visitorBlock stop:&stop createDetails:NO];
+    return [self visitViewHierarchyFromRootElement:[view interfaCSS] scope:_cmd includeRoot:YES visitorBlock:visitorBlock stop:NULL createDetails:NO];
 }
 
 - (id) visitViewHierarchyFromRootElement:(ISSElementStylingProxy*)rootElementDetails scope:(void*)scope includeRoot:(BOOL)includeRoot visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop createDetails:(BOOL)createDetails {
@@ -396,7 +419,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 
         // Drill down
         for(UIView* subview in [self childElementsForElement:details]) {
-            ISSElementStylingProxy* subviewDetails = [self stylingProxyFor:subview create:createDetails];
+            ISSElementStylingProxy* subviewDetails = [subview interfaCSS];
             result = [self visitViewHierarchyFromRootElement:subviewDetails scope:scope includeRoot:YES visitorBlock:visitorBlock stop:stop createDetails:createDetails];
             if( stop && *stop ) return result;
         }
@@ -412,7 +435,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 - (id) visitReversedViewHierarchyFromView:(id)view visitorBlock:(ISSViewHierarchyVisitorBlock)visitorBlock stop:(BOOL*)stop {
     if( view == nil ) return nil;
     
-    ISSElementStylingProxy* details = [self stylingProxyFor:view create:NO];
+    ISSElementStylingProxy* details = [view interfaCSS];
 
     id result = visitorBlock(view, details, stop);
     if( *stop ) return result;
@@ -484,7 +507,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
         id nestedElement = [ISSRuntimeIntrospectionUtils invokeGetterForKeyPath:nestedElementKeyPath ignoringCase:NO inObject:element.uiElement];
         
         if( nestedElement && nestedElement != element.uiElement && nestedElement != element.parentElement ) { // Do quick initial sanity checks for circular relationship
-            ISSElementStylingProxy* childDetails = [self stylingProxyFor:nestedElement];
+            ISSElementStylingProxy* childDetails = [nestedElement interfaCSS];
             
             BOOL circularReference = NO;
             if( childDetails.ownerElement ) {
@@ -596,7 +619,7 @@ NSString* const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshStyleSheetN
 #pragma mark - Debugging support
 
 - (void) logMatchingRulesetsForElement:(id)uiElement styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
-    ISSElementStylingProxy* elementDetails = [self stylingProxyFor:uiElement];
+    ISSElementStylingProxy* elementDetails = [uiElement interfaCSS];
     [self.styleSheetManager logMatchingRulesetsForElement:elementDetails styleSheetScope:styleSheetScope];
 }
 

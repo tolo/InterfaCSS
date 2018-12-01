@@ -20,8 +20,14 @@
 #import "NSArray+ISSAdditions.h"
 
 
-NSString* const ISSStyleSheetRefreshedNotification = @"ISSStyleSheetRefreshedNotification";
-NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshFailedNotification";
+NSNotificationName const ISSStyleSheetRefreshedNotification = @"ISSStyleSheetRefreshedNotification";
+NSNotificationName const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshFailedNotification";
+
+NSString* const ISSStyleSheetGroupDefault = @"ISSStyleSheetGroupDefault";
+NSString* const ISSStyleSheetNoGroup = nil;
+
+
+static ISSStyleSheetScope* ISSDefaultGroupScope;
 
 
 @interface ISSStyleSheetScope ()
@@ -32,6 +38,18 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 
 @implementation ISSStyleSheetScope
 
++ (void) initialize {
+    if (self == [ISSStyleSheetScope class]) {
+        ISSDefaultGroupScope = [[self alloc] initWithMatcher:^BOOL(ISSStyleSheet* styleSheet) {
+            return styleSheet.group == ISSStyleSheetGroupDefault;
+        }];
+    }
+}
+
++ (ISSStyleSheetScope*) defaultGroupScope {
+    return ISSDefaultGroupScope;
+}
+
 + (ISSStyleSheetScope*) scopeWithStyleSheetNames:(NSArray*)names {
     NSSet* nameSet = [NSSet setWithArray:names];
     return [[self alloc] initWithMatcher:^BOOL(ISSStyleSheet* styleSheet) {
@@ -39,10 +57,24 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
     }];
 }
 
++ (ISSStyleSheetScope*) scopeWithDefaultStyleSheetGroupAndStyleSheetNames:(NSArray*)names {
+    return [ISSDefaultGroupScope scopeByIncludingScope:[ISSStyleSheetScope scopeWithStyleSheetNames:names]];
+}
+
 + (ISSStyleSheetScope*) scopeWithStyleSheetGroups:(NSArray*)groups {
     NSSet* groupsSet = [NSSet setWithArray:groups];
     return [[self alloc] initWithMatcher:^BOOL(ISSStyleSheet* styleSheet) {
         return [groupsSet containsObject:styleSheet.group];
+    }];
+}
+
++ (ISSStyleSheetScope*) scopeWithDefaultStyleSheetGroupAndGroups:(NSArray*)groups {
+    return [self scopeWithStyleSheetGroups:[groups arrayByAddingObject:ISSStyleSheetGroupDefault]];
+}
+
+- (ISSStyleSheetScope*) scopeByIncludingScope:(ISSStyleSheetScope*)otherScope {
+    return [[ISSStyleSheetScope alloc] initWithMatcher:^BOOL(ISSStyleSheet* styleSheet) {
+        return self.matcher(styleSheet) || otherScope.matcher(styleSheet);
     }];
 }
 
@@ -78,11 +110,10 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 }
 
 - (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL content:(ISSStyleSheetContent*)content {
-    return [self initWithStyleSheetURL:styleSheetURL name:nil group:nil content:content];
+    return [self initWithStyleSheetURL:styleSheetURL name:nil group:ISSStyleSheetGroupDefault content:content];
 }
 
 - (instancetype) initWithStyleSheetURL:(NSURL*)styleSheetURL name:(NSString*)name group:(NSString*)groupName content:(ISSStyleSheetContent*)content {
-    //if ( (self = [super initWithURL:styleSheetURL]) ) {
     if ( self = [super init] ) {
         _styleSheetURL = styleSheetURL;
         _content = content;
@@ -106,7 +137,7 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 #pragma mark - Matching
 
 - (ISSRulesets*) rulesetsMatchingElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
-    if ( stylingContext.styleSheetScope && ![stylingContext.styleSheetScope containsStyleSheet:self] ) {
+    if ( ![stylingContext.styleSheetScope containsStyleSheet:self] ) {
         ISSLogTrace(@"Stylesheet not in scope - skipping for element: %@", elementDetails.uiElement);
         return nil;
     }
@@ -186,10 +217,6 @@ NSString* const ISSStyleSheetRefreshFailedNotification = @"ISSStyleSheetRefreshF
 - (BOOL) styleSheetModificationMonitoringEnabled {
     return self.refreshableResource.resourceModificationMonitoringEnabled;
 }
-
-//- (ISSRulesets*) rulesets {
-//    return self.content.rulesets;
-//}
 
 
 #pragma mark - ISSStyleSheet overrides

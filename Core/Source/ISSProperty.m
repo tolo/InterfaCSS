@@ -25,6 +25,7 @@ ISSPropertyType const ISSPropertyTypeAttributedString = @"AttributedString";
 ISSPropertyType const ISSPropertyTypeTextAttributes = @"TextAttributes";
 ISSPropertyType const ISSPropertyTypeBool = @"Bool";
 ISSPropertyType const ISSPropertyTypeNumber = @"Number";
+ISSPropertyType const ISSPropertyTypeRelativeNumber = @"RelativeNumber";
 ISSPropertyType const ISSPropertyTypeOffset = @"Offset";
 ISSPropertyType const ISSPropertyTypeRect = @"Rect";
 ISSPropertyType const ISSPropertyTypeSize = @"Size";
@@ -117,6 +118,9 @@ static NSCharacterSet* bitMaskSeparator;
 
 - (instancetype) initWithRuntimeProperty:(ISSRuntimeProperty*)runtimeProperty type:(ISSPropertyType)type enumValueMapping:(nullable ISSPropertyEnumValueMapping*)enumValueMapping {
     return [self initCustomPropertyWithName:runtimeProperty.propertyName inClass:runtimeProperty.foundInClass type:type enumValueMapping:enumValueMapping parameterTransformers:nil setterBlock:^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
+        if( enumValueMapping && [value isKindOfClass:NSString.class] ) {
+            value = [enumValueMapping enumValueFromString:value];
+        }
         return [ISSRuntimeIntrospectionUtils invokeSetterForRuntimeProperty:runtimeProperty withValue:value inObject:target];
     }];
 }
@@ -129,6 +133,10 @@ static NSCharacterSet* bitMaskSeparator;
     }];
 }
 
+
+- (NSString*) normalizedName {
+    return [ISSProperty normalizePropertyName:self.name];
+}
 
 - (NSString*) fqn {
     return [NSString stringWithFormat:@"%@.%@", NSStringFromClass(self.declaredInClass), self.name];
@@ -147,6 +155,9 @@ static NSCharacterSet* bitMaskSeparator;
     return self.setterBlock(self, target, value, params);
 }
 
++ (NSString*) normalizePropertyName:(NSString*)name {
+    return [[name stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString];
+}
 
 #pragma mark - NSObject overrides
 

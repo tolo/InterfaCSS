@@ -19,6 +19,7 @@
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSDownloadableResource.h"
 #import "ISSRemoteFont.h"
+#import "ISSRelativeNumber.h"
 
 #import "NSObject+ISSLogSupport.h"
 #import "UIColor+ISSAdditions.h"
@@ -135,24 +136,42 @@
         return [self cleanedStringValue:input];
     } name:@"quotedStringParser"];
     
-    ISSParser* localizedStringParser = [[styleSheetParser singleParameterFunctionParserWithNames:@[@"localized", @"L"] parameterParser:cleanedQuotedStringParser] transform:^id(id value, void* context) {
+    ISSParser* localizedStringParser = [[styleSheetParser singleParameterFunctionParserWithNames:@[@"localized", @"L"]
+                                                    parameterParser:cleanedQuotedStringParser] transform:^id(id value, void* context) {
         return [self localizedStringWithKey:value];
     } name:@"localizedStringParser"];
     
-    ISSParser* stringParser = [ISSParser choice:@[localizedStringParser, cleanedQuotedStringParser, defaultStringParser]];
+    ISSParser* stringParser = [ISSParser choice:@[[cleanedQuotedStringParser beforeEOI], [localizedStringParser beforeEOI], defaultStringParser]];
     
     _typeToParser[ISSPropertyTypeString] = stringParser;
     
     
     /** -- BOOL -- **/
-    ISSParser* boolValueParser = [self.styleSheetParser.identifier transform:^id(id value, void* context) {
+    ISSParser* boolValueParser = [[self.styleSheetParser.identifier beforeEOI] transform:^id(id value, void* context) {
         return @([value boolValue]);
     } name:@"bool"];
-    _typeToParser[ISSPropertyTypeBool] = [ISSParser choice:@[[self.styleSheetParser logicalExpressionParser], boolValueParser]];
+    _typeToParser[ISSPropertyTypeBool] = [ISSParser choice:@[boolValueParser, [self.styleSheetParser logicalExpressionParser]]];
     
     
     /** -- Number -- **/
-    _typeToParser[ISSPropertyTypeNumber] = self.styleSheetParser.numberOrExpressionValue;
+    ISSParser* numberValue = [styleSheetParser.numberValue beforeEOI];
+    ISSParser* numericExpressionValue = [self.styleSheetParser.numberOrExpressionValue beforeEOI];
+    _typeToParser[ISSPropertyTypeNumber] = [ISSParser choice:@[numberValue, numericExpressionValue]];
+
+
+    /** -- RelativeNumber -- **/
+    ISSParser* percent = [ISSParser unichar:'%' skipSpaces:YES];
+    ISSParser* percentageValue = [[[styleSheetParser.numberValue keepLeft:percent] beforeEOI] transform:^id(id value, void* context) {
+        return [[ISSRelativeNumber alloc] initWithNumber:value andUnit:ISSRelativeNumberUnitPercent];
+    } name:@"percentageValue"];
+    ISSParser* autoParser = [[ISSParser stringEQIgnoringCase:@"auto"] parserOr:[ISSParser stringEQIgnoringCase:@"*"]];
+    ISSParser* autoValue = [[autoParser beforeEOI] transform:^id(id value, void* context) {
+        return [[ISSRelativeNumber alloc] initWithNumber:@(0) andUnit:ISSRelativeNumberUnitAuto];
+    } name:@"autoValue"];
+    ISSParser* absoluteNumber = [_typeToParser[ISSPropertyTypeNumber] transform:^id(id value, void* context) {
+      return [[ISSRelativeNumber alloc] initWithNumber:value andUnit:ISSRelativeNumberUnitAbsolute];
+    } name:@"autoValue"];
+    _typeToParser[ISSPropertyTypeRelativeNumber] = [ISSParser choice:@[percentageValue, autoValue, absoluteNumber]];
     
     
     /** -- AttributedString -- **/

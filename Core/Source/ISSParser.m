@@ -277,6 +277,18 @@
     return concatMany1;
 }
 
+- (ISSParser*) beforeEOI {
+    return [self keepLeft:[ISSParser endOfInput]];
+}
+
++ (ISSParser*) endOfInput {
+    return [ISSParser parserWithBlock:^id (NSString* input, ISSParserStatus* status) {
+        status->match = status->index == input.length;
+        return [NSNull null];
+    } andName:[NSString stringWithFormat:@"endOfInput"]];
+}
+
+
 
 #pragma mark - Transform
 

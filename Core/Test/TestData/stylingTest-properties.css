@@ -1,0 +1,18 @@
+
+// UIView properties
+.uiViewTest {
+    autoresizingMask: width height;
+    background-color: red;
+    clipsToBounds: true;
+    hidden: true;
+    frame: rect(1,2,3,4);
+    tag: 5;
+    tintColor: blue;
+}
+
+// Label properties
+.labelTest {
+    UILabel {
+        text: "test";
+    }
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout useSafeAreaInsets="false" useDefaultMargins="true">
+
+<view id="rootClass">
+
+  <view id="container1" style="flex-grow:1; justify-content: flex-start">
+    <label id="label1"/>
+    <button id="button1"/>
+  </view>
+
+  <view id="container2" style="flex-grow:1; flex-wrap: wrap; justify-content: flex-start">
+    <label id="label2" style="font: HelveticaNeue 22; text-color: green">Hello world 1</label>
+    <label id="label3" style="font: HelveticaNeue 22; text-color: white">Hello world 2</label>
+  </view>
+
+</view>
+
+<style>
+  #rootClass {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+  }
+  #rootClass:landscape {
+    flex-direction: row;
+  }
+  #container1, #container2 {
+    padding: 30;
+    flex-direction: column;
+    align-items: center;
+  }
+  #container1 {
+    background-color: #e9168c;
+  }
+  #container2 {
+    background-color: #3a4ca8;
+  }
+  #button1 {
+    title-color(highlighted): yellow;
+  }
+</style>
+
+</layout>

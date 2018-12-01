@@ -78,7 +78,7 @@ static ISSStylingManager* defaultStyler;
 
 - (ISSStyleSheetContent*) parseStyleSheet:(NSString*)name {
     NSString* path = [[NSBundle bundleForClass:self.class] pathForResource:name ofType:@"css"];
-    return [styler.styleSheetManager loadStyleSheetFromFile:path].content;
+    return [styler.styleSheetManager loadStyleSheetFromFileURL:[NSURL fileURLWithPath:path]].content;
 }
 
 - (nullable id) valueForProperty:(ISSPropertyValue*)propertyValue in:(ISSProperty*)property {
@@ -195,7 +195,7 @@ static ISSStylingManager* defaultStyler;
 #pragma mark - Tests - bad data
 
 - (void) testStyleSheetWithBadData {
-    ISSStyleSheetContent* content = [self parseStyleSheet:@"styleSheetWithBadData"];
+    ISSStyleSheetContent* content = [self parseStyleSheet:@"badData"];
     NSArray* result = content.rulesets;
     
     XCTAssertEqual(result.count, (NSUInteger)2, @"Expected two entries");
@@ -366,7 +366,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (void) testParameterizedProperty {
-    ISSRuleset* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"styleSheetPropertyValues"];
+    ISSRuleset* declarations = [self getPropertyDeclarationsForStyleClass:@"simple" inStyleSheet:@"propertyValues"];
     ISSPropertyValue* decl = nil;
     for(ISSPropertyValue* d in declarations.properties) {
         if( [d.propertyName iss_isEqualIgnoreCase:@"titleColor"] ) decl = d;

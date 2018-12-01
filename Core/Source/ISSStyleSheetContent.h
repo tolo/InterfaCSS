@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NSArray<ISSRuleset*> ISSRulesets;
 typedef NSDictionary<NSString*, NSString*> ISSVariables;
 
+NS_SWIFT_NAME(StyleSheetContent)
 @interface ISSStyleSheetContent : NSObject
 
 @property (nonatomic, strong, readonly) ISSRulesets* rulesets;

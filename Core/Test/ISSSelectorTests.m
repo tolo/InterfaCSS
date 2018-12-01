@@ -73,7 +73,7 @@
     rootView = [[UIView alloc] init];
     [window addSubview:rootView];
     
-    [styler[rootView] addStyleClass:@"parentClass"];
+    [[rootView interfaCSS] addStyleClass:@"parentClass"];
 }
 
 - (void) tearDown {
@@ -119,7 +119,7 @@
     ISSSelector* multiClassSelector = [[ISSSelector alloc] initWithType:nil elementId:nil styleClasses:@[@"class1", @"class2"] pseudoClasses:nil];
     
     UIView* view = [[UIView alloc] init];
-    ISSElementStylingProxy* element = styler[view];
+    ISSElementStylingProxy* element = [view interfaCSS];
     [element addStyleClass:@"class1"];
     
     XCTAssertTrue([singleClassSelector matchesElement:element stylingContext:[self createStylingContext]], @"Single class selector must match element with style class!");
@@ -143,7 +143,7 @@
     
     UILabel* label = [[UILabel alloc] init];
     [inbetweenView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = [label interfaCSS];
     [labelDetails addStyleClass:@"childClass"];
  
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"UILabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
@@ -158,11 +158,11 @@
 - (void) testInvalidDescendant {
     UIView* otherRootView = [[UIView alloc] init];
     [window addSubview:otherRootView];
-    [styler[otherRootView] addStyleClass:@"otherParentClass"];
+    [[otherRootView interfaCSS] addStyleClass:@"otherParentClass"];
     
     UILabel* label = [[UILabel alloc] init];
     [otherRootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     [labelDetails addStyleClass:@"childClass"];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"UILabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
@@ -172,7 +172,7 @@
 - (void) testChildAndDescendant {
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     [labelDetails addStyleClass:@"childClass"];
     
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"UILabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:nil];
@@ -187,16 +187,16 @@
 - (void) testDeepChildAndDescendant {
     UIView* view1 = [[UIView alloc] init];
     [rootView addSubview:view1];
-    [styler[view1] addStyleClass:@"view1"];
+    [view1.interfaCSS addStyleClass:@"view1"];
     
     UIScrollView* view2 = [[UIScrollView alloc] init];
     [view1 addSubview:view2];
-    [styler[view2] addStyleClass:@"view2"];
+    [view2.interfaCSS addStyleClass:@"view2"];
     
     UIButton* button = [[UIButton alloc] init];
     [view2 addSubview:button];
     
-    [styler[button] addValidNestedElementKeyPath:@"titleLabel"];
+    [button.interfaCSS addValidNestedElementKeyPath:@"titleLabel"];
     
     ISSSelector* viewSelector = [self selectorWithType:@"UIView" styleClass:nil pseudoClasses:nil];
     ISSSelector* view1Selector = [self selectorWithType:@"UIView" styleClass:@"view1" pseudoClasses:nil];
@@ -207,25 +207,25 @@
     ISSSelectorChain* chain = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorChild), view1Selector, @(ISSSelectorCombinatorDescendant), view2Selector,
                                                                               @(ISSSelectorCombinatorChild), buttonSelector, @(ISSSelectorCombinatorDescendant), titleLabelSelector]];
     
-    ISSElementStylingProxy* labelDetails = styler[button.titleLabel];
+    ISSElementStylingProxy* labelDetails = button.titleLabel.interfaCSS;
     
     XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[self createStylingContext]], @"Deep descendant/child selector chain must match!");
 }
 
 - (void) doTestSibling:(BOOL)adjacent {
     UIButton* button = [[UIButton alloc] init];
-    [styler[button] addStyleClass:@"buttonClass"];
+    [button.interfaCSS addStyleClass:@"buttonClass"];
     [rootView addSubview:button];
     
     if( !adjacent ) {
         UILabel* anotherLabel = [[UILabel alloc] init];
         [rootView addSubview:anotherLabel];
-        [styler[anotherLabel] addStyleClass:@"anotherLabelClass"];
+        [anotherLabel.interfaCSS addStyleClass:@"anotherLabelClass"];
     }
     
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     [labelDetails addStyleClass:@"labelClass"];
     
     ISSSelector* buttonSelector = [self selectorWithType:@"UIButton" styleClass:@"buttonClass" pseudoClasses:nil];
@@ -250,7 +250,7 @@
 }
 
 - (void) assertDescendantPseudo:(UILabel*)label pseudoClassType:(ISSPseudoClassType)pseudoClassType a:(NSInteger)a b:(NSInteger)b message:(NSString*)message {
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     ISSPseudoClass* pseudo = [[ISSPseudoClass alloc] initStructuralPseudoClassWithA:a b:b type:pseudoClassType];
 
     ISSSelectorChain* descendantChain = [self createSelectorChainWithChildType:@"UILabel" combinator:ISSSelectorCombinatorDescendant childPseudoClass:pseudo];
@@ -265,7 +265,7 @@
     for(NSUInteger i=0; i<5; i++) {
         labels[i] = [[UILabel alloc] init];
         [rootView addSubview:labels[i]];
-        [styler[labels[i]] addStyleClass:@"childClass"];
+        [[labels[i] interfaCSS] addStyleClass:@"childClass"];
 
         if( ofType ) {
             [rootView addSubview:[[UIButton alloc] init]];
@@ -310,7 +310,7 @@
     for(NSUInteger i=0; i<5; i++) {
         labels[i] = [[UILabel alloc] init];
         [rootView addSubview:labels[i]];
-        [styler[labels[i]] addStyleClass:@"childClass"];
+        [[labels[i] interfaCSS] addStyleClass:@"childClass"];
         if( ofType ) [rootView addSubview:[[UIButton alloc] init]];
     }
 
@@ -330,7 +330,7 @@
 }
 
 - (void) testPseudoClassEmpty {
-    ISSElementStylingProxy* viewDetails = styler[rootView];
+    ISSElementStylingProxy* viewDetails = rootView.interfaCSS;
     ISSPseudoClass* pseudo = [[ISSPseudoClass alloc] initStructuralPseudoClassWithA:0 b:1 type:ISSPseudoClassTypeEmpty];
 
     ISSSelector* parentSelector = [self selectorWithType:@"uiview" styleClass:@"parentClass" pseudoClasses:@[pseudo]];
@@ -347,7 +347,7 @@
 
 - (void) testPseudoClassControlState {
     UIButton* button = [[UIButton alloc] init];
-    ISSElementStylingProxy* viewDetails = styler[button];
+    ISSElementStylingProxy* viewDetails = button.interfaCSS;
     
     ISSPseudoClass* enabledPseudo = [self pseudoClassWithTypeString:@"enabled"];
     ISSPseudoClass* disabledPseudo = [self pseudoClassWithTypeString:@"disabled"];
@@ -394,7 +394,7 @@
     NSString* nextVersion = [NSString stringWithFormat:@"%d", (int)[majorVersion integerValue] + 1];
     
     UIView* randomView = [[UIView alloc] init];
-    ISSElementStylingProxy* randomViewDetails = styler[randomView];
+    ISSElementStylingProxy* randomViewDetails = randomView.interfaCSS;
     
     ISSStylingContext* context = [self createStylingContext];
     
@@ -419,7 +419,7 @@
     NSString* wider = [NSString stringWithFormat:@"%f", width + 1];
     
     UIView* randomView = [[UIView alloc] init];
-    ISSElementStylingProxy* randomViewDetails = styler[randomView];
+    ISSElementStylingProxy* randomViewDetails = randomView.interfaCSS;
     
     ISSStylingContext* context = [self createStylingContext];
     
@@ -447,7 +447,7 @@
     NSString* taller = [NSString stringWithFormat:@"%f", height + 1];
     
     UIView* randomView = [[UIView alloc] init];
-    ISSElementStylingProxy* randomViewDetails = styler[randomView];
+    ISSElementStylingProxy* randomViewDetails = randomView.interfaCSS;
     
     ISSStylingContext* context = [self createStylingContext];
     
@@ -476,7 +476,7 @@
     
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     [labelDetails addStyleClass:@"childClass"];
     
     XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[self createStylingContext]], @"Wildcard selector chain must match!");
@@ -493,7 +493,7 @@
     
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     [labelDetails addStyleClass:@"childClass"];
     
     XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[self createStylingContext]], @"Wildcard selector chain must match!");
@@ -508,7 +508,7 @@
     
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     
     XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[self createStylingContext]], @"Wildcard selector chain must match!");
     
@@ -523,7 +523,7 @@
     
     UILabel* label = [[UILabel alloc] init];
     [rootView addSubview:label];
-    ISSElementStylingProxy* labelDetails = styler[label];
+    ISSElementStylingProxy* labelDetails = label.interfaCSS;
     
     XCTAssertTrue([chain matchesElement:labelDetails stylingContext:[self createStylingContext]], @"Wildcard selector chain must match!");
     
@@ -536,19 +536,19 @@
     
     // Verify that custom type selector matches custom class
     MyCustomView* myCustomView = [[MyCustomView alloc] init];
-    ISSElementStylingProxy* elementDetails = styler[myCustomView];
+    ISSElementStylingProxy* elementDetails = myCustomView.interfaCSS;
     
     XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[self createStylingContext]], @"Custom type selector chain must match custom class!");
     
     // Verify that custom type selector does NOT match UIView
     UIView* randomView = [[UIView alloc] init];
-    elementDetails = styler[randomView];
+    elementDetails = randomView.interfaCSS;
     
     XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[self createStylingContext]], @"Custom type selector chain must NOT match standard UIView!");
     
     // Verify that custom type selector does NOT match other custom class
     MyCustomView2* myCustomView2 = [[MyCustomView2 alloc] init];
-    elementDetails = styler[myCustomView2];
+    elementDetails = myCustomView2.interfaCSS;
     
     XCTAssertFalse([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[self createStylingContext]], @"Custom type selector chain must NOT match other custom class!");
     
@@ -557,7 +557,7 @@
     customClassTypeSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[customClassTypeSelector]];
     
     MyCustomViewSubClass* myCustomViewSubClass = [[MyCustomViewSubClass alloc] init];
-    elementDetails = styler[myCustomViewSubClass];
+    elementDetails = myCustomViewSubClass.interfaCSS;
     
     XCTAssertTrue([customClassTypeSelectorChain matchesElement:elementDetails stylingContext:[self createStylingContext]], @"Custom type selector chain must match other custom class that is sub class of type in custom type selector!");
 }
@@ -571,8 +571,8 @@
     ISSSelector* viewSelector = [self selectorWithType:@"UIView" styleClass:nil pseudoClasses:nil];
     ISSSelectorChain* viewSelectorChain = [ISSSelectorChain selectorChainWithComponents:@[viewControllerSelector, @(ISSSelectorCombinatorDescendant), viewSelector]];
     
-    ISSElementStylingProxy* viewProxy = styler[vc.view];
-    ISSElementStylingProxy* vcProxy = styler[vc];
+    ISSElementStylingProxy* viewProxy = vc.view.interfaCSS;
+    ISSElementStylingProxy* vcProxy = vc.interfaCSS;
     
     XCTAssertTrue([viewSelectorChain matchesElement:viewProxy stylingContext:[self createStylingContext]]);
 
@@ -613,7 +613,7 @@
     ISSSelectorChain* selectorChain = [ISSSelectorChain selectorChainWithComponents:@[viewSelector, @(ISSSelectorCombinatorDescendant), labelSelector]];
     
     ISSStylingContext* context = [self createStylingContext];
-    ISSElementStylingProxy* elementDetails = styler[label];
+    ISSElementStylingProxy* elementDetails = label.interfaCSS;
     BOOL result = [selectorChain matchesElement:elementDetails stylingContext:context];
     
     XCTAssertEqual(result, NO);

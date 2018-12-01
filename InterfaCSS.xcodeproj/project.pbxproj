@@ -15,6 +15,8 @@
 		8A03614F201A054800BA97F6 /* NSArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8A036152201A081100BA97F6 /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */; };
 		8A036153201A081100BA97F6 /* ISSNestedElementSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */; };
+		8A06010E21B2B82500ECEBF6 /* LayoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A06010D21B2B82500ECEBF6 /* LayoutViewController.swift */; };
+		8A0EB9BB21AC63E9008C2526 /* InterfaCSS-Layout-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A0EB9BA21AC63E9008C2526 /* InterfaCSS-Layout-Bridging-Header.h */; };
 		8A3296352021BBF4002259BD /* NSObject+ISSLogSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */; };
 		8A3296362021BBF4002259BD /* NSObject+ISSLogSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */; };
 		8A32963A2021BBF4002259BD /* UIDevice+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A3296322021BBF4002259BD /* UIDevice+ISSAdditions.h */; };
@@ -29,6 +31,9 @@
 		8A387FC82010D8810011BD52 /* ISSPseudoClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FC62010D8810011BD52 /* ISSPseudoClass.h */; };
 		8A387FCC2010DEE60011BD52 /* ISSStyleSheetManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */; };
 		8A387FCD2010DEE60011BD52 /* ISSStyleSheetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FCB2010DEE60011BD52 /* ISSStyleSheetManager.m */; };
+		8A49F7D321A6A05200DF0212 /* stylingTest-properties.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A49F7D221A6A04800DF0212 /* stylingTest-properties.css */; };
+		8A49F7D521A6B22900DF0212 /* stylingTest-caching.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A49F7D421A6B22900DF0212 /* stylingTest-caching.css */; };
+		8A55AA7821A69A4A00E17F58 /* ISSStylingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A55AA7721A69A4A00E17F58 /* ISSStylingTests.m */; };
 		8A677FFA202461BA00E20D18 /* NSString+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF6202461BA00E20D18 /* NSString+ISSAdditions.m */; };
 		8A677FFB202461BA00E20D18 /* UIColor+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF7202461BA00E20D18 /* UIColor+ISSAdditions.h */; };
 		8A677FFC202461BA00E20D18 /* NSString+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */; };
@@ -36,11 +41,12 @@
 		8A83208E202D919000B7D3AA /* NSDictionary+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */; };
 		8A83208F202D919000B7D3AA /* NSDictionary+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */; };
 		8A832091202DC19900B7D3AA /* image.png in Resources */ = {isa = PBXBuildFile; fileRef = 8A832090202DC19700B7D3AA /* image.png */; };
+		8A89D3B321AD8F01006626BC /* AbstractLayoutParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */; };
 		8A97EE012016104500BF210A /* ISSStyleSheetParser+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */; };
 		8A97EE1620161A0A00BF210A /* ISSStyleSheetParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F83733201096D50093373E /* ISSStyleSheetParser.m */; };
-		8A9F74792023575A001E90FB /* styleSheetWithBadData.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74742023575A001E90FB /* styleSheetWithBadData.css */; };
+		8A9F74792023575A001E90FB /* badData.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74742023575A001E90FB /* badData.css */; };
 		8A9F747A2023575A001E90FB /* styleSheetStructure.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74752023575A001E90FB /* styleSheetStructure.css */; };
-		8A9F747B2023575A001E90FB /* styleSheetPropertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74762023575A001E90FB /* styleSheetPropertyValues.css */; };
+		8A9F747B2023575A001E90FB /* propertyValues.css in Resources */ = {isa = PBXBuildFile; fileRef = 8A9F74762023575A001E90FB /* propertyValues.css */; };
 		8A9F747C2023575A001E90FB /* ISSSelectorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A9F74772023575A001E90FB /* ISSSelectorTests.m */; };
 		8AA1412B2023256F0058B23B /* ISSPropertyManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA141272023256F0058B23B /* ISSPropertyManager.h */; };
 		8AA1412C2023256F0058B23B /* ISSRemoteFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA141282023256F0058B23B /* ISSRemoteFont.m */; };
@@ -56,24 +62,108 @@
 		8AD712B6202310EE00C0FB05 /* ISSNotificationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */; };
 		8AEE849C2020745300567B11 /* ISSStylingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE849A2020745300567B11 /* ISSStylingManager.h */; };
 		8AEE849D2020745300567B11 /* ISSStylingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE849B2020745300567B11 /* ISSStylingManager.m */; };
+		CF695B34DE1C8B4B95F3E17F /* libPods-InterfaCSS-Layout.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */; };
 		F600AF7720175C8200B44482 /* ISSMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F600AF7620175C8200B44482 /* ISSMacros.h */; };
+		F640086A21A5A29700F9535A /* LayoutContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F640086921A5A29700F9535A /* LayoutContainerView.swift */; };
 		F648DB15202277D30011012C /* ISSDownloadableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB0F202277D20011012C /* ISSDownloadableResource.m */; };
 		F648DB16202277D30011012C /* ISSRefreshableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB10202277D20011012C /* ISSRefreshableResource.h */; };
 		F648DB17202277D30011012C /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB11202277D30011012C /* ISSDateUtils.h */; };
 		F648DB18202277D30011012C /* ISSDownloadableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB12202277D30011012C /* ISSDownloadableResource.h */; };
 		F648DB19202277D30011012C /* ISSRefreshableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB13202277D30011012C /* ISSRefreshableResource.m */; };
 		F648DB1A202277D30011012C /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB14202277D30011012C /* ISSDateUtils.m */; };
+		F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F651207B2194C42F00479DE9 /* ViewBuilder.swift */; };
+		F651207E2194C4B800479DE9 /* FlexLayoutViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */; };
+		F65B6632218B2D9C00D91C03 /* ISSRelativeNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */; };
+		F65B6633218B2D9C00D91C03 /* ISSRelativeNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */; };
 		F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
 		F65D52E014F7B12A0034E496 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
 		F66C15F82011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */; };
 		F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */; };
 		F696F863215166D7003D5345 /* ISSStyleSheetParserSyntax.h in Headers */ = {isa = PBXBuildFile; fileRef = F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */; };
 		F696F864215166D7003D5345 /* ISSStyleSheetParserSyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */; };
+		F6AE4E7C21A8965F00EAB035 /* StringParsableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */; };
 		F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
 		F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
 		F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
+		F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D83B5221A74C8F0084A5AD /* BundleFile.swift */; };
 		F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
 		F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */; };
+		F6F67A722190EFBB004F009A /* NSString+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF6202461BA00E20D18 /* NSString+ISSAdditions.m */; };
+		F6F67A732190EFBB004F009A /* ISSPropertyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA141292023256F0058B23B /* ISSPropertyManager.m */; };
+		F6F67A742190EFBB004F009A /* ISSSelectorChain.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837442010A2E90093373E /* ISSSelectorChain.m */; };
+		F6F67A752190EFBB004F009A /* ISSProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FC12010D87B0011BD52 /* ISSProperty.m */; };
+		F6F67A762190EFBB004F009A /* ISSStylingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */; };
+		F6F67A772190EFBB004F009A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
+		F6F67A782190EFBB004F009A /* ISSRuntimeIntrospectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837572010AAE60093373E /* ISSRuntimeIntrospectionUtils.m */; };
+		F6F67A792190EFBB004F009A /* ISSNestedElementSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */; };
+		F6F67A7A2190EFBB004F009A /* ISSSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837472010A2E90093373E /* ISSSelector.m */; };
+		F6F67A7B2190EFBB004F009A /* ISSElementStylingProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA1412F202326D40058B23B /* ISSElementStylingProxy.m */; };
+		F6F67A7C2190EFBB004F009A /* ISSStyleSheetParser+Support.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8372F201096D50093373E /* ISSStyleSheetParser+Support.m */; };
+		F6F67A7D2190EFBB004F009A /* ISSRefreshableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB13202277D30011012C /* ISSRefreshableResource.m */; };
+		F6F67A7E2190EFBB004F009A /* ISSStyleSheetParserSyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */; };
+		F6F67A7F2190EFBB004F009A /* NSObject+ISSLogSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */; };
+		F6F67A802190EFBB004F009A /* ISSRemoteFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA141282023256F0058B23B /* ISSRemoteFont.m */; };
+		F6F67A812190EFBB004F009A /* ISSUpdatableValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AD712B020230BDF00C0FB05 /* ISSUpdatableValue.m */; };
+		F6F67A822190EFBB004F009A /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB14202277D30011012C /* ISSDateUtils.m */; };
+		F6F67A832190EFBB004F009A /* ISSPseudoClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FC52010D8810011BD52 /* ISSPseudoClass.m */; };
+		F6F67A842190EFBB004F009A /* ISSRuleset.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8375F2010B0880093373E /* ISSRuleset.m */; };
+		F6F67A852190EFBB004F009A /* ISSStyleSheetParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F83733201096D50093373E /* ISSStyleSheetParser.m */; };
+		F6F67A862190EFBB004F009A /* NSDictionary+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */; };
+		F6F67A872190EFBB004F009A /* UIDevice+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A3296342021BBF4002259BD /* UIDevice+ISSAdditions.m */; };
+		F6F67A882190EFBB004F009A /* ISSParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F83731201096D50093373E /* ISSParser.m */; };
+		F6F67A892190EFBB004F009A /* ISSStylingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE849B2020745300567B11 /* ISSStylingManager.m */; };
+		F6F67A8A2190EFBB004F009A /* ISSRuntimeProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8375B2010AB2B0093373E /* ISSRuntimeProperty.m */; };
+		F6F67A8C2190EFBB004F009A /* ISSStyleSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837462010A2E90093373E /* ISSStyleSheet.m */; };
+		F6F67A8D2190EFBB004F009A /* ISSStyleSheetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FCB2010DEE60011BD52 /* ISSStyleSheetManager.m */; };
+		F6F67A8E2190EFBB004F009A /* NSArray+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A03614C201A054800BA97F6 /* NSArray+ISSAdditions.m */; };
+		F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */; };
+		F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837502010A9620093373E /* ISSPropertyValue.m */; };
+		F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */; };
+		F6F67A922190EFBB004F009A /* ISSNotificationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */; };
+		F6F67A932190EFBB004F009A /* ISSDownloadableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB0F202277D20011012C /* ISSDownloadableResource.m */; };
+		F6F67A942190EFBB004F009A /* UIColor+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF9202461BA00E20D18 /* UIColor+ISSAdditions.m */; };
+		F6F67A962190EFBB004F009A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
+		F6F67A972190EFBB004F009A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
+		F6F67A982190EFBB004F009A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
+		F6F67A992190EFBB004F009A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */; };
+		F6F67A9B2190EFBB004F009A /* NSDictionary+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */; };
+		F6F67A9C2190EFBB004F009A /* ISSStyleSheetParser+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */; };
+		F6F67A9D2190EFBB004F009A /* ISSElementStylingProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA14130202326D40058B23B /* ISSElementStylingProxy.h */; };
+		F6F67A9E2190EFBB004F009A /* ISSElementStylingProxy+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963D2021E045002259BD /* ISSElementStylingProxy+Protected.h */; };
+		F6F67A9F2190EFBB004F009A /* ISSStyleSheetParser+Support.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83732201096D50093373E /* ISSStyleSheetParser+Support.h */; };
+		F6F67AA02190EFBB004F009A /* ISSDownloadableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB12202277D30011012C /* ISSDownloadableResource.h */; };
+		F6F67AA12190EFBB004F009A /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB11202277D30011012C /* ISSDateUtils.h */; };
+		F6F67AA22190EFBB004F009A /* NSString+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */; };
+		F6F67AA32190EFBB004F009A /* ISSStylingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE849A2020745300567B11 /* ISSStylingManager.h */; };
+		F6F67AA42190EFBB004F009A /* ISSStyleSheetManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */; };
+		F6F67AA52190EFBB004F009A /* ISSSelectorChain.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837432010A2E90093373E /* ISSSelectorChain.h */; };
+		F6F67AA62190EFBB004F009A /* ISSRelativeNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */; };
+		F6F67AA72190EFBB004F009A /* ISSRuleset.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F8375E2010B0880093373E /* ISSRuleset.h */; };
+		F6F67AA82190EFBB004F009A /* ISSRuntimeProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F8375A2010AB2B0093373E /* ISSRuntimeProperty.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F6F67AAA2190EFBB004F009A /* ISSProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBF2010D87B0011BD52 /* ISSProperty.h */; };
+		F6F67AAB2190EFBB004F009A /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */; };
+		F6F67AAC2190EFBB004F009A /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
+		F6F67AAD2190EFBB004F009A /* ISSNotificationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AD712B3202310EE00C0FB05 /* ISSNotificationObserver.h */; };
+		F6F67AAE2190EFBB004F009A /* ISSParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83735201096D50093373E /* ISSParser.h */; };
+		F6F67AAF2190EFBB004F009A /* ISSSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837482010A2E90093373E /* ISSSelector.h */; };
+		F6F67AB02190EFBB004F009A /* NSObject+ISSLogSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */; };
+		F6F67AB12190EFBB004F009A /* ISSStyleSheetPropertyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */; };
+		F6F67AB22190EFBB004F009A /* UIDevice+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A3296322021BBF4002259BD /* UIDevice+ISSAdditions.h */; };
+		F6F67AB32190EFBB004F009A /* ISSPropertyValue.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837512010A9620093373E /* ISSPropertyValue.h */; };
+		F6F67AB42190EFBB004F009A /* ISSUpdatableValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AD712AF20230BDF00C0FB05 /* ISSUpdatableValue.h */; };
+		F6F67AB52190EFBB004F009A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
+		F6F67AB62190EFBB004F009A /* ISSPseudoClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FC62010D8810011BD52 /* ISSPseudoClass.h */; };
+		F6F67AB72190EFBB004F009A /* ISSRemoteFont.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA1412A2023256F0058B23B /* ISSRemoteFont.h */; };
+		F6F67AB82190EFBB004F009A /* ISSStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837452010A2E90093373E /* ISSStyleSheet.h */; };
+		F6F67AB92190EFBB004F009A /* ISSStyleSheetParserSyntax.h in Headers */ = {isa = PBXBuildFile; fileRef = F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */; };
+		F6F67ABA2190EFBB004F009A /* ISSPropertyManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA141272023256F0058B23B /* ISSPropertyManager.h */; };
+		F6F67ABB2190EFBB004F009A /* ISSMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F600AF7620175C8200B44482 /* ISSMacros.h */; };
+		F6F67ABC2190EFBB004F009A /* NSArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F6F67ABD2190EFBB004F009A /* UIColor+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A677FF7202461BA00E20D18 /* UIColor+ISSAdditions.h */; };
+		F6F67ABE2190EFBB004F009A /* ISSRefreshableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB10202277D20011012C /* ISSRefreshableResource.h */; };
+		F6F67ABF2190EFBB004F009A /* ISSRuntimeIntrospectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837562010AAE60093373E /* ISSRuntimeIntrospectionUtils.h */; };
+		F6F67AC02190EFBB004F009A /* ISSStylingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */; };
+		F6F67AC12190EFBB004F009A /* ISSStyler.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963F2021F974002259BD /* ISSStyler.h */; };
 		F6F837582010AAE60093373E /* ISSRuntimeIntrospectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837562010AAE60093373E /* ISSRuntimeIntrospectionUtils.h */; };
 		F6F837592010AAE60093373E /* ISSRuntimeIntrospectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837572010AAE60093373E /* ISSRuntimeIntrospectionUtils.m */; };
 		F6F8375C2010AD940093373E /* ISSRuntimeProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8375B2010AB2B0093373E /* ISSRuntimeProperty.m */; };
@@ -107,10 +197,13 @@
 		27AC9F1C18F33FDF00A4182D /* CHANGES.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = CHANGES.md; sourceTree = "<group>"; };
 		27AC9F1D18F33FDF00A4182D /* InterfaCSS.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = InterfaCSS.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		27AC9F1E18F33FDF00A4182D /* README.markdown */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
+		8915C66578859EB1FE1A3CE4 /* Pods-InterfaCSS-Layout.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS-Layout.debug.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS-Layout/Pods-InterfaCSS-Layout.debug.xcconfig"; sourceTree = "<group>"; };
 		8A03614C201A054800BA97F6 /* NSArray+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+ISSAdditions.m"; sourceTree = "<group>"; };
 		8A03614D201A054800BA97F6 /* NSArray+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSNestedElementSelector.h; sourceTree = "<group>"; };
 		8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSNestedElementSelector.m; sourceTree = "<group>"; };
+		8A06010D21B2B82500ECEBF6 /* LayoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutViewController.swift; sourceTree = "<group>"; };
+		8A0EB9BA21AC63E9008C2526 /* InterfaCSS-Layout-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "InterfaCSS-Layout-Bridging-Header.h"; sourceTree = "<group>"; };
 		8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+ISSLogSupport.h"; sourceTree = "<group>"; };
 		8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+ISSLogSupport.m"; sourceTree = "<group>"; };
 		8A3296322021BBF4002259BD /* UIDevice+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+ISSAdditions.h"; sourceTree = "<group>"; };
@@ -125,6 +218,9 @@
 		8A387FC62010D8810011BD52 /* ISSPseudoClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSPseudoClass.h; sourceTree = "<group>"; };
 		8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetManager.h; sourceTree = "<group>"; };
 		8A387FCB2010DEE60011BD52 /* ISSStyleSheetManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetManager.m; sourceTree = "<group>"; };
+		8A49F7D221A6A04800DF0212 /* stylingTest-properties.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "stylingTest-properties.css"; sourceTree = "<group>"; };
+		8A49F7D421A6B22900DF0212 /* stylingTest-caching.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "stylingTest-caching.css"; sourceTree = "<group>"; };
+		8A55AA7721A69A4A00E17F58 /* ISSStylingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStylingTests.m; sourceTree = "<group>"; };
 		8A677FF6202461BA00E20D18 /* NSString+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+ISSAdditions.m"; sourceTree = "<group>"; };
 		8A677FF7202461BA00E20D18 /* UIColor+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A677FF8202461BA00E20D18 /* NSString+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+ISSAdditions.h"; sourceTree = "<group>"; };
@@ -132,10 +228,11 @@
 		8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A83208D202D919000B7D3AA /* NSDictionary+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+ISSAdditions.m"; sourceTree = "<group>"; };
 		8A832090202DC19700B7D3AA /* image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image.png; sourceTree = "<group>"; };
+		8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AbstractLayoutParser.swift; sourceTree = "<group>"; };
 		8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ISSStyleSheetParser+Protected.h"; sourceTree = "<group>"; };
-		8A9F74742023575A001E90FB /* styleSheetWithBadData.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetWithBadData.css; sourceTree = "<group>"; };
+		8A9F74742023575A001E90FB /* badData.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = badData.css; sourceTree = "<group>"; };
 		8A9F74752023575A001E90FB /* styleSheetStructure.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetStructure.css; sourceTree = "<group>"; };
-		8A9F74762023575A001E90FB /* styleSheetPropertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = styleSheetPropertyValues.css; sourceTree = "<group>"; };
+		8A9F74762023575A001E90FB /* propertyValues.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = propertyValues.css; sourceTree = "<group>"; };
 		8A9F74772023575A001E90FB /* ISSSelectorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSSelectorTests.m; sourceTree = "<group>"; };
 		8A9F74782023575A001E90FB /* ISSStyleSheetParserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserTests.m; sourceTree = "<group>"; };
 		8A9F747E202357AA001E90FB /* .travis.yml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .travis.yml; sourceTree = "<group>"; };
@@ -151,26 +248,71 @@
 		8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSNotificationObserver.m; sourceTree = "<group>"; };
 		8AEE849A2020745300567B11 /* ISSStylingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingManager.h; sourceTree = "<group>"; };
 		8AEE849B2020745300567B11 /* ISSStylingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingManager.m; sourceTree = "<group>"; };
+		AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS-Layout.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS-Layout/Pods-InterfaCSS-Layout.release.xcconfig"; sourceTree = "<group>"; };
+		BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS-Layout.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F600AF7620175C8200B44482 /* ISSMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSMacros.h; sourceTree = "<group>"; };
 		F6210140202C558A009A0A1D /* ISSTestMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSTestMacros.h; sourceTree = "<group>"; };
+		F640086921A5A29700F9535A /* LayoutContainerView.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LayoutContainerView.swift; sourceTree = "<group>"; tabWidth = 2; };
 		F648DB0F202277D20011012C /* ISSDownloadableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDownloadableResource.m; sourceTree = "<group>"; };
 		F648DB10202277D20011012C /* ISSRefreshableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRefreshableResource.h; sourceTree = "<group>"; };
 		F648DB11202277D30011012C /* ISSDateUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDateUtils.h; sourceTree = "<group>"; };
 		F648DB12202277D30011012C /* ISSDownloadableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDownloadableResource.h; sourceTree = "<group>"; };
 		F648DB13202277D30011012C /* ISSRefreshableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRefreshableResource.m; sourceTree = "<group>"; };
 		F648DB14202277D30011012C /* ISSDateUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDateUtils.m; sourceTree = "<group>"; };
+		F651207B2194C42F00479DE9 /* ViewBuilder.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ViewBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FlexLayoutViewBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSRelativeNumber.h; sourceTree = "<group>"; };
+		F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSRelativeNumber.m; sourceTree = "<group>"; };
 		F65D52D814F7B0F10034E496 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetPropertyParser.h; sourceTree = "<group>"; };
 		F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetPropertyParser.m; sourceTree = "<group>"; };
 		F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParserSyntax.h; sourceTree = "<group>"; };
 		F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserSyntax.m; sourceTree = "<group>"; };
+		F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringParsableEnum.swift; sourceTree = "<group>"; };
 		F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParser.h; sourceTree = "<group>"; };
 		F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetContent.h; sourceTree = "<group>"; };
 		F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetContent.m; sourceTree = "<group>"; };
+		F6D83B5221A74C8F0084A5AD /* BundleFile.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BundleFile.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F6F285FE2156E27A00B6A7DD /* scopedStyles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = scopedStyles.css; sourceTree = "<group>"; };
+		F6F285FF2156E27A00B6A7DD /* interfaCSSTests-variables.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "interfaCSSTests-variables.css"; sourceTree = "<group>"; };
+		F6F286002156E27A00B6A7DD /* interfaCSSTests.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = interfaCSSTests.css; sourceTree = "<group>"; };
+		F6F286012156E27A00B6A7DD /* viewDefinitionTest.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = viewDefinitionTest.xml; sourceTree = "<group>"; };
+		F6F286022156E27A00B6A7DD /* InterfaCSSTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InterfaCSSTests.m; sourceTree = "<group>"; };
+		F6F286042156E27A00B6A7DD /* UIView+ISSPrototypeReusableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+ISSPrototypeReusableView.h"; sourceTree = "<group>"; };
+		F6F286052156E27A00B6A7DD /* UIView+InterfaCSS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+InterfaCSS.h"; sourceTree = "<group>"; };
+		F6F286062156E27A00B6A7DD /* NSAttributedString+ISSAdditions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+ISSAdditions.h"; sourceTree = "<group>"; };
+		F6F286072156E27A00B6A7DD /* ISSUIElementPropertyHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSUIElementPropertyHandler.h; sourceTree = "<group>"; };
+		F6F286082156E27A00B6A7DD /* ISSLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSLayout.h; sourceTree = "<group>"; };
+		F6F286092156E27A00B6A7DD /* ISSLazyValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSLazyValue.m; sourceTree = "<group>"; };
+		F6F2860A2156E27A00B6A7DD /* ISSRootView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSRootView.m; sourceTree = "<group>"; };
+		F6F2860B2156E27A00B6A7DD /* ISSRectValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSRectValue.h; sourceTree = "<group>"; };
+		F6F2860C2156E27A00B6A7DD /* UITableView+InterfaCSS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITableView+InterfaCSS.m"; sourceTree = "<group>"; };
+		F6F2860D2156E27A00B6A7DD /* ISSLayoutContextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSLayoutContextView.m; sourceTree = "<group>"; };
+		F6F2860E2156E27A00B6A7DD /* ISSViewHierarchyParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSViewHierarchyParser.m; sourceTree = "<group>"; };
+		F6F2860F2156E27A00B6A7DD /* UICollectionView+InterfaCSS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+InterfaCSS.h"; sourceTree = "<group>"; };
+		F6F286102156E27A00B6A7DD /* ISSPointValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSPointValue.m; sourceTree = "<group>"; };
+		F6F286112156E27A00B6A7DD /* ISSViewPrototype.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSViewPrototype.h; sourceTree = "<group>"; };
+		F6F286122156E27A00B6A7DD /* ISSViewBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSViewBuilder.m; sourceTree = "<group>"; };
+		F6F286132156E27A00B6A7DD /* NSAttributedString+ISSAdditions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+ISSAdditions.m"; sourceTree = "<group>"; };
+		F6F286142156E27A00B6A7DD /* UIView+InterfaCSS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+InterfaCSS.m"; sourceTree = "<group>"; };
+		F6F286152156E27A00B6A7DD /* UIView+ISSPrototypeReusableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+ISSPrototypeReusableView.m"; sourceTree = "<group>"; };
+		F6F286162156E27A00B6A7DD /* ISSLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSLayout.m; sourceTree = "<group>"; };
+		F6F286172156E27A00B6A7DD /* ISSUIElementPropertyHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSUIElementPropertyHandler.m; sourceTree = "<group>"; };
+		F6F286182156E27A00B6A7DD /* ISSViewPrototype.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSViewPrototype.m; sourceTree = "<group>"; };
+		F6F286192156E27A00B6A7DD /* ISSPointValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSPointValue.h; sourceTree = "<group>"; };
+		F6F2861A2156E27A00B6A7DD /* UICollectionView+InterfaCSS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+InterfaCSS.m"; sourceTree = "<group>"; };
+		F6F2861B2156E27A00B6A7DD /* ISSViewHierarchyParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSViewHierarchyParser.h; sourceTree = "<group>"; };
+		F6F2861C2156E27A00B6A7DD /* UITableView+InterfaCSS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableView+InterfaCSS.h"; sourceTree = "<group>"; };
+		F6F2861D2156E27A00B6A7DD /* ISSLayoutContextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSLayoutContextView.h; sourceTree = "<group>"; };
+		F6F2861E2156E27A00B6A7DD /* ISSRectValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSRectValue.m; sourceTree = "<group>"; };
+		F6F2861F2156E27A00B6A7DD /* ISSRootView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSRootView.h; sourceTree = "<group>"; };
+		F6F286202156E27A00B6A7DD /* ISSLazyValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSLazyValue.h; sourceTree = "<group>"; };
+		F6F286212156E27A00B6A7DD /* ISSViewBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSViewBuilder.h; sourceTree = "<group>"; };
 		F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libInterfaCSS-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F5FC1A14F5683B008E647E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		F6F67AC52190EFBB004F009A /* libInterfaCSS-Layout.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libInterfaCSS-Layout.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F8372F201096D50093373E /* ISSStyleSheetParser+Support.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ISSStyleSheetParser+Support.m"; sourceTree = "<group>"; };
 		F6F83731201096D50093373E /* ISSParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSParser.m; sourceTree = "<group>"; };
 		F6F83732201096D50093373E /* ISSStyleSheetParser+Support.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ISSStyleSheetParser+Support.h"; sourceTree = "<group>"; };
@@ -214,18 +356,61 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F6F67A952190EFBB004F009A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6F67A962190EFBB004F009A /* CoreGraphics.framework in Frameworks */,
+				F6F67A972190EFBB004F009A /* UIKit.framework in Frameworks */,
+				F6F67A982190EFBB004F009A /* Foundation.framework in Frameworks */,
+				F6F67A992190EFBB004F009A /* QuartzCore.framework in Frameworks */,
+				CF695B34DE1C8B4B95F3E17F /* libPods-InterfaCSS-Layout.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8A0EB9B621AC635A008C2526 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */,
+				F640086921A5A29700F9535A /* LayoutContainerView.swift */,
+				F651207B2194C42F00479DE9 /* ViewBuilder.swift */,
+				8A06010D21B2B82500ECEBF6 /* LayoutViewController.swift */,
+			);
+			name = Layout;
+			sourceTree = "<group>";
+		};
+		8A0EB9B721AC6378008C2526 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */,
+				F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */,
+				F6D83B5221A74C8F0084A5AD /* BundleFile.swift */,
+			);
+			name = Common;
+			sourceTree = "<group>";
+		};
+		8A0EB9B921AC63E1008C2526 /* Bridge */ = {
+			isa = PBXGroup;
+			children = (
+				8A0EB9BA21AC63E9008C2526 /* InterfaCSS-Layout-Bridging-Header.h */,
+			);
+			name = Bridge;
+			sourceTree = "<group>";
+		};
 		8A387FBE2010D6A90011BD52 /* Property */ = {
 			isa = PBXGroup;
 			children = (
-				8AA141272023256F0058B23B /* ISSPropertyManager.h */,
-				8AA141292023256F0058B23B /* ISSPropertyManager.m */,
-				8AA1412A2023256F0058B23B /* ISSRemoteFont.h */,
-				8AA141282023256F0058B23B /* ISSRemoteFont.m */,
 				8A387FBF2010D87B0011BD52 /* ISSProperty.h */,
 				8A387FC12010D87B0011BD52 /* ISSProperty.m */,
+				8AA141272023256F0058B23B /* ISSPropertyManager.h */,
+				8AA141292023256F0058B23B /* ISSPropertyManager.m */,
+				F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */,
+				F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */,
+				8AA1412A2023256F0058B23B /* ISSRemoteFont.h */,
+				8AA141282023256F0058B23B /* ISSRemoteFont.m */,
 				8AD712AF20230BDF00C0FB05 /* ISSUpdatableValue.h */,
 				8AD712B020230BDF00C0FB05 /* ISSUpdatableValue.m */,
 			);
@@ -255,11 +440,88 @@
 			isa = PBXGroup;
 			children = (
 				8A832090202DC19700B7D3AA /* image.png */,
-				8A9F74742023575A001E90FB /* styleSheetWithBadData.css */,
+				8A9F74742023575A001E90FB /* badData.css */,
 				8A9F74752023575A001E90FB /* styleSheetStructure.css */,
-				8A9F74762023575A001E90FB /* styleSheetPropertyValues.css */,
+				8A9F74762023575A001E90FB /* propertyValues.css */,
+				8A49F7D221A6A04800DF0212 /* stylingTest-properties.css */,
+				8A49F7D421A6B22900DF0212 /* stylingTest-caching.css */,
 			);
 			path = TestData;
+			sourceTree = "<group>";
+		};
+		8F005443748A64107392799C /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				8915C66578859EB1FE1A3CE4 /* Pods-InterfaCSS-Layout.debug.xcconfig */,
+				AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		F6F285FB2156E27A00B6A7DD /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				F6F285FC2156E27A00B6A7DD /* Test */,
+				F6F286032156E27A00B6A7DD /* Source */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		F6F285FC2156E27A00B6A7DD /* Test */ = {
+			isa = PBXGroup;
+			children = (
+				F6F285FD2156E27A00B6A7DD /* TestData */,
+				F6F286022156E27A00B6A7DD /* InterfaCSSTests.m */,
+			);
+			path = Test;
+			sourceTree = "<group>";
+		};
+		F6F285FD2156E27A00B6A7DD /* TestData */ = {
+			isa = PBXGroup;
+			children = (
+				F6F285FE2156E27A00B6A7DD /* scopedStyles.css */,
+				F6F285FF2156E27A00B6A7DD /* interfaCSSTests-variables.css */,
+				F6F286002156E27A00B6A7DD /* interfaCSSTests.css */,
+				F6F286012156E27A00B6A7DD /* viewDefinitionTest.xml */,
+			);
+			path = TestData;
+			sourceTree = "<group>";
+		};
+		F6F286032156E27A00B6A7DD /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				F6F286082156E27A00B6A7DD /* ISSLayout.h */,
+				F6F286162156E27A00B6A7DD /* ISSLayout.m */,
+				F6F2861D2156E27A00B6A7DD /* ISSLayoutContextView.h */,
+				F6F2860D2156E27A00B6A7DD /* ISSLayoutContextView.m */,
+				F6F286202156E27A00B6A7DD /* ISSLazyValue.h */,
+				F6F286092156E27A00B6A7DD /* ISSLazyValue.m */,
+				F6F286192156E27A00B6A7DD /* ISSPointValue.h */,
+				F6F286102156E27A00B6A7DD /* ISSPointValue.m */,
+				F6F2860B2156E27A00B6A7DD /* ISSRectValue.h */,
+				F6F2861E2156E27A00B6A7DD /* ISSRectValue.m */,
+				F6F2861F2156E27A00B6A7DD /* ISSRootView.h */,
+				F6F2860A2156E27A00B6A7DD /* ISSRootView.m */,
+				F6F286072156E27A00B6A7DD /* ISSUIElementPropertyHandler.h */,
+				F6F286172156E27A00B6A7DD /* ISSUIElementPropertyHandler.m */,
+				F6F286212156E27A00B6A7DD /* ISSViewBuilder.h */,
+				F6F286122156E27A00B6A7DD /* ISSViewBuilder.m */,
+				F6F2861B2156E27A00B6A7DD /* ISSViewHierarchyParser.h */,
+				F6F2860E2156E27A00B6A7DD /* ISSViewHierarchyParser.m */,
+				F6F286112156E27A00B6A7DD /* ISSViewPrototype.h */,
+				F6F286182156E27A00B6A7DD /* ISSViewPrototype.m */,
+				F6F286062156E27A00B6A7DD /* NSAttributedString+ISSAdditions.h */,
+				F6F286132156E27A00B6A7DD /* NSAttributedString+ISSAdditions.m */,
+				F6F2860F2156E27A00B6A7DD /* UICollectionView+InterfaCSS.h */,
+				F6F2861A2156E27A00B6A7DD /* UICollectionView+InterfaCSS.m */,
+				F6F2861C2156E27A00B6A7DD /* UITableView+InterfaCSS.h */,
+				F6F2860C2156E27A00B6A7DD /* UITableView+InterfaCSS.m */,
+				F6F286052156E27A00B6A7DD /* UIView+InterfaCSS.h */,
+				F6F286142156E27A00B6A7DD /* UIView+InterfaCSS.m */,
+				F6F286042156E27A00B6A7DD /* UIView+ISSPrototypeReusableView.h */,
+				F6F286152156E27A00B6A7DD /* UIView+ISSPrototypeReusableView.m */,
+			);
+			path = Source;
 			sourceTree = "<group>";
 		};
 		F6F5FC0C14F5683B008E647E = {
@@ -270,16 +532,22 @@
 				27AC9F1D18F33FDF00A4182D /* InterfaCSS.podspec */,
 				27AC9F1E18F33FDF00A4182D /* README.markdown */,
 				F6F8372C201096D50093373E /* Core */,
+				F6F67A602190E46F004F009A /* Layout */,
+				F6F285FB2156E27A00B6A7DD /* UI */,
 				F6F5FC1914F5683B008E647E /* Frameworks */,
 				F6F5FC1814F5683B008E647E /* Products */,
+				8F005443748A64107392799C /* Pods */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		F6F5FC1814F5683B008E647E /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */,
 				2785E25C18A8DCBB001D1104 /* InterfaCSS-Core Tests.xctest */,
+				F6F67AC52190EFBB004F009A /* libInterfaCSS-Layout.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -291,9 +559,38 @@
 				F65D52D814F7B0F10034E496 /* UIKit.framework */,
 				F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */,
 				F6F5FC1A14F5683B008E647E /* Foundation.framework */,
+				BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
+		};
+		F6F67A602190E46F004F009A /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				F6F67A612190E46F004F009A /* Test */,
+				F6F67A622190E46F004F009A /* Source */,
+			);
+			path = Layout;
+			sourceTree = "<group>";
+		};
+		F6F67A612190E46F004F009A /* Test */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Test;
+			sourceTree = "<group>";
+		};
+		F6F67A622190E46F004F009A /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				8A0EB9B921AC63E1008C2526 /* Bridge */,
+				8A0EB9B721AC6378008C2526 /* Common */,
+				8A0EB9B621AC635A008C2526 /* Layout */,
+			);
+			indentWidth = 2;
+			path = Source;
+			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		F6F8372C201096D50093373E /* Core */ = {
 			isa = PBXGroup;
@@ -310,6 +607,7 @@
 				8A9F74732023575A001E90FB /* TestData */,
 				8A9F74772023575A001E90FB /* ISSSelectorTests.m */,
 				8A9F74782023575A001E90FB /* ISSStyleSheetParserTests.m */,
+				8A55AA7721A69A4A00E17F58 /* ISSStylingTests.m */,
 				F6210140202C558A009A0A1D /* ISSTestMacros.h */,
 			);
 			path = Test;
@@ -318,13 +616,10 @@
 		F6F8372E201096D50093373E /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				8A387FC92010DE180011BD52 /* Extension */,
 				8A387FBE2010D6A90011BD52 /* Property */,
 				F6F837422010A2D90093373E /* Stylesheet */,
-				F6F837402010A2000093373E /* Parser */,
-				F6F837552010AA490093373E /* Runtime */,
 				F6F8374F2010A3CA0093373E /* Styling */,
-				F6F837542010AA210093373E /* Util */,
+				F6F837542010AA210093373E /* Common */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -350,24 +645,25 @@
 		F6F837422010A2D90093373E /* Stylesheet */ = {
 			isa = PBXGroup;
 			children = (
-				8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */,
-				8A387FCB2010DEE60011BD52 /* ISSStyleSheetManager.m */,
+				F6F837402010A2000093373E /* Parser */,
+				8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */,
+				8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */,
+				F6F837512010A9620093373E /* ISSPropertyValue.h */,
+				F6F837502010A9620093373E /* ISSPropertyValue.m */,
 				8A387FC62010D8810011BD52 /* ISSPseudoClass.h */,
 				8A387FC52010D8810011BD52 /* ISSPseudoClass.m */,
 				F6F8375E2010B0880093373E /* ISSRuleset.h */,
 				F6F8375F2010B0880093373E /* ISSRuleset.m */,
-				F6F837512010A9620093373E /* ISSPropertyValue.h */,
-				F6F837502010A9620093373E /* ISSPropertyValue.m */,
 				F6F837482010A2E90093373E /* ISSSelector.h */,
 				F6F837472010A2E90093373E /* ISSSelector.m */,
-				8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */,
-				8A036151201A081100BA97F6 /* ISSNestedElementSelector.m */,
 				F6F837432010A2E90093373E /* ISSSelectorChain.h */,
 				F6F837442010A2E90093373E /* ISSSelectorChain.m */,
-				F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */,
-				F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */,
 				F6F837452010A2E90093373E /* ISSStyleSheet.h */,
 				F6F837462010A2E90093373E /* ISSStyleSheet.m */,
+				F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */,
+				F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */,
+				8A387FCA2010DEE60011BD52 /* ISSStyleSheetManager.h */,
+				8A387FCB2010DEE60011BD52 /* ISSStyleSheetManager.m */,
 			);
 			name = Stylesheet;
 			sourceTree = "<group>";
@@ -387,9 +683,11 @@
 			name = Styling;
 			sourceTree = "<group>";
 		};
-		F6F837542010AA210093373E /* Util */ = {
+		F6F837542010AA210093373E /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				8A387FC92010DE180011BD52 /* Extension */,
+				F6F837552010AA490093373E /* Runtime */,
 				F600AF7620175C8200B44482 /* ISSMacros.h */,
 				F648DB11202277D30011012C /* ISSDateUtils.h */,
 				F648DB14202277D30011012C /* ISSDateUtils.m */,
@@ -400,7 +698,7 @@
 				F648DB10202277D20011012C /* ISSRefreshableResource.h */,
 				F648DB13202277D30011012C /* ISSRefreshableResource.m */,
 			);
-			name = Util;
+			name = Common;
 			sourceTree = "<group>";
 		};
 		F6F837552010AA490093373E /* Runtime */ = {
@@ -432,6 +730,7 @@
 				8AEE849C2020745300567B11 /* ISSStylingManager.h in Headers */,
 				8A387FCC2010DEE60011BD52 /* ISSStyleSheetManager.h in Headers */,
 				F6F837682010B0EC0093373E /* ISSSelectorChain.h in Headers */,
+				F65B6632218B2D9C00D91C03 /* ISSRelativeNumber.h in Headers */,
 				F6F837622010B0EC0093373E /* ISSRuleset.h in Headers */,
 				F6F8375D2010AD970093373E /* ISSRuntimeProperty.h in Headers */,
 				8A387FC22010D87B0011BD52 /* ISSProperty.h in Headers */,
@@ -458,6 +757,52 @@
 				F6F837582010AAE60093373E /* ISSRuntimeIntrospectionUtils.h in Headers */,
 				8A387FBD2010C7EF0011BD52 /* ISSStylingContext.h in Headers */,
 				8A3296402021F974002259BD /* ISSStyler.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6F67A9A2190EFBB004F009A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6F67A9B2190EFBB004F009A /* NSDictionary+ISSAdditions.h in Headers */,
+				F6F67A9C2190EFBB004F009A /* ISSStyleSheetParser+Protected.h in Headers */,
+				F6F67A9D2190EFBB004F009A /* ISSElementStylingProxy.h in Headers */,
+				F6F67A9E2190EFBB004F009A /* ISSElementStylingProxy+Protected.h in Headers */,
+				F6F67A9F2190EFBB004F009A /* ISSStyleSheetParser+Support.h in Headers */,
+				F6F67AA02190EFBB004F009A /* ISSDownloadableResource.h in Headers */,
+				F6F67AA12190EFBB004F009A /* ISSDateUtils.h in Headers */,
+				F6F67AA22190EFBB004F009A /* NSString+ISSAdditions.h in Headers */,
+				F6F67AA32190EFBB004F009A /* ISSStylingManager.h in Headers */,
+				F6F67AA42190EFBB004F009A /* ISSStyleSheetManager.h in Headers */,
+				F6F67AA52190EFBB004F009A /* ISSSelectorChain.h in Headers */,
+				F6F67AA62190EFBB004F009A /* ISSRelativeNumber.h in Headers */,
+				F6F67AA72190EFBB004F009A /* ISSRuleset.h in Headers */,
+				F6F67AA82190EFBB004F009A /* ISSRuntimeProperty.h in Headers */,
+				F6F67AAA2190EFBB004F009A /* ISSProperty.h in Headers */,
+				F6F67AAB2190EFBB004F009A /* ISSNestedElementSelector.h in Headers */,
+				F6F67AAC2190EFBB004F009A /* ISSStyleSheetParser.h in Headers */,
+				F6F67AAD2190EFBB004F009A /* ISSNotificationObserver.h in Headers */,
+				F6F67AAE2190EFBB004F009A /* ISSParser.h in Headers */,
+				F6F67AAF2190EFBB004F009A /* ISSSelector.h in Headers */,
+				F6F67AB02190EFBB004F009A /* NSObject+ISSLogSupport.h in Headers */,
+				F6F67AB12190EFBB004F009A /* ISSStyleSheetPropertyParser.h in Headers */,
+				F6F67AB22190EFBB004F009A /* UIDevice+ISSAdditions.h in Headers */,
+				F6F67AB32190EFBB004F009A /* ISSPropertyValue.h in Headers */,
+				F6F67AB42190EFBB004F009A /* ISSUpdatableValue.h in Headers */,
+				F6F67AB52190EFBB004F009A /* ISSStyleSheetContent.h in Headers */,
+				F6F67AB62190EFBB004F009A /* ISSPseudoClass.h in Headers */,
+				F6F67AB72190EFBB004F009A /* ISSRemoteFont.h in Headers */,
+				F6F67AB82190EFBB004F009A /* ISSStyleSheet.h in Headers */,
+				F6F67AB92190EFBB004F009A /* ISSStyleSheetParserSyntax.h in Headers */,
+				F6F67ABA2190EFBB004F009A /* ISSPropertyManager.h in Headers */,
+				F6F67ABB2190EFBB004F009A /* ISSMacros.h in Headers */,
+				F6F67ABC2190EFBB004F009A /* NSArray+ISSAdditions.h in Headers */,
+				F6F67ABD2190EFBB004F009A /* UIColor+ISSAdditions.h in Headers */,
+				F6F67ABE2190EFBB004F009A /* ISSRefreshableResource.h in Headers */,
+				8A0EB9BB21AC63E9008C2526 /* InterfaCSS-Layout-Bridging-Header.h in Headers */,
+				F6F67ABF2190EFBB004F009A /* ISSRuntimeIntrospectionUtils.h in Headers */,
+				F6F67AC02190EFBB004F009A /* ISSStylingContext.h in Headers */,
+				F6F67AC12190EFBB004F009A /* ISSStyler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,17 +844,39 @@
 			productReference = F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		F6F67A702190EFBB004F009A /* InterfaCSS-Layout */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F6F67AC22190EFBB004F009A /* Build configuration list for PBXNativeTarget "InterfaCSS-Layout" */;
+			buildPhases = (
+				238780E6E8DDDBD15A20649C /* [CP] Check Pods Manifest.lock */,
+				F6F67A712190EFBB004F009A /* Sources */,
+				F6F67A952190EFBB004F009A /* Frameworks */,
+				F6F67A9A2190EFBB004F009A /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "InterfaCSS-Layout";
+			productName = InterfaCSS;
+			productReference = F6F67AC52190EFBB004F009A /* libInterfaCSS-Layout.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		F6F5FC0E14F5683B008E647E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0930;
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = "Leafnode AB";
 				TargetAttributes = {
 					2785E25B18A8DCBB001D1104 = {
 						TestTargetID = 27C6468618C33D0E0017BFA4;
+					};
+					F6F5FC1614F5683B008E647E = {
+						LastSwiftMigration = 1010;
 					};
 				};
 			};
@@ -527,6 +894,7 @@
 			targets = (
 				F6F5FC1614F5683B008E647E /* InterfaCSS-Core */,
 				2785E25B18A8DCBB001D1104 /* InterfaCSS-Core Tests */,
+				F6F67A702190EFBB004F009A /* InterfaCSS-Layout */,
 			);
 		};
 /* End PBXProject section */
@@ -536,14 +904,41 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A9F74792023575A001E90FB /* styleSheetWithBadData.css in Resources */,
-				8A9F747B2023575A001E90FB /* styleSheetPropertyValues.css in Resources */,
+				8A49F7D521A6B22900DF0212 /* stylingTest-caching.css in Resources */,
+				8A49F7D321A6A05200DF0212 /* stylingTest-properties.css in Resources */,
+				8A9F74792023575A001E90FB /* badData.css in Resources */,
+				8A9F747B2023575A001E90FB /* propertyValues.css in Resources */,
 				8A9F747A2023575A001E90FB /* styleSheetStructure.css in Resources */,
 				8A832091202DC19900B7D3AA /* image.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		238780E6E8DDDBD15A20649C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-InterfaCSS-Layout-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2785E25818A8DCBB001D1104 /* Sources */ = {
@@ -552,6 +947,7 @@
 			files = (
 				8A0260F92028F14B00329C4C /* ISSStyleSheetParserTests.m in Sources */,
 				8A9F747C2023575A001E90FB /* ISSSelectorTests.m in Sources */,
+				8A55AA7821A69A4A00E17F58 /* ISSStylingTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -589,9 +985,58 @@
 				8A03614E201A054800BA97F6 /* NSArray+ISSAdditions.m in Sources */,
 				F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */,
 				F6F837652010B0EC0093373E /* ISSPropertyValue.m in Sources */,
+				F65B6633218B2D9C00D91C03 /* ISSRelativeNumber.m in Sources */,
 				8AD712B6202310EE00C0FB05 /* ISSNotificationObserver.m in Sources */,
 				F648DB15202277D30011012C /* ISSDownloadableResource.m in Sources */,
 				8A677FFD202461BA00E20D18 /* UIColor+ISSAdditions.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6F67A712190EFBB004F009A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6F67A722190EFBB004F009A /* NSString+ISSAdditions.m in Sources */,
+				F6F67A732190EFBB004F009A /* ISSPropertyManager.m in Sources */,
+				F6F67A742190EFBB004F009A /* ISSSelectorChain.m in Sources */,
+				F6F67A752190EFBB004F009A /* ISSProperty.m in Sources */,
+				F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */,
+				8A89D3B321AD8F01006626BC /* AbstractLayoutParser.swift in Sources */,
+				F6F67A762190EFBB004F009A /* ISSStylingContext.m in Sources */,
+				F6F67A772190EFBB004F009A /* ISSStyleSheetContent.m in Sources */,
+				F6F67A782190EFBB004F009A /* ISSRuntimeIntrospectionUtils.m in Sources */,
+				F6F67A792190EFBB004F009A /* ISSNestedElementSelector.m in Sources */,
+				F6F67A7A2190EFBB004F009A /* ISSSelector.m in Sources */,
+				F6F67A7B2190EFBB004F009A /* ISSElementStylingProxy.m in Sources */,
+				F6F67A7C2190EFBB004F009A /* ISSStyleSheetParser+Support.m in Sources */,
+				F6F67A7D2190EFBB004F009A /* ISSRefreshableResource.m in Sources */,
+				F6F67A7E2190EFBB004F009A /* ISSStyleSheetParserSyntax.m in Sources */,
+				F6F67A7F2190EFBB004F009A /* NSObject+ISSLogSupport.m in Sources */,
+				8A06010E21B2B82500ECEBF6 /* LayoutViewController.swift in Sources */,
+				F6F67A802190EFBB004F009A /* ISSRemoteFont.m in Sources */,
+				F6F67A812190EFBB004F009A /* ISSUpdatableValue.m in Sources */,
+				F6F67A822190EFBB004F009A /* ISSDateUtils.m in Sources */,
+				F6F67A832190EFBB004F009A /* ISSPseudoClass.m in Sources */,
+				F6F67A842190EFBB004F009A /* ISSRuleset.m in Sources */,
+				F6F67A852190EFBB004F009A /* ISSStyleSheetParser.m in Sources */,
+				F6F67A862190EFBB004F009A /* NSDictionary+ISSAdditions.m in Sources */,
+				F6F67A872190EFBB004F009A /* UIDevice+ISSAdditions.m in Sources */,
+				F6F67A882190EFBB004F009A /* ISSParser.m in Sources */,
+				F6F67A892190EFBB004F009A /* ISSStylingManager.m in Sources */,
+				F6F67A8A2190EFBB004F009A /* ISSRuntimeProperty.m in Sources */,
+				F6AE4E7C21A8965F00EAB035 /* StringParsableEnum.swift in Sources */,
+				F6F67A8C2190EFBB004F009A /* ISSStyleSheet.m in Sources */,
+				F6F67A8D2190EFBB004F009A /* ISSStyleSheetManager.m in Sources */,
+				F640086A21A5A29700F9535A /* LayoutContainerView.swift in Sources */,
+				F6F67A8E2190EFBB004F009A /* NSArray+ISSAdditions.m in Sources */,
+				F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */,
+				F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */,
+				F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */,
+				F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */,
+				F6F67A922190EFBB004F009A /* ISSNotificationObserver.m in Sources */,
+				F651207E2194C4B800479DE9 /* FlexLayoutViewBuilder.swift in Sources */,
+				F6F67A932190EFBB004F009A /* ISSDownloadableResource.m in Sources */,
+				F6F67A942190EFBB004F009A /* UIColor+ISSAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -732,6 +1177,7 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -740,22 +1186,62 @@
 		F6F5FC2514F5683B008E647E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/InterfaCSS.dst;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"LOG_TRACE=1",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
 		F6F5FC2614F5683B008E647E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DSTROOT = /tmp/InterfaCSS.dst;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.2;
+			};
+			name = Release;
+		};
+		F6F67AC32190EFBB004F009A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8915C66578859EB1FE1A3CE4 /* Pods-InterfaCSS-Layout.debug.xcconfig */;
+			buildSettings = {
+				DSTROOT = /tmp/InterfaCSS.dst;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"LOG_TRACE=1",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "Layout/Source/InterfaCSS-Layout-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Debug;
+		};
+		F6F67AC42190EFBB004F009A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */;
+			buildSettings = {
+				DSTROOT = /tmp/InterfaCSS.dst;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Layout/Source/InterfaCSS-Layout-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -785,6 +1271,15 @@
 			buildConfigurations = (
 				F6F5FC2514F5683B008E647E /* Debug */,
 				F6F5FC2614F5683B008E647E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F6F67AC22190EFBB004F009A /* Build configuration list for PBXNativeTarget "InterfaCSS-Layout" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6F67AC32190EFBB004F009A /* Debug */,
+				F6F67AC42190EFBB004F009A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -6,13 +6,23 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@class ISSUpdatableValue, ISSPropertyValue, ISSStylingManager, ISSUpdatableValueObserver, ISSElementStylingProxy, ISSRuleset;
+// TODO: Just ISSStylingProxy? Or even more short and conciese name?
+
+
+@class ISSUpdatableValue, ISSPropertyValue, ISSUpdatableValueObserver, ISSElementStylingProxy, ISSRuleset;
+@protocol ISSStyler;
+
+
+@interface NSObject (ISSElementStylingProxy)
+
+@property (nonatomic, strong, nullable) ISSElementStylingProxy* interfaCSS; // TODO: Other/better name?
+
+@end
 
 
 #pragma mark - Block type definitions
@@ -23,9 +33,10 @@ typedef void (^ISSDidApplyStylingNotificationBlock)(NSArray* _Nonnull propertyDe
 typedef id _Nullable (^ISSElementStylingProxyVisitorBlock)(ISSElementStylingProxy* elementDetails);
 
 
-extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificationName;
+NS_SWIFT_NAME(MarkCachedStylingInformationAsDirty)
+extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotification;
 
-
+ 
 /**
  * Styling proxy class
  */
@@ -46,6 +57,7 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 @property (nonatomic, strong, nullable) Class canonicalType;
 @property (nonatomic, strong, nullable) NSSet<NSString*>* styleClasses;
 @property (nonatomic, strong, nullable) NSString* styleClass; // Convenience property for cases when only a single style class is required (if more than one style class is set, this property may return any of them)
+@property (nonatomic, strong, nullable) NSArray<ISSPropertyValue*>* inlineStyle;
 
 @property (nonatomic, strong, nullable) NSString* nestedElementKeyPath; // The key path / property name by which this element is know as in the ownerElement
 
@@ -54,7 +66,8 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 @property (nonatomic, strong, nullable) NSString* customElementStyleIdentity;
 @property (nonatomic, readonly) BOOL ancestorUsesCustomElementStyleIdentity;
 
-@property (nonatomic, weak, nullable) NSArray<ISSRuleset*>* cachedRulesets; // Optimization for quick access to cached declarations
+// TODO: Remove?
+//@property (nonatomic, weak, nullable) NSArray<ISSRuleset*>* cachedRulesets; // Optimization for quick access to cached declarations
 @property (nonatomic) BOOL stylesFullyResolved;
 
 @property (nonatomic) BOOL stylingApplied; // Indicates if styles have been applied to element  // TODO: Maybe we don't need this in core...
@@ -69,19 +82,17 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 
 @property (nonatomic, readonly) BOOL isVisiting;
 
-
 - (instancetype) initWithUIElement:(id)uiElement;
-- (void) resetWith:(ISSStylingManager*)stylingManager;
-
+- (void) resetWith:(id<ISSStyler>)styler;
 
 - (BOOL) checkForUpdatedParentElement;
 + (void) markAllCachedStylingInformationAsDirty;
-
 
 - (void) addStyleClass:(NSString*)styleClass;
 - (void) removeStyleClass:(NSString*)styleClass;
 - (BOOL) hasStyleClass:(NSString*)styleClass;
 
+- (void) styleWith:(id<ISSStyler>)styler; // TODO: Review name
 
 - (nullable id) childElementForKeyPath:(NSString*)keyPath;
 - (BOOL) addValidNestedElementKeyPath:(NSString*)keyPath;

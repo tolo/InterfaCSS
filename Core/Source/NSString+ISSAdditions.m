@@ -33,30 +33,30 @@
 	return [[self iss_trim] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\"\'"]];
 }
 
-- (NSArray*) iss_trimmedSplit:(NSString*)sep {
-    NSMutableArray* vals = [[self componentsSeparatedByString:sep] mutableCopy];
+- (NSArray<NSString*>*) iss_trimmedSplit:(NSString*)sep {
+    NSMutableArray<NSString*>* vals = [[self componentsSeparatedByString:sep] mutableCopy];
     for (unsigned int i=0; i<vals.count; i++) {
         vals[i] = [vals[i] iss_trim];
     }
     return vals;
 }
 
-- (NSArray*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet {
-    NSMutableArray* vals = [[self componentsSeparatedByCharactersInSet:characterSet] mutableCopy];
+- (NSArray<NSString*>*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet {
+    NSMutableArray<NSString*>* vals = [[self componentsSeparatedByCharactersInSet:characterSet] mutableCopy];
     for (unsigned int i=0; i<vals.count; i++) {
         vals[i] = [vals[i] iss_trim];
     }
     return vals;
 }
 
-- (NSArray*) iss_splitOnSpaceOrComma {
+- (NSArray<NSString*>*) iss_splitOnSpaceOrComma {
     static NSCharacterSet* characterSet = nil;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         characterSet = [NSCharacterSet characterSetWithCharactersInString:@" ,"];
     });
     NSArray* elements = [self componentsSeparatedByCharactersInSet:characterSet];
-    NSMutableArray* result = [[NSMutableArray alloc] init];
+    NSMutableArray<NSString*>* result = [[NSMutableArray alloc] init];
     for (NSString* element in elements) {
         if( [element iss_hasData] ) [result addObject:element];
     }

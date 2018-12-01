@@ -10,7 +10,7 @@
 
 #import "ISSProperty.h"
 
-@class ISSParser, ISSStyleSheetManager, ISSStyleSheetParser, ISSStyleSheetContent;
+@class ISSParser, ISSStyleSheetManager, ISSStyleSheetParser, ISSStyleSheetContent, ISSPropertyValue;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@protocol ISSStyleSheetParserType
+@protocol ISSStyleSheetParserType // TODO: Remove?
 @end
 
 @interface ISSStyleSheetParser : NSObject<ISSStyleSheetParserType>
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /**
- * Parses the specified stylesheet data into an array of `ISSRuleset` objects.
+ * Parses the specified stylesheet data and returns an object (`ISSStyleSheetContent`) containing the parsed rulesets and variables.
  */
 - (nullable ISSStyleSheetContent*) parse:(NSString*)styleSheetData; // TODO: Async
 
@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
  * Parses a property value of the specified type from a string. Any variable references in `value` will be replaced with their corresponding values.
  */
 - (nullable id) parsePropertyValue:(NSString*)propertyValue asType:(ISSPropertyType)type;
+
+- (nullable ISSPropertyValue*) parsePropertyNameValuePair:(NSString*)nameAndValue;
 
 @end
 

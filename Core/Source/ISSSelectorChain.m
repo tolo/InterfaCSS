@@ -27,7 +27,7 @@
     if( !parentDetails ) return nil;
     else if( [selector matchesElement:parentDetails stylingContext:stylingContext] ) return parentDetails;
     else {
-        ISSElementStylingProxy* grandParentDetails = [stylingContext.stylingManager stylingProxyFor:parentDetails.parentElement];
+        ISSElementStylingProxy* grandParentDetails = [parentDetails.parentElement interfaCSS];
         return [self findMatchingDescendantSelectorParent:grandParentDetails forSelector:selector stylingContext:stylingContext];
     }
 }
@@ -44,7 +44,7 @@
     NSInteger index = [subviews indexOfObject:elementDetails.uiElement];
     if( index != NSNotFound && (index-1) >= 0 ) {
         UIView* sibling = subviews[(NSUInteger) (index - 1)];
-        ISSElementStylingProxy* siblingDetails = [stylingContext.stylingManager stylingProxyFor:sibling];
+        ISSElementStylingProxy* siblingDetails = [sibling interfaCSS];
         if( [selector matchesElement:siblingDetails stylingContext:stylingContext] ) return siblingDetails;
     }
     return nil;
@@ -53,7 +53,7 @@
 + (ISSElementStylingProxy*) findMatchingGeneralSiblingTo:(ISSElementStylingProxy*)elementDetails inParent:(ISSElementStylingProxy*)parentDetails
                                           forSelector:(ISSSelector*)selector stylingContext:(ISSStylingContext*)stylingContext {
     for(UIView* sibling in parentDetails.view.subviews) {
-        ISSElementStylingProxy* siblingDetails = [stylingContext.stylingManager stylingProxyFor:sibling];
+        ISSElementStylingProxy* siblingDetails = [sibling interfaCSS];
         if( sibling != elementDetails.uiElement && [selector matchesElement:siblingDetails stylingContext:stylingContext] ) return siblingDetails;
     }
     return nil;
@@ -179,9 +179,9 @@
             
             ISSElementStylingProxy* nextParentElement;
             if ( _nestedElenentSelectorChain && i == remainingCount ) { // In case last selector is ISSNestedElementSelector, we need to use ownerElement instead of parentElement
-                nextParentElement = [stylingContext.stylingManager stylingProxyFor:nextElement.ownerElement];
+                nextParentElement = [nextElement.ownerElement interfaCSS];
             } else {
-                nextParentElement = [stylingContext.stylingManager stylingProxyFor:nextElement.parentElement];
+                nextParentElement = [nextElement.parentElement interfaCSS];
             }
             
             nextElement = [ISSSelectorChain matchElement:nextElement parentElement:nextParentElement selector:selector

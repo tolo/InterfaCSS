@@ -92,7 +92,7 @@ uiview uilabel:first-of-type {
 
 uiview.classx {
     alpha: 0.666;
-    
+
     uilabel:last-of-type {
         alpha: 0.666;
     }

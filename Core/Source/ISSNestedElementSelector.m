@@ -27,7 +27,7 @@
 }
 
 - (BOOL) matchesElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
-    ISSElementStylingProxy* parentDetails = [stylingContext.stylingManager stylingProxyFor:elementDetails.ownerElement];
+    ISSElementStylingProxy* parentDetails = [elementDetails.ownerElement interfaCSS];
     NSString* validParentKeyPath = parentDetails.validNestedElements[self.nestedElementKeyPath];
 
     if( validParentKeyPath ) {

@@ -114,13 +114,13 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
         free(properties);
         
         
-        // Find "faux" properties, i.e. getter/setter pairs with KVC compliance
+        // Find "faux" properties, i.e. getter/setter pairs with KVC compliance - first pass
         Method* methods = class_copyMethodList(clazz, &outCount);
         NSMutableDictionary* methodsAndTypes = [NSMutableDictionary dictionary];
         for (unsigned int i=0; i<outCount; i++) {
             Method method = methods[i];
             SEL selector = method_getName(method);
-            const char* returnType = method_copyReturnType(method);
+            char* returnType = method_copyReturnType(method);
             
             if ( selector && returnType ) {
                 NSString* name = NSStringFromSelector(selector);
@@ -128,6 +128,10 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
                 if ( propertyNamesAndClasses[name] == nil && ![name hasPrefix:@"_"] ) { // Ignore properties already discovered above and properties starting with _
                     methodsAndTypes[name] = returnTypeString;
                 }
+            }
+
+            if( returnType ) {
+                free(returnType);
             }
         }
         
@@ -142,10 +146,10 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
             }
             
             NSString* setterName = [ISSRuntimeProperty defaultSetterNameForProperty:propertyName];
-            if( !methodsAndTypes[setterName] && [propertyName hasPrefix:@"is"] ) {
+            if( !methodsAndTypes[setterName] && [propertyName hasPrefix:@"is"] && propertyName.length > 2 ) {
                 // Handle case with Bool faux properties (i.e. with format "isXxxx")
                 propertyName = [propertyName substringFromIndex:2];
-                propertyName = [NSString stringWithFormat:@"set%@%@:", [[propertyName substringToIndex:1] lowercaseString], [propertyName substringFromIndex:1]];
+                propertyName = [NSString stringWithFormat:@"%@%@", [[propertyName substringToIndex:1] lowercaseString], [propertyName substringFromIndex:1]];
                 setterName = [ISSRuntimeProperty defaultSetterNameForProperty:propertyName];
             }
             if ( methodsAndTypes[setterName] != nil ) {
@@ -343,7 +347,8 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
     NSInvocation* invocation =  [self invocationForInstanceSelector:selector inObject:object];
     
     if( !invocation ) return nil;
-    for(int i=0; i<invocation.methodSignature.numberOfArguments; i++) {
+    NSInteger argumentCount = invocation.methodSignature.numberOfArguments - 2; // self and _cmd
+    for(int i=0; i<argumentCount; i++) {
         BOOL result = [self setInvocationArgumentValue:i < arguments.count ? arguments[i] : nil atIndex:2+i forInvocation:invocation];
         if( !result ) {
             return nil;
@@ -415,24 +420,24 @@ static NSCache* lowercasePropertyNamesWithClassForClassCache;
         NSUInteger bufferSize = 0;
         NSGetSizeAndAlignment(argType, &bufferSize, NULL);
         valueBuffer = malloc(bufferSize);
-        if(!valueBuffer) {
-            return NO;
-        }
+        if(!valueBuffer) return NO;
         memset(valueBuffer, 0, bufferSize);
         
-        if( [value isKindOfClass:NSValue.class] ) {
+        if( [value isKindOfClass:NSNumber.class] ) {
+            [self writeNumberValue:value toBuffer:valueBuffer withType:argType];
+        } else if( [value isKindOfClass:NSValue.class] ) {
             if (@available(iOS 11.0, tvOS 11.0, *)) {
                 [value getValue:valueBuffer size:bufferSize];
             } else {
                 [value getValue:valueBuffer];
             }
-        } else if( [value isKindOfClass:NSNumber.class] ) {
-            [self writeNumberValue:value toBuffer:valueBuffer withType:argType];
         } else if( value != nil ) {
             return NO;
         }
         
         [invocation setArgument:valueBuffer atIndex:index];
+
+        free(valueBuffer);
     }
     
     return YES;

@@ -72,6 +72,9 @@ typedef id _Nonnull (^ISSParserTransformerBlock)(id value, void* context);
 - (ISSParser*) concatMany;
 - (ISSParser*) concatMany1;
 
+- (ISSParser*) beforeEOI;
++ (ISSParser*) endOfInput;
+
 
 #pragma mark - Transform
 

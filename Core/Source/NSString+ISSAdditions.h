@@ -19,9 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString*) iss_trim;
 - (NSString*) iss_trimQuotes;
-- (NSArray*) iss_trimmedSplit:(NSString*)sep;
-- (NSArray*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet;
-- (NSArray*) iss_splitOnSpaceOrComma;
+- (NSArray<NSString*>*) iss_trimmedSplit:(NSString*)sep;
+- (NSArray<NSString*>*) iss_trimmedSplitWithSet:(NSCharacterSet*)characterSet;
+- (NSArray<NSString*>*) iss_splitOnSpaceOrComma;
 
 - (NSString*) iss_stringBySeparatingCamelCaseComponentsWithDash;
 

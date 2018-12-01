@@ -8,13 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
-@class ISSElementStylingProxy;
+@class ISSElementStylingProxy, ISSStylingManager, ISSStyleSheetScope, ISSPropertyManager, ISSStyleSheetManager;
 
 
 NS_ASSUME_NONNULL_BEGIN
 
 
+NS_SWIFT_NAME(Styler)
 @protocol ISSStyler <NSObject>
+
+@property (nonatomic, readonly) ISSStyleSheetScope* styleSheetScope;
+@property (nonatomic, readonly) ISSStylingManager* stylingManager;
+@property (nonatomic, readonly) ISSPropertyManager* propertyManager;
+@property (nonatomic, readonly) ISSStyleSheetManager* styleSheetManager;
+
+
+- (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope includeCurrent:(BOOL)includeCurrent;
 
 - (nullable ISSElementStylingProxy*) stylingProxyFor:(id)uiElement;
 
@@ -35,6 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void) clearCachedStylingInformationFor:(id)uiElement includeSubViews:(BOOL)includeSubViews;
+
+
+#pragma mark - StyleSheetManager methods
+
+// TODO: StyleSheetManager facade methods
 
 @end
 

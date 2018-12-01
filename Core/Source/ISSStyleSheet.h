@@ -20,21 +20,32 @@ NS_ASSUME_NONNULL_BEGIN
 typedef BOOL (^ISSStyleSheetMatcher)(ISSStyleSheet* styleSheet);
 
 
-extern NSString* const ISSStyleSheetRefreshedNotification;
-extern NSString* const ISSStyleSheetRefreshFailedNotification;
+NS_SWIFT_NAME(StyleSheetRefreshed)
+extern NSNotificationName const ISSStyleSheetRefreshedNotification;
+NS_SWIFT_NAME(StyleSheetRefreshFailed)
+extern NSNotificationName const ISSStyleSheetRefreshFailedNotification;
+
+extern NSString* const ISSStyleSheetGroupDefault;
+extern NSString* const ISSStyleSheetNoGroup;
 
 
 
 /**
  * Class representing a scope used for limiting which stylesheets should be used for styling.
  */
+NS_SWIFT_NAME(StyleSheetScope)
 @interface ISSStyleSheetScope : NSObject
 
-+ (ISSStyleSheetScope*) scopeWithStyleSheetNames:(NSArray*)names;
++ (ISSStyleSheetScope*) defaultGroupScope;
 
-+ (ISSStyleSheetScope*) scopeWithStyleSheetGroups:(NSArray*)groups;
++ (ISSStyleSheetScope*) scopeWithStyleSheetNames:(NSArray<NSString*>*)names;
++ (ISSStyleSheetScope*) scopeWithDefaultStyleSheetGroupAndStyleSheetNames:(NSArray<NSString*>*)names;
+
++ (ISSStyleSheetScope*) scopeWithStyleSheetGroups:(NSArray<NSString*>*)groups;
++ (ISSStyleSheetScope*) scopeWithDefaultStyleSheetGroupAndGroups:(NSArray<NSString*>*)groups;
 
 - (instancetype) initWithMatcher:(ISSStyleSheetMatcher)matcher;
+- (ISSStyleSheetScope*) scopeByIncludingScope:(ISSStyleSheetScope*)otherScope;
 
 - (BOOL) containsStyleSheet:(ISSStyleSheet*)styleSheet;
 
@@ -44,6 +55,7 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 /**
  * Represents a loaded stylesheet.
  */
+NS_SWIFT_NAME(StyleSheet)
 @interface ISSStyleSheet : NSObject
 
 @property (nonatomic, strong, readonly) NSString* name;
@@ -73,6 +85,7 @@ extern NSString* const ISSStyleSheetRefreshFailedNotification;
 typedef void (^ISSRefreshableStyleSheetObserverBlock)(ISSRefreshableStyleSheet* refreshedStylesheet);
 
 
+NS_SWIFT_NAME(RefreshableStyleSheet)
 @interface ISSRefreshableStyleSheet : ISSStyleSheet
 
 @property (nonatomic, strong, readonly) ISSRefreshableResource* refreshableResource;

@@ -16,17 +16,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ISSStylingContext : NSObject
 
-@property (nonatomic, weak) ISSStylingManager* stylingManager;
+// MARK: - Input
+@property (nonatomic, weak, readonly) ISSStylingManager* stylingManager; 
 
-@property (nonatomic, strong, nullable) ISSStyleSheetScope* styleSheetScope;
+@property (nonatomic, strong, readonly) ISSStyleSheetScope* styleSheetScope;
 
-@property (nonatomic) BOOL ignorePseudoClasses;
+@property (nonatomic, readonly) BOOL ignorePseudoClasses;
 
+// MARK: - Output
 @property (nonatomic) BOOL containsPartiallyMatchedDeclarations;
+@property (nonatomic) BOOL stylesCacheable;
 
 
-- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
-+ (instancetype) contextIgnoringPseudoClasses:(ISSStylingManager*)stylingManager styleSheetScope:(nullable ISSStyleSheetScope*)styleSheetScope;
+// MARK: - Creation
+- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(ISSStyleSheetScope*)styleSheetScope;
+- (instancetype) initWithStylingManager:(ISSStylingManager*)stylingManager styleSheetScope:(ISSStyleSheetScope*)styleSheetScope ignorePseudoClasses:(BOOL)ignorePseudoClasses;
 
 @end
 

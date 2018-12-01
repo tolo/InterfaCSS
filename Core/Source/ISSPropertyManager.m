@@ -39,7 +39,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
     return self[0] != [NSNull null] ? self[0] : nil;
 }
 - (NSArray*) propertyParameters {
-    return self[1] != [NSNull null] ? self[0] : nil;
+    return self[1] != [NSNull null] ? self[1] : nil;
 }
 @end
 
@@ -64,13 +64,23 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 #pragma mark -
 
 - (ISSProperty*) findPropertyWithName:(NSString*)name inClass:(Class)clazz {
+    NSString* normalizedName = [ISSProperty normalizePropertyName:name];
+    return [self _findPropertyWithName:normalizedName inClass:clazz];
+}
+
+- (ISSProperty*) _findPropertyWithName:(NSString*)normalizedName inClass:(Class)clazz {
     NSString* canonicalType = [self canonicalTypeForClass:clazz];
     NSMutableDictionary* properties = self.propertiesByType[canonicalType];
-    NSString* lcName = [name lowercaseString];
-    ISSProperty* property = properties[lcName];
+    ISSProperty* property = properties[normalizedName];
+    if( !property ) { // Search in super class
+        Class superClass = [clazz superclass];
+        if( superClass && superClass != NSObject.class ) {
+            property = [self _findPropertyWithName:normalizedName inClass:superClass];
+        }
+    }
     if( !property ) {
         NSDictionary* runtimeProperties = [ISSRuntimeIntrospectionUtils runtimePropertiesForClass:clazz lowercasedNames:YES];
-        ISSRuntimeProperty* runtimeProperty = runtimeProperties[lcName];
+        ISSRuntimeProperty* runtimeProperty = runtimeProperties[normalizedName];
         if( runtimeProperty ) {
             property = [[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:[self runtimePropertyToPropertyType:runtimeProperty] enumValueMapping:nil];
             self.propertiesByType[canonicalType] = properties;
@@ -83,16 +93,38 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 #pragma mark - Property registration
 
 - (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz {
+    return [self registerProperty:property inClass:clazz replaceExisting:true];
+}
+
+- (ISSProperty*) registerProperty:(ISSProperty*)property inClass:(Class)clazz replaceExisting:(BOOL)replaceExisting {
+    NSString* normalizedName = property.normalizedName;
     NSString* typeName = [self registerCanonicalTypeClass:clazz]; // Register canonical type, if needed
     NSMutableDictionary* properties = self.propertiesByType[typeName];
     if (properties) {
-        properties[[property.name lowercaseString]] = property;
+        if( !replaceExisting ) {
+            ISSProperty* existing = [self findPropertyWithName:normalizedName inClass:clazz];
+            if( existing ) return existing;
+        }
+        properties[normalizedName] = property;
     } else {
-        self.propertiesByType[typeName] = [NSMutableDictionary dictionaryWithDictionary:@{[property.name lowercaseString]: property}];
+        self.propertiesByType[typeName] = [NSMutableDictionary dictionaryWithDictionary:@{normalizedName: property}];
     }
     return property;
 }
 
+//- (ISSProperty*) registerCompoundPropertyWithName:(NSString*)name inClass:(Class)clazz compoundProperties:(NSArray<ISSProperty*>*)compoundProperties replaceExisting:(BOOL)replaceExisting {
+//    //ISSPropertyValue
+//    ISSPropertySetterBlock setter = ^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
+//        NSArray* values = [value componentsSeparatedByString:@" "] iss_map:^id _Nonnull(id  _Nonnull element) {
+//            return [ISSPropertyValue alloc] initWithPropertyName:<#(nonnull NSString *)#> rawValue:<#(nullable NSString *)#>
+//        };
+//        for(int i=0; i<compoundProperties.count; i++) {
+//            [self applyPropertyValue:<#(nonnull ISSPropertyValue *)#> onTarget:<#(nonnull ISSElementStylingProxy *)#> styleSheetScope:<#(nonnull ISSStyleSheetScope *)#>]
+//        }
+//        return YES;
+//    };
+//    return [self registerProperty:[[ISSProperty alloc] initCustomPropertyWithName:name inClass:clazz type:type setterBlock:setter] inClass:clazz];
+//}
 
 #pragma mark - Internal convenience property registration methods
 
@@ -106,6 +138,8 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
     ISSRuntimeProperty* runtimeProperty = [ISSRuntimeIntrospectionUtils runtimePropertyWithName:name inClass:clazz lowercasedNames:YES];
     if( runtimeProperty ) {
         return [self registerProperty:[[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:type enumValueMapping:enumValueMapping] inClass:clazz];
+    } else {
+        ISSLogWarning(@"Cannot register '%@' in '%@'", name, clazz);
     }
     return nil;
 }
@@ -121,7 +155,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 #pragma mark - Apply property value
 
-- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement {
+- (BOOL) applyPropertyValue:(ISSPropertyValue*)propertyValue onTarget:(ISSElementStylingProxy*)targetElement styleSheetScope:(ISSStyleSheetScope*)scope {
     if( propertyValue.useCurrentValue ) {
         ISSLogTrace(@"Property value not changed - using existing value for '%@' in '%@'", propertyValue.propertyName, targetElement);
         return YES;
@@ -150,17 +184,18 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
         //id value = [propertyValue valueForProperty:property];
         //ISSPropertyValueAndParameters* valueAndParams = [propertyValue transformedValueAndParametersForProperty:property withStyleSheetManager:self.stylingManager.styleSheetManager];
         BOOL valueContainsVariables = NO;
-        value = [self.stylingManager.styleSheetManager parsePropertyValue:propertyValue.rawValue asType:property.type didReplaceVariableReferences:&valueContainsVariables];
+        value = [self.stylingManager.styleSheetManager parsePropertyValue:propertyValue.rawValue asType:property.type scope:scope didReplaceVariableReferences:&valueContainsVariables];
 
         if( !value ) {
             ISSLogWarning(@"Cannot apply property value to '%@' in '%@' - value is nil!", property.fqn, targetElement);
             return NO;
         }
 
+        // Transform parameters
         __block BOOL paramsContainsVariables = NO;
         if( propertyValue.rawParameters ) {
             NSArray<NSString*>* rawParams = [propertyValue.rawParameters iss_map:^(NSString* element) {
-                return [self.stylingManager.styleSheetManager replaceVariableReferences:element didReplace:&paramsContainsVariables];
+                return [self.stylingManager.styleSheetManager replaceVariableReferences:element scope:scope didReplace:&paramsContainsVariables];
             }];
             params = [property transformParameters:rawParams];
         }
@@ -170,6 +205,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
         }
     }
 
+    // TODO: Remove?
     if( [value isKindOfClass:ISSUpdatableValue.class] ) {
         __weak ISSUpdatableValue* weakUpdatableValue = value;
         __weak ISSProperty* weakProperty = property;
@@ -447,9 +483,11 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
             /** UIView **/
             Class clazz = UIView.class;
+            [self _register:@"backgroundColor" inClass:clazz type:ISSPropertyTypeColor enums:nil]; // backgroundColor is missing type in runtime, due to declaration in category ( UIView(UIViewRendering) )
             [self _register:@"autoresizingMask" inClass:clazz type:ISSPropertyTypeEnumType enums:viewAutoresizingMapping];
             [self _register:@"contentMode" inClass:clazz type:ISSPropertyTypeEnumType enums:contentModeMapping];
             [self _register:@"tintAdjustmentMode" inClass:clazz type:ISSPropertyTypeEnumType enums:tintAdjustmentModeMapping];
+            [self _register:@"tintColor" inClass:clazz type:ISSPropertyTypeColor enums:nil]; // tintColor is missing type in runtime, due to declaration in category ( UIView(UIViewRendering) )
 
             /** UIControl **/
             clazz = UIControl.class;
@@ -561,7 +599,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
             clazz = UITableView.class;
             #if TARGET_OS_TV == 0
             [self _register:@"separatorStyle" inClass:clazz type:ISSPropertyTypeEnumType enums:
-                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine), @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)} enumBaseName:@"UITableViewCellSeparatorStyle" defaultValue:@(UITableViewCellSeparatorStyleNone)]];
+                [[ISSPropertyEnumValueMapping alloc] initWithEnumValues:@{@"none" : @(UITableViewCellSeparatorStyleNone), @"singleLine" : @(UITableViewCellSeparatorStyleSingleLine)/*, @"singleLineEtched" : @(UITableViewCellSeparatorStyleSingleLineEtched)*/} enumBaseName:@"UITableViewCellSeparatorStyle" defaultValue:@(UITableViewCellSeparatorStyleNone)]];
             #endif
 
             /** UITableViewCell **/

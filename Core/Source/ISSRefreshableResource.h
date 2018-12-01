@@ -20,7 +20,7 @@ extern NSString* const ISSRefreshableResourceErrorDomain;
 typedef void (^ISSRefreshableResourceObserverBlock)(ISSRefreshableResource* refreshableResource);
 typedef void (^ISSRefreshableResourceLoadCompletionBlock)(BOOL success,  NSString* _Nullable responseString, NSError* _Nullable error);
 
-
+NS_SWIFT_NAME(RefreshableResource)
 @interface ISSRefreshableResource : NSObject
 
 @property (nonatomic, readonly) NSURL* resourceURL;
@@ -40,10 +40,11 @@ typedef void (^ISSRefreshableResourceLoadCompletionBlock)(BOOL success,  NSStrin
 
 @end
 
-
+NS_SWIFT_NAME(RefreshableLocalResource)
 @interface ISSRefreshableLocalResource : ISSRefreshableResource
 @end
 
+NS_SWIFT_NAME(RefreshableRemoteResource)
 @interface ISSRefreshableRemoteResource : ISSRefreshableResource
 @end
 

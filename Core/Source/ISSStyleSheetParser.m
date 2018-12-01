@@ -161,6 +161,7 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 
 @implementation ISSStyleSheetParser {
     ISSParser* cssParser;
+    ISSParser* standalonePropertyPairParser;
 }
 
 
@@ -168,6 +169,12 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
 
 - (nullable id) parsePropertyValue:(NSString*)value asType:(ISSPropertyType)type {
     return [self.propertyParser parsePropertyValue:value ofType:type];
+}
+
+- (ISSPropertyValue*) parsePropertyNameValuePair:(NSString*)nameAndValue {
+    ISSParserStatus status = {};
+    id value = [standalonePropertyPairParser parse:nameAndValue status:&status];
+    return status.match ? value : nil;
 }
 
 - (ISSPropertyValue*) transformPropertyPair:(NSArray*)propertyPair {
@@ -533,7 +540,12 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
         } name:@"unrecognizedContent"];
 
         cssParser = [[ISSParser choice:@[commentParser, variableParser, rulesetParser, unrecognizedContent]] manyActualValues];
-        
+
+
+        standalonePropertyPairParser = [[self propertyPairParser:NO] transform:^id(id value, void* context) {
+            return [weakSelf transformPropertyPair:value];
+        }];
+
         
         // Finally - create property parser, if needed
         _propertyParser = propertyParser ?: [[ISSStyleSheetPropertyParser alloc] init];

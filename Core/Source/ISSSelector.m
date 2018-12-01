@@ -11,6 +11,7 @@
 #import "ISSPseudoClass.h"
 #import "ISSElementStylingProxy.h"
 #import "ISSStylingContext.h"
+#import "ISSStylingManager.h"
 
 #import "NSString+ISSAdditions.h"
 #import "NSObject+ISSLogSupport.h"
@@ -57,22 +58,25 @@
 }
 
 
-- (BOOL) matchesElement:(ISSElementStylingProxy*)elementDetails stylingContext:(ISSStylingContext*)stylingContext {
+- (BOOL) matchesElement:(ISSElementStylingProxy*)stylingProxy stylingContext:(ISSStylingContext*)stylingContext {
     // TYPE
     BOOL match = !self.type || _wildcardType;
     if( !match ) {
-        match = elementDetails.canonicalType == self.type;
+        if( !stylingProxy.canonicalType ) {
+            [stylingProxy resetWith:stylingContext.stylingManager]; // Make sure canonicalType is initialized
+        }
+        match = stylingProxy.canonicalType == self.type;
     }
     
     // ELEMENT ID
     if( match && self.elementId ) {
-        match = [elementDetails.elementId iss_isEqualIgnoreCase:self.elementId];
+        match = [stylingProxy.elementId iss_isEqualIgnoreCase:self.elementId];
     }
     
     // STYLE CLASSES
     if( match && self.styleClasses ) {
         for(NSString* styleClass in self.styleClasses) {
-            match = [elementDetails.styleClasses containsObject:styleClass];
+            match = [stylingProxy.styleClasses containsObject:styleClass];
             if( !match ) break;
         }
     }
@@ -80,7 +84,7 @@
     // PSEUDO CLASSES
     if( !stylingContext.ignorePseudoClasses && match && self.pseudoClasses.count ) {
         for(ISSPseudoClass* pseudoClass in self.pseudoClasses) {
-            match = [pseudoClass matchesElement:elementDetails stylingContext:stylingContext];
+            match = [pseudoClass matchesElement:stylingProxy stylingContext:stylingContext];
             if( !match ) break;
         }
     }
@@ -136,8 +140,8 @@
     else if ( [object isKindOfClass:ISSSelector.class] ) {
         ISSSelector* other = (ISSSelector*)object;
         return _wildcardType == other->_wildcardType && self.type == other.type &&
-            self.styleClasses == other.styleClasses ? YES : [self.styleClasses isEqual:other.styleClasses] &&
-            self.pseudoClasses == other.pseudoClasses ? YES : [self.pseudoClasses isEqual:other.pseudoClasses];
+            self.styleClasses == other.styleClasses ? YES : [self.styleClasses isEqualToArray:other.styleClasses] &&
+            self.pseudoClasses == other.pseudoClasses ? YES : [self.pseudoClasses isEqualToArray:other.pseudoClasses];
     } else return NO;
 }
 

@@ -260,7 +260,7 @@
                 }
             }
         }
-        
+
         return [NSNull null];
     } andName:@"iss_commentParser"];
 }
@@ -275,10 +275,13 @@
     NSInteger parameterListNesting = 0;
     NSInteger indexAfterLastNonWhitespaceChar = -1;
     NSCharacterSet* whitespaceChars = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-    
+
+    #define inAnyQuote (inSingleQuote || inQuote)
+    #define isEndConditionMet !inAnyQuote && parameterListNesting == 0 && indexAfterLastNonWhitespaceChar > -1
+
     for(; i < len; i++) {
         unichar c = [input characterAtIndex:i];
-        BOOL inAnyQuote = inSingleQuote || inQuote;
+        //BOOL inAnyQuote = inSingleQuote || inQuote;
         BOOL isWhiteSpace = NO;
         
         if( c == '\\' ) {
@@ -287,7 +290,7 @@
         }
         
         // Check if unescaped end char is reached:
-        if( (c == char1 || c == char2) && !inAnyQuote && parameterListNesting == 0 && indexAfterLastNonWhitespaceChar > -1 ) {
+        if( (c == char1 || c == char2) && isEndConditionMet ) {
             NSString* value = [input substringWithRange:NSMakeRange(*index, indexAfterLastNonWhitespaceChar - *index)];
             *index = i + 1;
             return value;
@@ -319,7 +322,14 @@
         
         backslashEscape = NO;
     }
-    
+
+    // Check if end of input is valid ending condition:
+    if( (0 == char1 || 0 == char2) && i == len && isEndConditionMet ) {
+        NSString* value = [input substringWithRange:NSMakeRange(*index, indexAfterLastNonWhitespaceChar - *index)];
+        *index = i;
+        return value;
+    }
+
     return nil;
 }
 

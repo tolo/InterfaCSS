@@ -35,6 +35,7 @@ extern NSString* const ISSPropertyDeclarationUseCurrentValue;
 
 @property (nonatomic, strong, readonly) NSString* stringRepresentation;
 
+- (instancetype) initWithPropertyName:(NSString*)name rawValue:(nullable NSString*)rawValue;
 - (instancetype) initWithPropertyName:(NSString*)name rawValue:(nullable NSString*)rawValue rawParameters:(nullable NSArray<NSString*>*)rawParameters nestedElementKeyPath:(nullable NSString*)nestedElementKeyPath;
 - (instancetype) initWithNestedElementKeyPathToRegister:(NSString*)nestedElementKeyPath;
 

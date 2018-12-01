@@ -25,6 +25,10 @@ NSString* const ISSPropertyDeclarationUseCurrentValue = @"<current>";
 
 #pragma mark - Initialization
 
+- (instancetype) initWithPropertyName:(NSString*)name rawValue:(nullable NSString*)rawValue {
+    return [self initWithPropertyName:name rawValue:rawValue rawParameters:nil nestedElementKeyPath:nil];
+}
+
 - (instancetype) initWithPropertyName:(NSString*)name rawValue:(NSString*)rawValue rawParameters:(NSArray<NSString*>*)rawParameters nestedElementKeyPath:(NSString*)nestedElementKeyPath {
     if ( self = [super init] ) {
         _propertyName = name;

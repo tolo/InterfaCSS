@@ -13,7 +13,7 @@
 @class ISSPropertyManager, ISSStyleSheetManager, ISSElementStylingProxy;
 
 
-
+// TODO: Clean up
 #pragma mark - Common block type definitions
 
 //typedef NSArray* _Nonnull (^ISSWillApplyStylingNotificationBlock)(NSArray* _Nonnull propertyDeclarations);
@@ -33,9 +33,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+
+// TODO: Turn into more of a facade (and ISSStyler), with most common methods
+
+
 /** 
  * The heart, core and essence of InterfaCSS. Handles loading of stylesheets and keeps track of all style information.
  */
+NS_SWIFT_NAME(StylingManager)
 @interface ISSStylingManager : NSObject <ISSStyler>
 
 @property (nonatomic, strong, readonly) ISSPropertyManager* propertyManager;
@@ -47,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** 
  * Gets the shared ISSStylingManager instance.
  */
-//+ (ISSStylingManager*) shared;
++ (ISSStylingManager*) shared;
 
 - (instancetype) init;
 - (instancetype) initWithPropertyRegistry:(nullable ISSPropertyManager*)propertyManager styleSheetManager:(nullable ISSStyleSheetManager*)styleSheetManager NS_DESIGNATED_INITIALIZER;
@@ -77,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *
  */
-- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement;
+//- (ISSElementStylingProxy*) stylingProxyFor:(id)uiElement; // TODO: Remove?
 
 /**
  * Clears all cached style information, but does not initiate re-styling.
@@ -85,9 +90,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) clearAllCachedStyles;
 
 
-#pragma mark - Subscripting support (alias for stylingProxyFor:)
-
-- (ISSElementStylingProxy*) objectForKeyedSubscript:(id)uiElement;
+//#pragma mark - Subscripting support (alias for stylingProxyFor:)
+//
+//- (ISSElementStylingProxy*) objectForKeyedSubscript:(id)uiElement; // TODO: Remove?
 
 
 
