@@ -6,23 +6,23 @@ Pod::Spec.new do |s|
   s.license      = 'MIT'
   s.authors      = { 'Tobias Löfstrand' => 'tobias@leafnode.se' }
   s.source       = { :git => 'https://github.com/tolo/InterfaCSS.git', :tag => s.version.to_s }
-  s.frameworks   = 'Foundation', 'UIKit', 'CoreGraphics', 'QuartzCore'
   s.default_subspec = 'Core'
-
-  s.subspec 'Core' do |core|
-      core.ios.deployment_target = '9.0'
-      if defined?(s.tvos)
-          core.tvos.deployment_target = '9.0'
-      end
-      core.source_files = 'Core/Source/*.{h,m}'
+  s.swift_version = '4.2'
+  s.ios.deployment_target = '9.0'
+  if defined?(s.tvos)
+      s.tvos.deployment_target = '9.0'
   end
 
-  s.subspec 'Layout' do |layout|
-      layout.ios.deployment_target = '11.0'
-      if defined?(s.tvos)
-          layout.tvos.deployment_target = '11.0'
-      end
-      layout.source_files = 'Layout/Source/*.{h,swift}'
-      layout.dependency 'YogaKit', '~> 1.0'
+  s.subspec 'Core' do |ss|
+      ss.frameworks = 'Foundation', 'UIKit'
+      ss.source_files = 'Core/Source/*.{h,m}'
+  end
+
+  s.subspec 'Layout' do |ss|
+      ss.ios.deployment_target = '11.0'
+      ss.frameworks = 'Foundation', 'UIKit'
+      ss.source_files = 'Layout/Source/*.{swift}'
+      ss.dependency 'InterfaCSS/Core'
+      ss.dependency 'YogaKit', '~> 1.0'
   end
 end
