@@ -13,9 +13,7 @@
 #import "ISSProperty.h"
 #import "NSString+ISSAdditions.h"
 #import "NSObject+ISSLogSupport.h"
-#import "ISSDownloadableResource.h"
 #import "ISSElementStylingProxy.h"
-#import "ISSUpdatableValue.h"
 
 
 NSString* const ISSPropertyDeclarationUseCurrentValue = @"<current>";

@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: Just ISSStylingProxy? Or even more short and conciese name?
 
 
-@class ISSUpdatableValue, ISSPropertyValue, ISSUpdatableValueObserver, ISSElementStylingProxy, ISSRuleset;
+@class ISSPropertyValue,  ISSElementStylingProxy, ISSRuleset;
 @protocol ISSStyler;
 
 
@@ -96,8 +96,6 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 
 - (nullable id) childElementForKeyPath:(NSString*)keyPath;
 - (BOOL) addValidNestedElementKeyPath:(NSString*)keyPath;
-
-- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyValue*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block;
 
 - (nullable id) visitExclusivelyWithScope:(const void*)scope visitorBlock:(ISSElementStylingProxyVisitorBlock)visitorBlock;
 

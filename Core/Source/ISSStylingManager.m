@@ -393,6 +393,10 @@ static ISSStylingManager* sharedISSStylingManager = nil;
     }
 }
 
+- (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope {
+    return [self stylerWithScope:styleSheetScope includeCurrent:NO];
+}
+
 - (id<ISSStyler>) stylerWithScope:(ISSStyleSheetScope*)styleSheetScope includeCurrent:(BOOL)includeCurrent {
     if (includeCurrent) {
         styleSheetScope = [self.styleSheetScope scopeByIncludingScope:styleSheetScope];

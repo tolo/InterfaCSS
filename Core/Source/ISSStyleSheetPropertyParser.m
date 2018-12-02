@@ -17,8 +17,6 @@
 #import "ISSNestedElementSelector.h"
 #import "ISSSelectorChain.h"
 #import "ISSRuntimeIntrospectionUtils.h"
-#import "ISSDownloadableResource.h"
-#import "ISSRemoteFont.h"
 #import "ISSRelativeNumber.h"
 
 #import "NSObject+ISSLogSupport.h"
@@ -369,14 +367,9 @@
         CGFloat fontSize = 17;
 #endif
         NSString* fontName = nil;
-        NSURL* remoteFontURL = nil;
         if( [values isKindOfClass:NSArray.class] ) {
             for(id value in values) {
-                if( [value isKindOfClass:NSURL.class] ) {
-                    remoteFontURL = value;
-                    continue;
-                }
-                else if( ![value isKindOfClass:NSString.class] ) continue;
+                if( ![value isKindOfClass:NSString.class] ) continue;
                 
                 NSString* stringVal = value;
                 
@@ -389,18 +382,13 @@
                     if( lc.iss_isNumeric ) {
                         fontSize = [lc floatValue];
                     } else { // If not pt, px or comma
-                        if( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) { // Fallback, if not url(...) format is used
-                            remoteFontURL = [NSURL URLWithString:[stringVal iss_trimQuotes]];
-                        } else {
-                            fontName = [stringVal iss_trimQuotes];
-                        }
+                        fontName = [stringVal iss_trimQuotes];
                     }
                 }
             }
         }
         
-        if( remoteFontURL ) return [ISSRemoteFont remoteFontWithURL:remoteFontURL fontSize:fontSize];
-        else if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
+        if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
         else return [UIFont systemFontOfSize:fontSize];
     } name:@"font"];
     
@@ -600,10 +588,6 @@
         return [value iss_asUIImage];
     } name:@"patternImage"];
     
-    ISSParser* urlImageParser = [[self.styleSheetParser parameterStringWithPrefix:@"url"] transform:^id(NSArray* parameters, void* context) {
-        return [ISSDownloadableResource downloadableImageWithURL:[NSURL URLWithString:[[parameters firstObject] iss_trimQuotes]]];
-    } name:@"urlImage"];
-    
     // Parses an arbitrary text string as an image from file name or pre-defined color name - in that order
     ISSParser* catchAll = [self.styleSheetParser.anythingButControlChars transform:^id(id value, void* context) {
         value = [value iss_trimQuotes];
@@ -611,20 +595,13 @@
         if( !image ) {
             UIColor* color = [self parsePredefColorValue:value];
             if( color ) return [color iss_asUIImage];
-            else {
-                NSString* lc = [value lowercaseString];
-                if ( [lc hasPrefix:@"http://"] || [lc hasPrefix:@"https://"] ) {
-                    return [ISSDownloadableResource downloadableImageWithURL:[NSURL URLWithString:value]];
-                } else {
-                    return [NSNull null];
-                }
-            }
+            else return [NSNull null];
         } else {
             return image;
         }
     } name:@"imageCatchAllParser"];
     
-    return [ISSParser choice:@[imageParser, colorFunctionAsImage, imageAsColor, urlImageParser, catchAll]];
+    return [ISSParser choice:@[imageParser, colorFunctionAsImage, imageAsColor, catchAll]];
 }
 
 - (ISSParser*) colorParser:(NSArray*)colorValueParsers colorCatchAllParsers:(NSArray*)colorCatchAllParsers {

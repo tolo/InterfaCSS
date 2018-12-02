@@ -15,7 +15,6 @@
 
 #import "ISSPropertyValue.h"
 #import "ISSRuntimeIntrospectionUtils.h"
-#import "ISSUpdatableValue.h"
 
 #import "NSString+ISSAdditions.h"
 
@@ -56,8 +55,6 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotification = @"
 @property (nonatomic, strong, readwrite) NSDictionary* validNestedElements;
 
 @property (nonatomic, weak, readwrite) UIViewController* closestViewController;
-
-@property (nonatomic, strong) NSMutableDictionary<NSString*, ISSUpdatableValueObserver*>* observedUpdatableValues;
 
 @property (nonatomic, readwrite) BOOL isVisiting;
 @property (nonatomic) const void* visitorScope;
@@ -383,19 +380,6 @@ NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotification = @"
     _validNestedElements = [updatedValidNestedElements copy];
     
     return YES;
-}
-
-- (ISSUpdatableValueObserver*) addObserverForValue:(ISSUpdatableValue*)value inProperty:(ISSPropertyValue*)propertyDeclaration withBlock:(void (^)(NSNotification* note))block {
-    ISSUpdatableValueObserver* existingObserver = self.observedUpdatableValues[propertyDeclaration.fqn];
-    if( [value isEqual:existingObserver.value] ) return existingObserver;
-    
-    if( !self.observedUpdatableValues ) {
-        self.observedUpdatableValues = [NSMutableDictionary dictionary];
-    }
-
-    ISSUpdatableValueObserver* observer = [value addValueUpdateObserverWithBlock:block];
-    self.observedUpdatableValues[propertyDeclaration] = observer;
-    return observer;
 }
 
 

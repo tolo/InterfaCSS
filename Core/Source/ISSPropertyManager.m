@@ -16,7 +16,6 @@
 #import "ISSElementStylingProxy.h"
 #import "ISSRuntimeIntrospectionUtils.h"
 #import "ISSRuntimeProperty.h"
-#import "ISSUpdatableValue.h"
 
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSAdditions.h"
@@ -203,19 +202,6 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
         if( !valueContainsVariables && !paramsContainsVariables ) { // TODO: Instead of skipping caching when variables are present - consider clearing cache when variables are changed
             self.cachedTransformedProperties[propertyValue.stringRepresentation] = [ISSPropertyValueAndParametersTuple tupleWithPropertyValue:value andPropertyParameters:params];
         }
-    }
-
-    // TODO: Remove?
-    if( [value isKindOfClass:ISSUpdatableValue.class] ) {
-        __weak ISSUpdatableValue* weakUpdatableValue = value;
-        __weak ISSProperty* weakProperty = property;
-        //__weak ISSPropertyDeclaration* weakPropertyDeclaration = propertyValue;
-        __weak ISSElementStylingProxy* weakElement = targetElement;
-        [targetElement addObserverForValue:weakUpdatableValue inProperty:propertyValue withBlock:^(NSNotification* note) {
-            weakProperty.setterBlock(weakProperty, weakElement.uiElement, weakUpdatableValue, params);
-        }];
-        [weakUpdatableValue requestUpdate];
-        value = weakUpdatableValue.lastValue;
     }
 
     BOOL result = [property setValue:value onTarget:targetElement.uiElement withParameters:params];
