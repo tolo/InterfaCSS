@@ -21,7 +21,6 @@
 		8A3296362021BBF4002259BD /* NSObject+ISSLogSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */; };
 		8A32963A2021BBF4002259BD /* UIDevice+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A3296322021BBF4002259BD /* UIDevice+ISSAdditions.h */; };
 		8A32963C2021BBF4002259BD /* UIDevice+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A3296342021BBF4002259BD /* UIDevice+ISSAdditions.m */; };
-		8A32963E2021E045002259BD /* ISSElementStylingProxy+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963D2021E045002259BD /* ISSElementStylingProxy+Protected.h */; };
 		8A3296402021F974002259BD /* ISSStyler.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963F2021F974002259BD /* ISSStyler.h */; };
 		8A387FBC2010C7EF0011BD52 /* ISSStylingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */; };
 		8A387FBD2010C7EF0011BD52 /* ISSStylingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */; };
@@ -129,7 +128,6 @@
 		F6F67A9B2190EFBB004F009A /* NSDictionary+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A83208C202D918E00B7D3AA /* NSDictionary+ISSAdditions.h */; };
 		F6F67A9C2190EFBB004F009A /* ISSStyleSheetParser+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A97EE002016104500BF210A /* ISSStyleSheetParser+Protected.h */; };
 		F6F67A9D2190EFBB004F009A /* ISSElementStylingProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA14130202326D40058B23B /* ISSElementStylingProxy.h */; };
-		F6F67A9E2190EFBB004F009A /* ISSElementStylingProxy+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32963D2021E045002259BD /* ISSElementStylingProxy+Protected.h */; };
 		F6F67A9F2190EFBB004F009A /* ISSStyleSheetParser+Support.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83732201096D50093373E /* ISSStyleSheetParser+Support.h */; };
 		F6F67AA02190EFBB004F009A /* ISSDownloadableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB12202277D30011012C /* ISSDownloadableResource.h */; };
 		F6F67AA12190EFBB004F009A /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB11202277D30011012C /* ISSDateUtils.h */; };
@@ -208,7 +206,6 @@
 		8A32962E2021BBF3002259BD /* NSObject+ISSLogSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+ISSLogSupport.m"; sourceTree = "<group>"; };
 		8A3296322021BBF4002259BD /* UIDevice+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+ISSAdditions.h"; sourceTree = "<group>"; };
 		8A3296342021BBF4002259BD /* UIDevice+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+ISSAdditions.m"; sourceTree = "<group>"; };
-		8A32963D2021E045002259BD /* ISSElementStylingProxy+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ISSElementStylingProxy+Protected.h"; sourceTree = "<group>"; };
 		8A32963F2021F974002259BD /* ISSStyler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyler.h; sourceTree = "<group>"; };
 		8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingContext.m; sourceTree = "<group>"; };
 		8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingContext.h; sourceTree = "<group>"; };
@@ -677,7 +674,6 @@
 				8A387FBB2010C7EF0011BD52 /* ISSStylingContext.h */,
 				8A387FBA2010C7EF0011BD52 /* ISSStylingContext.m */,
 				8AA14130202326D40058B23B /* ISSElementStylingProxy.h */,
-				8A32963D2021E045002259BD /* ISSElementStylingProxy+Protected.h */,
 				8AA1412F202326D40058B23B /* ISSElementStylingProxy.m */,
 			);
 			name = Styling;
@@ -722,7 +718,6 @@
 				8A83208E202D919000B7D3AA /* NSDictionary+ISSAdditions.h in Headers */,
 				8A97EE012016104500BF210A /* ISSStyleSheetParser+Protected.h in Headers */,
 				8AA14132202326D40058B23B /* ISSElementStylingProxy.h in Headers */,
-				8A32963E2021E045002259BD /* ISSElementStylingProxy+Protected.h in Headers */,
 				8AC2F3732023A6F90042D80C /* ISSStyleSheetParser+Support.h in Headers */,
 				F648DB18202277D30011012C /* ISSDownloadableResource.h in Headers */,
 				F648DB17202277D30011012C /* ISSDateUtils.h in Headers */,
@@ -767,7 +762,6 @@
 				F6F67A9B2190EFBB004F009A /* NSDictionary+ISSAdditions.h in Headers */,
 				F6F67A9C2190EFBB004F009A /* ISSStyleSheetParser+Protected.h in Headers */,
 				F6F67A9D2190EFBB004F009A /* ISSElementStylingProxy.h in Headers */,
-				F6F67A9E2190EFBB004F009A /* ISSElementStylingProxy+Protected.h in Headers */,
 				F6F67A9F2190EFBB004F009A /* ISSStyleSheetParser+Support.h in Headers */,
 				F6F67AA02190EFBB004F009A /* ISSDownloadableResource.h in Headers */,
 				F6F67AA12190EFBB004F009A /* ISSDateUtils.h in Headers */,

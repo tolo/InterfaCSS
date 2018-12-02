@@ -1,0 +1,9 @@
+/* A CSS-file with the same name as the layout file will be loaded automatically (by LayoutContainerView) */
+
+#rootClass {
+  background-color: green;
+}
+
+#button1 {
+  title-color(highlighted): yellow;
+}

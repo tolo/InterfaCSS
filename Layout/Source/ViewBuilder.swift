@@ -17,6 +17,7 @@ open class ViewBuilder {
   public let layoutFileURL: URL
   public let fileOwner: AnyObject?
   public let styleSheetName: String
+  public let styleSheetGroupName: String
   public let styler: Styler
 
   public private(set) var styleSheet: StyleSheet?
@@ -32,7 +33,9 @@ open class ViewBuilder {
     self.layoutFileURL = layoutFileURL
     self.fileOwner = fileOwner
     self.styleSheetName = layoutFileURL.lastPathComponent
-    self.styler = styler.withScope(StyleSheetScope(styleSheetNames: [self.styleSheetName]), includeCurrent: true)
+    self.styleSheetGroupName = self.styleSheetName
+//    self.styler = styler.withScope(StyleSheetScope(styleSheetNames: [self.styleSheetName]), includeCurrent: true)
+    self.styler = styler.withScope(StyleSheetScope(styleSheetGroups: [self.styleSheetGroupName]), includeCurrent: true)
   }
 
 
@@ -61,7 +64,7 @@ open class ViewBuilder {
         if let styleSheet = styleSheet {
           styler.styleSheetManager.unloadStyleSheet(styleSheet)
         }
-        styleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: ISSStyleSheetNoGroup, content: styleSheetContent)
+        styleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
         styler.styleSheetManager.registerStyleSheet(styleSheet!)
       }
       styler.applyStyling(rootView)
@@ -128,10 +131,7 @@ open class ViewBuilder {
   }
 
   open func instantiateViewObject(for node: AbstractViewTreeNode) -> AnyObject? {
-    if let clz = node.viewClass as? NSObject.Type {
-      return clz.init()
-    }
-    return nil
+    return node.elementType.createElement()
   }
 }
 

@@ -5,7 +5,7 @@
 
   <view id="container1" style="flex-grow:1; justify-content: flex-start">
     <label id="label1"/>
-    <button id="button1"/>
+    <button id="button1" type="custom"/>
   </view>
 
   <view id="container2" style="flex-grow:1; flex-wrap: wrap; justify-content: flex-start">
@@ -16,6 +16,7 @@
 </view>
 
 <style>
+  // Styles unique to this particular view can be defined directly here in the layout file, or in a css file with the same name as the layout file (i.e. "ViewController.css").
   #rootClass {
     flex-direction: column;
     align-items: stretch;
@@ -34,9 +35,6 @@
   }
   #container2 {
     background-color: #3a4ca8;
-  }
-  #button1 {
-    title-color(highlighted): yellow;
   }
 </style>
 

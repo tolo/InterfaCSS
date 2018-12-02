@@ -13,7 +13,7 @@
 
 #import "ISSStyleSheet.h"
 #import "ISSPropertyValue.h"
-#import "ISSElementStylingProxy+Protected.h"
+#import "ISSElementStylingProxy.h"
 #import "ISSPropertyValue.h"
 #import "ISSRuleset.h"
 #import "ISSSelectorChain.h"

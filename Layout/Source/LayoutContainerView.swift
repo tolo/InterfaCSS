@@ -21,6 +21,8 @@ open class LayoutContainerView: UIView {
   public let didLoadCallback: DidLoadCallback?
 
   public private (set) var refresher: RefreshableResource?
+  public private (set) var stylesheet: StyleSheet?
+  public private (set) var stylesheetObserver: AnyObject?
 
   public private (set) var viewBuilt = false
   public private (set) var currentLayoutView: UIView?
@@ -64,9 +66,33 @@ open class LayoutContainerView: UIView {
       if layoutFileURL.isFileURL {
         refresher = RefreshableLocalResource(url: layoutFileURL)
       }
-//      else {
+//      else { // TODO: Support remote reloadable layout files?
 //        refresher = RefreshableRemoteResource(url: url)
 //      }
+    }
+    
+    if layoutFileURL.isFileURL {
+      var cssFileName = layoutFileURL.lastPathComponent
+      if cssFileName.iss_hasData(), let lastDot = cssFileName.lastIndex(of: ".") {
+        cssFileName = cssFileName[..<lastDot] + ".css"
+        
+        var components = layoutFileURL.pathComponents
+        components.removeLast()
+        components.append(cssFileName)
+        let cssFilePath = components.joined(separator: "/")
+        if FileManager.default.fileExists(atPath: cssFilePath) {
+          let cssFileURL = URL(fileURLWithPath: cssFilePath)
+          if refreshable {
+            stylesheet = styler.styleSheetManager.loadRefreshableNamedStyleSheet(cssFileName, group: viewBuilder.styleSheetGroupName, from: cssFileURL)
+          } else {
+            stylesheet = styler.styleSheetManager.loadNamedStyleSheet(cssFileName, group: viewBuilder.styleSheetGroupName, fromFileURL: cssFileURL)
+          }
+
+          stylesheetObserver = NotificationCenter.default.addObserver(forName: .StyleSheetRefreshed, object: stylesheet, queue: nil) { [weak self] _ in
+            self?.updateLayout()
+          }
+        }
+      }
     }
   }
 

@@ -25,7 +25,9 @@ extern NSNotificationName const ISSStyleSheetRefreshedNotification;
 NS_SWIFT_NAME(StyleSheetRefreshFailed)
 extern NSNotificationName const ISSStyleSheetRefreshFailedNotification;
 
+NS_SWIFT_NAME(StyleSheetGroupDefault)
 extern NSString* const ISSStyleSheetGroupDefault;
+NS_SWIFT_NAME(StyleSheetNoGroup)
 extern NSString* const ISSStyleSheetNoGroup;
 
 

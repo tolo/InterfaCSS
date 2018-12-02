@@ -34,35 +34,61 @@ private class StyleNodeContent {
   var content: String = ""
 }
 
-//private enum UIElement { // TODO
-//  case label
-//  case button
-//  case ...
-//
-//  func createElement() -> Any {
-//    ...
-//  }
-//}
+public enum ButtonType: String, StringParsableEnum {
+  public var description: String {
+    return rawValue
+  }
+  
+  case custom = "custom"
+  case system = "system"
+  
+  public var uiButtonType: UIButton.ButtonType {
+    switch self {
+    case .custom: return .custom
+    case .system: return .system
+    }
+  }
+}
+
+public enum UIElementType {
+  // TODO: Expand this will more element types as needed
+  case button(type: ButtonType)
+  case collectionView(layoutClass: UICollectionViewLayout.Type)
+  case other(elementClass: UIResponder.Type)
+
+  public func createElement() -> UIResponder {
+    switch self {
+    case .button(let type): return UIButton(type: type.uiButtonType)
+    case .collectionView(let layoutClass): return UICollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
+    case .other(let elementClass): return elementClass.init()
+    }
+  }
+}
 
 /**
  * AbstractViewTreeNode
  */
 public final class AbstractViewTreeNode {
-  public var viewClass: AnyClass
+  public var elementType: UIElementType
   public var elementId: String?
   public var styleClasses: [String]?
   public var fileOwnerPropertyName: String?
   public var accessibilityIdentifier: String?
   public var inlineStyle: [ISSPropertyValue]?
+  public var addToViewHierarchy: Bool
+  
   public lazy var childNodes: [AbstractViewTreeNode] = []
-  public var rawAttributes: [String: String]
   public var stringContent: String?
+  public var rawAttributes: [String: String]
+  
 
-  public init(viewClass: AnyClass, elementId: String? = nil, styleClasses: [String]? = nil, inlineStyle: [ISSPropertyValue]? = nil, fileOwnerPropertyName: String? = nil, accessibilityIdentifier: String? = nil, rawAttributes: [String: String]) {
-    self.viewClass = viewClass
+  public init(elementType: UIElementType, elementId: String? = nil, styleClasses: [String]? = nil, inlineStyle: [ISSPropertyValue]? = nil, addToViewHierarchy: Bool,
+              fileOwnerPropertyName: String? = nil, accessibilityIdentifier: String? = nil, rawAttributes: [String: String]) {
+    self.elementType = elementType
     self.elementId = elementId
     self.styleClasses = styleClasses
     self.inlineStyle = inlineStyle
+    self.addToViewHierarchy = addToViewHierarchy
     self.fileOwnerPropertyName = fileOwnerPropertyName
     self.accessibilityIdentifier = accessibilityIdentifier ?? elementId
     self.rawAttributes = rawAttributes
@@ -94,8 +120,8 @@ public final class AbstractViewTreeParser: NSObject {
   public static let rootElementName = "layout"
   public static let styleElementName = "style"
 
-  enum Attribute: String, CustomStringConvertible, Equatable, Hashable {
-    var description: String {
+  public enum Attribute: String, StringParsableEnum {
+    public var description: String {
       return rawValue
     }
 
@@ -106,9 +132,14 @@ public final class AbstractViewTreeParser: NSObject {
     case styleClasses = "class"
     case style = "style"
     case property = "property"
+    case addSubview = "addSubview"
     case implementationClass = "implementation"
     case collectionViewLayoutClass = "collectionViewLayout"
     case accessibilityIdentifier = "accessibilityIdentifier"
+    
+    case buttonType = "type"
+    
+    case unknownAttribute = "unknownAttribute"
   }
 
   private enum Node {
@@ -164,13 +195,13 @@ public final class AbstractViewTreeParser: NSObject {
     completion(layout, parseError)
   }
 
-  func viewClassFor(elementName: String) -> AnyClass? {
+  func viewClassFor(elementName: String) -> UIResponder.Type? {
     // Attempt to get UIKit class matching elementName
     let pm = styler.propertyManager
-    var viewClass: AnyClass? = pm.canonicalTypeClass(forType: elementName)
+    var viewClass = pm.canonicalTypeClass(forType: elementName) as? UIResponder.Type
     if viewClass == nil {
       // Fallback - use element name as viewClass
-      viewClass = ISSRuntimeIntrospectionUtils.class(withName: elementName)
+      viewClass = ISSRuntimeIntrospectionUtils.class(withName: elementName) as? UIResponder.Type
     }
     return viewClass
   }
@@ -210,67 +241,83 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       var propertyName: String? = nil
       var inlineStyle: [ISSPropertyValue]? = nil
       var accessibilityIdentifier: String? = nil
-      var viewClass: AnyClass? = nil
+      var viewClass: UIResponder.Type? = nil
+      var addToViewHierarchy: Bool = true
+      var buttonType: ButtonType = .custom
+      var collectionViewLayoutClass: UICollectionViewLayout.Type = UICollectionViewFlowLayout.self
 
       var rawAttributes: [String: String] = [:]
       for (key, value) in attributeDict {
+        let attribute = Attribute.enumValue(from: key)
+        
         // "id" or "elementId":
-        if key.iss_isEqualIgnoreCase(Attribute.id.rawValue) {
+        if attribute == .id {
           elementId = value
-          rawAttributes[Attribute.id.rawValue] = value
         }
         // "class":
-        else if key.iss_isEqualIgnoreCase(Attribute.styleClasses.rawValue) {
+        else if attribute == .styleClasses {
           styleClasses = value
-          rawAttributes[Attribute.styleClasses.rawValue] = styleClasses
         }
         // "style":
-        else if key.iss_isEqualIgnoreCase(Attribute.style.rawValue) {
+        else if attribute == .style {
           inlineStyle = value.split(separator: ";").compactMap {
             return styler.styleSheetManager.parsePropertyNameValuePair(String($0))
           }
-          rawAttributes[Attribute.style.rawValue] = value
         }
         // "property":
-        else if key.iss_isEqualIgnoreCase(Attribute.property.rawValue) {
+        else if attribute == .property {
           propertyName = value
-          rawAttributes[Attribute.property.rawValue] = value
         }
-        // "impl" or "implementation":
-        else if key.iss_isEqualIgnoreCase(Attribute.implementationClass.rawValue) || key.iss_isEqualIgnoreCase("impl") {
-          viewClass = ISSRuntimeIntrospectionUtils.class(withName: value)
-          rawAttributes[Attribute.implementationClass.rawValue] = value
+        // "implementation":
+        else if attribute == .implementationClass {
+          if let clazz = ISSRuntimeIntrospectionUtils.class(withName: value) as? UIResponder.Type {
+            viewClass = clazz
+          }
         }
-        // "impl" or "implementation":
-        else if key.iss_isEqualIgnoreCase(Attribute.collectionViewLayoutClass.rawValue) {
-          //collectionViewLayoutClass = ISSRuntimeIntrospectionUtils.class(withName: value)
-          rawAttributes[Attribute.collectionViewLayoutClass.rawValue] = value
+        // "collectionViewLayout":
+        else if attribute == .collectionViewLayoutClass {
+          if let clazz = ISSRuntimeIntrospectionUtils.class(withName: value) as? UICollectionViewLayout.Type {
+            collectionViewLayoutClass = clazz
+          }
         }
         // "accessibilityIdentifier":
-        else if key.iss_isEqualIgnoreCase(Attribute.accessibilityIdentifier.rawValue) {
+        else if attribute == .accessibilityIdentifier {
           accessibilityIdentifier = value
-          rawAttributes[Attribute.accessibilityIdentifier.rawValue] = value
         }
-          // "accessibilityIdentifier":
-        else if key.iss_isEqualIgnoreCase("style") {
-          accessibilityIdentifier = value
-          rawAttributes[Attribute.accessibilityIdentifier.rawValue] = value
+        // "addSubview":
+        else if attribute == .addSubview {
+          addToViewHierarchy = (value as NSString).boolValue
         }
-        else {
+        // "type" (button type):
+        else if attribute == .buttonType {
+          buttonType = ButtonType.enumValue(from: value)
+        }
+       
+        if attribute != .unknownAttribute {
+          rawAttributes[attribute.rawValue] = value
+        } else {
           rawAttributes[key] = value
         }
       }
 
       // Set viewClass if not specified by impl attribute
       viewClass = viewClass ?? viewClassFor(elementName: elementName)
+      let elementType: UIElementType
+      if viewClass == UIButton.self {
+        elementType = .button(type: buttonType)
+      } else if viewClass == UICollectionView.self {
+        elementType = .collectionView(layoutClass: collectionViewLayoutClass )
+      } else {
+        elementType = .other(elementClass: viewClass ?? UIView.self) // If class not found - fall back to UIView
+      }
 
       var styleClassArray: [String]?
       if let styleClasses = styleClasses {
         styleClassArray = styleClasses.iss_splitOnSpaceOrComma()
       }
 
-      let viewTreeNode = AbstractViewTreeNode(viewClass: viewClass ?? UIView.self, // If class not found - fall back to UIView
-          elementId: elementId, styleClasses: styleClassArray, inlineStyle: inlineStyle,
+      let viewTreeNode = AbstractViewTreeNode(elementType: elementType,
+          elementId: elementId, styleClasses: styleClassArray, inlineStyle: inlineStyle, addToViewHierarchy: addToViewHierarchy,
           fileOwnerPropertyName: propertyName, accessibilityIdentifier: accessibilityIdentifier, rawAttributes: rawAttributes)
       if let parentNode = nodeStack.last, case .viewNode(let parentViewNode) = parentNode {
         parentViewNode.addChild(node: viewTreeNode)

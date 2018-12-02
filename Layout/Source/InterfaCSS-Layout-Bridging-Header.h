@@ -11,6 +11,8 @@
 #import "ISSPropertyManager.h"
 #import "ISSStyleSheetManager.h"
 
+#import "ISSStyleSheet.h"
+
 #import "ISSElementStylingProxy.h"
 
 #import "ISSPropertyValue.h"
