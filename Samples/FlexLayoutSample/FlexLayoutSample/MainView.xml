@@ -9,8 +9,8 @@
   </view>
 
   <view id="container2" style="flex-grow:1; flex-wrap: wrap; justify-content: flex-start">
-    <label id="label2" style="font: HelveticaNeue 22; text-color: green">Hello world 1</label>
-    <label id="label3" style="font: HelveticaNeue 22; text-color: white">Hello world 2</label>
+    <label id="label2" style="font: HelveticaNeue-Bold 22; text-color: red">Hello hot reloadable world!!</label>
+    <label id="label3" style="text-color: white; margin-top: 20">(Try editing MainView.xml or MainView.css while running the app in the sim)</label>
   </view>
 
 </view>
@@ -35,6 +35,11 @@
   }
   #container2 {
     background-color: #3a4ca8;
+  }
+  #label3 {
+    font: HelveticaNeue-Medium 18;
+    numberOfLines: 0;
+    textAlignment: center;
   }
 </style>
 

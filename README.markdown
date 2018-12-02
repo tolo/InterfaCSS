@@ -12,7 +12,8 @@
 ### For now, here's a quick list of changes:
 
 * The project has been split up into two parts (subspecs): **Core** (containing the most important parts for parsing stylesheets and styling elements) and **Layout** (containing support for defining views/layouts in XML-files - see below)
-* The default layout implementation uses **CSS-flexbox** for expressing the layout (the [Facebook Yoga](https://yogalayout.com) engine is used under the hood)   
+* The default layout implementation uses **CSS-flexbox** for expressing the layout (the [Facebook Yoga](https://yogalayout.com) engine is used under the hood)
+* **Hot reload** during development is supported for both layout files and stylesheets!
 * The monolithic main class `InterfaCSS` has now been split up in to several parts (primarily `ISSStylingManager` and `ISSStyleSheetManager`), with a clearer purpose
 * The new "main" class is now `ISSStylingManager`
 * A protocol for making it easier to work with different scopes of stylesheets have been introduces: `ISSStyler`
