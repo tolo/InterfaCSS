@@ -40,6 +40,7 @@ extern NSNotificationName const ISSMarkCachedStylingInformationAsDirtyNotificati
 /**
  * Styling proxy class
  */
+NS_SWIFT_NAME(ElementStylingProxy)
 @interface ISSElementStylingProxy : NSObject<NSCopying>
 
 @property (nonatomic, weak, readonly, nullable) id uiElement;

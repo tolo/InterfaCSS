@@ -10,12 +10,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(RelativeNumberUnit)
 typedef NS_ENUM(NSInteger, ISSRelativeNumberUnit) {
     ISSRelativeNumberUnitAbsolute,
     ISSRelativeNumberUnitPercent,
     ISSRelativeNumberUnitAuto
 };
 
+NS_SWIFT_NAME(RelativeNumber)
 @interface ISSRelativeNumber : NSObject
 
 @property (nonatomic, readonly) NSNumber* value;

@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Represents a rule set (i.e. a set of selectors/selector chains and a style declarations block) in a stylesheet.
  */
+NS_SWIFT_NAME(Ruleset)
 @interface ISSRuleset : NSObject
 
 @property (nonatomic, readonly, nullable) ISSSelectorChain* extendedDeclarationSelectorChain;

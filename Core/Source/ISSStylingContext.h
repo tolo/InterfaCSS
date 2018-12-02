@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
+NS_SWIFT_NAME(StylingContext)
 @interface ISSStylingContext : NSObject
 
 // MARK: - Input

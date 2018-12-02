@@ -74,7 +74,7 @@ public final class AbstractViewTreeNode {
   public var styleClasses: [String]?
   public var fileOwnerPropertyName: String?
   public var accessibilityIdentifier: String?
-  public var inlineStyle: [ISSPropertyValue]?
+  public var inlineStyle: [PropertyValue]?
   public var addToViewHierarchy: Bool
   
   public lazy var childNodes: [AbstractViewTreeNode] = []
@@ -82,7 +82,7 @@ public final class AbstractViewTreeNode {
   public var rawAttributes: [String: String]
   
 
-  public init(elementType: UIElementType, elementId: String? = nil, styleClasses: [String]? = nil, inlineStyle: [ISSPropertyValue]? = nil, addToViewHierarchy: Bool,
+  public init(elementType: UIElementType, elementId: String? = nil, styleClasses: [String]? = nil, inlineStyle: [PropertyValue]? = nil, addToViewHierarchy: Bool,
               fileOwnerPropertyName: String? = nil, accessibilityIdentifier: String? = nil, rawAttributes: [String: String]) {
     self.elementType = elementType
     self.elementId = elementId
@@ -239,7 +239,7 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       var elementId: String? = nil
       var styleClasses: String? = nil
       var propertyName: String? = nil
-      var inlineStyle: [ISSPropertyValue]? = nil
+      var inlineStyle: [PropertyValue]? = nil
       var accessibilityIdentifier: String? = nil
       var viewClass: UIResponder.Type? = nil
       var addToViewHierarchy: Bool = true

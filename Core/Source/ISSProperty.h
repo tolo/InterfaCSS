@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
+NS_SWIFT_NAME(PropertyType)
 typedef NSString* ISSPropertyType NS_EXTENSIBLE_STRING_ENUM;
 
 // TODO: Only define some property types here? 
@@ -40,10 +41,13 @@ extern ISSPropertyType const ISSPropertyTypeUnknown;
 @class ISSProperty, ISSRuntimeProperty;
 
 
+NS_SWIFT_NAME(PropertySetterBlock)
 typedef BOOL (^ISSPropertySetterBlock)(ISSProperty* property, id target, id _Nullable value, NSArray* _Nullable parameters);
+NS_SWIFT_NAME(PropertyParameterTransformer)
 typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NSString* parameterStringValue);
 
 
+NS_SWIFT_NAME(PropertyEnumValueMapping)
 @interface ISSPropertyEnumValueMapping : NSObject
 
 @property (nonatomic, strong, readonly) NSDictionary* enumValues;
@@ -56,6 +60,7 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NS
 
 @end
 
+NS_SWIFT_NAME(PropertyBitMaskEnumValueMapping)
 @interface ISSPropertyBitMaskEnumValueMapping : ISSPropertyEnumValueMapping
 @end
 
@@ -64,6 +69,7 @@ typedef _Nonnull id (^ISSPropertyParameterTransformer)(ISSProperty* property, NS
 /**
  * Represents the definition of a property that can be declared in a stylesheet. 
  */
+NS_SWIFT_NAME(Property)
 @interface ISSProperty : NSObject
 
 @property (nonatomic, readonly) NSString* name;

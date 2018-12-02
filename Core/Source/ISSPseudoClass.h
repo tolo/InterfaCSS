@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ISSElementStylingProxy, ISSStylingContext;
 
 
+NS_SWIFT_NAME(PseudoClassType)
 typedef NSString* ISSPseudoClassType NS_EXTENSIBLE_STRING_ENUM;
 
 #if TARGET_OS_TV == 0
@@ -73,6 +74,7 @@ extern ISSPseudoClassType const ISSPseudoClassTypeEmpty;
 extern ISSPseudoClassType const ISSPseudoClassTypeUnknown;
 
 
+NS_SWIFT_NAME(PseudoClass)
 @interface ISSPseudoClass : NSObject
 
 @property (nonatomic, readonly) NSString* displayDescription;

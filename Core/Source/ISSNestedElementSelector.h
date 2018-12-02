@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
+NS_SWIFT_NAME(NestedElementSelector)
 @interface ISSNestedElementSelector : ISSSelector
 
 + (instancetype) selectorWithNestedElementKeyPath:(NSString*)nestedElementKeyPath;

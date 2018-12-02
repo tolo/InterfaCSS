@@ -21,6 +21,7 @@ extern NSString* const ISSPropertyDeclarationUseCurrentValue;
 /**
  * Represents the declaration of a property name/value pair in a stylesheet.
  */
+NS_SWIFT_NAME(PropertyValue)
 @interface ISSPropertyValue : NSObject<NSCopying>
 
 @property (nonatomic, strong, readonly, nullable) NSString* propertyName;

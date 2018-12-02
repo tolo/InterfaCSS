@@ -90,7 +90,7 @@ extension YGValue {
     self.init(value: Float(floatValue), unit: .point)
   }
 
-  init(_ relativeNumber: ISSRelativeNumber) {
+  init(_ relativeNumber: RelativeNumber) {
     switch relativeNumber.unit {
     case .percent:
       self.init(value: relativeNumber.value.floatValue, unit: .percent)
@@ -102,8 +102,8 @@ extension YGValue {
   }
 }
 
-private typealias CGFloatSetter = (ISSProperty, UIView, CGFloat) -> Void
-private typealias YGValueSetter = (ISSProperty, UIView, YGValue) -> Void
+private typealias CGFloatSetter = (Property, UIView, CGFloat) -> Void
+private typealias YGValueSetter = (Property, UIView, YGValue) -> Void
 
 public class FlexLayoutViewBuilder: ViewBuilder {
 
@@ -157,7 +157,7 @@ public class FlexLayoutViewBuilder: ViewBuilder {
     registerNumberFlexProperty(withName: "flex-aspect-ratio") { $1.yoga.aspectRatio = $2 }
   }
 
-  private func registerEnumFlexProperty<EnumType: StringParsableEnum>(_ name: String, propertySetter: @escaping (ISSProperty, UIView, EnumType) -> Void) {
+  private func registerEnumFlexProperty<EnumType: StringParsableEnum>(_ name: String, propertySetter: @escaping (Property, UIView, EnumType) -> Void) {
     registerFlexProperty(withName: name, type: .enumType) { (property, view, value) in
       guard let value = value as? String else {
         return false
@@ -191,7 +191,7 @@ public class FlexLayoutViewBuilder: ViewBuilder {
 
   private func registerRelativeNumberFlexProperty(withName name: String, propertySetter: @escaping YGValueSetter) {
     registerFlexProperty(withName: name, type: .relativeNumber) { (property, view, value) in
-      guard let value = value as? ISSRelativeNumber else {
+      guard let value = value as? RelativeNumber else {
         return false
       }
       propertySetter(property, view, YGValue(value))
@@ -199,13 +199,13 @@ public class FlexLayoutViewBuilder: ViewBuilder {
     }
   }
 
-  private func registerFlexProperty(withName name: String, type: ISSPropertyType, propertySetter: @escaping (ISSProperty, UIView, Any) -> Bool) {
+  private func registerFlexProperty(withName name: String, type: PropertyType, propertySetter: @escaping (Property, UIView, Any) -> Bool) {
     let pm = styler.propertyManager
     guard pm.findProperty(withName: name, in: UIView.self) == nil else {
       return
     }
 
-    let p = ISSProperty(customPropertyWithName: name, in: UIView.self, type: type, enumValueMapping: nil, parameterTransformers: nil) { (property, view, value, _) -> Bool in
+    let p = Property(customPropertyWithName: name, in: UIView.self, type: type, enumValueMapping: nil, parameterTransformers: nil) { (property, view, value, _) -> Bool in
       guard let view = view as? UIView, let value = value else {
         return false
       }

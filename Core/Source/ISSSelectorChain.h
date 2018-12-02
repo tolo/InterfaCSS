@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ISSStylingContext;
 
 
+NS_SWIFT_NAME(SelectorChain)
 @interface ISSSelectorChain : NSObject<NSCopying>
 
 @property (nonatomic, readonly) NSArray* selectorComponents;

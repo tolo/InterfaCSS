@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ISSStylingContext;
 
 
+NS_SWIFT_NAME(SelectorCombinator)
 typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
     ISSSelectorCombinatorDescendant,
     ISSSelectorCombinatorChild,
@@ -23,6 +24,7 @@ typedef NS_ENUM(NSInteger, ISSSelectorCombinator) {
     ISSSelectorCombinatorGeneralSibling,
 };
 
+NS_SWIFT_NAME(Selector)
 @interface ISSSelector : NSObject<NSCopying>
 
 @property (nonatomic, readonly, nullable) Class type;

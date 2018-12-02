@@ -53,8 +53,6 @@
 		8AA14132202326D40058B23B /* ISSElementStylingProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA14130202326D40058B23B /* ISSElementStylingProxy.h */; };
 		8AC2F3722023A6E50042D80C /* ISSStyleSheetParser+Support.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8372F201096D50093373E /* ISSStyleSheetParser+Support.m */; };
 		8AC2F3732023A6F90042D80C /* ISSStyleSheetParser+Support.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83732201096D50093373E /* ISSStyleSheetParser+Support.h */; };
-		8AD712B5202310EE00C0FB05 /* ISSNotificationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AD712B3202310EE00C0FB05 /* ISSNotificationObserver.h */; };
-		8AD712B6202310EE00C0FB05 /* ISSNotificationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */; };
 		8AEE849C2020745300567B11 /* ISSStylingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE849A2020745300567B11 /* ISSStylingManager.h */; };
 		8AEE849D2020745300567B11 /* ISSStylingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE849B2020745300567B11 /* ISSStylingManager.m */; };
 		CF695B34DE1C8B4B95F3E17F /* libPods-InterfaCSS-Layout.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */; };
@@ -110,7 +108,6 @@
 		F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */; };
 		F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F837502010A9620093373E /* ISSPropertyValue.m */; };
 		F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */; };
-		F6F67A922190EFBB004F009A /* ISSNotificationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */; };
 		F6F67A942190EFBB004F009A /* UIColor+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF9202461BA00E20D18 /* UIColor+ISSAdditions.m */; };
 		F6F67A962190EFBB004F009A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
 		F6F67A972190EFBB004F009A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
@@ -131,7 +128,6 @@
 		F6F67AAA2190EFBB004F009A /* ISSProperty.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A387FBF2010D87B0011BD52 /* ISSProperty.h */; };
 		F6F67AAB2190EFBB004F009A /* ISSNestedElementSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A036150201A081000BA97F6 /* ISSNestedElementSelector.h */; };
 		F6F67AAC2190EFBB004F009A /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
-		F6F67AAD2190EFBB004F009A /* ISSNotificationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AD712B3202310EE00C0FB05 /* ISSNotificationObserver.h */; };
 		F6F67AAE2190EFBB004F009A /* ISSParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83735201096D50093373E /* ISSParser.h */; };
 		F6F67AAF2190EFBB004F009A /* ISSSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F837482010A2E90093373E /* ISSSelector.h */; };
 		F6F67AB02190EFBB004F009A /* NSObject+ISSLogSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A32962D2021BBF3002259BD /* NSObject+ISSLogSupport.h */; };
@@ -225,8 +221,6 @@
 		8AA141292023256F0058B23B /* ISSPropertyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyManager.m; sourceTree = "<group>"; };
 		8AA1412F202326D40058B23B /* ISSElementStylingProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSElementStylingProxy.m; sourceTree = "<group>"; };
 		8AA14130202326D40058B23B /* ISSElementStylingProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSElementStylingProxy.h; sourceTree = "<group>"; };
-		8AD712B3202310EE00C0FB05 /* ISSNotificationObserver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSNotificationObserver.h; sourceTree = "<group>"; };
-		8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSNotificationObserver.m; sourceTree = "<group>"; };
 		8AEE849A2020745300567B11 /* ISSStylingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingManager.h; sourceTree = "<group>"; };
 		8AEE849B2020745300567B11 /* ISSStylingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingManager.m; sourceTree = "<group>"; };
 		AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS-Layout.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS-Layout/Pods-InterfaCSS-Layout.release.xcconfig"; sourceTree = "<group>"; };
@@ -563,8 +557,6 @@
 				F600AF7620175C8200B44482 /* ISSMacros.h */,
 				F648DB11202277D30011012C /* ISSDateUtils.h */,
 				F648DB14202277D30011012C /* ISSDateUtils.m */,
-				8AD712B3202310EE00C0FB05 /* ISSNotificationObserver.h */,
-				8AD712B4202310EE00C0FB05 /* ISSNotificationObserver.m */,
 				F648DB10202277D20011012C /* ISSRefreshableResource.h */,
 				F648DB13202277D30011012C /* ISSRefreshableResource.m */,
 			);
@@ -604,7 +596,6 @@
 				8A387FC22010D87B0011BD52 /* ISSProperty.h in Headers */,
 				8A036152201A081100BA97F6 /* ISSNestedElementSelector.h in Headers */,
 				F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */,
-				8AD712B5202310EE00C0FB05 /* ISSNotificationObserver.h in Headers */,
 				F6F8376C2010B1000093373E /* ISSParser.h in Headers */,
 				F6F837662010B0EC0093373E /* ISSSelector.h in Headers */,
 				8A3296352021BBF4002259BD /* NSObject+ISSLogSupport.h in Headers */,
@@ -645,7 +636,6 @@
 				F6F67AAA2190EFBB004F009A /* ISSProperty.h in Headers */,
 				F6F67AAB2190EFBB004F009A /* ISSNestedElementSelector.h in Headers */,
 				F6F67AAC2190EFBB004F009A /* ISSStyleSheetParser.h in Headers */,
-				F6F67AAD2190EFBB004F009A /* ISSNotificationObserver.h in Headers */,
 				F6F67AAE2190EFBB004F009A /* ISSParser.h in Headers */,
 				F6F67AAF2190EFBB004F009A /* ISSSelector.h in Headers */,
 				F6F67AB02190EFBB004F009A /* NSObject+ISSLogSupport.h in Headers */,
@@ -846,7 +836,6 @@
 				F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */,
 				F6F837652010B0EC0093373E /* ISSPropertyValue.m in Sources */,
 				F65B6633218B2D9C00D91C03 /* ISSRelativeNumber.m in Sources */,
-				8AD712B6202310EE00C0FB05 /* ISSNotificationObserver.m in Sources */,
 				8A677FFD202461BA00E20D18 /* UIColor+ISSAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -890,7 +879,6 @@
 				F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */,
 				F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */,
 				F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */,
-				F6F67A922190EFBB004F009A /* ISSNotificationObserver.m in Sources */,
 				F651207E2194C4B800479DE9 /* FlexLayoutViewBuilder.swift in Sources */,
 				F6F67A942190EFBB004F009A /* UIColor+ISSAdditions.m in Sources */,
 			);
