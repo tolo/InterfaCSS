@@ -81,13 +81,11 @@ NS_SWIFT_NAME(StyleSheetManager)
 /**
  * Unloads the specified styleSheet.
  * @param styleSheet the stylesheet to unload.
- * @param refreshStyling YES if styling on all tracked views should be reset and reapplied as a result of this call, otherwise NO.
  */
 - (void) unloadStyleSheet:(ISSStyleSheet*)styleSheet; // refreshStyling:(BOOL)refreshStyling;
 
 /**
  * Unloads all loaded stylesheets, effectively resetting the styling of all views.
- * @param refreshStyling YES if styling on all tracked views should be reset and reapplied as a result of this call, otherwise NO.
  */
 - (void) unloadAllStyleSheets; // :(BOOL)refreshStyling;
 

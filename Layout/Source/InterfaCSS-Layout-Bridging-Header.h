@@ -6,7 +6,6 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-#import "ISSStyler.h"
 #import "ISSStylingManager.h"
 #import "ISSPropertyManager.h"
 #import "ISSStyleSheetManager.h"
