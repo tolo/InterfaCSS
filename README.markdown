@@ -1,7 +1,7 @@
 <img src="https://raw.githubusercontent.com/tolo/InterfaCSS/master/Resources/InterfaCSS-title-logo.png" alt="InterfaCSS" title="InterfaCSS" width="432">
 
 
-***Update:*** The work with a new and improved version of InterfaCSS has now started in the **[develop](https://github.com/tolo/InterfaCSS/tree/develop)** branch... 😁
+***Update:*** The work with a new and improved version of InterfaCSS is underway in the **[develop](https://github.com/tolo/InterfaCSS/tree/develop)** branch... 😁 The latest version (Beta2) adds support for XML-based layout using **Flexbox** (powered by [Facebook Yoga](https://yogalayout.com))!
 
 
 [![Build Status](https://travis-ci.org/tolo/InterfaCSS.svg?branch=master)](https://travis-ci.org/tolo/InterfaCSS)
