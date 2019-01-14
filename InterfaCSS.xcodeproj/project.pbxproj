@@ -51,19 +51,22 @@
 		8AA1412D2023256F0058B23B /* ISSPropertyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA141292023256F0058B23B /* ISSPropertyManager.m */; };
 		8AA14131202326D40058B23B /* ISSElementStylingProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AA1412F202326D40058B23B /* ISSElementStylingProxy.m */; };
 		8AA14132202326D40058B23B /* ISSElementStylingProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA14130202326D40058B23B /* ISSElementStylingProxy.h */; };
+		8AA66DA921CCEFA900477732 /* NotificationObserverToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA66DA821CCEFA900477732 /* NotificationObserverToken.swift */; };
 		8AC2F3722023A6E50042D80C /* ISSStyleSheetParser+Support.m in Sources */ = {isa = PBXBuildFile; fileRef = F6F8372F201096D50093373E /* ISSStyleSheetParser+Support.m */; };
 		8AC2F3732023A6F90042D80C /* ISSStyleSheetParser+Support.h in Headers */ = {isa = PBXBuildFile; fileRef = F6F83732201096D50093373E /* ISSStyleSheetParser+Support.h */; };
 		8AEE849C2020745300567B11 /* ISSStylingManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AEE849A2020745300567B11 /* ISSStylingManager.h */; };
 		8AEE849D2020745300567B11 /* ISSStylingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE849B2020745300567B11 /* ISSStylingManager.m */; };
 		CF695B34DE1C8B4B95F3E17F /* libPods-InterfaCSS-Layout.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */; };
 		F600AF7720175C8200B44482 /* ISSMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F600AF7620175C8200B44482 /* ISSMacros.h */; };
+		F6090CD421BF094200647311 /* LayoutTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6090CD321BF094200647311 /* LayoutTableViewCell.swift */; };
 		F640086A21A5A29700F9535A /* LayoutContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F640086921A5A29700F9535A /* LayoutContainerView.swift */; };
+		F6482D4021E621EE000A20D0 /* LayoutTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */; };
 		F648DB16202277D30011012C /* ISSRefreshableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB10202277D20011012C /* ISSRefreshableResource.h */; };
 		F648DB17202277D30011012C /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB11202277D30011012C /* ISSDateUtils.h */; };
 		F648DB19202277D30011012C /* ISSRefreshableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB13202277D30011012C /* ISSRefreshableResource.m */; };
 		F648DB1A202277D30011012C /* ISSDateUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB14202277D30011012C /* ISSDateUtils.m */; };
 		F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F651207B2194C42F00479DE9 /* ViewBuilder.swift */; };
-		F651207E2194C4B800479DE9 /* FlexLayoutViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */; };
+		F651207E2194C4B800479DE9 /* FlexViewBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F651207D2194C4B800479DE9 /* FlexViewBuilder.swift */; };
 		F65B6632218B2D9C00D91C03 /* ISSRelativeNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */; };
 		F65B6633218B2D9C00D91C03 /* ISSRelativeNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */; };
 		F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
@@ -77,6 +80,8 @@
 		F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
 		F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
 		F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D83B5221A74C8F0084A5AD /* BundleFile.swift */; };
+		F6E2AED021C913800080F244 /* LayoutTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E2AECF21C913800080F244 /* LayoutTableView.swift */; };
+		F6ECCABC21E745520056E67A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6ECCABB21E745520056E67A /* Logger.swift */; };
 		F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
 		F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */; };
 		F6F67A722190EFBB004F009A /* NSString+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A677FF6202461BA00E20D18 /* NSString+ISSAdditions.m */; };
@@ -221,19 +226,22 @@
 		8AA141292023256F0058B23B /* ISSPropertyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSPropertyManager.m; sourceTree = "<group>"; };
 		8AA1412F202326D40058B23B /* ISSElementStylingProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSElementStylingProxy.m; sourceTree = "<group>"; };
 		8AA14130202326D40058B23B /* ISSElementStylingProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSElementStylingProxy.h; sourceTree = "<group>"; };
+		8AA66DA821CCEFA900477732 /* NotificationObserverToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationObserverToken.swift; sourceTree = "<group>"; };
 		8AEE849A2020745300567B11 /* ISSStylingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStylingManager.h; sourceTree = "<group>"; };
 		8AEE849B2020745300567B11 /* ISSStylingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSStylingManager.m; sourceTree = "<group>"; };
 		AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS-Layout.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS-Layout/Pods-InterfaCSS-Layout.release.xcconfig"; sourceTree = "<group>"; };
 		BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS-Layout.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F600AF7620175C8200B44482 /* ISSMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSMacros.h; sourceTree = "<group>"; };
+		F6090CD321BF094200647311 /* LayoutTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableViewCell.swift; sourceTree = "<group>"; };
 		F6210140202C558A009A0A1D /* ISSTestMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSTestMacros.h; sourceTree = "<group>"; };
 		F640086921A5A29700F9535A /* LayoutContainerView.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LayoutContainerView.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableViewController.swift; sourceTree = "<group>"; tabWidth = 2; };
 		F648DB10202277D20011012C /* ISSRefreshableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRefreshableResource.h; sourceTree = "<group>"; };
 		F648DB11202277D30011012C /* ISSDateUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDateUtils.h; sourceTree = "<group>"; };
 		F648DB13202277D30011012C /* ISSRefreshableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRefreshableResource.m; sourceTree = "<group>"; };
 		F648DB14202277D30011012C /* ISSDateUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSDateUtils.m; sourceTree = "<group>"; };
 		F651207B2194C42F00479DE9 /* ViewBuilder.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ViewBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
-		F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FlexLayoutViewBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F651207D2194C4B800479DE9 /* FlexViewBuilder.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FlexViewBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
 		F65B6630218B2D9C00D91C03 /* ISSRelativeNumber.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSRelativeNumber.h; sourceTree = "<group>"; };
 		F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSRelativeNumber.m; sourceTree = "<group>"; };
 		F65D52D814F7B0F10034E496 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -247,6 +255,8 @@
 		F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetContent.h; sourceTree = "<group>"; };
 		F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetContent.m; sourceTree = "<group>"; };
 		F6D83B5221A74C8F0084A5AD /* BundleFile.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BundleFile.swift; sourceTree = "<group>"; tabWidth = 2; };
+		F6E2AECF21C913800080F244 /* LayoutTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableView.swift; sourceTree = "<group>"; };
+		F6ECCABB21E745520056E67A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libInterfaCSS-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F5FC1A14F5683B008E647E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -312,10 +322,13 @@
 		8A0EB9B621AC635A008C2526 /* Layout */ = {
 			isa = PBXGroup;
 			children = (
-				F651207D2194C4B800479DE9 /* FlexLayoutViewBuilder.swift */,
-				F640086921A5A29700F9535A /* LayoutContainerView.swift */,
+				F6482D3E21E61BB3000A20D0 /* Flex */,
 				F651207B2194C42F00479DE9 /* ViewBuilder.swift */,
+				F640086921A5A29700F9535A /* LayoutContainerView.swift */,
 				8A06010D21B2B82500ECEBF6 /* LayoutViewController.swift */,
+				F6E2AECF21C913800080F244 /* LayoutTableView.swift */,
+				F6090CD321BF094200647311 /* LayoutTableViewCell.swift */,
+				F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */,
 			);
 			name = Layout;
 			sourceTree = "<group>";
@@ -324,7 +337,9 @@
 			isa = PBXGroup;
 			children = (
 				8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */,
+				F6ECCABB21E745520056E67A /* Logger.swift */,
 				F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */,
+				8AA66DA821CCEFA900477732 /* NotificationObserverToken.swift */,
 				F6D83B5221A74C8F0084A5AD /* BundleFile.swift */,
 			);
 			name = Common;
@@ -392,6 +407,14 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		F6482D3E21E61BB3000A20D0 /* Flex */ = {
+			isa = PBXGroup;
+			children = (
+				F651207D2194C4B800479DE9 /* FlexViewBuilder.swift */,
+			);
+			name = Flex;
+			sourceTree = "<group>";
+		};
 		F6F5FC0C14F5683B008E647E = {
 			isa = PBXGroup;
 			children = (
@@ -437,8 +460,10 @@
 				F6F67A612190E46F004F009A /* Test */,
 				F6F67A622190E46F004F009A /* Source */,
 			);
+			indentWidth = 2;
 			path = Layout;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		F6F67A612190E46F004F009A /* Test */ = {
 			isa = PBXGroup;
@@ -846,9 +871,11 @@
 			files = (
 				F6F67A722190EFBB004F009A /* NSString+ISSAdditions.m in Sources */,
 				F6F67A732190EFBB004F009A /* ISSPropertyManager.m in Sources */,
+				8AA66DA921CCEFA900477732 /* NotificationObserverToken.swift in Sources */,
 				F6F67A742190EFBB004F009A /* ISSSelectorChain.m in Sources */,
 				F6F67A752190EFBB004F009A /* ISSProperty.m in Sources */,
 				F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */,
+				F6E2AED021C913800080F244 /* LayoutTableView.swift in Sources */,
 				8A89D3B321AD8F01006626BC /* AbstractLayoutParser.swift in Sources */,
 				F6F67A762190EFBB004F009A /* ISSStylingContext.m in Sources */,
 				F6F67A772190EFBB004F009A /* ISSStyleSheetContent.m in Sources */,
@@ -860,12 +887,14 @@
 				F6F67A7D2190EFBB004F009A /* ISSRefreshableResource.m in Sources */,
 				F6F67A7E2190EFBB004F009A /* ISSStyleSheetParserSyntax.m in Sources */,
 				F6F67A7F2190EFBB004F009A /* NSObject+ISSLogSupport.m in Sources */,
+				F6482D4021E621EE000A20D0 /* LayoutTableViewController.swift in Sources */,
 				8A06010E21B2B82500ECEBF6 /* LayoutViewController.swift in Sources */,
 				F6F67A822190EFBB004F009A /* ISSDateUtils.m in Sources */,
 				F6F67A832190EFBB004F009A /* ISSPseudoClass.m in Sources */,
 				F6F67A842190EFBB004F009A /* ISSRuleset.m in Sources */,
 				F6F67A852190EFBB004F009A /* ISSStyleSheetParser.m in Sources */,
 				F6F67A862190EFBB004F009A /* NSDictionary+ISSAdditions.m in Sources */,
+				F6ECCABC21E745520056E67A /* Logger.swift in Sources */,
 				F6F67A872190EFBB004F009A /* UIDevice+ISSAdditions.m in Sources */,
 				F6F67A882190EFBB004F009A /* ISSParser.m in Sources */,
 				F6F67A892190EFBB004F009A /* ISSStylingManager.m in Sources */,
@@ -877,9 +906,10 @@
 				F6F67A8E2190EFBB004F009A /* NSArray+ISSAdditions.m in Sources */,
 				F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */,
 				F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */,
+				F6090CD421BF094200647311 /* LayoutTableViewCell.swift in Sources */,
 				F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */,
 				F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */,
-				F651207E2194C4B800479DE9 /* FlexLayoutViewBuilder.swift in Sources */,
+				F651207E2194C4B800479DE9 /* FlexViewBuilder.swift in Sources */,
 				F6F67A942190EFBB004F009A /* UIColor+ISSAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -30,10 +30,6 @@ public class LayoutAttributes {
   public var useDefaultMargins: Bool = false
 }
 
-private class StyleNodeContent {
-  var content: String = ""
-}
-
 public enum ButtonType: String, StringParsableEnum {
   public var description: String {
     return rawValue
@@ -54,13 +50,56 @@ public enum UIElementType {
   // TODO: Expand this will more element types as needed
   case button(type: ButtonType)
   case collectionView(layoutClass: UICollectionViewLayout.Type)
+  case tableView
+  case tableViewCell(cellLayoutFile: String?, cellClass: LayoutTableViewCell.Type?)
   case other(elementClass: UIResponder.Type)
 
-  public func createElement() -> UIResponder {
+  public func createElement(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, fileOwner: AnyObject?) -> UIResponder? {
     switch self {
-    case .button(let type): return UIButton(type: type.uiButtonType)
-    case .collectionView(let layoutClass): return UICollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
-    case .other(let elementClass): return elementClass.init()
+    case .button(let type):
+      return UIButton(type: type.uiButtonType)
+    case .collectionView(let layoutClass):
+      return createCollectionView(layoutClass: layoutClass, fileOwner: fileOwner)
+    case .tableView:
+      return createTableView(fileOwner: fileOwner)
+    case .tableViewCell(let cellLayoutFile, let cellClass):
+      registerTableViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, cellClass: cellClass)
+      return nil
+    case .other(let elementClass):
+      return elementClass.init()
+    }
+  }
+
+  private func createCollectionView(layoutClass: UICollectionViewLayout.Type, fileOwner: AnyObject?) -> UICollectionView {
+    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
+    if let dataSource = fileOwner as? UICollectionViewDataSource {
+      collectionView.dataSource = dataSource
+    }
+    if let delegate = fileOwner as? UICollectionViewDelegate {
+      collectionView.delegate = delegate
+    }
+    return collectionView
+  }
+
+  private func createTableView(fileOwner: AnyObject?) -> UITableView {
+    let tableView = LayoutTableView(frame: .zero)
+    if let dataSource = fileOwner as? UITableViewDataSource {
+      tableView.dataSource = dataSource
+    }
+    if let delegate = fileOwner as? UITableViewDelegate {
+      tableView.delegate = delegate
+    }
+    
+    return tableView
+  }
+  
+  private func registerTableViewCellClass(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, cellLayoutFile: String?, cellClass: LayoutTableViewCell.Type?) {
+    if let cellId = node.elementId, let cellLayoutFile = cellLayoutFile, let tableView = parentView as? LayoutTableView {
+      if let cellClass = cellClass {
+        tableView.registerCellLayout(cellIdentifier: cellId, cellClass: cellClass, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
+      } else {
+        tableView.registerCellLayout(cellIdentifier: cellId, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
+      }
     }
   }
 }
@@ -111,7 +150,6 @@ public final class AbstractViewTreeNode {
   }
 }
 
-
 /**
  * AbstractViewTreeParser
  */
@@ -139,7 +177,13 @@ public final class AbstractViewTreeParser: NSObject {
     
     case buttonType = "type"
     
+    case layout = "layout"
+    
     case unknownAttribute = "unknownAttribute"
+  }
+
+  private class StyleNodeContent {
+    var content: String = ""
   }
 
   private enum Node {
@@ -161,9 +205,8 @@ public final class AbstractViewTreeParser: NSObject {
   private (set) var styler: Styler
 
 
-  public init(data: Data, fileOwner: AnyObject? = nil, styler: Styler) {
+  public init(data: Data, styler: Styler) {
     parser = XMLParser(data: data)
-    self.fileOwner = fileOwner
     self.styler = styler
 
     super.init()
@@ -171,6 +214,9 @@ public final class AbstractViewTreeParser: NSObject {
     parser.delegate = self
   }
 
+  /**
+   * Returns 'AbstractViewTreeParserError' or Error
+   */
   public func parse(completion: AbstractLayoutCompletionHandler) {
     parser.parse()
 
@@ -245,6 +291,7 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       var addToViewHierarchy: Bool = true
       var buttonType: ButtonType = .custom
       var collectionViewLayoutClass: UICollectionViewLayout.Type = UICollectionViewFlowLayout.self
+      var layoutFile: String? = nil
 
       var rawAttributes: [String: String] = [:]
       for (key, value) in attributeDict {
@@ -292,6 +339,10 @@ extension AbstractViewTreeParser: XMLParserDelegate {
         else if attribute == .buttonType {
           buttonType = ButtonType.enumValue(from: value)
         }
+        // "layout":
+        else if attribute == .layout {
+          layoutFile = value
+        }
        
         if attribute != .unknownAttribute {
           rawAttributes[attribute.rawValue] = value
@@ -299,14 +350,24 @@ extension AbstractViewTreeParser: XMLParserDelegate {
           rawAttributes[key] = value
         }
       }
+      
+      var parentViewNode: AbstractViewTreeNode?
+      if let parentNode = nodeStack.last, case .viewNode(let node) = parentNode {
+        parentViewNode = node
+      }
 
       // Set viewClass if not specified by impl attribute
       viewClass = viewClass ?? viewClassFor(elementName: elementName)
       let elementType: UIElementType
-      if viewClass == UIButton.self {
+      if elementName.caseInsensitiveCompare("button") == .orderedSame {
         elementType = .button(type: buttonType)
-      } else if viewClass == UICollectionView.self {
+      } else if viewClass is UICollectionView.Type {
         elementType = .collectionView(layoutClass: collectionViewLayoutClass )
+      } else if viewClass is UITableView.Type {
+        elementType = .tableView
+      } else if (viewClass is UITableViewCell.Type || elementName.caseInsensitiveCompare("cell") == .orderedSame),
+        let parentType = parentViewNode?.elementType, case .tableView = parentType {
+        elementType = .tableViewCell(cellLayoutFile: layoutFile, cellClass: viewClass as? LayoutTableViewCell.Type)
       } else {
         elementType = .other(elementClass: viewClass ?? UIView.self) // If class not found - fall back to UIView
       }

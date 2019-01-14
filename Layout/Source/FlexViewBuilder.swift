@@ -1,5 +1,5 @@
 //
-//  FlexLayoutViewBuilder.swift
+//  FlexViewBuilder.swift
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
@@ -8,6 +8,15 @@
 
 import UIKit
 import YogaKit
+
+extension UIView {
+  fileprivate func markYogaViewTreeDirty() {
+    yoga.markDirty()
+    for sub in subviews {
+      sub.markYogaViewTreeDirty()
+    }
+  }
+}
 
 extension YGDirection: StringParsableEnum {
   public typealias AllCases = [YGDirection]
@@ -105,13 +114,13 @@ extension YGValue {
 private typealias CGFloatSetter = (Property, UIView, CGFloat) -> Void
 private typealias YGValueSetter = (Property, UIView, YGValue) -> Void
 
-public class FlexLayoutViewBuilder: ViewBuilder {
+public class FlexViewBuilder: ViewBuilder {
 
   public var enableFlexboxOnSubviews = true
+  
 
-
-  public required init(layoutFileURL: URL, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
-    super.init(layoutFileURL: layoutFileURL, fileOwner: fileOwner, styler: styler)
+  public required init(layoutFileURL: URL, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
+    super.init(layoutFileURL: layoutFileURL, refreshable: refreshable, fileOwner: fileOwner, styler: styler)
 
     registerEnumFlexProperty("flex-layout-direction") { $1.yoga.direction = $2 }
     registerEnumFlexProperty("flex-direction") { $1.yoga.flexDirection = $2 }
@@ -126,7 +135,7 @@ public class FlexLayoutViewBuilder: ViewBuilder {
 
     registerNumberFlexProperty(withName: "flex-grow") { $1.yoga.flexGrow = $2 }
     registerNumberFlexProperty(withName: "flex-shrink") { $1.yoga.flexShrink = $2 }
-    registerNumberFlexProperty(withName: "flex-basis") { $1.yoga.flexBasis = YGValue($2) }
+    registerRelativeNumberFlexProperty(withName: "flex-basis") { $1.yoga.flexBasis = $2 }
 
     registerRelativeNumberFlexProperties(["flex-left": { $1.yoga.left = $2 }, "flex-top": { $1.yoga.top = $2 },
                                           "flex-right": { $1.yoga.right = $2 }, "flex-bottom": { $1.yoga.bottom = $2 },
@@ -220,6 +229,15 @@ public class FlexLayoutViewBuilder: ViewBuilder {
 
 
   // MARK: - ViewBuilder
+  
+  override open func applyLayout(onView view: UIView) {
+    view.yoga.applyLayout(preservingOrigin: true)
+  }
+  
+  override open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize) -> CGSize {
+    view.markYogaViewTreeDirty()
+    return view.yoga.calculateLayout(with: size)
+  }
 
   override open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> UIView? {
     let rootView = super.createViewTree(withRootNode: root, fileOwner: fileOwner)

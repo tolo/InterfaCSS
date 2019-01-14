@@ -9,68 +9,58 @@
 import Foundation
 import YogaKit
 
+public typealias LayoutViewDidLoadCallback = (LayoutContainerView, UIView) -> Void
+
 /**
  * LayoutContainerView
  */
 open class LayoutContainerView: UIView {
-  public typealias DidLoadCallback = (LayoutContainerView, UIView) -> Void
 
-  public let layoutFileURL: URL
+  override open var description: String {
+    return "\(type(of: self))(\(viewBuilder.layoutFileURL.lastPathComponent))"
+  }
+  
   public private (set) var viewBuilder: ViewBuilder!
+  public var layoutFileURL: URL { return viewBuilder.layoutFileURL }
+  public private (set) var fileOwner: AnyObject?
   public var styler: Styler { return viewBuilder.styler }
-  public let didLoadCallback: DidLoadCallback?
+  public let didLoadCallback: LayoutViewDidLoadCallback?
 
-  public private (set) var refresher: RefreshableResource?
+  public private (set) var layoutRefreshObserver: NotificationObserverToken?
   public private (set) var stylesheet: StyleSheet?
   public private (set) var stylesheetObserver: AnyObject?
 
   public private (set) var viewBuilt = false
   public private (set) var currentLayoutView: UIView?
 
-  public var addLayoutConstraints: Bool = true
   public var useSafeAreaConstraints: Bool = true
   public var useDefaultMargins: Bool = false
 
-  public class var viewBuilderClass: ViewBuilder.Type { return ViewBuilder.self }
+    
+  public convenience init(mainBundleFile: String, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {
+    self.init(layoutFileURL: BundleFile.mainBundeFile(filename: mainBundleFile).validFileURL, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
+  }
   
-  open func createViewBuilder(layoutFileURL: URL, fileOwner: AnyObject?, styler: Styler) -> ViewBuilder {
-    return type(of: self).viewBuilderClass.init(layoutFileURL: layoutFileURL, fileOwner: fileOwner, styler: styler)
+  public convenience init(bundleFile: BundleFile, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {
+    self.init(layoutFileURL: bundleFile.validFileURL, refreshable: bundleFile.refreshable, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
   }
 
-  
-  public convenience init(mainBundleFile: String, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: DidLoadCallback? = nil) {
-    guard let url = Bundle.main.url(forResource: mainBundleFile, withExtension: nil) else {
-      preconditionFailure("Main bundle file '\(mainBundleFile)' does not exist!")
-    }
-    self.init(layoutFileURL: url, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
-  }
-  
-  public convenience init(bundleFile: BundleFile, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: DidLoadCallback? = nil) {
-    guard let url = bundleFile.fileURL else {
-      preconditionFailure("Bundle file '\(bundleFile.filename)' does not exist!")
-    }
-    self.init(layoutFileURL: url, refreshable: bundleFile.refreshable, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
+  public required convenience init(layoutFileURL: URL, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {
+    let viewBuilder = viewBuilderClass.init(layoutFileURL: layoutFileURL, refreshable: refreshable, fileOwner: fileOwner, styler: styler)
+    self.init(viewBuilder: viewBuilder, didLoadCallback: didLoadCallback)
   }
 
-  public required init(layoutFileURL: URL, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: DidLoadCallback? = nil) {
-    self.layoutFileURL = layoutFileURL
+  public required init(viewBuilder: ViewBuilder, fileOwner: AnyObject? = nil, didLoadCallback: LayoutViewDidLoadCallback? = nil) {
+    self.viewBuilder = viewBuilder
+    self.fileOwner = fileOwner
     self.didLoadCallback = didLoadCallback
 
     super.init(frame: .zero)
-    
-    self.viewBuilder = createViewBuilder(layoutFileURL: layoutFileURL, fileOwner: fileOwner, styler: styler)
 
     autoresizingMask = [.flexibleWidth, .flexibleHeight]
     
-    if refreshable {
-      if layoutFileURL.isFileURL {
-        refresher = RefreshableLocalResource(url: layoutFileURL)
-      }
-//      else { // TODO: Support remote reloadable layout files?
-//        refresher = RefreshableRemoteResource(url: url)
-//      }
-    }
-    
+    let layoutFileURL = viewBuilder.layoutFileURL
+    let refreshable = viewBuilder.refreshable
     if layoutFileURL.isFileURL {
       var cssFileName = layoutFileURL.lastPathComponent
       if cssFileName.iss_hasData(), let lastDot = cssFileName.lastIndex(of: ".") {
@@ -100,17 +90,24 @@ open class LayoutContainerView: UIView {
     fatalError("init(coder:) has not been implemented")
   }
 
-  deinit {
-    refresher?.endMonitoringResourceModification()
-  }
-
   open override func didMoveToSuperview() {
     super.didMoveToSuperview()
-    buildView()
+    if superview != nil {
+        buildView()
+    }
+  }
+  
+  open override func didMoveToWindow() {
+    super.didMoveToWindow()
+    if window == nil {
+      layoutRefreshObserver = nil // Unregister any refresh observer when moving out of view hieararchy
+    }
   }
 
   override open func layoutSubviews() {
     super.layoutSubviews()
+    guard let currentLayoutView = currentLayoutView else { return }
+    
     var rect = bounds
     if self.useSafeAreaConstraints {
       rect = rect.inset(by: self.safeAreaInsets)
@@ -118,7 +115,8 @@ open class LayoutContainerView: UIView {
     else if self.useDefaultMargins {
       rect = rect.inset(by: self.layoutMargins)
     }
-    currentLayoutView?.frame = rect
+    currentLayoutView.frame = rect
+    viewBuilder.applyLayout(onView: currentLayoutView)
   }
 
 
@@ -131,6 +129,7 @@ open class LayoutContainerView: UIView {
       // TODO: Log error
       return
     }
+    
     if let layout = layout {
       useSafeAreaConstraints = layout.layoutAttributes.useSafeAreaInsets
       useDefaultMargins = layout.layoutAttributes.useDefaultMargins
@@ -153,50 +152,41 @@ open class LayoutContainerView: UIView {
 
   open func didLoadCurrentLayoutView(view: UIView) {
     didLoadCallback?(self, view)
+    viewBuilder.applyLayout(onView: view)
   }
 
 
-  public func buildView(addLayoutConstraints: Bool = true, useSafeAreaConstraints: Bool = true) {
+  open func buildView() {
     guard !viewBuilt else {
+      if layoutRefreshObserver == nil {
+        layoutRefreshObserver = viewBuilder.addRefreshObserverIfSupported(completionHandler: self.viewSetupCallback())
+      }
       return
     }
-    viewBuilder.buildView(completionHandler: self.viewSetupCallback())
+    layoutRefreshObserver = viewBuilder.buildView(fileOwner: fileOwner, completionHandler: self.viewSetupCallback())
     viewBuilt = true
-
-    if refresher?.resourceModificationMonitoringSupported == true {
-      refresher?.startMonitoringResourceModification({ [unowned self] resource in
-        self.viewBuilder.buildView(completionHandler: self.viewSetupCallback())
-      })
-    }
   }
 
-  open func updateLayout() {}
-}
-
-
-/**
- * FlexLayoutContainerView
- */
-open class FlexLayoutContainerView: LayoutContainerView {
-  
-  public override class var viewBuilderClass: ViewBuilder.Type { return FlexLayoutViewBuilder.self }
-
-  override open func layoutSubviews() {
-    super.layoutSubviews()
-    currentLayoutView?.yoga.applyLayout(preservingOrigin: true)
-  }
-
-  override open func didLoadCurrentLayoutView(view: UIView) {
-    super.didLoadCurrentLayoutView(view: view)
-    view.yoga.applyLayout(preservingOrigin: true)
-  }
-
-  override open func updateLayout() {
-    super.updateLayout()
-    guard let currentLayoutView = currentLayoutView else {
-      return
-    }
+  open func updateLayout() {
+    guard let currentLayoutView = currentLayoutView else { return }
+    
     styler.applyStyling(currentLayoutView)
-    currentLayoutView.yoga.applyLayout(preservingOrigin: true)
+    viewBuilder.applyLayout(onView: currentLayoutView)
+  }
+
+  open override func sizeThatFits(_ size: CGSize) -> CGSize {
+    guard let currentLayoutView = currentLayoutView else {
+      return super.sizeThatFits(size)
+    }
+
+    var tempRect = CGRect(origin: .zero, size: size)
+    if self.useSafeAreaConstraints {
+      tempRect = tempRect.inset(by: self.safeAreaInsets)
+    }
+    else if self.useDefaultMargins {
+      tempRect = tempRect.inset(by: self.layoutMargins)
+    }
+
+    return viewBuilder.calculateLayoutSize(forView: currentLayoutView, fittingSize: tempRect.size)
   }
 }

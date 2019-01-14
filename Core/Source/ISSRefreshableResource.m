@@ -102,11 +102,14 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
     if( _fileChangeSource ) {
         __weak ISSRefreshableLocalResource* weakSelf = self;
         dispatch_source_set_event_handler(_fileChangeSource, ^() {
+            if ( !self->_fileChangeSource ) {
+                return;
+            }
             unsigned long const data = dispatch_source_get_data(self->_fileChangeSource);
             dispatch_async(dispatch_get_main_queue(), ^{
                 callbackBlock(weakSelf);
                 if( data & DISPATCH_VNODE_DELETE ) {
-                    [weakSelf iss_logDebug:@"'%@' seems to have been deleted - attempting to restart monitoring of file", weakSelf.resourceURL];
+                    [weakSelf iss_logDebug:@"'%@' seems to have been deleted - attempting to restart monitoring of file", weakSelf.resourceURL.lastPathComponent];
                     [weakSelf startMonitoringResourceModification:callbackBlock];
                 }
             });
@@ -118,9 +121,9 @@ NSString* const ISSRefreshableResourceErrorDomain = @"InterfaCSS.RefreshableReso
 
         dispatch_resume(_fileChangeSource);
 
-        ISSLogDebug(@"Started monitoring '%@' for changes", self.resourceURL);
+        ISSLogDebug(@"Started monitoring '%@' for changes", self.resourceURL.lastPathComponent);
     } else {
-        ISSLogWarning(@"Unable to monitor '%@' for changes (error creating dispatch source)", self.resourceURL);
+        ISSLogWarning(@"Unable to monitor '%@' for changes (error creating dispatch source)", self.resourceURL.lastPathComponent);
     }
 }
 

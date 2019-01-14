@@ -11,65 +11,195 @@ import UIKit
 
 public typealias ViewBuilderCompletionHandler = (_ rootView: UIView?, _ layout: AbstractLayout?, _ parseError: Error?) -> Void
 
+public typealias ViewBuilderLayoutRefreshedObserver = NSObjectProtocol
+
+extension Notification.Name {
+  public static let ViewBuilderLayoutRefreshed = Notification.Name(rawValue: "ISSViewBuilderLayoutRefreshedNotification")
+}
 
 open class ViewBuilder {
 
+  private let logger: Logger
+
+  public static let defaultViewBuilderClass: ViewBuilder.Type = FlexViewBuilder.self
+  
+  typealias ViewBuilderLayoutRefreshedData = (abstractLayout: AbstractLayout?, parseError: Error?)
+  static let ViewBuilderLayoutRefreshedDataKay = "layout"
+
   public let layoutFileURL: URL
-  public let fileOwner: AnyObject?
+  public let refreshable: Bool
+  public weak var defaultFileOwner: AnyObject?
   public let styleSheetName: String
   public let styleSheetGroupName: String
   public let styler: Styler
+  
+  public private (set) var refresher: RefreshableResource?
+  public private (set) var embeddedStyleSheet: StyleSheet?
 
-  public private(set) var styleSheet: StyleSheet?
+  public private (set) var lastLayout: AbstractLayout?
 
-  public convenience init(mainBundleFile: String, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
-    guard let url = Bundle.main.url(forResource: mainBundleFile, withExtension: nil) else {
-      preconditionFailure("Main bundle file '\(mainBundleFile)' does not exist!")
-    }
-    self.init(layoutFileURL: url, fileOwner: fileOwner, styler: styler)
-  }
+  private let dispatchQueue: DispatchQueue
 
-  public required init(layoutFileURL: URL, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
+  public required init(layoutFileURL: URL, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
     self.layoutFileURL = layoutFileURL
-    self.fileOwner = fileOwner
+    self.refreshable = refreshable
+    self.defaultFileOwner = fileOwner
     self.styleSheetName = layoutFileURL.lastPathComponent
     self.styleSheetGroupName = self.styleSheetName
-//    self.styler = styler.withScope(StyleSheetScope(styleSheetNames: [self.styleSheetName]), includeCurrent: true)
     self.styler = styler.withScope(StyleSheetScope(styleSheetGroups: [self.styleSheetGroupName]), includeCurrent: true)
+
+    if refreshable {
+      if layoutFileURL.isFileURL {
+        refresher = RefreshableLocalResource(url: layoutFileURL)
+      }
+//      else { // TODO: Support remote reloadable layout files?
+//        refresher = RefreshableRemoteResource(url: url)
+//      }
+    }
+
+    self.dispatchQueue = DispatchQueue(label: "ViewBuilder", qos: .background)
+    self.logger = Logger("ViewBuilder(\(layoutFileURL.lastPathComponent))")
+  }
+
+  deinit {
+    refresher?.endMonitoringResourceModification()
   }
 
 
   // MARK: - Main public API
+  
+  public final func buildView(forceRefresh: Bool = false, fileOwner: AnyObject? = nil, completionHandler: @escaping ViewBuilderCompletionHandler) -> NotificationObserverToken? {
+    weak var effectiveFileOwner = fileOwner ?? defaultFileOwner
 
-  public final func buildView(completionHandler: @escaping ViewBuilderCompletionHandler) {
-    DispatchQueue.global(qos: .background).async { [weak self] in
-      if let self = self, let data = try? Data(contentsOf: self.layoutFileURL) {
-        DispatchQueue.main.async {
-          self.buildView(fromData: data, completionHandler: completionHandler)
+    var layoutExists = false
+    if !forceRefresh {
+      layoutExists = buildViewFromLastLayout(fileOwner: effectiveFileOwner, completionHandler: completionHandler) == true
+      logger.logDebug(message: "buildViewFromLastLayout - layoutExists: \(layoutExists)")
+    }
+    if !layoutExists {
+      self.dispatchQueue.async { [weak self] in
+        var layoutExists = false
+        if !forceRefresh {
+          DispatchQueue.main.sync {
+            self?.logger.logDebug(message: "buildViewFromLastLayout")
+            layoutExists = self?.buildViewFromLastLayout(fileOwner: effectiveFileOwner, completionHandler: completionHandler) == true
+          }
         }
-      } else {
-        completionHandler(nil, nil, nil) // TODO: Error?
+        if layoutExists { return }
+
+        if let self = self, let data = try? Data(contentsOf: self.layoutFileURL) {
+          DispatchQueue.main.sync { [weak self] in
+            self?.logger.logDebug(message: "building initial view")
+            self?.buildInitialView(fromData: data, fileOwner: effectiveFileOwner, completionHandler: completionHandler)
+            self?.startRefresherIfSupported()
+          }
+        } else {
+          DispatchQueue.main.sync {
+            completionHandler(nil, nil, nil) // TODO: Error?
+          }
+        }
       }
+    }
+    
+    return addRefreshObserverIfSupported(fileOwner: effectiveFileOwner, completionHandler: completionHandler)
+  }
+  
+  public final func addRefreshObserverIfSupported(fileOwner: AnyObject? = nil, completionHandler: @escaping ViewBuilderCompletionHandler) -> NotificationObserverToken? {
+    weak var effectiveFileOwner = fileOwner ?? defaultFileOwner
+    if let refresher = refresher, refresher.resourceModificationMonitoringSupported {
+      let token = NotificationCenter.default.addObserver(forName: .ViewBuilderLayoutRefreshed, object: self, queue: nil) { [weak self] notification in
+        guard let self = self, let (_, _) = notification.userInfo?[ViewBuilder.ViewBuilderLayoutRefreshedDataKay] as? ViewBuilderLayoutRefreshedData else {
+          completionHandler(nil, nil, nil) // TODO: Error?
+          return
+        }
+        self.buildViewFromLastLayout(fileOwner: effectiveFileOwner, notifyOnError: true, completionHandler: completionHandler)
+      }
+      return NotificationObserverToken(token: token)
+    } else {
+      return nil
     }
   }
 
-  private final func buildView(fromData data: Data, completionHandler: ViewBuilderCompletionHandler) {
-    let parser = AbstractViewTreeParser(data: data, fileOwner: fileOwner, styler: styler)
-    parser.parse { (layout, error) in
-      guard let rootNode = layout?.rootNode, let rootView = createViewTree(withRootNode: rootNode, fileOwner: fileOwner) else {
-        completionHandler(nil, layout, error)
+  open func createLayoutView(fileOwner: AnyObject? = nil, didLoadCallback: LayoutViewDidLoadCallback? = nil) -> LayoutContainerView {
+    return LayoutContainerView(viewBuilder: self, fileOwner: fileOwner, didLoadCallback: didLoadCallback)
+  }
+  
+  open func applyLayout(onView view: UIView) {}
+  
+  open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize) -> CGSize {
+    return view.sizeThatFits(size)
+  }
+  
+  
+  // MARK: - Internal layout/view building methods
+  
+  private final func buildInitialView(fromData data: Data, fileOwner: AnyObject?, completionHandler: @escaping ViewBuilderCompletionHandler) {
+    buildLayout(fromData: data) { (parsedLayout, parseError) in
+      guard let layout = parsedLayout, let rootView = buildView(fromLayout: layout, fileOwner: fileOwner) else {
+        completionHandler(nil, parsedLayout, parseError)
         return
       }
-      if let styleSheetContent = layout?.layoutStyle {
-        if let styleSheet = styleSheet {
+      completionHandler(rootView, layout, parseError)
+    }
+  }
+  
+  @discardableResult
+  private final func buildViewFromLastLayout(fileOwner: AnyObject?, notifyOnError: Bool = false, completionHandler: @escaping ViewBuilderCompletionHandler) -> Bool {
+    if let lastLayout = lastLayout {
+      let rootView = buildView(fromLayout: lastLayout, fileOwner: fileOwner)
+      completionHandler(rootView, lastLayout, nil)
+      return true
+    } else if notifyOnError {
+      completionHandler(nil, nil, nil) // TODO: Error?
+    }
+    return false
+  }
+  
+  private final func startRefresherIfSupported() {
+    // Start refresher, if not started:
+    if let refresher = refresher, refresher.resourceModificationMonitoringSupported, !refresher.resourceModificationMonitoringEnabled {
+      refresher.startMonitoringResourceModification({ [weak self] resource in
+        self?.refreshLayout()
+      })
+    }
+  }
+  
+  private final func refreshLayout() {
+    dispatchQueue.async { [weak self] in
+      guard let self = self, let data = try? Data(contentsOf: self.layoutFileURL) else { return }
+      DispatchQueue.main.sync {
+        self.buildLayout(fromData: data) { (parsedLayout, parseError) in
+          NotificationCenter.default.post(name: .ViewBuilderLayoutRefreshed, object: self, userInfo: [ViewBuilder.ViewBuilderLayoutRefreshedDataKay: (parsedLayout, parseError)])
+        }
+      }
+    }
+  }
+  
+  private final func buildLayout(fromData data: Data, completionHandler: AbstractLayoutCompletionHandler) {
+    let parser = AbstractViewTreeParser(data: data, styler: styler)
+    parser.parse { [weak self] (parsedLayout, parseError) in
+      if let parsedLayout = parsedLayout {
+        self?.lastLayout = parsedLayout
+      }
+      if let self = self, let styleSheetContent = parsedLayout?.layoutStyle {
+        if let styleSheet = embeddedStyleSheet {
           styler.styleSheetManager.unloadStyleSheet(styleSheet)
         }
-        styleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
-        styler.styleSheetManager.registerStyleSheet(styleSheet!)
+        embeddedStyleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
+        styler.styleSheetManager.registerStyleSheet(embeddedStyleSheet!)
       }
-      styler.applyStyling(rootView)
-      completionHandler(rootView, layout, error)
+        
+      completionHandler(parsedLayout, parseError)
     }
+  }
+
+  private final func buildView(fromLayout layout: AbstractLayout, fileOwner: AnyObject?) -> UIView? {
+    guard let rootView = createViewTree(withRootNode: layout.rootNode, fileOwner: fileOwner) else {
+      return nil
+    }
+
+    styler.applyStyling(rootView)
+    return rootView
   }
 
 
@@ -80,7 +210,7 @@ open class ViewBuilder {
       guard let view = createViewFrom(node: node, parentView: parentView, fileOwner: fileOwner) else {
         return nil
       }
-      if let parentView = parentView as? UIView {
+      if let parentView = parentView as? UIView, node.addToViewHierarchy {
         addViewObject(view, toParentView: parentView)
       }
       return view
@@ -88,7 +218,7 @@ open class ViewBuilder {
   }
 
   open func createViewFrom(node: AbstractViewTreeNode, parentView: AnyObject?, fileOwner: AnyObject?) -> AnyObject? {
-    let viewObject = instantiateViewObject(for: node)
+    let viewObject = instantiateViewObject(for: node, parentView: parentView, fileOwner: fileOwner)
     if let viewObject = viewObject, let stylingProxy = styler.stylingProxy(for: viewObject) {
       if let elementId = node.elementId {
         stylingProxy.elementId = elementId
@@ -130,8 +260,8 @@ open class ViewBuilder {
     }
   }
 
-  open func instantiateViewObject(for node: AbstractViewTreeNode) -> AnyObject? {
-    return node.elementType.createElement()
+  open func instantiateViewObject(for node: AbstractViewTreeNode, parentView: AnyObject?, fileOwner: AnyObject?) -> AnyObject? {
+    return node.elementType.createElement(forNode: node, parentView: parentView, viewBuilder: self, fileOwner: fileOwner)
   }
 }
 
@@ -141,19 +271,20 @@ extension ViewBuilder {
 
   private func setViewObjectPropertyValue(_ value: Any, withName propertyName: String, inParent parent: AnyObject?,
                                           orFileOwner fileOwner: AnyObject?, silent: Bool = false) {
+
     if let fileOwner = fileOwner, ISSRuntimeIntrospectionUtils.doesClass(type(of: fileOwner), havePropertyWithName: propertyName) {
       ISSRuntimeIntrospectionUtils.invokeSetter(forProperty: propertyName, ignoringCase: true, withValue: value, in: fileOwner)
     } else if let parent = parent, ISSRuntimeIntrospectionUtils.doesClass(type(of: parent), havePropertyWithName: propertyName) {
       ISSRuntimeIntrospectionUtils.invokeSetter(forProperty: propertyName, ignoringCase: true, withValue: value, in: parent)
     } else if !silent {
       if fileOwner != nil && parent != nil {
-        print("Property '\(propertyName)' not found in file owner or parent view!")
+        logger.logDebug(message: "Property '\(propertyName)' not found in file owner or parent view!")
       } else if fileOwner != nil {
-        print("Property '\(propertyName)' not found in file owner!")
+        logger.logDebug(message: "Property '\(propertyName)' not found in file owner!")
       } else if parent != nil {
-        print("Property '\(propertyName)' not found in parent view!")
+        logger.logDebug(message: "Property '\(propertyName)' not found in parent view!")
       } else {
-        print("Unable to set property '\(propertyName)' - no file owner or parent view available!")
+        logger.logDebug(message: "Unable to set property '\(propertyName)' - no file owner or parent view available!")
       }
     }
   }

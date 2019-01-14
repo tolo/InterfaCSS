@@ -8,20 +8,20 @@
 
 #import "NSObject+ISSLogSupport.h"
 
-static NSInteger ISSLogLevel;
+static ISSLogLevel issLogLevel;
 
 @implementation NSObject (ISSLogSupport)
 
 + (void) load {
 #if DEBUG == 1
-    [self iss_setLogLevel:ISS_LOG_LEVEL_DEBUG];
+    [self iss_setLogLevel:ISSLogLevelDebug];
 #else
-    [self iss_setLogLevel:ISS_LOG_LEVEL_WARNING];
+    [self iss_setLogLevel:ISSLogLevelWarning];
 #endif
 }
 
-+ (void) iss_setLogLevel:(NSInteger)logLevel {
-    ISSLogLevel = logLevel;
++ (void) iss_setLogLevel:(ISSLogLevel)logLevel {
+    issLogLevel = logLevel;
 }
 
 - (void) iss_log:(NSString*)level format:(NSString*)format withParameters:(va_list)vl {
@@ -30,7 +30,7 @@ static NSInteger ISSLogLevel;
 }
 
 - (void) iss_logTrace:(NSString*)format, ... {
-    if( ISSLogLevel >= ISS_LOG_LEVEL_TRACE ) {
+    if( issLogLevel >= ISSLogLevelTrace ) {
         va_list vl;
         va_start(vl, format);
         [self iss_log:@"[TRACE] " format:format withParameters:vl];
@@ -38,8 +38,14 @@ static NSInteger ISSLogLevel;
     }
 }
 
+- (void) iss_logTraceMessage:(NSString*)logMessage {
+    if( issLogLevel >= ISSLogLevelTrace ) {
+        NSLog(@"[TRACE] InterfaCSS: %@ - %@", self, logMessage);
+    }
+}
+
 - (void) iss_logDebug:(NSString*)format, ... {
-    if( ISSLogLevel >= ISS_LOG_LEVEL_DEBUG ) {
+    if( issLogLevel >= ISSLogLevelDebug ) {
         va_list vl;
         va_start(vl, format);
         [self iss_log:@"[DEBUG] " format:format withParameters:vl];
@@ -47,12 +53,24 @@ static NSInteger ISSLogLevel;
     }
 }
 
+- (void) iss_logDebugMessage:(NSString*)logMessage {
+    if( issLogLevel >= ISSLogLevelDebug ) {
+        NSLog(@"[DEBUG] InterfaCSS: %@ - %@", self, logMessage);
+    }
+}
+
 - (void) iss_logWarning:(NSString*)format, ... {
-    if( ISSLogLevel >= ISS_LOG_LEVEL_WARNING ) {
+    if( issLogLevel >= ISSLogLevelWarning ) {
         va_list vl;
         va_start(vl, format);
         [self iss_log:@"[WARNING] " format:format withParameters:vl];
         va_end(vl);
+    }
+}
+
+- (void) iss_logWarningMessage:(NSString*)logMessage {
+    if( issLogLevel >= ISSLogLevelWarning ) {
+        NSLog(@"[WARNING] InterfaCSS: %@ - %@", self, logMessage);
     }
 }
 

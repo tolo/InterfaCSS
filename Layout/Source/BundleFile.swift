@@ -28,12 +28,15 @@ public enum BundleFile {
     }
   }
   
-  public var fileURL: URL? {
+  public var validFileURL: URL {
     switch self {
     case .refreshableProjectFile(let filename, let localProjectDirectory):
       return URL(fileURLWithPath: localProjectDirectory + "/" + filename)
     case .mainBundeFile(let filename):
-      return Bundle.main.url(forResource: filename, withExtension: nil)
+      guard let url = Bundle.main.url(forResource: filename, withExtension: nil) else {
+        preconditionFailure("Main bundle file '\(filename)' does not exist!")
+      }
+      return url
     }
   }
   
