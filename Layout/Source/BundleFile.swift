@@ -8,9 +8,10 @@
 
 import Foundation
 
+// TODO: Rename?
 public enum BundleFile {
   case mainBundeFile(filename: String)
-  case refreshableProjectFile(filename: String, localProjectDirectory: String)
+  case refreshableProjectFile(filename: String, relativeToDirectory: URL)
   
   public var refreshable: Bool {
     switch self {
@@ -21,17 +22,17 @@ public enum BundleFile {
   
   public var filename: String {
     switch self {
-    case .refreshableProjectFile(let filename, _):
-      return filename
+    case .refreshableProjectFile:
+      return fileURL.lastPathComponent
     case .mainBundeFile(let filename):
       return filename
     }
   }
   
-  public var validFileURL: URL {
+  public var fileURL: URL {
     switch self {
     case .refreshableProjectFile(let filename, let localProjectDirectory):
-      return URL(fileURLWithPath: localProjectDirectory + "/" + filename)
+      return URL(fileURLWithPath:filename, isDirectory: false, relativeTo: localProjectDirectory)
     case .mainBundeFile(let filename):
       guard let url = Bundle.main.url(forResource: filename, withExtension: nil) else {
         preconditionFailure("Main bundle file '\(filename)' does not exist!")
@@ -39,29 +40,13 @@ public enum BundleFile {
       return url
     }
   }
-  
-  public static func refreshableProjectFile(_ filename: String, inSameLocalProjectDirectoryAsCurrentFile currentFile: String) -> BundleFile {
-    let lastSeparatorIndex = currentFile.lastIndex(of: "/") ?? currentFile.endIndex
-    let dirPath = String(currentFile[..<lastSeparatorIndex])
+
+  public static func refreshableProjectFile(_ filename: String, relativeToDirectoryContaining baseDirFilePath: String) -> BundleFile {
     #if targetEnvironment(simulator)
-    return .refreshableProjectFile(filename: filename, localProjectDirectory: dirPath)
+    let baseUrl = URL(fileURLWithPath: baseDirFilePath)
+    return .refreshableProjectFile(filename: filename, relativeToDirectory: baseUrl.deletingLastPathComponent())
     #else
     return .mainBundeFile(filename: filename)
     #endif
-  }
-  
-  public static func refreshableProjectFile(_ filename: String, projectPathUsingCurrentFile currentFile: String, projectRootDir: String, subDir: String = "") -> BundleFile {
-    let dirPath = localProjectPath(usingCurrentFile: currentFile, projectRootDir: projectRootDir, subDir: subDir)
-    #if targetEnvironment(simulator)
-    return .refreshableProjectFile(filename: filename, localProjectDirectory: dirPath)
-    #else
-    return .mainBundeFile(filename: filename)
-    #endif
-  }
-  
-  public static func localProjectPath(usingCurrentFile currentFile: String, projectRootDir: String, subDir: String = "") -> String {
-    let pathComponents = URL(fileURLWithPath: currentFile).pathComponents.dropFirst()
-    let rootPath = pathComponents.prefix(while: { $0 != projectRootDir }).joined(separator: "/")
-    return "/\(rootPath)/\(projectRootDir)/\(subDir)"
   }
 }

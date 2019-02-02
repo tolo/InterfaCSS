@@ -14,6 +14,14 @@ import UIKit
 open class LayoutTableViewCell: UITableViewCell {
 
   var layoutContainerView: LayoutContainerView!
+
+  override open func layoutSubviews() {
+    layoutContainerView?.frame = contentView.bounds
+    super.layoutSubviews()
+  }
+
+
+  // MARK: - LayoutTableViewCell main API
   
   func configureLayout(withViewBuilder viewBuilder: ViewBuilder, didLoadCallback: LayoutViewDidLoadCallback? = nil) {
     guard layoutContainerView == nil else {
@@ -27,11 +35,7 @@ open class LayoutTableViewCell: UITableViewCell {
     layoutContainerView.frame = contentView.frame
     contentView.addSubview(layoutContainerView)
   }
-  
-  open func layout(view: UIView, didLoadIn containerView: LayoutContainerView) {}
 
-  open func populateCell() {}
-  
   public func updateLayout() {
     layoutContainerView.updateLayout()
   }
@@ -39,9 +43,11 @@ open class LayoutTableViewCell: UITableViewCell {
   open func calculateContentHeightThatFits(_ size: CGSize) -> CGFloat {
     return layoutContainerView.sizeThatFits(size).height
   }
-    
-  override open func layoutSubviews() {
-    layoutContainerView?.frame = contentView.bounds
-    super.layoutSubviews()
-  }
+
+
+  // MARK: - LayoutTableViewCell sub class interface
+
+  open func layout(view: UIView, didLoadIn containerView: LayoutContainerView) {}
+
+  open func populateCell() {}
 }

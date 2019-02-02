@@ -43,6 +43,11 @@ NS_SWIFT_NAME(StyleSheetManager)
  */
 @property (nonatomic) NSTimeInterval stylesheetAutoRefreshInterval;
 
+    
+/**
+ * Gets the shared ISSStyleSheetManager instance (via the shared ISSStylingManager).
+ */
++ (ISSStyleSheetManager*) shared;
 
 - (instancetype) init;
 - (instancetype) initWithStyleSheetParser:(nullable ISSStyleSheetParser*)parser NS_DESIGNATED_INITIALIZER;

@@ -46,6 +46,10 @@ NSNotificationName const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshSt
 
 @implementation ISSStyleSheetManager
 
++ (ISSStyleSheetManager*) shared {
+    return ISSStylingManager.shared.styleSheetManager;
+}
+
 - (instancetype) init {
     return [self initWithStyleSheetParser:nil];
 }

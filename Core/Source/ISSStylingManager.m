@@ -83,6 +83,20 @@ static ISSStylingManager* sharedISSStylingManager = nil;
     [self.stylingManager clearCachedStylingInformationFor:uiElement includeSubViews:includeSubViews];
 }
 
+#pragma mark - StyleSheetManager methods
+
+- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(nonnull NSString*)styleSheetFileName {
+    return [self.styleSheetManager loadStyleSheetFromMainBundleFile:styleSheetFileName];
+}
+
+- (nullable ISSStyleSheet*) loadStyleSheetFromFileURL:(nonnull NSURL*)styleSheetFileURL {
+    return [self.styleSheetManager loadStyleSheetFromFileURL:styleSheetFileURL];
+}
+
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(nonnull NSURL*)styleSheetFileURL {
+    return [self.styleSheetManager loadRefreshableStyleSheetFromURL:styleSheetFileURL];
+}
+
 @end
 
 
@@ -145,6 +159,18 @@ static ISSStylingManager* sharedISSStylingManager = nil;
 
 - (ISSStylingManager*) stylingManager {
     return self;
+}
+
+- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(nonnull NSString*)styleSheetFileName {
+    return [self.styleSheetManager loadStyleSheetFromMainBundleFile:styleSheetFileName];
+}
+
+- (nullable ISSStyleSheet*) loadStyleSheetFromFileURL:(nonnull NSURL*)styleSheetFileURL {
+    return [self.styleSheetManager loadStyleSheetFromFileURL:styleSheetFileURL];
+}
+
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(nonnull NSURL*)styleSheetFileURL {
+    return [self.styleSheetManager loadRefreshableStyleSheetFromURL:styleSheetFileURL];
 }
 
 

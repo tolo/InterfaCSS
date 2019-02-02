@@ -77,6 +77,7 @@
 		F696F864215166D7003D5345 /* ISSStyleSheetParserSyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */; };
 		F6AE4E7C21A8965F00EAB035 /* StringParsableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */; };
 		F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
+		F6C669D722063A7D00647CFC /* Styler+BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */; };
 		F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
 		F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
 		F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D83B5221A74C8F0084A5AD /* BundleFile.swift */; };
@@ -252,6 +253,7 @@
 		F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserSyntax.m; sourceTree = "<group>"; };
 		F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringParsableEnum.swift; sourceTree = "<group>"; };
 		F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParser.h; sourceTree = "<group>"; };
+		F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Styler+BundleFile.swift"; sourceTree = "<group>"; };
 		F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetContent.h; sourceTree = "<group>"; };
 		F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetContent.m; sourceTree = "<group>"; };
 		F6D83B5221A74C8F0084A5AD /* BundleFile.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BundleFile.swift; sourceTree = "<group>"; tabWidth = 2; };
@@ -337,6 +339,7 @@
 			isa = PBXGroup;
 			children = (
 				8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */,
+				F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */,
 				F6ECCABB21E745520056E67A /* Logger.swift */,
 				F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */,
 				8AA66DA821CCEFA900477732 /* NotificationObserverToken.swift */,
@@ -907,6 +910,7 @@
 				F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */,
 				F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */,
 				F6090CD421BF094200647311 /* LayoutTableViewCell.swift in Sources */,
+				F6C669D722063A7D00647CFC /* Styler+BundleFile.swift in Sources */,
 				F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */,
 				F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */,
 				F651207E2194C4B800479DE9 /* FlexViewBuilder.swift in Sources */,

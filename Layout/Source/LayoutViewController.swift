@@ -51,16 +51,16 @@ open class LayoutViewController: UIViewController {
   // MARK: - LayoutContainerView creation support
   
   public final func createLayoutContainerView(mainBundleFile: String, styler: Styler = StylingManager.shared()) -> LayoutContainerView {
-    return createLayoutContainerView(layoutFileURL: BundleFile.mainBundeFile(filename: mainBundleFile).validFileURL, refreshable: false, styler: styler)
+    return createLayoutContainerView(layoutFileURL: BundleFile.mainBundeFile(filename: mainBundleFile).fileURL, refreshable: false, styler: styler)
   }
   
-  public final func createLayoutContainerView(refreshableProjectFile projectFile: String, inSameLocalProjectDirectoryAsCurrentFile currentFile: String, styler: Styler = StylingManager.shared()) -> LayoutContainerView {
-    let bundleFile = BundleFile.refreshableProjectFile(projectFile, inSameLocalProjectDirectoryAsCurrentFile: currentFile)
-    return createLayoutContainerView(layoutFileURL: bundleFile.validFileURL, refreshable: bundleFile.refreshable, styler: styler)
+  public final func createLayoutContainerView(refreshableProjectFile projectFile: String, relativeToDirectoryContaining currentFile: String, styler: Styler = StylingManager.shared()) -> LayoutContainerView {
+    let bundleFile = BundleFile.refreshableProjectFile(projectFile, relativeToDirectoryContaining: currentFile)
+    return createLayoutContainerView(layoutFileURL: bundleFile.fileURL, refreshable: bundleFile.refreshable, styler: styler)
   }
   
   public final func createLayoutContainerView(bundleFile: BundleFile, styler: Styler = StylingManager.shared()) -> LayoutContainerView {
-    return createLayoutContainerView(layoutFileURL: bundleFile.validFileURL, refreshable: bundleFile.refreshable, styler: styler)
+    return createLayoutContainerView(layoutFileURL: bundleFile.fileURL, refreshable: bundleFile.refreshable, styler: styler)
   }
   
   public final func createLayoutContainerView(layoutFileURL: URL, refreshable: Bool = false, styler: Styler = StylingManager.shared(),

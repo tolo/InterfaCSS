@@ -19,7 +19,7 @@ extension Notification.Name {
 
 open class ViewBuilder {
 
-  private let logger: Logger
+  let logger: Logger
 
   public static let defaultViewBuilderClass: ViewBuilder.Type = FlexViewBuilder.self
   
@@ -58,7 +58,7 @@ open class ViewBuilder {
     }
 
     self.dispatchQueue = DispatchQueue(label: "ViewBuilder", qos: .background)
-    self.logger = Logger("ViewBuilder(\(layoutFileURL.lastPathComponent))")
+    self.logger = Logger("\(type(of:self))(\(layoutFileURL.lastPathComponent))")
   }
 
   deinit {
@@ -74,7 +74,7 @@ open class ViewBuilder {
     var layoutExists = false
     if !forceRefresh {
       layoutExists = buildViewFromLastLayout(fileOwner: effectiveFileOwner, completionHandler: completionHandler) == true
-      logger.logDebug(message: "buildViewFromLastLayout - layoutExists: \(layoutExists)")
+      logger.logTrace(message: "buildViewFromLastLayout - layoutExists: \(layoutExists)")
     }
     if !layoutExists {
       self.dispatchQueue.async { [weak self] in

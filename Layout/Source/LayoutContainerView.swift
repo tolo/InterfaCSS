@@ -38,11 +38,11 @@ open class LayoutContainerView: UIView {
 
     
   public convenience init(mainBundleFile: String, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {
-    self.init(layoutFileURL: BundleFile.mainBundeFile(filename: mainBundleFile).validFileURL, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
+    self.init(layoutFileURL: BundleFile.mainBundeFile(filename: mainBundleFile).fileURL, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
   }
   
   public convenience init(bundleFile: BundleFile, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {
-    self.init(layoutFileURL: bundleFile.validFileURL, refreshable: bundleFile.refreshable, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
+    self.init(layoutFileURL: bundleFile.fileURL, refreshable: bundleFile.refreshable, fileOwner: fileOwner, styler: styler, didLoadCallback: didLoadCallback)
   }
 
   public required convenience init(layoutFileURL: URL, viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared(), didLoadCallback: LayoutViewDidLoadCallback? = nil) {

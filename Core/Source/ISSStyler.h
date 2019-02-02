@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class ISSElementStylingProxy, ISSStylingManager, ISSStyleSheetScope, ISSPropertyManager, ISSStyleSheetManager;
+@class ISSElementStylingProxy, ISSStylingManager, ISSStyleSheetScope, ISSPropertyManager, ISSStyleSheetManager, ISSStyleSheet;
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -48,7 +48,9 @@ NS_SWIFT_NAME(Styler)
 
 #pragma mark - StyleSheetManager methods
 
-// TODO: StyleSheetManager facade methods
+- (nullable ISSStyleSheet*) loadStyleSheetFromMainBundleFile:(NSString*)styleSheetFileName;
+- (nullable ISSStyleSheet*) loadStyleSheetFromFileURL:(NSURL*)styleSheetFileURL;
+- (nullable ISSStyleSheet*) loadRefreshableStyleSheetFromURL:(NSURL*)styleSheetFileURL;
 
 @end
 

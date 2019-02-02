@@ -19,16 +19,18 @@ open class LayoutTableViewController: LayoutViewController, UITableViewDataSourc
   private var contentViewWidthForCellTypeCache: [String: CGFloat] = [:]
   private var rowHeightCache: [String: CGFloat] = [:]
 
+  private func cellTypeIdentifier(forCell cell: LayoutTableViewCell, indexPath: IndexPath) -> String {
+    return "\(cellReuseIdentifier(forIndexPath: indexPath))-\(cell.accessoryType.rawValue)"
+  }
+
+
+  // MARK: - LayoutTableViewDelegate
 
   public func didLoadPrototypeCellLayout(withIdentifier identifier: String, containerView: LayoutContainerView, view: UIView) {
     if tableViewInitialized { // Handle hot reload
       clearCachedRowHeights()
       tableView.reloadData()
     }
-  }
-
-  private func cellTypeIdentifier(forCell cell: LayoutTableViewCell, indexPath: IndexPath) -> String {
-    return "\(cellReuseIdentifier(forIndexPath: indexPath))-\(cell.accessoryType.rawValue)"
   }
 
   
@@ -94,7 +96,7 @@ open class LayoutTableViewController: LayoutViewController, UITableViewDataSourc
     if shouldCacheRowHeights {
       rowHeightCache[uniqueCellId] = height
     }
-    logger.logDebug(message: "heightForRowAt \(indexPath): \(height) - content view width for cell type ('\(cellTypeId)'): \(contentWidth)")
+    logger.logTrace(message: "heightForRowAt \(indexPath): \(height) - content view width for cell type ('\(cellTypeId)'): \(contentWidth)")
     return height
   }
   
@@ -119,7 +121,7 @@ open class LayoutTableViewController: LayoutViewController, UITableViewDataSourc
     let lastContentViewWidth = contentViewWidthForCellTypeCache[cellTypeId] ?? tableView.bounds.width
 
     if lastContentViewWidth != contentViewWidth {
-      logger.logDebug(message: "Content view width changed for cell type '\(cellTypeId)': \(contentViewWidth) - last: \(lastContentViewWidth)")
+      logger.logTrace(message: "Content view width changed for cell type '\(cellTypeId)': \(contentViewWidth) - last: \(lastContentViewWidth)")
       contentViewWidthForCellTypeCache[cellTypeId] = cell.contentView.frame.width
 
       clearCachedRowHeights()
