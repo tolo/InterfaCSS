@@ -352,15 +352,11 @@
     // Ex: smaller(@font, 1)
     // Ex: fontWithSize(@font, 12)
     ISSParser* commaOrSpace = [[ISSParser choice:@[[ISSParser space], self.styleSheetParser.comma]] many1];
-    ISSParser* remoteFontValueURLParser = [[ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]] transform:^id(id input, void* context) {
-        return [NSURL URLWithString:[input iss_trimQuotes]];
-    } name:@"remoteFontValueURLParser"];
-    ISSParser* remoteFontValueParser = [self.styleSheetParser singleParameterFunctionParserWithName:@"url" parameterParser:remoteFontValueURLParser];
-    ISSParser* fontNameParser = [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
-    ISSParser* fontValueParser = [ISSParser choice:@[remoteFontValueParser, self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
-    
-    ISSParser* fontParser = [[fontNameParser keepLeft:commaOrSpace] then:fontValueParser];
+    ISSParser* stringValue = [ISSParser choice:@[self.styleSheetParser.quotedString, self.styleSheetParser.anyName]];
+
+    ISSParser* fontParser = [stringValue then:[ISSParser optional:[ISSParser sequential:@[commaOrSpace, stringValue]]]];
     fontParser = [fontParser transform:^id(NSArray* values, void* context) {
+        values = [values iss_flattened];
 #if TARGET_OS_TV == 0
         CGFloat fontSize = [UIFont systemFontSize];
 #else
@@ -426,7 +422,7 @@
         
         //ISSParser* dynamicTypeFontFunctionParser = [[self.styleSheetParser parameterStringWithPrefix:@"scalableFont"] transform:^id(id value) {
         ISSParser* dynamicTypeFontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],
-                                                                            fontValueParser, optionalTextStyle, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value, void* context) {
+                                                                            stringValue, optionalTextStyle, [ISSParser unichar:')' skipSpaces:YES]]] transform:^id(id value, void* context) {
             NSArray* values = [value iss_flattened];
             UIFont* font = iss_elementOfTypeOrNil(values, 2, UIFont.class);
             id styleRaw = iss_elementOrNil(values, 4);

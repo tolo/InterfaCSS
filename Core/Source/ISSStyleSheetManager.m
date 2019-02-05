@@ -412,6 +412,10 @@ NSNotificationName const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshSt
     return [self.styleSheetParser parsePropertyNameValuePair:nameAndValue];
 }
 
+- (NSArray<ISSPropertyValue*>*) parsePropertyNameValuePairs:(NSString*)propertyPairsString {
+    return [self.styleSheetParser parsePropertyNameValuePairs:propertyPairsString];
+}
+
 
 #pragma mark - Selector creation support
 

@@ -128,6 +128,7 @@ NS_SWIFT_NAME(StyleSheetManager)
 - (nullable id) parsePropertyValue:(NSString*)value asType:(ISSPropertyType)type scope:(ISSStyleSheetScope*)scope didReplaceVariableReferences:(nullable BOOL*)didReplace;
 
 - (nullable ISSPropertyValue*) parsePropertyNameValuePair:(NSString*)nameAndValue;
+- (nullable NSArray<ISSPropertyValue*>*) parsePropertyNameValuePairs:(NSString*)propertyPairsString;
 
 
 #pragma mark - Selector creation support

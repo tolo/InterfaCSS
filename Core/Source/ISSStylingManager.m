@@ -368,7 +368,7 @@ static ISSStylingManager* sharedISSStylingManager = nil;
 // Main styling method (element details version)
 - (void) applyStylingWithDetails:(ISSElementStylingProxy*)element includeSubViews:(BOOL)includeSubViews force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     if( !element ) return;
-    
+
     // If styling is disabled for element (but has been displayed once) - abort styling of whole sub tre
 //    if( element.stylingAppliedAndDisabled ) {
 //        ISSLogTrace(@"Styling disabled for %@", element.view);
@@ -390,6 +390,7 @@ static ISSStylingManager* sharedISSStylingManager = nil;
 // Internal styling method ("inner") - should only be called by -[doApplyStylingInternal:includeSubViews:force:].
 - (void) applyStylingInternal:(ISSElementStylingProxy*)element includeSubViews:(BOOL)includeSubViews force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     ISSLogTrace(@"Applying style to %@", element.uiElement);
+    styleSheetScope = styleSheetScope ?: [ISSStyleSheetScope defaultGroupScope];
     
     [element checkForUpdatedParentElement]; // Reset cached styles if parent/superview has changed...
     

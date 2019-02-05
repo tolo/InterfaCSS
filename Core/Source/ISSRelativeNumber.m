@@ -20,6 +20,10 @@
     return self;
 }
 
+- (NSNumber*) rawValue {
+    return _numberValue;
+}
+
 - (NSNumber*) value {
     switch (self.unit) {
         case ISSRelativeNumberUnitPercent:

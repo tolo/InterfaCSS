@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable id) parsePropertyValue:(NSString*)propertyValue asType:(ISSPropertyType)type;
 
 - (nullable ISSPropertyValue*) parsePropertyNameValuePair:(NSString*)nameAndValue;
+- (nullable NSArray<ISSPropertyValue*>*) parsePropertyNameValuePairs:(NSString*)propertyPairsString;
 
 @end
 

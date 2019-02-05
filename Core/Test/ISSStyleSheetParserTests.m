@@ -137,7 +137,7 @@ static ISSStylingManager* defaultStyler;
 }
 
 - (NSArray*) getPropertyValuesWithNames:(NSArray*)names fromStyleClass:(NSString*)styleClass forType:(ISSPropertyType)type onlyDeclarations:(BOOL)onlyDeclarations {
-    ISSRuleset* ruleset = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"styleSheetPropertyValues"];
+    ISSRuleset* ruleset = [self getPropertyDeclarationsForStyleClass:[styleClass lowercaseString] inStyleSheet:@"propertyValues"];
     
     return [self getPropertyValuesWithNames:names fromRuleset:ruleset forType:type onlyDeclarations:onlyDeclarations];
 }
@@ -467,6 +467,9 @@ static ISSStylingManager* defaultStyler;
 
     value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font7" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font8" forType:ISSPropertyTypeFont] firstObject];
+    XCTAssertEqualObjects(value, [UIFont systemFontOfSize:42], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {

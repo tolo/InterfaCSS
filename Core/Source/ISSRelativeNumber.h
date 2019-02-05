@@ -21,6 +21,7 @@ NS_SWIFT_NAME(RelativeNumber)
 @interface ISSRelativeNumber : NSObject
 
 @property (nonatomic, readonly) NSNumber* value;
+@property (nonatomic, readonly) NSNumber* rawValue;
 @property (nonatomic, readonly) ISSRelativeNumberUnit unit;
 
 - (instancetype) initWithNumber:(NSNumber*)number andUnit:(ISSRelativeNumberUnit)unit;

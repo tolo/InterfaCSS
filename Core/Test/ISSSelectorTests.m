@@ -109,7 +109,7 @@
 }
 
 - (ISSStylingContext*) createStylingContext {
-    return [[ISSStylingContext alloc] initWithStylingManager:styler styleSheetScope:nil];
+    return [[ISSStylingContext alloc] initWithStylingManager:styler styleSheetScope:[ISSStyleSheetScope defaultGroupScope]];
 }
 
 #pragma mark - Tests
