@@ -383,9 +383,16 @@
                 }
             }
         }
-        
-        if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
-        else return [UIFont systemFontOfSize:fontSize];
+
+        if( [[fontName lowercaseString] hasPrefix:@"boldsystem"] || [[fontName lowercaseString] hasPrefix:@"systembold"] ) {
+            return [UIFont boldSystemFontOfSize:fontSize];
+        } else if( [[fontName lowercaseString] hasPrefix:@"italicsystem"] || [[fontName lowercaseString] hasPrefix:@"systemitalic"] ) {
+            return [UIFont boldSystemFontOfSize:fontSize];
+        } else if( !fontName || [fontName iss_isEqualIgnoreCase:@"system"] ) {
+            return [UIFont systemFontOfSize:fontSize];
+        } else {
+            return [UIFont fontWithName:fontName size:fontSize];
+        }
     } name:@"font"];
     
     ISSParser* fontFunctionParser = [[ISSParser sequential:@[self.styleSheetParser.identifier, [ISSParser unichar:'(' skipSpaces:YES],

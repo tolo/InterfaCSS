@@ -23,6 +23,8 @@
 #import "NSArray+ISSAdditions.h"
 
 
+// TODO: RELOAD STYLES WHEN STYLESHEETS ARE RELOADED
+
 typedef id (^ISSViewHierarchyVisitorBlock)(id viewObject, ISSElementStylingProxy* elementDetails, BOOL* stop);
 
 
@@ -237,7 +239,7 @@ static ISSStylingManager* sharedISSStylingManager = nil;
         // Process declarations to see which styles currently match
         BOOL containsPseudoClassSelector = NO;
         ISSStylingContext* stylingContext = [[ISSStylingContext alloc] initWithStylingManager:self styleSheetScope:styleSheetScope];
-        NSMutableArray* viewStyles = [[NSMutableArray alloc] initWithArray:elementDetails.inlineStyle ?: @[]];
+        NSMutableArray* viewStyles = [[NSMutableArray alloc] init];
         for (ISSRuleset* ruleset in cachedRulesets) {
             // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
             if ( !ruleset.containsPseudoClassSelector || [ruleset matchesElement:elementDetails stylingContext:stylingContext] ) {
@@ -245,6 +247,9 @@ static ISSStylingManager* sharedISSStylingManager = nil;
             }
 
             containsPseudoClassSelector = containsPseudoClassSelector || ruleset.containsPseudoClassSelector;
+        }
+        if( elementDetails.inlineStyle.count > 0 ) {
+            [viewStyles iss_addAndReplaceUniqueObjectsInArray:elementDetails.inlineStyle];
         }
         elementDetails.stylingStatic = !containsPseudoClassSelector; // Record in elementDetails if declarations contain pseudo classes, and thus needs constant re-evaluation (i.e. not static)
 

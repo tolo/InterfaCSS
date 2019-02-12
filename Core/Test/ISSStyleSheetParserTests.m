@@ -380,6 +380,31 @@ static ISSStylingManager* defaultStyler;
     XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), enumValue, @"Expected UIControlStateSelected|UIControlStateHighlighted");
 }
 
+- (void) testPropertyPrefixes {
+    // Test layer prefix properties
+    NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" forType:ISSPropertyTypeNumber];
+    UIView* view = [[UIView alloc] init];
+    styler.propertyManager applyPropertyValue:<#(nonnull ISSPropertyValue *)#> onTarget:<#(nonnull ISSElementStylingProxy *)#> styleSheetScope:<#(nonnull ISSStyleSheetScope *)#>
+    view.interfaCSS
+    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
+    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:details];
+    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:details];
+    ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
+    ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
+
+
+    // Test other valid property prefixes
+    values = [self getAllPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
+                                                   @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
+                                                   @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
+                                                   @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes" getDeclarations:NO];
+
+    XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
+    for(id value in values) {
+        XCTAssertEqualObjects(value, @(0.42));
+    }
+}
+
 - (void) testTransformPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"transform" forType:ISSPropertyTypeTransform];
     CGAffineTransform transform = [value CGAffineTransformValue];

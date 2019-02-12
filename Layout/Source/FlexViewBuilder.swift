@@ -95,14 +95,14 @@ extension YGDisplay: StringParsableEnum {
 }
 
 extension YGValue {
-  init(_ floatValue: CGFloat) {
+  public init(_ floatValue: CGFloat) {
     self.init(value: Float(floatValue), unit: .point)
   }
 
-  init(_ relativeNumber: RelativeNumber) {
+  public init(_ relativeNumber: RelativeNumber) {
     switch relativeNumber.unit {
     case .percent:
-      self.init(value: relativeNumber.value.floatValue, unit: .percent)
+      self.init(value: relativeNumber.rawValue.floatValue, unit: .percent)
     case .auto:
       self.init(value: 0, unit: .auto)
     default:
@@ -115,6 +115,8 @@ private typealias CGFloatSetter = (Property, UIView, CGFloat) -> Void
 private typealias YGValueSetter = (Property, UIView, YGValue) -> Void
 
 public class FlexViewBuilder: ViewBuilder {
+  
+  private static var didRegisterFlexProperties: Bool = false
 
   public var enableFlexboxOnSubviews = true
   
@@ -122,6 +124,15 @@ public class FlexViewBuilder: ViewBuilder {
   public required init(layoutFileURL: URL, refreshable: Bool = false, fileOwner: AnyObject? = nil, styler: Styler = StylingManager.shared()) {
     super.init(layoutFileURL: layoutFileURL, refreshable: refreshable, fileOwner: fileOwner, styler: styler)
 
+    if !FlexViewBuilder.didRegisterFlexProperties || styler.propertyManager.findProperty(withName: "flex-direction", in: UIView.self) == nil {
+      FlexViewBuilder.didRegisterFlexProperties = true
+      registerFlexProperties(forStyler: styler)
+    }
+  }
+  
+  private func registerFlexProperties(forStyler styler: Styler) {
+    // TODO: Remove flex prefix on properties where it doesn't belong...
+    
     registerEnumFlexProperty("flex-layout-direction") { $1.yoga.direction = $2 }
     registerEnumFlexProperty("flex-direction") { $1.yoga.flexDirection = $2 }
     registerEnumFlexProperty("justify-content") { $1.yoga.justifyContent = $2 }
@@ -132,36 +143,36 @@ public class FlexViewBuilder: ViewBuilder {
     registerEnumFlexProperty("flex-wrap") { $1.yoga.flexWrap = $2 }
     registerEnumFlexProperty("overflow") { $1.yoga.overflow = $2 }
     registerEnumFlexProperty("display") { $1.yoga.display = $2 }
-
+    
     registerNumberFlexProperty(withName: "flex-grow") { $1.yoga.flexGrow = $2 }
     registerNumberFlexProperty(withName: "flex-shrink") { $1.yoga.flexShrink = $2 }
     registerRelativeNumberFlexProperty(withName: "flex-basis") { $1.yoga.flexBasis = $2 }
-
+    
     registerRelativeNumberFlexProperties(["flex-left": { $1.yoga.left = $2 }, "flex-top": { $1.yoga.top = $2 },
                                           "flex-right": { $1.yoga.right = $2 }, "flex-bottom": { $1.yoga.bottom = $2 },
                                           "flex-start": { $1.yoga.start = $2 }, "flex-end": { $1.yoga.end = $2 }])
-
+    
     registerRelativeNumberFlexProperties(["margin-left": { $1.yoga.marginLeft = $2 }, "margin-top": { $1.yoga.marginTop = $2 },
                                           "margin-right": { $1.yoga.marginRight = $2 }, "margin-bottom": { $1.yoga.marginBottom = $2 },
                                           "margin-start": { $1.yoga.marginStart = $2 }, "margin-end": { $1.yoga.marginEnd = $2 },
                                           "margin-horizontal": { $1.yoga.marginHorizontal = $2 }, "margin-vertical": { $1.yoga.marginVertical = $2 },
                                           "margin": { $1.yoga.margin = $2 }])
-
+    
     registerRelativeNumberFlexProperties(["padding-left": { $1.yoga.paddingLeft = $2 }, "padding-top": { $1.yoga.paddingTop = $2 },
                                           "padding-right": { $1.yoga.paddingRight = $2 }, "padding-bottom": { $1.yoga.paddingBottom = $2 },
                                           "padding-start": { $1.yoga.paddingStart = $2 }, "padding-end": { $1.yoga.paddingEnd = $2 },
                                           "padding-horizontal": { $1.yoga.paddingHorizontal = $2 }, "padding-vertical": { $1.yoga.paddingVertical = $2 },
                                           "padding": { $1.yoga.padding = $2 }])
-
+    
     registerNumberFlexProperties(["border-left": { $1.yoga.borderLeftWidth = $2 }, "border-top": { $1.yoga.borderTopWidth = $2 },
                                   "border-right": { $1.yoga.borderRightWidth = $2 }, "border-bottom": { $1.yoga.borderBottomWidth = $2 },
                                   "border-start": { $1.yoga.borderStartWidth = $2 }, "border-end": { $1.yoga.borderEndWidth = $2 },
                                   "border": { $1.yoga.borderWidth = $2 }])
-
+    
     registerRelativeNumberFlexProperties(["flex-width": { $1.yoga.width = $2 }, "flex-height": { $1.yoga.height = $2 },
                                           "flex-min-width": { $1.yoga.minWidth = $2 }, "flex-min-height": { $1.yoga.minHeight = $2 },
                                           "flex-max-width": { $1.yoga.maxWidth = $2 }, "flex-max-height": { $1.yoga.maxHeight = $2 }])
-
+    
     // Yoga specific properties, not compatible with flexbox specification
     registerNumberFlexProperty(withName: "flex-aspect-ratio") { $1.yoga.aspectRatio = $2 }
   }
@@ -171,7 +182,7 @@ public class FlexViewBuilder: ViewBuilder {
       guard let value = value as? String else {
         return false
       }
-      propertySetter(property, view, EnumType.enumValue(from: value))
+      propertySetter(property, view, EnumType.enumValueWithDefault(from: value))
       return true
     }
   }
@@ -231,6 +242,7 @@ public class FlexViewBuilder: ViewBuilder {
   // MARK: - ViewBuilder
   
   override open func applyLayout(onView view: UIView) {
+    super.applyLayout(onView: view)
 //    view.markYogaViewTreeDirty()
     view.yoga.applyLayout(preservingOrigin: true)
     logger.logTrace(message: "Applied layout - view frame: \(view.frame)")
@@ -241,15 +253,17 @@ public class FlexViewBuilder: ViewBuilder {
     return view.yoga.calculateLayout(with: size)
   }
 
-  override open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> UIView? {
-    let rootView = super.createViewTree(withRootNode: root, fileOwner: fileOwner)
-    rootView?.yoga.isEnabled = true // Ensure that yoga is always enabled for root view
-    return rootView
+  override open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> (UIView, [UIViewController])? {
+    guard let (rootView, childViewControllers) = super.createViewTree(withRootNode: root, fileOwner: fileOwner) else {
+      return nil
+    }
+    rootView.yoga.isEnabled = true // Ensure that yoga is always enabled for root view
+    return (rootView, childViewControllers)
   }
 
-  override open func addViewObject(_ viewObject: AnyObject, toParentView parentView: AnyObject) {
-    super.addViewObject(viewObject, toParentView: parentView)
-    if enableFlexboxOnSubviews, let view = viewObject as? UIView, let parentView = parentView as? UIView {
+  override open func addViewObject(_ viewObject: AnyObject, toParentView parentView: UIView, fileOwner: AnyObject?) {
+    super.addViewObject(viewObject, toParentView: parentView, fileOwner: fileOwner)
+    if enableFlexboxOnSubviews, let view = viewObject as? UIView {
       if parentView.yoga.isEnabled {
         view.yoga.isEnabled = true
       }

@@ -333,58 +333,34 @@
     return nil;
 }
 
-- (ISSParser*) propertyPairParser:(BOOL)forVariableDefinition {
-    NSCharacterSet* validInitialIdentifierChars = [self validInitialIdentifierCharacterCharsSet];
-    
+- (ISSParser*) propertyValueParser:(BOOL)forVariableDefinition {
     return [ISSParser parserWithBlock:^id (NSString* input, ISSParserStatus* status) {
         NSUInteger i = status->index;
-        const NSUInteger len = input.length;
-        ISSParserSkipSpaceAndNewLines(input); // Skip space
-        
-        if( forVariableDefinition ) {
-            if( i < len && '@' == [input characterAtIndex:i] ) {
-                i++;
-            } else {
-                return [NSNull null];
-            }
+        NSString* value = [self parseEscapedAndParameterizedStringUpToChar:';' orChar:0 inString:input index:&i];
+        if( value ) {
+            *status = (ISSParserStatus){.match = YES, .index = i + 1, .context = status->context};
+            return value;
         }
-        
-        if( [validInitialIdentifierChars characterIsMember:[input characterAtIndex:i]] ) { // Make sure name starts with valid initial idenfifier char
-            
-            // Parse name and separator:
-            NSString* name = nil;
-            if( forVariableDefinition ) {
-                ISSParser* parser = [ISSParser takeWhileInSet:[self validIdentifierCharsSet]];
-                ISSParserStatus nameStatus = {.match = NO, .index = i, .context = status->context};
-                name = [parser parse:input status:&nameStatus];
-                i = nameStatus.index;
-                
-                ISSParserSkipSpaceAndNewLines(input); // Skip space
-                
-                unichar c = [input characterAtIndex:i];
-                if(c == ':' || c == '=') {
-                    i++;
-                } else {
-                    name = nil;
-                }
-            } else {
-                name = [self parseEscapedAndParameterizedStringUpToChar:':' orChar:'=' inString:input index:&i];
-            }
-            
-            if( name && name.length > 0 ) {
-                ISSParserSkipSpaceAndNewLines(input); // Skip space
-                
-                // Parse value:
-                NSString* value = [self parseEscapedAndParameterizedStringUpToChar:';' orChar:0 inString:input index:&i];
-                if( value ) {
-                    *status = (ISSParserStatus){.match = YES, .index = i + 1, .context = status->context};
-                    return @[name, value];
-                }
-            }
-        }
-        
         return [NSNull null];
     } andName:@"iss_propertyPairParser"];
+}
+
+- (ISSParser*) propertyPairParser:(BOOL)forVariableDefinition {
+    ISSParser* nameInitial = [ISSParser charInSet:[self validInitialIdentifierCharacterCharsSet]];
+    NSMutableCharacterSet* validIdentifierCharsAndDotSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"."];
+    [validIdentifierCharsAndDotSet formUnionWithCharacterSet:[self validIdentifierCharsSet]];
+    ISSParser* nameRemaining = [ISSParser takeWhileInSet:[validIdentifierCharsAndDotSet copy]];
+
+    ISSParser* nameParser = [[nameInitial then:nameRemaining] concat];
+    ISSParser* separator = [[ISSParser unichar:':'] parserOr:[ISSParser unichar:'=']];
+    ISSParser* valueParser = [[self propertyValueParser:forVariableDefinition] skipSurroundingSpaces];
+    if( forVariableDefinition ) {
+        ISSParser* nameAndSpacesParser = [[[ISSParser unichar:'@'] keepRight:nameParser] skipSurroundingSpaces];
+        return [[nameAndSpacesParser keepLeft:separator] then:valueParser];
+    } else {
+        ISSParser* nameAndSpacesParser = [nameParser skipSurroundingSpaces];
+        return [[nameAndSpacesParser keepLeft:separator] then:valueParser];
+    }
 }
 
 @end

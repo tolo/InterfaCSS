@@ -23,6 +23,10 @@ open class LayoutTableViewController: LayoutViewController, UITableViewDataSourc
     return "\(cellReuseIdentifier(forIndexPath: indexPath))-\(cell.accessoryType.rawValue)"
   }
 
+  private func uniqueCellIdentifier(forIndexPath indexPath: IndexPath, andCellIdentifier cellId: String) -> String {
+    return uniqueCellModelIdentifier(forIndexPath: indexPath) ?? "\(cellId)-\(indexPath)"
+  }
+
 
   // MARK: - LayoutTableViewDelegate
 
@@ -38,10 +42,6 @@ open class LayoutTableViewController: LayoutViewController, UITableViewDataSourc
   
   open func cellReuseIdentifier(forIndexPath indexPath: IndexPath) -> String {
     return ""
-  }
-    
-  private func uniqueCellIdentifier(forIndexPath indexPath: IndexPath, andCellIdentifier cellId: String) -> String {
-    return uniqueCellModelIdentifier(forIndexPath: indexPath) ?? "\(cellId)-\(indexPath)"
   }
   
   open func uniqueCellModelIdentifier(forIndexPath indexPath: IndexPath) -> String? {

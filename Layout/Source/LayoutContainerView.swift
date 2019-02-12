@@ -120,11 +120,11 @@ open class LayoutContainerView: UIView {
   }
 
 
-  private func viewSetupCallback() -> (UIView?, AbstractLayout?, Error?) -> Void {
-    return { [weak self] (view, layout, error) in self?.setup(view: view, layout: layout, error: error) }
+  private func viewSetupCallback() -> (UIView?, [UIViewController]?, AbstractLayout?, Error?) -> Void {
+    return { [weak self] (view, childViewControllers, layout, error) in self?.setup(view: view, childViewControllers: childViewControllers, layout: layout, error: error) }
   }
 
-  private func setup(view: UIView?, layout: AbstractLayout?, error: Error?) {
+  private func setup(view: UIView?, childViewControllers: [UIViewController]?, layout: AbstractLayout?, error: Error?) {
     guard let view = view else {
       // TODO: Log error
       return

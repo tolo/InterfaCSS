@@ -27,7 +27,7 @@
     bounds: "{{1,2},{3,4}}";
     color: rgb(128, 128, 128);
     tintColor: #ffffff;
-    titleColor(selected highlighted)  : blue;
+    titleColor__selected-highlighted  : blue;
     textColor : rgba(64, 64, 64, 0.5);
     shadowColor: red;
     transform: rotate(10) scale(20,30) translate(40,50);
@@ -172,7 +172,7 @@
 .fullEnumNames {
     autoresizingMask: UIViewAutoresizingFlexibleWidth;
     lineBreakMode: NSLineBreakByWordWrapping;
-    titleColor(UIControlStateSelected): red;
+    titleColor__UIControlStateSelected: red;
 }
 
 

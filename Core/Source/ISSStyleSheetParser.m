@@ -190,13 +190,10 @@ float iss_floatAt(NSArray* array, NSUInteger index) {
     NSArray<NSString*>* parameters = nil;
     
     // Extract parameters
-    NSRange parentRange = [propertyNameString rangeOfString:@"("];
+    NSRange parentRange = [propertyNameString rangeOfString:@"__"];
     if( parentRange.location != NSNotFound ) {
-        NSRange endParentRange = [propertyNameString rangeOfString:@")"];
-        if( endParentRange.location != NSNotFound ) {
-            NSString* parameterString = [propertyNameString substringWithRange:NSMakeRange(parentRange.location+1, endParentRange.location - parentRange.location - 1)];
-            parameters = [parameterString componentsSeparatedByString:@","];
-        }
+        NSString* parameterString = [propertyNameString substringFromIndex:parentRange.location+2];
+        parameters = [parameterString componentsSeparatedByString:@"_"];
         propertyNameString = [propertyNameString substringToIndex:parentRange.location];
     }
 

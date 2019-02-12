@@ -14,7 +14,25 @@ import UIKit
 open class LayoutViewController: UIViewController {
   
   public private(set) var layoutContainerView: LayoutContainerView!
-  
+
+  private var defaultLayoutContainerViewFactory: LayoutContainerViewFactory?
+  private typealias LayoutContainerViewFactory = () -> LayoutContainerView
+
+  public init() {
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  public required init(layoutFileURL: URL, refreshable: Bool = false, styler: Styler = StylingManager.shared(), viewBuilderClass: ViewBuilder.Type = ViewBuilder.defaultViewBuilderClass) {
+    super.init(nibName: nil, bundle: nil)
+    defaultLayoutContainerViewFactory = { [unowned self] in
+      return self.createLayoutContainerView(layoutFileURL: layoutFileURL, refreshable: refreshable, styler: styler, viewBuilderClass: viewBuilderClass)
+    }
+  }
+
+  public required init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+  }
+
   // MARK: - UIViewController
   
   open override func loadView() {
@@ -33,8 +51,11 @@ open class LayoutViewController: UIViewController {
   // MARK: - LayoutViewController main API
   
   open func loadLayoutContainerView() -> LayoutContainerView {
-    let className = String(describing: type(of: self))
-    return createLayoutContainerView(mainBundleFile: "\(className).xml")
+    guard let defaultLayoutContainerViewFactory = defaultLayoutContainerViewFactory else {
+      let className = String(describing: type(of: self))
+      return createLayoutContainerView(mainBundleFile: "\(className).xml")
+    }
+    return defaultLayoutContainerViewFactory()
   }
   
   private func layoutViewDidLoadCallback() -> (LayoutContainerView, UIView) -> Void {

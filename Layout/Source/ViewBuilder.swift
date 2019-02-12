@@ -9,7 +9,7 @@
 import UIKit
 
 
-public typealias ViewBuilderCompletionHandler = (_ rootView: UIView?, _ layout: AbstractLayout?, _ parseError: Error?) -> Void
+public typealias ViewBuilderCompletionHandler = (_ rootView: UIView?, _ childViewControllers: [UIViewController]?, _ layout: AbstractLayout?, _ parseError: Error?) -> Void
 
 public typealias ViewBuilderLayoutRefreshedObserver = NSObjectProtocol
 
@@ -95,7 +95,7 @@ open class ViewBuilder {
           }
         } else {
           DispatchQueue.main.sync {
-            completionHandler(nil, nil, nil) // TODO: Error?
+            completionHandler(nil, nil, nil, nil) // TODO: Error?
           }
         }
       }
@@ -109,7 +109,7 @@ open class ViewBuilder {
     if let refresher = refresher, refresher.resourceModificationMonitoringSupported {
       let token = NotificationCenter.default.addObserver(forName: .ViewBuilderLayoutRefreshed, object: self, queue: nil) { [weak self] notification in
         guard let self = self, let (_, _) = notification.userInfo?[ViewBuilder.ViewBuilderLayoutRefreshedDataKay] as? ViewBuilderLayoutRefreshedData else {
-          completionHandler(nil, nil, nil) // TODO: Error?
+          completionHandler(nil, nil, nil, nil) // TODO: Error?
           return
         }
         self.buildViewFromLastLayout(fileOwner: effectiveFileOwner, notifyOnError: true, completionHandler: completionHandler)
@@ -135,22 +135,21 @@ open class ViewBuilder {
   
   private final func buildInitialView(fromData data: Data, fileOwner: AnyObject?, completionHandler: @escaping ViewBuilderCompletionHandler) {
     buildLayout(fromData: data) { (parsedLayout, parseError) in
-      guard let layout = parsedLayout, let rootView = buildView(fromLayout: layout, fileOwner: fileOwner) else {
-        completionHandler(nil, parsedLayout, parseError)
+      guard let layout = parsedLayout, let (rootView, childViewControllers) = buildView(fromLayout: layout, fileOwner: fileOwner) else {
+        completionHandler(nil, nil, parsedLayout, parseError)
         return
       }
-      completionHandler(rootView, layout, parseError)
+      completionHandler(rootView, childViewControllers, layout, parseError)
     }
   }
   
   @discardableResult
   private final func buildViewFromLastLayout(fileOwner: AnyObject?, notifyOnError: Bool = false, completionHandler: @escaping ViewBuilderCompletionHandler) -> Bool {
-    if let lastLayout = lastLayout {
-      let rootView = buildView(fromLayout: lastLayout, fileOwner: fileOwner)
-      completionHandler(rootView, lastLayout, nil)
+    if let lastLayout = lastLayout, let (rootView, childViewControllers) = buildView(fromLayout: lastLayout, fileOwner: fileOwner) {
+      completionHandler(rootView, childViewControllers, lastLayout, nil)
       return true
     } else if notifyOnError {
-      completionHandler(nil, nil, nil) // TODO: Error?
+      completionHandler(nil, nil, nil, nil)
     }
     return false
   }
@@ -181,40 +180,82 @@ open class ViewBuilder {
       if let parsedLayout = parsedLayout {
         self?.lastLayout = parsedLayout
       }
+      if let parseError = parseError {
+        logger.logDebug(message: "Error parsing: \(parseError)")
+      }
       if let self = self, let styleSheetContent = parsedLayout?.layoutStyle {
         if let styleSheet = embeddedStyleSheet {
           styler.styleSheetManager.unloadStyleSheet(styleSheet)
         }
         embeddedStyleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
+        setDefaultStyleSheetVariables()
         styler.styleSheetManager.registerStyleSheet(embeddedStyleSheet!)
       }
         
       completionHandler(parsedLayout, parseError)
     }
   }
+  
+  private func setDefaultStyleSheetVariables() {
+    var safeAreaInsets: UIEdgeInsets = .zero
+    var layoutMargins: UIEdgeInsets = .zero
+    if let fileOwner = defaultFileOwner as? UIViewController, let rootView = fileOwner.viewIfLoaded {
+      safeAreaInsets = rootView.safeAreaInsets
+      layoutMargins = rootView.layoutMargins
+    }
+    
+    embeddedStyleSheet?.content?.setValue("\(safeAreaInsets.top)", forStyleSheetVariableWithName: "safeAreaInsets-top")
+    embeddedStyleSheet?.content?.setValue("\(safeAreaInsets.left)", forStyleSheetVariableWithName: "safeAreaInsets-left")
+    embeddedStyleSheet?.content?.setValue("\(safeAreaInsets.bottom)", forStyleSheetVariableWithName: "safeAreaInsets-bottom")
+    embeddedStyleSheet?.content?.setValue("\(safeAreaInsets.right)", forStyleSheetVariableWithName: "safeAreaInsets-right")
+    
+    embeddedStyleSheet?.content?.setValue("\(layoutMargins.top)", forStyleSheetVariableWithName: "layoutMargins-top")
+    embeddedStyleSheet?.content?.setValue("\(layoutMargins.left)", forStyleSheetVariableWithName: "layoutMargins-left")
+    embeddedStyleSheet?.content?.setValue("\(layoutMargins.bottom)", forStyleSheetVariableWithName: "layoutMargins-bottom")
+    embeddedStyleSheet?.content?.setValue("\(layoutMargins.right)", forStyleSheetVariableWithName: "layoutMargins-right")
+  }
 
-  private final func buildView(fromLayout layout: AbstractLayout, fileOwner: AnyObject?) -> UIView? {
-    guard let rootView = createViewTree(withRootNode: layout.rootNode, fileOwner: fileOwner) else {
+  private final func buildView(fromLayout layout: AbstractLayout, fileOwner: AnyObject?) -> (UIView, [UIViewController])? {
+    guard let (rootView, childViewControllers) = createViewTree(withRootNode: layout.rootNode, fileOwner: fileOwner) else {
       return nil
     }
-
+    if let title = layout.title, let fileOwner = fileOwner as? UIViewController {
+      fileOwner.title = title
+      fileOwner.navigationItem.title = title
+    }
     styler.applyStyling(rootView)
-    return rootView
+    return (rootView, childViewControllers)
   }
 
 
   // MARK: - Support methods (for subclasses)
 
-  open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> UIView? {
-    return root.visitAbstractViewTree() { (node, parentNode, parentView) in
-      guard let view = createViewFrom(node: node, parentView: parentView, fileOwner: fileOwner) else {
+  open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> (UIView, [UIViewController])? {
+    var childViewControllers: [UIViewController] = []
+    let rootView = root.visitAbstractViewTree() { (node, parentNode, parentView) in
+      guard let viewObject = createViewFrom(node: node, parentView: parentView, fileOwner: fileOwner), node.addToViewHierarchy else {
         return nil
       }
-      if let parentView = parentView as? UIView, node.addToViewHierarchy {
-        addViewObject(view, toParentView: parentView)
+      guard let parentView = parentView as? UIView else {
+        return viewObject
       }
-      return view
+      if let childViewController = viewObject as? UIViewController, let parentViewController = fileOwner as? UIViewController {
+        parentViewController.addChild(childViewController)
+        childViewController.view.frame = parentView.bounds
+        addViewObject(childViewController.view, toParentView: parentView, fileOwner: fileOwner)
+        childViewControllers.append(childViewController)
+        return childViewController.view
+      } else {
+        addViewObject(viewObject, toParentView: parentView, fileOwner: fileOwner)
+        return viewObject
+      }
     } as? UIView
+
+    if let rootView = rootView {
+      return (rootView, childViewControllers)
+    } else {
+      return nil
+    }
   }
 
   open func createViewFrom(node: AbstractViewTreeNode, parentView: AnyObject?, fileOwner: AnyObject?) -> AnyObject? {
@@ -254,8 +295,8 @@ open class ViewBuilder {
     return viewObject
   }
 
-  open func addViewObject(_ viewObject: AnyObject, toParentView parentView: AnyObject) {
-    if let view = viewObject as? UIView, let parentView = parentView as? UIView {
+  open func addViewObject(_ viewObject: AnyObject, toParentView parentView: UIView, fileOwner: AnyObject?) {
+    if let view = viewObject as? UIView {
       parentView.addSubview(view)
     }
   }

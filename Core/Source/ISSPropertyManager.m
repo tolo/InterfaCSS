@@ -69,7 +69,9 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
 - (ISSProperty*) _findPropertyWithName:(NSString*)normalizedName inClass:(Class)clazz {
     NSString* canonicalType = [self canonicalTypeForClass:clazz];
-    NSMutableDictionary* properties = self.propertiesByType[canonicalType];
+    if( canonicalType == nil ) { return nil; }
+
+    NSMutableDictionary* properties = self.propertiesByType[canonicalType] ?: [NSMutableDictionary dictionary];
     ISSProperty* property = properties[normalizedName];
     if( !property ) { // Search in super class
         Class superClass = [clazz superclass];
@@ -78,12 +80,16 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
         }
     }
     if( !property ) {
-        NSDictionary* runtimeProperties = [ISSRuntimeIntrospectionUtils runtimePropertiesForClass:clazz lowercasedNames:YES];
-        ISSRuntimeProperty* runtimeProperty = runtimeProperties[normalizedName];
-        if( runtimeProperty ) {
-            property = [[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:[self runtimePropertyToPropertyType:runtimeProperty] enumValueMapping:nil];
-            self.propertiesByType[canonicalType] = properties;
+        NSDictionary* runtimeProperties = [ISSRuntimeIntrospectionUtils runtimePropertiesForClass:clazz
+                                                excludingRootClasses:[NSSet setWithArray:@[[clazz superclass]]] lowercasedNames:YES];
+        for(NSString* name in runtimeProperties.keyEnumerator) {
+            if( properties[name] == nil ) {
+                ISSRuntimeProperty* runtimeProperty = runtimeProperties[name];
+                properties[name] = [[ISSProperty alloc] initWithRuntimeProperty:runtimeProperty type:[self runtimePropertyToPropertyType:runtimeProperty] enumValueMapping:nil];
+            }
         }
+        self.propertiesByType[canonicalType] = properties;
+        property = properties[normalizedName];
     }
     return property;
 }
@@ -111,19 +117,6 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
     return property;
 }
 
-//- (ISSProperty*) registerCompoundPropertyWithName:(NSString*)name inClass:(Class)clazz compoundProperties:(NSArray<ISSProperty*>*)compoundProperties replaceExisting:(BOOL)replaceExisting {
-//    //ISSPropertyValue
-//    ISSPropertySetterBlock setter = ^BOOL(ISSProperty* property, id target, id value, NSArray* parameters) {
-//        NSArray* values = [value componentsSeparatedByString:@" "] iss_map:^id _Nonnull(id  _Nonnull element) {
-//            return [ISSPropertyValue alloc] initWithPropertyName:<#(nonnull NSString *)#> rawValue:<#(nullable NSString *)#>
-//        };
-//        for(int i=0; i<compoundProperties.count; i++) {
-//            [self applyPropertyValue:<#(nonnull ISSPropertyValue *)#> onTarget:<#(nonnull ISSElementStylingProxy *)#> styleSheetScope:<#(nonnull ISSStyleSheetScope *)#>]
-//        }
-//        return YES;
-//    };
-//    return [self registerProperty:[[ISSProperty alloc] initCustomPropertyWithName:name inClass:clazz type:type setterBlock:setter] inClass:clazz];
-//}
 
 #pragma mark - Internal convenience property registration methods
 
@@ -340,6 +333,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 - (instancetype) init:(BOOL)withStandardPropertyCustomizations {
     if( self = [super init] ) {
         NSArray* validTypeClasses = @[
+             resistanceIsFutile CALayer.class,
              resistanceIsFutile UIView.class,
              resistanceIsFutile UIImageView.class,
              resistanceIsFutile UIScrollView.class,

@@ -86,6 +86,9 @@ open class LayoutTableView: UITableView {
     let cell = super.dequeueReusableCell(withIdentifier: identifier, for: indexPath)
     if let cell = cell as? LayoutTableViewCell, let viewBuilder = cellFactories[identifier]?.viewBuilder {
       cell.configureLayout(withViewBuilder: viewBuilder)
+      DispatchQueue.main.async {
+        cell.layoutContainerView.styler.applyStyling(self)
+      }
     }
     return cell
   }

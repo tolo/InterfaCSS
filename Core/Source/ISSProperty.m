@@ -70,7 +70,7 @@ static NSCharacterSet* bitMaskSeparator;
 + (NSCharacterSet*) bitMaskEnumValueSeparator {
     static dispatch_once_t rfc1123DateFormatterOnceToken;
     dispatch_once(&rfc1123DateFormatterOnceToken, ^{
-        bitMaskSeparator = [NSCharacterSet characterSetWithCharactersInString:@" |"];
+        bitMaskSeparator = [NSCharacterSet characterSetWithCharactersInString:@" |-"];
     });
     return bitMaskSeparator;
 }
