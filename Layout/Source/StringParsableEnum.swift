@@ -6,12 +6,12 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-protocol StringParsableEnum: CaseIterable, CustomStringConvertible /*where Self.AllCases == [Self]*/ {
+public protocol StringParsableEnum: RawRepresentable, CaseIterable, CustomStringConvertible /*where Self.AllCases == [Self]*/ {
   static var defaultEnumValue: Self { get }
   static func enumValue(from string: String) -> Self?
 }
 
-extension StringParsableEnum {
+public extension StringParsableEnum {
   public static var defaultEnumValue: Self {
     return allCases.first!
   }
@@ -29,5 +29,11 @@ extension StringParsableEnum {
   public static func switchOn(_ string: String, switchFunc: (Self) -> Void) {
     guard let value = enumValue(from: string) else { return }
     switchFunc(value)
+  }
+}
+
+public extension StringParsableEnum where RawValue: ExpressibleByStringLiteral {
+  public var description: String {
+    return String(describing: rawValue)
   }
 }

@@ -9,6 +9,7 @@
 import Foundation
 
 // TODO: Rename?
+// TODO: Move into core after Swift conversion.
 public enum BundleFile {
   case mainBundeFile(filename: String)
   case refreshableProjectFile(filename: String, relativeToDirectory: URL)

@@ -10,7 +10,6 @@ import UIKit
 
 
 public typealias AbstractLayoutCompletionHandler = (_ abstractLayout: AbstractLayout?, _ parseError: Error?) -> Void
-public typealias AbstractViewTreeVisitor = (_ node: AbstractViewTreeNode, _ parentNode: AbstractViewTreeNode?, _ parentView: AnyObject?) -> AnyObject?
 
 
 public enum AbstractViewTreeParserError: Error {
@@ -18,6 +17,7 @@ public enum AbstractViewTreeParserError: Error {
   case invalidLayoutRootElementPosition
   case missingViewTreeRootNode
 }
+
 
 public struct AbstractLayout {
   public let rootNode: AbstractViewTreeNode
@@ -31,143 +31,6 @@ public class LayoutAttributes {
   public var useDefaultMargins: Bool = false
 }
 
-public enum ButtonType: String, StringParsableEnum {
-  public var description: String {
-    return rawValue
-  }
-  
-  case custom = "custom"
-  case system = "system"
-  
-  public var uiButtonType: UIButton.ButtonType {
-    switch self {
-    case .custom: return .custom
-    case .system: return .system
-    }
-  }
-}
-
-public enum UIElementType {
-  // TODO: Expand this will more element types as needed
-  case button(type: ButtonType)
-  case collectionView(layoutClass: UICollectionViewLayout.Type)
-  case tableView
-  case tableViewCell(cellLayoutFile: String?, elementClass: LayoutTableViewCell.Type?)
-  case viewController(layoutFile: String?, elementClass: UIViewController.Type)
-  case other(elementClass: UIResponder.Type)
-
-  public func createElement(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, fileOwner: AnyObject?) -> UIResponder? {
-    switch self {
-    case .button(let type):
-      return UIButton(type: type.uiButtonType)
-    case .collectionView(let layoutClass):
-      return createCollectionView(layoutClass: layoutClass, fileOwner: fileOwner)
-    case .tableView:
-      return createTableView(fileOwner: fileOwner)
-    case .tableViewCell(let cellLayoutFile, let elementClass):
-      registerTableViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
-      return nil
-    case .viewController(let layoutFile, let elementClass):
-      return createViewController(viewBuilder: viewBuilder, fileOwner: fileOwner, layoutFile: layoutFile, elementClass: elementClass)
-    case .other(let elementClass):
-      return elementClass.init()
-    }
-  }
-
-  private func createCollectionView(layoutClass: UICollectionViewLayout.Type, fileOwner: AnyObject?) -> UICollectionView {
-    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
-    if let dataSource = fileOwner as? UICollectionViewDataSource {
-      collectionView.dataSource = dataSource
-    }
-    if let delegate = fileOwner as? UICollectionViewDelegate {
-      collectionView.delegate = delegate
-    }
-    return collectionView
-  }
-
-  private func createTableView(fileOwner: AnyObject?) -> UITableView {
-    let tableView = LayoutTableView(frame: .zero)
-    if let dataSource = fileOwner as? UITableViewDataSource {
-      tableView.dataSource = dataSource
-    }
-    if let delegate = fileOwner as? UITableViewDelegate {
-      tableView.delegate = delegate
-    }
-    
-    return tableView
-  }
-  
-  private func registerTableViewCellClass(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, cellLayoutFile: String?, elementClass: LayoutTableViewCell.Type?) {
-    if let cellId = node.elementId, let cellLayoutFile = cellLayoutFile, let tableView = parentView as? LayoutTableView {
-      if let elementClass = elementClass {
-        tableView.registerCellLayout(cellIdentifier: cellId, cellClass: elementClass, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
-      } else {
-        tableView.registerCellLayout(cellIdentifier: cellId, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
-      }
-    }
-  }
-
-  private func createViewController(viewBuilder: ViewBuilder, fileOwner: AnyObject?, layoutFile: String?, elementClass: UIViewController.Type) -> UIViewController? {
-    if fileOwner is UIViewController {
-      if let layoutFile = layoutFile, let elementClass = elementClass as? LayoutViewController.Type {
-        let parentUrl = viewBuilder.layoutFileURL
-        let url = URL(fileURLWithPath: layoutFile, relativeTo: parentUrl)
-        return elementClass.init(layoutFileURL: url, refreshable: viewBuilder.refreshable, styler: viewBuilder.styler)
-      } else {
-        return elementClass.init()
-      }
-    } else {
-      viewBuilder.logger.logWarning(message: "Cannot create child view controller - fileOwner must be a UIViewController!")
-      return nil
-    }
-  }
-}
-
-/**
- * AbstractViewTreeNode
- */
-public final class AbstractViewTreeNode {
-  public var elementType: UIElementType
-  public var elementId: String?
-  public var styleClasses: [String]?
-  public var fileOwnerPropertyName: String?
-  public var accessibilityIdentifier: String?
-  public var inlineStyle: [PropertyValue]?
-  public var addToViewHierarchy: Bool
-  
-  public lazy var childNodes: [AbstractViewTreeNode] = []
-  public var stringContent: String?
-  public var rawAttributes: [String: String]
-  
-
-  public init(elementType: UIElementType, elementId: String? = nil, styleClasses: [String]? = nil, inlineStyle: [PropertyValue]? = nil, addToViewHierarchy: Bool,
-              fileOwnerPropertyName: String? = nil, accessibilityIdentifier: String? = nil, rawAttributes: [String: String]) {
-    self.elementType = elementType
-    self.elementId = elementId
-    self.styleClasses = styleClasses
-    self.inlineStyle = inlineStyle
-    self.addToViewHierarchy = addToViewHierarchy
-    self.fileOwnerPropertyName = fileOwnerPropertyName
-    self.accessibilityIdentifier = accessibilityIdentifier ?? elementId
-    self.rawAttributes = rawAttributes
-  }
-
-  func addChild(node: AbstractViewTreeNode) {
-    childNodes.append(node)
-  }
-
-  public func visitAbstractViewTree(visitor: AbstractViewTreeVisitor) -> AnyObject? {
-    return visitAbstractViewTree(parentNode: nil, parentView: nil, visitor: visitor)
-  }
-
-  @discardableResult private func visitAbstractViewTree(parentNode: AbstractViewTreeNode?, parentView: AnyObject?, visitor: AbstractViewTreeVisitor) -> AnyObject? {
-    let view = visitor(self, parentNode, parentView)
-    childNodes.forEach {
-      $0.visitAbstractViewTree(parentNode: self, parentView: view, visitor: visitor)
-    }
-    return view
-  }
-}
 
 /**
  * AbstractViewTreeParser
@@ -190,7 +53,7 @@ public final class AbstractViewTreeParser: NSObject {
 
     case useSafeAreaInsets = "useSafeAreaInsets"
     case useDefaultMargins = "useDefaultMargins"
-    case layoutTitle = "title"
+    case layoutTitle = "layoutTitle"
 
     case id = "id"
     case styleClasses = "class"
@@ -202,6 +65,9 @@ public final class AbstractViewTreeParser: NSObject {
     case accessibilityIdentifier = "accessibilityIdentifier"
     
     case type = "type"
+    case image = "image"
+    case title = "title"
+    case text = "text"
     
     case layout = "layout"
   }
@@ -265,17 +131,6 @@ public final class AbstractViewTreeParser: NSObject {
     let layout = AbstractLayout(rootNode: rootViewTreeNode, title: layoutTitle, layoutStyle: styleSheetContent, layoutAttributes: layoutAttributes)
     completion(layout, parseError)
   }
-
-  func viewClassFor(elementName: String) -> UIResponder.Type? {
-    // Attempt to get UIKit class matching elementName
-    let pm = styler.propertyManager
-    var viewClass = pm.canonicalTypeClass(forType: elementName) as? UIResponder.Type
-    if viewClass == nil {
-      // Fallback - use element name as viewClass
-      viewClass = ISSRuntimeIntrospectionUtils.class(withName: elementName) as? UIResponder.Type
-    }
-    return viewClass
-  }
 }
 
 extension AbstractViewTreeParser: XMLParserDelegate {
@@ -297,8 +152,8 @@ extension AbstractViewTreeParser: XMLParserDelegate {
         guard let attribute = Attribute.enumValue(from: key) else { continue }
         switch attribute {
         case .useSafeAreaInsets: layoutAttributes?.useSafeAreaInsets = (value as NSString).boolValue
-        case .useDefaultMargins: layoutAttributes?.useSafeAreaInsets = (value as NSString).boolValue
-        case .layoutTitle: layoutTitle = value
+        case .useDefaultMargins: layoutAttributes?.useDefaultMargins = (value as NSString).boolValue
+        case .layoutTitle, .title: layoutTitle = value
         default: break
         }
       }
@@ -319,7 +174,9 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       var addToViewHierarchy: Bool = true
       var collectionViewLayoutClass: UICollectionViewLayout.Type = UICollectionViewFlowLayout.self
       var layoutFile: String? = nil
-      var buttonType: ButtonType = .custom
+      var buttonType: UIElementType.ButtonType = .custom
+      var image: UIImage? = nil
+      var text: String? = nil
 
       var rawAttributes: [String: String] = [:]
       for (key, value) in attributeDict {
@@ -344,7 +201,9 @@ extension AbstractViewTreeParser: XMLParserDelegate {
         case .accessibilityIdentifier: accessibilityIdentifier = value
         case .addSubview: addToViewHierarchy = (value as NSString).boolValue
         case .layout: layoutFile = value
-        case .type: buttonType = ButtonType.enumValueWithDefault(from: value) // "type" (button type):
+        case .type: buttonType = UIElementType.ButtonType.enumValueWithDefault(from: value) // "type" (button type):
+        case .image: image = UIImage(named: value)
+        case .text, .title: text = value
         default: break
         }
 
@@ -367,13 +226,21 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       // Set viewClass if not specified by impl attribute
       viewClass = viewClass ?? viewClassFor(elementName: elementName)
       let elementType: UIElementType
-      if elementName.caseInsensitiveCompare("button") == .orderedSame {
-        elementType = .button(type: buttonType)
+      if elementName.isCaseInsensitiveEqualWithOptionalPrefix("button") {
+        elementType = .button(type: buttonType, title: text)
+      } else if elementName.isCaseInsensitiveEqualWithOptionalPrefix("label") {
+        elementType = .label(text: text)
+      } else if elementName.isCaseInsensitiveEqualWithOptionalPrefix("imageView") {
+        elementType = .imageView(image: image)
+      } else if elementName.isCaseInsensitiveEqualWithOptionalPrefix("textField") {
+        elementType = .textField(text: text)
+      } else if elementName.isCaseInsensitiveEqualWithOptionalPrefix("textView") {
+        elementType = .textView(text: text)
       } else if viewClass is UICollectionView.Type {
         elementType = .collectionView(layoutClass: collectionViewLayoutClass )
       } else if viewClass is UITableView.Type {
         elementType = .tableView
-      } else if (viewClass is UITableViewCell.Type || elementName.caseInsensitiveCompare("cell") == .orderedSame),
+      } else if (viewClass is UITableViewCell.Type || elementName.isCaseInsensitiveEqual("cell")),
         let parentType = parentViewNode?.elementType, case .tableView = parentType {
         elementType = .tableViewCell(cellLayoutFile: layoutFile, elementClass: viewClass as? LayoutTableViewCell.Type)
       } else if let viewClass = viewClass as? UIViewController.Type {
@@ -402,13 +269,8 @@ extension AbstractViewTreeParser: XMLParserDelegate {
   }
 
   public func parser(_ parser: XMLParser, foundCharacters string: String) {
-    guard string.iss_trim().count > 0 else {
-      return
-    }
-    
-    guard let currentNode = nodeStack.last else {
-      return
-    }
+    guard string.iss_trim().count > 0 else { return}
+    guard let currentNode = nodeStack.last else { return }
 
     if case .styleNode(let styleNodeContent) = currentNode {
       styleNodeContent.content += string
@@ -419,10 +281,32 @@ extension AbstractViewTreeParser: XMLParserDelegate {
   }
 
   public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-      nodeStack.removeLast()
+    if case .viewNode(let abstractViewTreeNode)? = nodeStack.last, let stringContent = abstractViewTreeNode.stringContent {
+      abstractViewTreeNode.stringContent = stringContent.iss_trim()
+    }
+    nodeStack.removeLast()
   }
 
   public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
     self.parseError = parseError
+  }
+}
+
+private extension AbstractViewTreeParser {
+  private func viewClassFor(elementName: String) -> UIResponder.Type? {
+    // Attempt to get UIKit class matching elementName
+    let pm = styler.propertyManager
+    var viewClass = pm.canonicalTypeClass(forType: elementName) as? UIResponder.Type
+    if viewClass == nil {
+      // Fallback - use element name as viewClass
+      viewClass = ISSRuntimeIntrospectionUtils.class(withName: elementName) as? UIResponder.Type
+    }
+    return viewClass
+  }
+}
+
+private extension String {
+  func isCaseInsensitiveEqualWithOptionalPrefix(_ otherString: String) -> Bool {
+    return isCaseInsensitiveEqual(otherString, withOptionalPrefix: "UI")
   }
 }

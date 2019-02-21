@@ -8,6 +8,7 @@
 
 import Foundation
 
+// TODO: Move into core after Swift conversion.
 public extension Styler {
 
   @discardableResult

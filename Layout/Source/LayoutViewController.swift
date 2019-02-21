@@ -67,6 +67,10 @@ open class LayoutViewController: UIViewController {
       title = layoutContainerView.layoutFileURL.lastPathComponent
     }
   }
+    
+  public func updateLayout() {
+    layoutContainerView.updateLayout()
+  }
   
   
   // MARK: - LayoutContainerView creation support

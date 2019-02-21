@@ -1,19 +1,23 @@
 //
 //  Logger.swift
-//  InterfaCSS-Layout
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2019-01-10.
-//  Copyright © 2019 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
 import Foundation
 
-final class Logger: NSObject {
+public final class Logger: NSObject {
+  
+  public static let shared: Logger = {
+    Logger("InterfaCSS")
+  }()
 
-  let name: String
-  override var description: String { return name }
+  public let name: String
+  public override var description: String { return name }
 
-  init(_ name: String) {
+  public init(_ name: String) {
     self.name = name
   }
 }

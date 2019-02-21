@@ -28,6 +28,13 @@ open class LayoutTableView: UITableView {
     let url = URL(fileURLWithPath: layoutFile, relativeTo: parentUrl)
 
     let viewBuilder = type(of: parentViewBuilder).init(layoutFileURL: url, refreshable: parentViewBuilder.refreshable, styler: parentViewBuilder.styler)
+    viewBuilder.buildLayout { (layout, error) in
+      if layout != nil {
+        Logger("LayoutTableView").logTrace(message: "Preloaded cell layout '\(layoutFile)'")
+      } else {
+        Logger("LayoutTableView").logWarning(message: "Error preloading cell layout '\(layoutFile)' - \(String(describing: error))")
+      }
+    }
 
     registerCellLayout(cellIdentifier: cellIdentifier, cellClass: cellClass, viewBuilder: viewBuilder)
   }
@@ -87,7 +94,7 @@ open class LayoutTableView: UITableView {
     if let cell = cell as? LayoutTableViewCell, let viewBuilder = cellFactories[identifier]?.viewBuilder {
       cell.configureLayout(withViewBuilder: viewBuilder)
       DispatchQueue.main.async {
-        cell.layoutContainerView.styler.applyStyling(self)
+        cell.layoutContainerView.styler.applyStyling(cell)
       }
     }
     return cell

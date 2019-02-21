@@ -165,7 +165,7 @@ typedef NSArray ISSPropertyValueAndParametersTuple;
 
     ISSProperty* property = [self findPropertyWithName:propertyValue.propertyName inClass:[targetElement.uiElement class]];
     if( !property ) {
-        ISSLogWarning(@"Cannot apply property value - unknown property (%@)!", propertyValue);
+        ISSLogWarning(@"Cannot apply property value to '%@' - unknown property (%@)!", targetElement, propertyValue);
         return NO;
     }
 

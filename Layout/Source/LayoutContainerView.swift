@@ -171,7 +171,8 @@ open class LayoutContainerView: UIView {
     guard let currentLayoutView = currentLayoutView else { return }
     
     styler.applyStyling(currentLayoutView)
-    viewBuilder.applyLayout(onView: currentLayoutView)
+    setNeedsLayout()
+    layoutIfNeeded()
   }
 
   open override func sizeThatFits(_ size: CGSize) -> CGSize {

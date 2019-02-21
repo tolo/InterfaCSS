@@ -71,10 +71,14 @@
 		F65B6633218B2D9C00D91C03 /* ISSRelativeNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */; };
 		F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
 		F65D52E014F7B12A0034E496 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */; };
+		F662D19F221B3A6500EB8888 /* UIResponder+InterfaCSS.swift in Sources */ = {isa = PBXBuildFile; fileRef = F662D19E221B3A6500EB8888 /* UIResponder+InterfaCSS.swift */; };
 		F66C15F82011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */; };
 		F66C15F92011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */; };
+		F66D7ECC221C975700C3B0DE /* AbstractViewTreeNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66D7ECB221C975700C3B0DE /* AbstractViewTreeNode.swift */; };
 		F696F863215166D7003D5345 /* ISSStyleSheetParserSyntax.h in Headers */ = {isa = PBXBuildFile; fileRef = F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */; };
 		F696F864215166D7003D5345 /* ISSStyleSheetParserSyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */; };
+		F6A97658221EC55D00476055 /* UIElementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A97657221EC55D00476055 /* UIElementType.swift */; };
+		F6A9765B221ED1BA00476055 /* String+InterfaCSS.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A9765A221ED1BA00476055 /* String+InterfaCSS.swift */; };
 		F6AE4E7C21A8965F00EAB035 /* StringParsableEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */; };
 		F6BAC21D2017452F00CFD051 /* ISSStyleSheetParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */; };
 		F6C669D722063A7D00647CFC /* Styler+BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */; };
@@ -247,10 +251,14 @@
 		F65B6631218B2D9C00D91C03 /* ISSRelativeNumber.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSRelativeNumber.m; sourceTree = "<group>"; };
 		F65D52D814F7B0F10034E496 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F65D52DF14F7B12A0034E496 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		F662D19E221B3A6500EB8888 /* UIResponder+InterfaCSS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIResponder+InterfaCSS.swift"; sourceTree = "<group>"; };
 		F66C15F62011F88500ECA6D0 /* ISSStyleSheetPropertyParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetPropertyParser.h; sourceTree = "<group>"; };
 		F66C15F72011F88500ECA6D0 /* ISSStyleSheetPropertyParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetPropertyParser.m; sourceTree = "<group>"; };
+		F66D7ECB221C975700C3B0DE /* AbstractViewTreeNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractViewTreeNode.swift; sourceTree = "<group>"; };
 		F696F861215166D7003D5345 /* ISSStyleSheetParserSyntax.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParserSyntax.h; sourceTree = "<group>"; };
 		F696F862215166D7003D5345 /* ISSStyleSheetParserSyntax.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISSStyleSheetParserSyntax.m; sourceTree = "<group>"; };
+		F6A97657221EC55D00476055 /* UIElementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIElementType.swift; sourceTree = "<group>"; };
+		F6A9765A221ED1BA00476055 /* String+InterfaCSS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+InterfaCSS.swift"; sourceTree = "<group>"; };
 		F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringParsableEnum.swift; sourceTree = "<group>"; };
 		F6BAC21C2017452F00CFD051 /* ISSStyleSheetParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSStyleSheetParser.h; sourceTree = "<group>"; };
 		F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Styler+BundleFile.swift"; sourceTree = "<group>"; };
@@ -340,12 +348,13 @@
 		8A0EB9B721AC6378008C2526 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */,
 				F6C669D622063A7D00647CFC /* Styler+BundleFile.swift */,
 				F6ECCABB21E745520056E67A /* Logger.swift */,
 				F6AE4E7B21A8965F00EAB035 /* StringParsableEnum.swift */,
 				8AA66DA821CCEFA900477732 /* NotificationObserverToken.swift */,
 				F6D83B5221A74C8F0084A5AD /* BundleFile.swift */,
+				F662D19E221B3A6500EB8888 /* UIResponder+InterfaCSS.swift */,
+				F6A9765A221ED1BA00476055 /* String+InterfaCSS.swift */,
 			);
 			name = Common;
 			sourceTree = "<group>";
@@ -420,6 +429,16 @@
 			name = Flex;
 			sourceTree = "<group>";
 		};
+		F6A97659221ECDC600476055 /* Parser */ = {
+			isa = PBXGroup;
+			children = (
+				8A89D3B121AD8EB1006626BC /* AbstractLayoutParser.swift */,
+				F66D7ECB221C975700C3B0DE /* AbstractViewTreeNode.swift */,
+				F6A97657221EC55D00476055 /* UIElementType.swift */,
+			);
+			name = Parser;
+			sourceTree = "<group>";
+		};
 		F6F5FC0C14F5683B008E647E = {
 			isa = PBXGroup;
 			children = (
@@ -484,6 +503,7 @@
 			children = (
 				8A0EB9B921AC63E1008C2526 /* Bridge */,
 				8A0EB9B721AC6378008C2526 /* Common */,
+				F6A97659221ECDC600476055 /* Parser */,
 				8A0EB9B621AC635A008C2526 /* Layout */,
 			);
 			indentWidth = 2;
@@ -880,11 +900,13 @@
 				F6F67A732190EFBB004F009A /* ISSPropertyManager.m in Sources */,
 				8AA66DA921CCEFA900477732 /* NotificationObserverToken.swift in Sources */,
 				F6F67A742190EFBB004F009A /* ISSSelectorChain.m in Sources */,
+				F662D19F221B3A6500EB8888 /* UIResponder+InterfaCSS.swift in Sources */,
 				F6F67A752190EFBB004F009A /* ISSProperty.m in Sources */,
 				F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */,
 				F6E2AED021C913800080F244 /* LayoutTableView.swift in Sources */,
 				8A89D3B321AD8F01006626BC /* AbstractLayoutParser.swift in Sources */,
 				F6F67A762190EFBB004F009A /* ISSStylingContext.m in Sources */,
+				F6A97658221EC55D00476055 /* UIElementType.swift in Sources */,
 				F6F67A772190EFBB004F009A /* ISSStyleSheetContent.m in Sources */,
 				F6F67A782190EFBB004F009A /* ISSRuntimeIntrospectionUtils.m in Sources */,
 				F6F67A792190EFBB004F009A /* ISSNestedElementSelector.m in Sources */,
@@ -892,6 +914,7 @@
 				F6F67A7B2190EFBB004F009A /* ISSElementStylingProxy.m in Sources */,
 				F6F67A7C2190EFBB004F009A /* ISSStyleSheetParser+Support.m in Sources */,
 				F6F67A7D2190EFBB004F009A /* ISSRefreshableResource.m in Sources */,
+				F6A9765B221ED1BA00476055 /* String+InterfaCSS.swift in Sources */,
 				F6F67A7E2190EFBB004F009A /* ISSStyleSheetParserSyntax.m in Sources */,
 				F6F67A7F2190EFBB004F009A /* NSObject+ISSLogSupport.m in Sources */,
 				F6482D4021E621EE000A20D0 /* LayoutTableViewController.swift in Sources */,
@@ -902,6 +925,7 @@
 				F6F67A852190EFBB004F009A /* ISSStyleSheetParser.m in Sources */,
 				F6F67A862190EFBB004F009A /* NSDictionary+ISSAdditions.m in Sources */,
 				F6ECCABC21E745520056E67A /* Logger.swift in Sources */,
+				F66D7ECC221C975700C3B0DE /* AbstractViewTreeNode.swift in Sources */,
 				F6F67A872190EFBB004F009A /* UIDevice+ISSAdditions.m in Sources */,
 				F6F67A882190EFBB004F009A /* ISSParser.m in Sources */,
 				F6F67A892190EFBB004F009A /* ISSStylingManager.m in Sources */,

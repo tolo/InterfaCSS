@@ -243,7 +243,7 @@ public class FlexViewBuilder: ViewBuilder {
   
   override open func applyLayout(onView view: UIView) {
     super.applyLayout(onView: view)
-//    view.markYogaViewTreeDirty()
+    view.markYogaViewTreeDirty() // Needed to ensure layout is recalculated properly
     view.yoga.applyLayout(preservingOrigin: true)
     logger.logTrace(message: "Applied layout - view frame: \(view.frame)")
   }
