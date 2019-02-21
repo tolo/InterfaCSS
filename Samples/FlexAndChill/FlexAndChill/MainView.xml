@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout useSafeAreaInsets="false" useDefaultMargins="false" title="Iceland Hot Spots">
+
+<view class="rootClass">
+
+  <imageView id="image" image="holuhraun.jpg" style="flex-grow:1; flex-max-height: 30%"/>
+
+  <view id="summaryView">
+    <label id="popularityLabel" style="flex-grow: 1">★★★★★</label>
+    <view id="summaryInfoView" style="flex-direction: row; flex-grow:2; justify-content: space-between">
+      <label id="yearLabel">2014</label>
+      <label id="ratingLabel">7+</label>
+      <label id="lengthLabel">1 season</label>
+    </view>
+    <view style="flex-grow: 1; flex-width: 100"/>
+  </view>
+
+  <view id="titleView" class="bottomSpacing">
+    <label id="episodeLabel">S1:E0</label>
+    <label id="titleLabel">Holuhraun &amp; Bárðarbunga</label>
+  </view>
+
+  <view id="descriptionView" style="flex-direction: column; padding-horizontal: 8">
+    <label id="descriptionLabel" class="bottomSpacing" style="numberOfLines: 3">Description</label>
+    <label id="castLabel">Cast: Iceland</label>
+    <label id="creatorsLabel">Creators: Iceland, Tobias Löfstrand</label>
+  </view>
+
+  <view id="actionsView">
+    <view class="actionButtonTab">
+      <button>+</button>
+      <label class="bottomSpacing">My List</label>
+    </view>
+    <view class="actionButtonTab">
+      <button>➶</button>
+      <label class="bottomSpacing">Share</label>
+    </view>
+  </view>
+
+  <view id="tabsView">
+    <view id="tab1" class="tabView selected" style="margin-right: 20;">
+      <view id="selectionIndicator" class="bottomSpacing" style="background-color: red; flex-height: 3"/>
+      <button style="">EPISODES</button>
+    </view>
+    <view id="tab2" class="tabView">
+      <view class="bottomSpacing" style="background-color: clear; flex-height: 3"/>
+      <label style="">MORE LIKE THIS</label>
+    </view>
+  </view>
+  
+  <tableView id="tableView" style="flex-grow: 1; flex-shrink: 1; background-color: clear; mu: mu">
+    <cell id="listCell" layout="ListCell.xml" implementation="ListCell"/>
+  </tableView>
+
+</view>
+
+<!--
+  Styles unique to this particular view can be defined directly here in the layout file, or in a css file with the same
+  name as the layout file (i.e. "MainView.css"). These styles will be scoped to this view, and will thus not interfere
+  with other views in the app.
+ -->
+<style>
+  .rootClass {
+    flex-direction: column;
+    align-items: stretch;
+    background-color: black;
+  }
+  .rootClass label {
+    text-color: lightGray;
+    font: system 14;
+  }
+  .rootClass button {
+    title-color__highlighted: #7f7f7f;
+  }
+  
+  .bottomSpacing {
+    margin-bottom: 5;
+  }
+  
+  #summaryView, #titleView, #actionsView, #tabsView {
+    flex-direction: row;
+    padding: @stdPadding;
+  }
+
+  #popularityLabel {
+    text-color: red;
+    font: system 17;
+  }
+
+  #summaryInfoView label {
+    text-alignment: center;
+  }
+
+  #titleView label {
+    font: systemBold 16;
+  }
+  #titleLabel {
+    margin-left: 20;
+  }
+
+  #castLabel, #creatorsLabel {
+    font: systemBold 14;
+    margin-bottom: 5;
+  }
+
+  .actionButtonTab {
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20;
+    button {
+      padding-horizontal: 10;
+      flex-height: 44;
+      titlelabel.font: Helvetica-Light 46;
+    }
+  }
+  
+  #tabsView .tabView {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #tabsView button {
+    flex-height: 16;
+    titleLabel.font: systemBold 14;
+  }
+</style>
+
+</layout>

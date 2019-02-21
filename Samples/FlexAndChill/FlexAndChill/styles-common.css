@@ -1,0 +1,22 @@
+/* A place for common styles, and constants, used throughout the whole app */
+
+/* Defining a constant for padding: */
+@stdPadding: 8;
+
+window { /* short for UIWindow, UI-prefix is optional for UIKit types */
+  background-color: black;
+}
+
+navigationBar {
+  bar-style: black;
+  bar-tint-color: #1f1f1f;
+  translucent: true;
+}
+
+UITableViewCell {
+  selection-style: none;
+  background-color: clear;
+}
+UITableViewCell:selected {
+  background-color: #fff1;
+}

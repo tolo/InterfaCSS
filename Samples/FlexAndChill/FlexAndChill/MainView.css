@@ -1,0 +1,5 @@
+/* A CSS-file with the same name as the layout file will be loaded automatically (by LayoutContainerView) */
+
+#tableView {
+  separator-style: none;
+}
