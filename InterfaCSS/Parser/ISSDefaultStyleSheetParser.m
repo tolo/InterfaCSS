@@ -17,6 +17,7 @@
 #import "ISSPropertyDeclaration.h"
 #import "NSObject+ISSLogSupport.h"
 #import "NSString+ISSStringAdditions.h"
+#import "NSArray+ISSAdditions.h"
 #import "UIColor+ISSColorAdditions.h"
 #import "ISSRectValue.h"
 #import "ISSPointValue.h"
@@ -1152,14 +1153,16 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
     // Ex: smaller(@font, 1)
     // Ex: fontWithSize(@font, 12)
     ISSParser* commaOrSpace = [[ISSParser choice:@[[ISSParser space], comma]] many1];
+    ISSParser* stringValue = [ISSParser choice:@[quotedString, anyName]];
     ISSParser* remoteFontValueURLParser = [[ISSParser choice:@[quotedString, anyName]] transform:^id(id input) {
         return [NSURL URLWithString:[input iss_trimQuotes]];
     } name:@"remoteFontValueURLParser"];
     ISSParser* remoteFontValueParser = [ISSParser iss_singleParameterFunctionParserWithName:@"url" parameterParser:remoteFontValueURLParser];
-    ISSParser* fontValueParser = [ISSParser choice:@[remoteFontValueParser, quotedString, anyName]];
+    ISSParser* localFontParser = [stringValue then:[ISSParser optional:[ISSParser sequential:@[commaOrSpace, stringValue]]]];
+    ISSParser* fontValueParser = [ISSParser choice:@[remoteFontValueParser, localFontParser]];
 
-    fontValueParser = [[fontValueParser keepLeft:commaOrSpace] then:fontValueParser];
     fontValueParser = [fontValueParser transform:^id(NSArray* values) {
+        values = [values iss_flattened];
 #if TARGET_OS_TV == 0
         CGFloat fontSize = [UIFont systemFontSize];
 #else
@@ -1197,8 +1200,17 @@ static NSObject* ISSLayoutAttributeSizeToFitFlag;
         }
 
         if( remoteFontURL ) return [ISSRemoteFont remoteFontWithURL:remoteFontURL fontSize:fontSize];
-        else if( fontName ) return [UIFont fontWithName:fontName size:fontSize];
-        else return [UIFont systemFontOfSize:fontSize];
+        else {
+            if( [[fontName lowercaseString] hasPrefix:@"boldsystem"] || [[fontName lowercaseString] hasPrefix:@"systembold"] ) {
+                return [UIFont boldSystemFontOfSize:fontSize];
+            } else if( [[fontName lowercaseString] hasPrefix:@"italicsystem"] || [[fontName lowercaseString] hasPrefix:@"systemitalic"] ) {
+                return [UIFont italicSystemFontOfSize:fontSize];
+            } else if( !fontName || [fontName iss_isEqualIgnoreCase:@"system"] ) {
+                return [UIFont systemFontOfSize:fontSize];
+            } else {
+                return [UIFont fontWithName:fontName size:fontSize];
+            }
+        }
     } name:@"font"];
 
     ISSParser* fontFunctionParser = [[ISSParser sequential:@[identifier, [ISSParser unichar:'(' skipSpaces:YES],

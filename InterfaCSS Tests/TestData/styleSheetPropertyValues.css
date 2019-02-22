@@ -138,7 +138,18 @@
 .font7 {
     font: 'Times New Roman' 5;
 }
-
+.font8 {
+    font: 42;
+}
+.font9 {
+    font: system 42;
+}
+.font10 {
+    font: systemItalic 42;
+}
+.font11 {
+    font: systemBold 42;
+}
 
 .image1 {
     image: image.png;

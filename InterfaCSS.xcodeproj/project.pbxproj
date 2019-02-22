@@ -86,6 +86,8 @@
 		CC3C8F2D4D8632FDA33164BF /* ISSRemoteFont.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C856B166302EF1EB76386 /* ISSRemoteFont.m */; };
 		CC3C8F48B33DD128C49135AC /* UIDevice+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = CC3C830A8A2EB2F6FBD714E6 /* UIDevice+ISSAdditions.m */; };
 		CC3C8FB344DE3874099F99EE /* NSDictionary+ISSDictionaryAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */; };
+		F654218C2220A09200699D64 /* NSArray+ISSAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = F654218A2220A09100699D64 /* NSArray+ISSAdditions.m */; };
+		F654218D2220A09200699D64 /* NSArray+ISSAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = F654218B2220A09100699D64 /* NSArray+ISSAdditions.h */; };
 		F659182B1C44190800F0836E /* ISSParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F65918291C44190800F0836E /* ISSParser.h */; };
 		F659182C1C44190800F0836E /* ISSParser.m in Sources */ = {isa = PBXBuildFile; fileRef = F659182A1C44190800F0836E /* ISSParser.m */; };
 		F65D52D914F7B0F10034E496 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F65D52D814F7B0F10034E496 /* UIKit.framework */; };
@@ -206,6 +208,8 @@
 		CC3C8F35FA06B51A007B098C /* ISSRefreshableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRefreshableResource.h; sourceTree = "<group>"; };
 		CC3C8FD18CAA89A2BD0F5F5D /* UICollectionView+InterfaCSS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+InterfaCSS.m"; sourceTree = "<group>"; };
 		CC3C8FD30877A9A28290D23B /* UICollectionView+InterfaCSS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+InterfaCSS.h"; sourceTree = "<group>"; };
+		F654218A2220A09100699D64 /* NSArray+ISSAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+ISSAdditions.m"; sourceTree = "<group>"; };
+		F654218B2220A09100699D64 /* NSArray+ISSAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+ISSAdditions.h"; sourceTree = "<group>"; };
 		F65918291C44190800F0836E /* ISSParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSParser.h; sourceTree = "<group>"; };
 		F659182A1C44190800F0836E /* ISSParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSParser.m; sourceTree = "<group>"; };
 		F65D52D814F7B0F10034E496 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -388,6 +392,8 @@
 				CC3C8596A593D28BE30469C4 /* NSAttributedString+ISSAdditions.m */,
 				CC3C8BC84D845AE136ED5484 /* NSDictionary+ISSDictionaryAdditions.h */,
 				CC3C86B36E1E4AE2D2E09402 /* NSDictionary+ISSDictionaryAdditions.m */,
+				F654218B2220A09100699D64 /* NSArray+ISSAdditions.h */,
+				F654218A2220A09100699D64 /* NSArray+ISSAdditions.m */,
 				CC3C887D604FBF86926C2C7B /* NSMutableArray+ISSAdditions.h */,
 				CC3C8BBF4AE2866CC8BFF59F /* NSMutableArray+ISSAdditions.m */,
 				F6EBAD0E1768B0AA0053DAFA /* NSObject+ISSLogSupport.h */,
@@ -469,6 +475,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F6EBAD101768B0AA0053DAFA /* InterfaCSS.h in Headers */,
+				F654218D2220A09200699D64 /* NSArray+ISSAdditions.h in Headers */,
 				F6EBAD121768B0AA0053DAFA /* ISSSelector.h in Headers */,
 				F6EBAD141768B0AA0053DAFA /* ISSSelectorChain.h in Headers */,
 				F6EBAD161768B0AA0053DAFA /* ISSStyleSheet.h in Headers */,
@@ -626,6 +633,7 @@
 				F6EBAD1E1768B0AA0053DAFA /* UIView+InterfaCSS.m in Sources */,
 				F6EBAD221768B0AA0053DAFA /* NSObject+ISSLogSupport.m in Sources */,
 				27530C39182AF066000FED8A /* ISSPropertyDeclarations.m in Sources */,
+				F654218C2220A09200699D64 /* NSArray+ISSAdditions.m in Sources */,
 				27D8145017FB595800E365B1 /* NSString+ISSStringAdditions.m in Sources */,
 				F6EBAD68176B4A240053DAFA /* ISSDefaultStyleSheetParser.m in Sources */,
 				8AEE29831B716F26006991D5 /* ISSNestedElementSelector.m in Sources */,

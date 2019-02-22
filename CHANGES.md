@@ -1,5 +1,10 @@
 #Changes
 
+##Version 1.5.5
+
+### Fixes/changes
+* Fixed support for using system font (using `system` as font name or omitting font name entirely), and added support for using bold and italic system fonts (`systemBold` and `systemItalic`).
+
 
 ##Version 1.5.3
 

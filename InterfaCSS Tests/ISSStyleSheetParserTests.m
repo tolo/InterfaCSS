@@ -569,6 +569,18 @@ static ISSDefaultStyleSheetTestParser* defaultParser;
 
     value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font7"] firstObject];
     XCTAssertEqualObjects(value, [UIFont fontWithName:@"Times New Roman" size:5], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font8"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont systemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font9"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont systemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font10"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont italicSystemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font11"] firstObject];
+    XCTAssertEqualObjects(value, [UIFont boldSystemFontOfSize:42], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {
