@@ -19,7 +19,7 @@
 * A protocol for making it easier to work with different scopes of stylesheets have been introduces: `ISSStyler`
 * API is even more swiftified - for instance, ISS-prefix of classes is no longer needed.
 * Stylable properties are now (mainly) discovered via runtime introspection, which means that InterfaCSS will easier be able to keep up with changes in UIKit
-* A new sample (work in progress) demonstrating the use of Flexbox layout (see below)
+* New examples demonstrating the use of Flexbox layout (see below)
 * And much much more (more and better documentation is coming)...
 
 ### Simple yet powerful styling with CSS
@@ -30,7 +30,7 @@
   borderWidth: 3;
   borderColor: fadeout(magenta, 75%);
   cornerRadius: @numberVariable;
-  clipsToBounds: YES;
+  clipsToBounds: true;
 }
 ```
 
@@ -68,13 +68,23 @@
 ### Sample code
 Checking out the sample code is a good way to get a feel for how InterfaCSS is used in an app. To run the sample code, do like this:
 
-* Run `pod install` in the `Samples/FlexLayoutSample` directory.
-* Open `FlexLayoutSample.xcworkspace`.
+* Run `pod install` in the `Samples/<ExampleName>` directory.
+* Open `<ExampleName>.xcworkspace`.
 * Build and run.
 
+The following examples are available:
 
-### Roadmap
+* **FlexThatBox** - a simple example showing some basic layout, including autosized table view cells and rotation support.
+* **FlexyVistas** - a somewhat more real-app-like example, inspired by the example used in the [Ray Wenderlich Yoga Turorial]([https://www.raywenderlich.com/161413/yoga-tutorial-using-cross-platform-layout-engine).
+
+
+
+### The road to 2.0...
+* Better unit testing coverage...
+* More documentation...
 * Covert Core into Swift...
+
+### ...and beyond... 
 * Android version...
 
 
