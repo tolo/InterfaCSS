@@ -38,6 +38,7 @@ open class LayoutViewController: UIViewController {
   open override func loadView() {
     layoutContainerView = loadLayoutContainerView()
     self.view = layoutContainerView
+    layoutContainerView.buildView() // Build view directly here to ensure everything is loaded/wired when viewDidLoad is called
   }
   
   open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

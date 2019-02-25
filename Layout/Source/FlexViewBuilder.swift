@@ -241,16 +241,27 @@ public class FlexViewBuilder: ViewBuilder {
 
   // MARK: - ViewBuilder
   
-  override open func applyLayout(onView view: UIView) {
+  override open func applyLayout(onView view: UIView, layoutDimension: LayoutDimension = .both) {
     super.applyLayout(onView: view)
     view.markYogaViewTreeDirty() // Needed to ensure layout is recalculated properly
-    view.yoga.applyLayout(preservingOrigin: true)
+    if layoutDimension == .both {
+      view.yoga.applyLayout(preservingOrigin: true)
+    } else {
+      view.yoga.applyLayout(preservingOrigin: true,
+                            dimensionFlexibility: layoutDimension == .width ? .flexibleWidth : .flexibleHeight)
+    }
     logger.logTrace(message: "Applied layout - view frame: \(view.frame)")
   }
   
-  override open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize) -> CGSize {
+  override open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize, layoutDimension: LayoutDimension = .both) -> CGSize {
     view.markYogaViewTreeDirty()
-    return view.yoga.calculateLayout(with: size)
+    if layoutDimension == .both {
+      return view.yoga.calculateLayout(with: size)
+    } else {
+      return view.yoga.calculateLayout(with:
+        CGSize(width: layoutDimension == .width ? CGFloat(YGUndefined) : size.width,
+               height: layoutDimension == .height ? CGFloat(YGUndefined) : size.height))
+    }
   }
 
   override open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> (UIView, [UIViewController])? {

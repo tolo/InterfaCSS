@@ -174,8 +174,12 @@ open class LayoutContainerView: UIView {
     setNeedsLayout()
     layoutIfNeeded()
   }
-
+  
   open override func sizeThatFits(_ size: CGSize) -> CGSize {
+    return sizeThatFits(size, layoutDimension: .both)
+  }
+  
+  open func sizeThatFits(_ size: CGSize, layoutDimension: LayoutDimension) -> CGSize {
     guard let currentLayoutView = currentLayoutView else {
       return super.sizeThatFits(size)
     }
@@ -188,6 +192,6 @@ open class LayoutContainerView: UIView {
       tempRect = tempRect.inset(by: self.layoutMargins)
     }
 
-    return viewBuilder.calculateLayoutSize(forView: currentLayoutView, fittingSize: tempRect.size)
+    return viewBuilder.calculateLayoutSize(forView: currentLayoutView, fittingSize: tempRect.size, layoutDimension: layoutDimension)
   }
 }

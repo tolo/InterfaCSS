@@ -58,9 +58,8 @@
 		8AEE849D2020745300567B11 /* ISSStylingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE849B2020745300567B11 /* ISSStylingManager.m */; };
 		CF695B34DE1C8B4B95F3E17F /* libPods-InterfaCSS-Layout.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */; };
 		F600AF7720175C8200B44482 /* ISSMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F600AF7620175C8200B44482 /* ISSMacros.h */; };
-		F6090CD421BF094200647311 /* LayoutTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6090CD321BF094200647311 /* LayoutTableViewCell.swift */; };
+		F6090CD421BF094200647311 /* LayoutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6090CD321BF094200647311 /* LayoutCell.swift */; };
 		F640086A21A5A29700F9535A /* LayoutContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F640086921A5A29700F9535A /* LayoutContainerView.swift */; };
-		F6482D4021E621EE000A20D0 /* LayoutTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */; };
 		F648DB16202277D30011012C /* ISSRefreshableResource.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB10202277D20011012C /* ISSRefreshableResource.h */; };
 		F648DB17202277D30011012C /* ISSDateUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = F648DB11202277D30011012C /* ISSDateUtils.h */; };
 		F648DB19202277D30011012C /* ISSRefreshableResource.m in Sources */ = {isa = PBXBuildFile; fileRef = F648DB13202277D30011012C /* ISSRefreshableResource.m */; };
@@ -85,7 +84,7 @@
 		F6CAE3EE2094C7760054165A /* ISSStyleSheetContent.h in Headers */ = {isa = PBXBuildFile; fileRef = F6CAE3EC2094C7760054165A /* ISSStyleSheetContent.h */; };
 		F6CAE3EF2094C7760054165A /* ISSStyleSheetContent.m in Sources */ = {isa = PBXBuildFile; fileRef = F6CAE3ED2094C7760054165A /* ISSStyleSheetContent.m */; };
 		F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D83B5221A74C8F0084A5AD /* BundleFile.swift */; };
-		F6E2AED021C913800080F244 /* LayoutTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E2AECF21C913800080F244 /* LayoutTableView.swift */; };
+		F6E2AED021C913800080F244 /* LayoutCellCompositeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E2AECF21C913800080F244 /* LayoutCellCompositeView.swift */; };
 		F6ECCABC21E745520056E67A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6ECCABB21E745520056E67A /* Logger.swift */; };
 		F6F5FC1B14F5683B008E647E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC1A14F5683B008E647E /* Foundation.framework */; };
 		F6F5FC3D14F59CFD008E6494 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F5FC3D14F59CFD008E6493 /* QuartzCore.framework */; };
@@ -237,10 +236,9 @@
 		AD9F7B9FEC019399016709B5 /* Pods-InterfaCSS-Layout.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InterfaCSS-Layout.release.xcconfig"; path = "Pods/Target Support Files/Pods-InterfaCSS-Layout/Pods-InterfaCSS-Layout.release.xcconfig"; sourceTree = "<group>"; };
 		BB7CC7A7D3ABA203BCB63451 /* libPods-InterfaCSS-Layout.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-InterfaCSS-Layout.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F600AF7620175C8200B44482 /* ISSMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSMacros.h; sourceTree = "<group>"; };
-		F6090CD321BF094200647311 /* LayoutTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableViewCell.swift; sourceTree = "<group>"; };
+		F6090CD321BF094200647311 /* LayoutCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCell.swift; sourceTree = "<group>"; };
 		F6210140202C558A009A0A1D /* ISSTestMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISSTestMacros.h; sourceTree = "<group>"; };
 		F640086921A5A29700F9535A /* LayoutContainerView.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LayoutContainerView.swift; sourceTree = "<group>"; tabWidth = 2; };
-		F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableViewController.swift; sourceTree = "<group>"; tabWidth = 2; };
 		F648DB10202277D20011012C /* ISSRefreshableResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSRefreshableResource.h; sourceTree = "<group>"; };
 		F648DB11202277D30011012C /* ISSDateUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISSDateUtils.h; sourceTree = "<group>"; };
 		F648DB13202277D30011012C /* ISSRefreshableResource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISSRefreshableResource.m; sourceTree = "<group>"; };
@@ -267,7 +265,7 @@
 		F6D83B5221A74C8F0084A5AD /* BundleFile.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BundleFile.swift; sourceTree = "<group>"; tabWidth = 2; };
 		F6E1F0792210526900BF3540 /* AbstractLayoutParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractLayoutParserTests.swift; sourceTree = "<group>"; };
 		F6E1F07A2210527D00BF3540 /* ViewBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewBuilderTests.swift; sourceTree = "<group>"; };
-		F6E2AECF21C913800080F244 /* LayoutTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutTableView.swift; sourceTree = "<group>"; };
+		F6E2AECF21C913800080F244 /* LayoutCellCompositeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCellCompositeView.swift; sourceTree = "<group>"; };
 		F6ECCABB21E745520056E67A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		F6F5FC1714F5683B008E647E /* libInterfaCSS-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libInterfaCSS-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6F5FC1A14F5683B008E647E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -338,9 +336,8 @@
 				F651207B2194C42F00479DE9 /* ViewBuilder.swift */,
 				F640086921A5A29700F9535A /* LayoutContainerView.swift */,
 				8A06010D21B2B82500ECEBF6 /* LayoutViewController.swift */,
-				F6E2AECF21C913800080F244 /* LayoutTableView.swift */,
-				F6090CD321BF094200647311 /* LayoutTableViewCell.swift */,
-				F6482D3F21E621EE000A20D0 /* LayoutTableViewController.swift */,
+				F6090CD321BF094200647311 /* LayoutCell.swift */,
+				F6E2AECF21C913800080F244 /* LayoutCellCompositeView.swift */,
 			);
 			name = Layout;
 			sourceTree = "<group>";
@@ -903,7 +900,7 @@
 				F662D19F221B3A6500EB8888 /* UIResponder+InterfaCSS.swift in Sources */,
 				F6F67A752190EFBB004F009A /* ISSProperty.m in Sources */,
 				F651207C2194C42F00479DE9 /* ViewBuilder.swift in Sources */,
-				F6E2AED021C913800080F244 /* LayoutTableView.swift in Sources */,
+				F6E2AED021C913800080F244 /* LayoutCellCompositeView.swift in Sources */,
 				8A89D3B321AD8F01006626BC /* AbstractLayoutParser.swift in Sources */,
 				F6F67A762190EFBB004F009A /* ISSStylingContext.m in Sources */,
 				F6A97658221EC55D00476055 /* UIElementType.swift in Sources */,
@@ -917,7 +914,6 @@
 				F6A9765B221ED1BA00476055 /* String+InterfaCSS.swift in Sources */,
 				F6F67A7E2190EFBB004F009A /* ISSStyleSheetParserSyntax.m in Sources */,
 				F6F67A7F2190EFBB004F009A /* NSObject+ISSLogSupport.m in Sources */,
-				F6482D4021E621EE000A20D0 /* LayoutTableViewController.swift in Sources */,
 				8A06010E21B2B82500ECEBF6 /* LayoutViewController.swift in Sources */,
 				F6F67A822190EFBB004F009A /* ISSDateUtils.m in Sources */,
 				F6F67A832190EFBB004F009A /* ISSPseudoClass.m in Sources */,
@@ -937,7 +933,7 @@
 				F6F67A8E2190EFBB004F009A /* NSArray+ISSAdditions.m in Sources */,
 				F6F67A8F2190EFBB004F009A /* ISSStyleSheetPropertyParser.m in Sources */,
 				F6F67A902190EFBB004F009A /* ISSPropertyValue.m in Sources */,
-				F6090CD421BF094200647311 /* LayoutTableViewCell.swift in Sources */,
+				F6090CD421BF094200647311 /* LayoutCell.swift in Sources */,
 				F6C669D722063A7D00647CFC /* Styler+BundleFile.swift in Sources */,
 				F6D83B5321A74C8F0084A5AD /* BundleFile.swift in Sources */,
 				F6F67A912190EFBB004F009A /* ISSRelativeNumber.m in Sources */,

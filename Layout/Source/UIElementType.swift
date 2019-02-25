@@ -28,6 +28,7 @@ public enum UIElementType {
   case textField(text: String?)
   case textView(text: String?)
   case collectionView(layoutClass: UICollectionViewLayout.Type)
+  case collectionViewCell(cellLayoutFile: String?, elementClass: LayoutCollectionViewCell.Type?)
   case tableView
   case tableViewCell(cellLayoutFile: String?, elementClass: LayoutTableViewCell.Type?)
   case viewController(layoutFile: String?, elementClass: UIViewController.Type)
@@ -99,22 +100,28 @@ private extension UIElementType {
       return textview
     case .imageView(let image):
       return UIImageView(image: image)
+      
     case .collectionView(let layoutClass):
       return createCollectionView(layoutClass: layoutClass, fileOwner: fileOwner)
+    case .collectionViewCell(let cellLayoutFile, let elementClass):
+      registerCollectionViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
+      return nil
     case .tableView:
       return createTableView(fileOwner: fileOwner)
     case .tableViewCell(let cellLayoutFile, let elementClass):
       registerTableViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
       return nil
+      
     case .viewController(let layoutFile, let elementClass):
       return createViewController(viewBuilder: viewBuilder, fileOwner: fileOwner, layoutFile: layoutFile, elementClass: elementClass)
+      
     case .other(let elementClass):
       return elementClass.init()
     }
   }
   
   private func createCollectionView(layoutClass: UICollectionViewLayout.Type, fileOwner: AnyObject?) -> UICollectionView {
-    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
+    let collectionView = LayoutCollectionView(frame: .zero, collectionViewLayout: layoutClass.init())
     if let dataSource = fileOwner as? UICollectionViewDataSource {
       collectionView.dataSource = dataSource
     }
@@ -136,12 +143,21 @@ private extension UIElementType {
     return tableView
   }
   
+  private func registerCollectionViewCellClass(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, cellLayoutFile: String?, elementClass: LayoutCollectionViewCell.Type?) {
+    registerCellCompositeViewCellClass(forNode: node, parentView: parentView as? LayoutCollectionView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
+  }
+  
   private func registerTableViewCellClass(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, cellLayoutFile: String?, elementClass: LayoutTableViewCell.Type?) {
-    if let cellId = node.elementId, let cellLayoutFile = cellLayoutFile, let tableView = parentView as? LayoutTableView {
+    registerCellCompositeViewCellClass(forNode: node, parentView: parentView as? LayoutTableView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
+  }
+  
+  private func registerCellCompositeViewCellClass<CellClass, CellCompositeView: LayoutCellCompositeView>(forNode node: AbstractViewTreeNode,
+                  parentView: CellCompositeView?, viewBuilder: ViewBuilder, cellLayoutFile: String?, elementClass: CellClass.Type?) where CellCompositeView.CellBaseClass == CellClass {
+    if let cellId = node.elementId, let cellLayoutFile = cellLayoutFile, let cellCompositeView = parentView {
       if let elementClass = elementClass {
-        tableView.registerCellLayout(cellIdentifier: cellId, cellClass: elementClass, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
+        cellCompositeView.registerCellLayout(cellIdentifier: cellId, cellClass: elementClass, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
       } else {
-        tableView.registerCellLayout(cellIdentifier: cellId, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
+        cellCompositeView.registerCellLayout(cellIdentifier: cellId, layoutFile: cellLayoutFile, parentViewBuilder: viewBuilder)
       }
     }
   }

@@ -17,6 +17,13 @@ extension Notification.Name {
   public static let ViewBuilderLayoutRefreshed = Notification.Name(rawValue: "ISSViewBuilderLayoutRefreshedNotification")
 }
 
+public enum LayoutDimension {
+  case both
+  case width
+  case height
+}
+
+
 open class ViewBuilder {
 
   let logger: Logger
@@ -36,7 +43,7 @@ open class ViewBuilder {
   public private (set) var refresher: RefreshableResource?
   public private (set) var embeddedStyleSheet: StyleSheet?
 
-  public private (set) var lastLayout: AbstractLayout?
+  public private (set) var loadedLayout: AbstractLayout?
 
   private let dispatchQueue: DispatchQueue
 
@@ -57,7 +64,7 @@ open class ViewBuilder {
 //      }
     }
 
-    self.dispatchQueue = DispatchQueue(label: "ViewBuilder", qos: .background)
+    self.dispatchQueue = DispatchQueue(label: "org.interfacss.ViewBuilder", qos: .background)
     self.logger = Logger("\(type(of:self))(\(layoutFileURL.lastPathComponent))")
   }
 
@@ -68,35 +75,11 @@ open class ViewBuilder {
 
   // MARK: - Main public API
   
-  public final func buildView(forceRefresh: Bool = false, fileOwner: AnyObject? = nil, completionHandler: @escaping ViewBuilderCompletionHandler) -> NotificationObserverToken? {
+  public final func buildView(forceRefresh: Bool = false, fileOwner: AnyObject? = nil, async: Bool = false, completionHandler: @escaping ViewBuilderCompletionHandler) -> NotificationObserverToken? {
     weak var effectiveFileOwner = fileOwner ?? defaultFileOwner
-
-    var layoutExists = false
-    if !forceRefresh {
-      layoutExists = buildViewFromLastLayout(fileOwner: effectiveFileOwner, completionHandler: completionHandler) == true
-      logger.logTrace(message: "buildViewFromLastLayout - layoutExists: \(layoutExists)")
-    }
-    if !layoutExists {
-      self.dispatchQueue.async { [weak self] in
-        var layoutExists = false
-        if !forceRefresh {
-          DispatchQueue.main.sync {
-            self?.logger.logTrace(message: "buildViewFromLastLayout")
-            layoutExists = self?.buildViewFromLastLayout(fileOwner: effectiveFileOwner, completionHandler: completionHandler) == true
-          }
-        }
-        if layoutExists { return }
-
-        self?.buildLayout { (parsedLayout, parseError) in
-          self?.logger.logTrace(message: "building initial view")
-          guard let layout = parsedLayout, let (rootView, childViewControllers) = self?.buildView(fromLayout: layout, fileOwner: effectiveFileOwner) else {
-            completionHandler(nil, nil, parsedLayout, parseError)
-            return
-          }
-          completionHandler(rootView, childViewControllers, layout, parseError)
-          self?.startRefresherIfSupported()
-        }
-      }
+    loadLayout(forceRefresh: forceRefresh) { (parsedLayout, parseError) in
+      self.buildViewFrom(layout: parsedLayout, parseError: parseError, fileOwner: effectiveFileOwner, completionHandler: completionHandler)
+      self.startRefresherIfSupported()
     }
     
     return addRefreshObserverIfSupported(fileOwner: effectiveFileOwner, completionHandler: completionHandler)
@@ -106,11 +89,11 @@ open class ViewBuilder {
     weak var effectiveFileOwner = fileOwner ?? defaultFileOwner
     if let refresher = refresher, refresher.resourceModificationMonitoringSupported {
       let token = NotificationCenter.default.addObserver(forName: .ViewBuilderLayoutRefreshed, object: self, queue: nil) { [weak self] notification in
-        guard let self = self, let (_, _) = notification.userInfo?[ViewBuilder.ViewBuilderLayoutRefreshedDataKay] as? ViewBuilderLayoutRefreshedData else {
+        guard let self = self, let (layout, parseError) = notification.userInfo?[ViewBuilder.ViewBuilderLayoutRefreshedDataKay] as? ViewBuilderLayoutRefreshedData else {
           completionHandler(nil, nil, nil, nil) // TODO: Error?
           return
         }
-        self.buildViewFromLastLayout(fileOwner: effectiveFileOwner, notifyOnError: true, completionHandler: completionHandler)
+        self.buildViewFrom(layout: layout, parseError: parseError, fileOwner: effectiveFileOwner, completionHandler: completionHandler)
       }
       return NotificationObserverToken(token: token)
     } else {
@@ -122,24 +105,21 @@ open class ViewBuilder {
     return LayoutContainerView(viewBuilder: self, fileOwner: fileOwner, didLoadCallback: didLoadCallback)
   }
   
-  open func applyLayout(onView view: UIView) {}
+  open func applyLayout(onView view: UIView, layoutDimension: LayoutDimension = .both) {}
   
-  open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize) -> CGSize {
+  open func calculateLayoutSize(forView view: UIView, fittingSize size: CGSize, layoutDimension: LayoutDimension = .both) -> CGSize {
     return view.sizeThatFits(size)
   }
   
   
   // MARK: - Internal layout/view building methods
   
-  @discardableResult
-  private final func buildViewFromLastLayout(fileOwner: AnyObject?, notifyOnError: Bool = false, completionHandler: @escaping ViewBuilderCompletionHandler) -> Bool {
-    if let lastLayout = lastLayout, let (rootView, childViewControllers) = buildView(fromLayout: lastLayout, fileOwner: fileOwner) {
-      completionHandler(rootView, childViewControllers, lastLayout, nil)
-      return true
-    } else if notifyOnError {
-      completionHandler(nil, nil, nil, nil)
+  private final func buildViewFrom(layout parsedLayout: AbstractLayout?, parseError: Error?, fileOwner: AnyObject?, completionHandler: @escaping ViewBuilderCompletionHandler) {
+    guard let layout = parsedLayout, let (rootView, childViewControllers) = self.buildView(fromLayout: layout, fileOwner: fileOwner) else {
+      completionHandler(nil, nil, parsedLayout, parseError)
+      return
     }
-    return false
+    completionHandler(rootView, childViewControllers, layout, parseError)
   }
   
   private final func startRefresherIfSupported() {
@@ -152,45 +132,8 @@ open class ViewBuilder {
   }
   
   private final func refreshLayout() {
-    buildLayout { [unowned self] (parsedLayout, parseError) in
+    loadLayoutFromLayoutFile { [unowned self] (parsedLayout, parseError) in
       NotificationCenter.default.post(name: .ViewBuilderLayoutRefreshed, object: self, userInfo: [ViewBuilder.ViewBuilderLayoutRefreshedDataKay: (parsedLayout, parseError)])
-    }
-  }
-
-  final func buildLayout(completionHandler: @escaping AbstractLayoutCompletionHandler) {
-    dispatchQueue.async { [unowned self] in
-      do {
-        let data = try Data(contentsOf: self.layoutFileURL)
-        DispatchQueue.main.sync {
-          self.buildLayout(fromData: data, completionHandler: completionHandler)
-        }
-      } catch (let e) {
-        DispatchQueue.main.sync {
-          completionHandler(nil, e)
-        }
-      }
-    }
-  }
-  
-  private final func buildLayout(fromData data: Data, completionHandler: AbstractLayoutCompletionHandler) {
-    let parser = AbstractViewTreeParser(data: data, styler: styler)
-    parser.parse { [weak self] (parsedLayout, parseError) in
-      if let parsedLayout = parsedLayout {
-        self?.lastLayout = parsedLayout
-      }
-      if let parseError = parseError {
-        logger.logDebug(message: "Error parsing: \(parseError)")
-      }
-      if let self = self, let styleSheetContent = parsedLayout?.layoutStyle {
-        if let styleSheet = embeddedStyleSheet {
-          styler.styleSheetManager.unloadStyleSheet(styleSheet)
-        }
-        embeddedStyleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
-        setDefaultStyleSheetVariables()
-        styler.styleSheetManager.registerStyleSheet(embeddedStyleSheet!)
-      }
-        
-      completionHandler(parsedLayout, parseError)
     }
   }
   
@@ -221,6 +164,7 @@ open class ViewBuilder {
       fileOwner.title = title
       fileOwner.navigationItem.title = title
     }
+    rootView.interfaCSS?.elementId = styleSheetName
     styler.applyStyling(rootView)
     return (rootView, childViewControllers)
   }
@@ -264,5 +208,50 @@ open class ViewBuilder {
 
   open func instantiateViewObject(for node: AbstractViewTreeNode, parentView: AnyObject?, fileOwner: AnyObject?) -> AnyObject? {
     return node.elementType.createElement(forNode: node, parentView: parentView, viewBuilder: self, fileOwner: fileOwner)
+  }
+}
+
+
+// MARK: - Layout loading
+extension ViewBuilder {
+  final func loadLayout(forceRefresh: Bool = false, completionHandler: @escaping AbstractLayoutCompletionHandler) {
+    if !forceRefresh, let loadedLayout = loadedLayout {
+      logger.logTrace(message: "buildLayout - using existing layout")
+      completionHandler(loadedLayout, nil)
+      return
+    }
+    
+    logger.logTrace(message: "buildLayout - building layout")
+    loadLayoutFromLayoutFile(completionHandler: completionHandler)
+  }
+  
+  private final func loadLayoutFromLayoutFile(completionHandler: @escaping AbstractLayoutCompletionHandler) {
+    do {
+      let data = try Data(contentsOf: self.layoutFileURL)
+      parseLayout(fromData: data, completionHandler: completionHandler)
+    } catch (let e) {
+      completionHandler(nil, e)
+    }
+  }
+  
+  private func parseLayout(fromData data: Data, completionHandler: AbstractLayoutCompletionHandler) {
+    let parser = AbstractViewTreeParser(data: data, styler: styler)
+    let (parsedLayout, parseError) = parser.parse()
+    if let parsedLayout = parsedLayout {
+      self.loadedLayout = parsedLayout
+    }
+    if let parseError = parseError {
+      logger.logDebug(message: "Error parsing: \(parseError)")
+    }
+    if let styleSheetContent = parsedLayout?.layoutStyle {
+      if let styleSheet = embeddedStyleSheet {
+        styler.styleSheetManager.unloadStyleSheet(styleSheet)
+      }
+      embeddedStyleSheet = StyleSheet(styleSheetURL: layoutFileURL, name: self.styleSheetName, group: self.styleSheetGroupName, content: styleSheetContent)
+      setDefaultStyleSheetVariables()
+      styler.styleSheetManager.registerStyleSheet(embeddedStyleSheet!)
+    }
+    
+    completionHandler(parsedLayout, parseError)
   }
 }

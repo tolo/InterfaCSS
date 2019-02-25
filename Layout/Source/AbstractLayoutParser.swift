@@ -108,28 +108,29 @@ public final class AbstractViewTreeParser: NSObject {
   /**
    * Returns 'AbstractViewTreeParserError' or Error
    */
-  public func parse(completion: AbstractLayoutCompletionHandler) {
+  public func parse() -> (abstractLayout: AbstractLayout?, parseError: Error?) {
     parser.parse()
 
     guard parseError == nil else {
-      completion(nil, parseError)
-      return
+//      completion(nil, parseError)
+      return (nil, parseError)
     }
     guard let layoutAttributes = layoutAttributes else {
-      completion(nil, AbstractViewTreeParserError.missingLayoutRootElement)
-      return
+//      completion(nil, AbstractViewTreeParserError.missingLayoutRootElement)
+      return (nil, AbstractViewTreeParserError.missingLayoutRootElement)
     }
     guard let rootViewTreeNode = rootViewTreeNode else {
-      completion(nil, AbstractViewTreeParserError.missingViewTreeRootNode)
-      return
+//      completion(nil, AbstractViewTreeParserError.missingViewTreeRootNode)
+      return (nil, AbstractViewTreeParserError.missingViewTreeRootNode)
     }
 
     var styleSheetContent: StyleSheetContent?
-    if let styleNodeContent = styleNodeContent?.content {
+    if let styleNodeContent = styleNodeContent?.content, styleNodeContent.hasData() {
       styleSheetContent = styler.styleSheetManager.parseStyleSheetData(styleNodeContent)
     }
     let layout = AbstractLayout(rootNode: rootViewTreeNode, title: layoutTitle, layoutStyle: styleSheetContent, layoutAttributes: layoutAttributes)
-    completion(layout, parseError)
+//    completion(layout, parseError)
+    return (layout, parseError)
   }
 }
 
@@ -238,6 +239,9 @@ extension AbstractViewTreeParser: XMLParserDelegate {
         elementType = .textView(text: text)
       } else if viewClass is UICollectionView.Type {
         elementType = .collectionView(layoutClass: collectionViewLayoutClass )
+      } else if (viewClass is UICollectionViewCell.Type || elementName.isCaseInsensitiveEqual("cell")),
+        let parentType = parentViewNode?.elementType, case .collectionView = parentType {
+        elementType = .collectionViewCell(cellLayoutFile: layoutFile, elementClass: viewClass as? LayoutCollectionViewCell.Type)
       } else if viewClass is UITableView.Type {
         elementType = .tableView
       } else if (viewClass is UITableViewCell.Type || elementName.isCaseInsensitiveEqual("cell")),
