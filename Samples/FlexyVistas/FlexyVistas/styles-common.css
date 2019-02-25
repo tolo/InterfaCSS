@@ -1,0 +1,49 @@
+/* A place for common styles, and constants, used throughout the whole app */
+
+/* Defining a constant for padding: */
+@stdPadding: 8;
+
+window { /* short for UIWindow, UI-prefix is optional for UIKit types */
+  background-color: black;
+}
+
+navigationBar {
+  bar-style: black;
+  bar-tint-color: #1f1f1f;
+  translucent: true;
+}
+
+UITableViewCell {
+  selection-style: none;
+  background-color: clear;
+}
+UITableViewCell:selected {
+  background-color: #fff1;
+}
+
+label {
+  text-color: lightGray;
+  font: system 14;
+}
+label.white {
+  text-color: white;
+}
+label.bold {
+  font: systemBold 14;
+}
+label.headline {
+  font: systemBold 16;
+}
+
+button {
+  titleLabel.font: systemBold 14;
+  title-color: white;
+  title-color__highlighted: #7f7f7f;
+}
+button.iconButton {
+  titlelabel.font: Helvetica-Light 46;
+}
+
+.bottomSpacing {
+  margin-bottom: 5;
+}

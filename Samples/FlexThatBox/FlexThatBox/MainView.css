@@ -1,0 +1,49 @@
+/* A CSS-file with the same name as the layout file will be loaded automatically (by LayoutContainerView) */
+
+.rootClass {
+  background-color: lightGray;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+.rootClass:landscape { /* Support for changing direction on rotation */
+  flex-direction: row;
+}
+
+#container1, #container2 {
+  padding: 30;
+  align-items: center;
+}
+#container1 {
+  flex-direction: row;
+  flex-basis: 33%;
+  flex-grow: 1;
+  background-color: #e9168c;
+}
+#container2 {
+  flex-direction: column;
+  flex-basis: 67%;
+  flex-grow: 2;
+  background-color: #3a4ca8;
+}
+
+.box {
+  flex-grow: 1;
+  flex-min-height: 45;
+  justify-content: center;
+  margin: 5;
+}
+.box * {
+  margin: 10;
+}
+
+#label1 {
+  font: HelveticaNeue-Light 20;
+  numberOfLines: 0;
+  textAlignment: center;
+}
+
+#button1 {
+  titleLabel.font: systemBold 17;
+  title-color__highlighted: #e9168c;
+}

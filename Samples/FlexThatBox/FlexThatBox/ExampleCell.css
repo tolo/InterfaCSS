@@ -1,0 +1,20 @@
+.cellRootClass {
+  padding: 10;
+  align-content: flex-start;
+  background-color: clear;
+  flex-direction: column;
+}
+
+#cellLabel1, #cellLabel2 {
+  flex-shrink: 1;
+  text-color: darkgray;
+  numberOfLines: 3;
+}
+
+#cellLabel2 {
+  font: HelveticaNeue 14;
+}
+
+#cellLabel1 {
+  font: HelveticaNeue-Medium 18;
+}

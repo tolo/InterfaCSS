@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout useSafeAreaInsets="false" useDefaultMargins="false">
+  
+  <view class="cellRootClass">
+    <label id="cellLabel1" style="flex-shrink: 1;"/>
+    <label id="cellLabel2" style="flex-shrink: 1; flex-height: 25">This is a subtitle label</label>
+  </view>
+  
+</layout>

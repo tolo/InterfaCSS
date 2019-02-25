@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout useSafeAreaInsets="false" useDefaultMargins="true">
+
+  <view class="rootClass">
+
+    <view id="container1" style="justify-content: flex-start; align-content: center; flex-wrap: wrap">
+      <view class="box" style="background-color: green;">
+        <label id="label1"/>
+      </view>
+      <view class="box" style="background-color: yellow">
+        <label id="label2">Title set in XML</label>
+      </view>
+      <view class="box" style="background-color: orange">
+        <button id="button1" type="custom"/>
+      </view>
+    </view>
+
+    <view id="container2" style="justify-content: flex-center">
+      <tableView id="tableView" style="flex-grow: 1">
+        <cell id="exampleCell" layout="ExampleCell.xml" implementation="ExampleCell"/>
+      </tableView>
+    </view>
+
+  </view>
+
+  <!--
+   Styles unique to this particular view can be defined directly here in the layout file, or in a css file with the same
+   name as the layout file (i.e. "MainView.css"). These styles will be scoped to this view, and will thus not interfere
+   with other views in the app.
+   -->
+  <style/>
+
+</layout>
