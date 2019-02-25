@@ -53,6 +53,7 @@ ISSPropertyType const ISSPropertyTypeUnknown = @"Unknown";
 }
 
 - (id) enumValueFromString:(NSString*)string {
+    if( (id)string == [NSNull null] ) return self.defaultValue;
     NSString* lcEnumName = [string lowercaseString];
     id value = self.enumValues[lcEnumName];
     if ( !value && [lcEnumName hasPrefix:self.enumBaseName] ) {
@@ -76,6 +77,7 @@ static NSCharacterSet* bitMaskSeparator;
 }
 
 - (id) enumValueFromString:(NSString*)string {
+    if( (id)string == [NSNull null] ) return self.defaultValue;
     NSArray* stringValues = [[string lowercaseString] componentsSeparatedByCharactersInSet:[ISSPropertyBitMaskEnumValueMapping bitMaskEnumValueSeparator]];
     NSNumber* result = nil;
     for(NSString* stringValue in stringValues) {

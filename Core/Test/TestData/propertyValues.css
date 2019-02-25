@@ -35,6 +35,17 @@
     attributedTitle: "title1 " (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2, underlineStyle: single dash);
 }
 
+.boolTest {
+    yes: YES;
+    yesQuoted: "YES";
+    true: true;
+    trueQuoted: "true";
+    no: NO;
+    noQuoted: "NO";
+    false: false;
+    falseQuoted: "false";
+}
+
 .hexColorsRGBA {
     color: #4080B000;
     titleColor: #00FF80FF;
@@ -141,7 +152,15 @@
 .font8 {
     font: 42;
 }
-
+.font9 {
+    font: system 42;
+}
+.font10 {
+    font: systemItalic 42;
+}
+.font11 {
+    font: systemBold 42;
+}
 
 .image1 {
     image: image.png;

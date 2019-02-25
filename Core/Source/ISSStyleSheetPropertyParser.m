@@ -145,8 +145,9 @@
     
     
     /** -- BOOL -- **/
-    ISSParser* boolValueParser = [[self.styleSheetParser.identifier beforeEOI] transform:^id(id value, void* context) {
-        return @([value boolValue]);
+    ISSParser* identifierOrQuotedString = [ISSParser choice:@[self.styleSheetParser.identifier, styleSheetParser.quotedString]];
+    ISSParser* boolValueParser = [[identifierOrQuotedString beforeEOI] transform:^id(id value, void* context) {
+        return @([[value iss_trimQuotes] boolValue]);
     } name:@"bool"];
     _typeToParser[ISSPropertyTypeBool] = [ISSParser choice:@[boolValueParser, [self.styleSheetParser logicalExpressionParser]]];
     
@@ -387,7 +388,7 @@
         if( [[fontName lowercaseString] hasPrefix:@"boldsystem"] || [[fontName lowercaseString] hasPrefix:@"systembold"] ) {
             return [UIFont boldSystemFontOfSize:fontSize];
         } else if( [[fontName lowercaseString] hasPrefix:@"italicsystem"] || [[fontName lowercaseString] hasPrefix:@"systemitalic"] ) {
-            return [UIFont boldSystemFontOfSize:fontSize];
+            return [UIFont italicSystemFontOfSize:fontSize];
         } else if( !fontName || [fontName iss_isEqualIgnoreCase:@"system"] ) {
             return [UIFont systemFontOfSize:fontSize];
         } else {

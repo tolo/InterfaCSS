@@ -130,7 +130,7 @@ static ISSStylingManager* defaultStyler;
             }
         }
         
-        if( value ) [values addObject:value];
+        [values addObject:value ?: [NSNull null]];
     }
     
     return values;
@@ -263,6 +263,16 @@ static ISSStylingManager* defaultStyler;
 - (void) testBooleanPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"clipsToBounds" forType:ISSPropertyTypeBool];
     XCTAssertEqualObjects(value, @YES, @"Expected value 'YES' for property clipsToBounds");
+    
+    NSArray* values = [self getPropertyValuesWithNames:@[@"yes", @"yesQuoted", @"true", @"truequoted", @"no", @"noQuoted", @"false", @"falseQuoted"] fromStyleClass:@"boolTest" forType:ISSPropertyTypeBool];
+    XCTAssertEqualObjects(values[0], @(YES), @"Expected true");
+    XCTAssertEqualObjects(values[1], @(YES), @"Expected true");
+    XCTAssertEqualObjects(values[2], @(YES), @"Expected true");
+    XCTAssertEqualObjects(values[3], @(YES), @"Expected true");
+    XCTAssertEqualObjects(values[4], @(NO), @"Expected false");
+    XCTAssertEqualObjects(values[5], @(NO), @"Expected false");
+    XCTAssertEqualObjects(values[6], @(NO), @"Expected false");
+    XCTAssertEqualObjects(values[7], @(NO), @"Expected false");
 }
 
 - (void) testStringPropertyValue {
@@ -380,30 +390,30 @@ static ISSStylingManager* defaultStyler;
     XCTAssertEqualObjects(@(UIControlStateSelected|UIControlStateHighlighted), enumValue, @"Expected UIControlStateSelected|UIControlStateHighlighted");
 }
 
-- (void) testPropertyPrefixes {
-    // Test layer prefix properties
-    NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" forType:ISSPropertyTypeNumber];
-    UIView* view = [[UIView alloc] init];
-    styler.propertyManager applyPropertyValue:<#(nonnull ISSPropertyValue *)#> onTarget:<#(nonnull ISSElementStylingProxy *)#> styleSheetScope:<#(nonnull ISSStyleSheetScope *)#>
-    view.interfaCSS
-    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
-    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:details];
-    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:details];
-    ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
-    ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
-
-
-    // Test other valid property prefixes
-    values = [self getAllPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
-                                                   @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
-                                                   @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
-                                                   @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes" getDeclarations:NO];
-
-    XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
-    for(id value in values) {
-        XCTAssertEqualObjects(value, @(0.42));
-    }
-}
+// TODO
+//- (void) testPropertyPrefixes {
+//    // Test layer prefix properties
+//    NSArray* values = [self getPropertyValuesWithNames:@[@"layer.cornerRadius", @"layer.borderWidth"] fromStyleClass:@"prefixes" forType:ISSPropertyTypeNumber];
+//    UIView* view = [[UIView alloc] init];
+//
+//    ISSUIElementDetails* details = [[InterfaCSS sharedInstance] detailsForUIElement:view];
+//    [(ISSPropertyDeclaration*)values[0] applyPropertyValueOnTarget:details];
+//    [(ISSPropertyDeclaration*)values[1] applyPropertyValueOnTarget:details];
+//    ISSAssertEqualFloats(view.layer.cornerRadius, 5.0f);
+//    ISSAssertEqualFloats(view.layer.borderWidth, 10.0f);
+//
+//
+//    // Test other valid property prefixes
+//    values = [self getAllPropertyValuesWithNames:@[@"contentView.alpha", @"backgroundView.alpha",
+//                                                   @"selectedBackgroundView.alpha", @"multipleSelectionBackgroundView.alpha", @"titleLabel.alpha",
+//                                                   @"textLabel.alpha", @"detailTextLabel.alpha", @"inputView.alpha", @"inputAccessoryView.alpha",
+//                                                   @"tableHeaderView.alpha", @"tableFooterView.alpha", @"backgroundView.alpha"] fromStyleClass:@"prefixes" getDeclarations:NO];
+//
+//    XCTAssertEqual((NSUInteger)12, values.count, @"Expected 12 values");
+//    for(id value in values) {
+//        XCTAssertEqualObjects(value, @(0.42));
+//    }
+//}
 
 - (void) testTransformPropertyValue {
     id value = [self getSimplePropertyValueWithName:@"transform" forType:ISSPropertyTypeTransform];
@@ -495,6 +505,15 @@ static ISSStylingManager* defaultStyler;
 
     value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font8" forType:ISSPropertyTypeFont] firstObject];
     XCTAssertEqualObjects(value, [UIFont systemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font9" forType:ISSPropertyTypeFont] firstObject];
+    XCTAssertEqualObjects(value, [UIFont systemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font10" forType:ISSPropertyTypeFont] firstObject];
+    XCTAssertEqualObjects(value, [UIFont italicSystemFontOfSize:42], @"Unexpected font value");
+
+    value = [[self getPropertyValuesWithNames:@[@"font"] fromStyleClass:@"font11" forType:ISSPropertyTypeFont] firstObject];
+    XCTAssertEqualObjects(value, [UIFont boldSystemFontOfSize:42], @"Unexpected font value");
 }
 
 - (void) testImagePropertyValue {

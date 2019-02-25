@@ -395,7 +395,11 @@ static ISSStylingManager* sharedISSStylingManager = nil;
 // Internal styling method ("inner") - should only be called by -[doApplyStylingInternal:includeSubViews:force:].
 - (void) applyStylingInternal:(ISSElementStylingProxy*)element includeSubViews:(BOOL)includeSubViews force:(BOOL)force styleSheetScope:(ISSStyleSheetScope*)styleSheetScope {
     ISSLogTrace(@"Applying style to %@", element.uiElement);
+    styleSheetScope = element.styleSheetScope ?: styleSheetScope; // Use styleSheetScope on element first, if set
     styleSheetScope = styleSheetScope ?: [ISSStyleSheetScope defaultGroupScope];
+    if( styleSheetScope != [ISSStyleSheetScope defaultGroupScope] ) {
+        element.styleSheetScope = styleSheetScope;
+    }
     
     [element checkForUpdatedParentElement]; // Reset cached styles if parent/superview has changed...
     

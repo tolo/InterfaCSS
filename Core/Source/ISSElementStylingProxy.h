@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 // TODO: Just ISSStylingProxy? Or even more short and conciese name?
 
 
-@class ISSPropertyValue,  ISSElementStylingProxy, ISSRuleset;
+@class ISSPropertyValue,  ISSElementStylingProxy, ISSRuleset, ISSStyleSheetScope;
 @protocol ISSStyler;
 
 
@@ -59,6 +59,8 @@ NS_SWIFT_NAME(ElementStylingProxy)
 @property (nonatomic, strong, nullable) NSSet<NSString*>* styleClasses;
 @property (nonatomic, strong, nullable) NSString* styleClass; // Convenience property for cases when only a single style class is required (if more than one style class is set, this property may return any of them)
 @property (nonatomic, strong, nullable) NSArray<ISSPropertyValue*>* inlineStyle;
+
+@property (nonatomic, strong, nullable) ISSStyleSheetScope* styleSheetScope;
 
 @property (nonatomic, strong, nullable) NSString* nestedElementKeyPath; // The key path / property name by which this element is know as in the ownerElement
 

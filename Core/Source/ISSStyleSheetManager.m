@@ -250,8 +250,6 @@ NSNotificationName const ISSDidRefreshStyleSheetNotification = @"ISSDidRefreshSt
 
 - (void) doReloadRefreshableStyleSheet:(ISSRefreshableStyleSheet*)styleSheet force:(BOOL)force {
     [styleSheet refreshStylesheetWith:self andCompletionHandler:^{
-        [self.styleSheets removeObject:styleSheet];
-        [self.styleSheets addObject:styleSheet]; // Make stylesheet "last added/updated"
         [self.stylingManager clearAllCachedStyles];
         [[NSNotificationCenter defaultCenter] postNotificationName:ISSDidRefreshStyleSheetNotification object:styleSheet];
     } force:force];
