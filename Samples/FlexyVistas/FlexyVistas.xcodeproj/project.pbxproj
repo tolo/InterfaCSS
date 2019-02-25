@@ -23,6 +23,7 @@
 		F662D1A3221B3F9C00EB8888 /* Episode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F662D1A2221B3F9C00EB8888 /* Episode.swift */; };
 		F67304132211F01200FFD8CE /* fjallabak.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F67304122211F01100FFD8CE /* fjallabak.jpg */; };
 		F67304152211F0D100FFD8CE /* snaefell.jpg in Resources */ = {isa = PBXBuildFile; fileRef = F67304142211F0D100FFD8CE /* snaefell.jpg */; };
+		F6A704952224A8CA00EB1395 /* ListCell.css in Resources */ = {isa = PBXBuildFile; fileRef = F6A704942224A8CA00EB1395 /* ListCell.css */; };
 		F6E1F07C2210595D00BF3540 /* ListCell.xml in Resources */ = {isa = PBXBuildFile; fileRef = F6E1F07B2210595C00BF3540 /* ListCell.xml */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		F662D1A2221B3F9C00EB8888 /* Episode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Episode.swift; sourceTree = "<group>"; };
 		F67304122211F01100FFD8CE /* fjallabak.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = fjallabak.jpg; sourceTree = "<group>"; };
 		F67304142211F0D100FFD8CE /* snaefell.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = snaefell.jpg; sourceTree = "<group>"; };
+		F6A704942224A8CA00EB1395 /* ListCell.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = ListCell.css; sourceTree = "<group>"; };
 		F6E1F07B2210595C00BF3540 /* ListCell.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = ListCell.xml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -95,6 +97,7 @@
 				8A746B6921B3E44C00D14EC8 /* MainView.css */,
 				F662D1A0221B3F0500EB8888 /* ListCell.swift */,
 				F6E1F07B2210595C00BF3540 /* ListCell.xml */,
+				F6A704942224A8CA00EB1395 /* ListCell.css */,
 				F61820B1220DCBB000CE5E50 /* styles-common.css */,
 				F6C2BCFA21B096BE00058802 /* Resources */,
 			);
@@ -207,6 +210,7 @@
 			files = (
 				F61820B2220DCBB000CE5E50 /* styles-common.css in Resources */,
 				F67304152211F0D100FFD8CE /* snaefell.jpg in Resources */,
+				F6A704952224A8CA00EB1395 /* ListCell.css in Resources */,
 				F61FAFE6221B05350079FE8F /* thingvellir.jpg in Resources */,
 				8A746B6A21B3E44C00D14EC8 /* MainView.css in Resources */,
 				F61FAFE5221B05350079FE8F /* landmannalaugar.jpg in Resources */,

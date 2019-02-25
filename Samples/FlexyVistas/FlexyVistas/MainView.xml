@@ -3,7 +3,7 @@
 
 <view class="rootClass">
 
-  <imageView id="image" image="holuhraun.jpg" style="flex-grow:1; flex-max-height: 30%"/>
+  <imageView id="image" class="aspectFill" image="holuhraun.jpg" style="flex-grow:1; flex-max-height: 30%"/>
 
   <view id="summaryView">
     <label id="popularityLabel" style="flex-grow: 1">★★★★★</label>

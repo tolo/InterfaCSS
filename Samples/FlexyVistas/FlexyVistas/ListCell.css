@@ -1,0 +1,21 @@
+.cellRootClass {
+  flex-grow: 1;
+  margin-bottom: 5;
+  flex-direction: row;
+  background-color: clear;
+}
+
+#thumbnail {
+  flex-grow: 2;
+  flex-max-width: 40%;
+  margin-horizontal: 10;
+}
+
+#labelContainer {
+  flex-grow: 3;
+  justify-content: center;
+}
+
+#labelContainer label {
+  flex-shrink: 1;
+}

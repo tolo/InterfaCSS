@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <layout useSafeAreaInsets="false" useDefaultMargins="false">
 
-  <view class="cellRootClass" style="flex-grow: 1; margin-bottom: 5; flex-direction: row; background-color: clear">
-    <imageView id="thumbnail" style="flex-grow: 1; flex-max-width:33%; margin-horizontal: 10"/>
-    <view style="flex-grow: 2; justify-content: center">
-      <label id="cellLabel1" class="white bottomSpacing" style="flex-shrink: 1">Label 1</label>
-      <label id="cellLabel2" style="flex-shrink: 1">44 m</label>
+  <view class="cellRootClass">
+    <imageView id="thumbnail" class="aspectFill"/>
+    <view id="labelContainer">
+      <label id="cellLabel1" class="white bottomSpacing">Label 1</label>
+      <label id="cellLabel2">44 m</label>
     </view>
   </view>
+  
 </layout>

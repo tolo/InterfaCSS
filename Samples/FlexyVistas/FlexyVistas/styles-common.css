@@ -21,6 +21,11 @@ UITableViewCell:selected {
   background-color: #fff1;
 }
 
+image.aspectFill {
+  contentMode: scaleAspectFill;
+  clipsToBounds: true;
+}
+
 label {
   text-color: lightGray;
   font: system 14;
