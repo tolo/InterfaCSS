@@ -6,6 +6,8 @@
 > Everyone loves a beautifully designed app with a consistent UI, and getting there shouldn't take a huge effort. What if there was a way to do ***styling***, ***theming*** and ***layout*** in a concise and powerful way, without constantly having to repeat yourself. What if things could be more like the web?
 
 
+<img src="https://raw.githubusercontent.com/tolo/InterfaCSS/develop/Resources/InterfaCSS-flexbox-hot-reload.gif" alt="XML Flexbox Hot Reload Demo" title="XML Flexbox Hot Reload Demo" width="720">
+
 
 ## Welcome to InterfaCSS 2 - CSS-based Styling and Layout for iOS
 
