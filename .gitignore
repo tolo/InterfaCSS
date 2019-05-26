@@ -9,7 +9,6 @@
 *.ipa
 build/
 Pods
-Podfile.lock
 InterfaCSS.xcworkspace
 Samples/*/*.xcworkspace
 .idea

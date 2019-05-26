@@ -1,0 +1,32 @@
+PODS:
+  - InterfaCSS (2.0-Beta3):
+    - InterfaCSS/Core (= 2.0-Beta3)
+  - InterfaCSS/Core (2.0-Beta3)
+  - InterfaCSS/Layout (2.0-Beta3):
+    - InterfaCSS/Core
+    - YogaKit (~> 1.9.0)
+  - Yoga (1.9.0)
+  - YogaKit (1.9.0):
+    - Yoga (~> 1.9)
+
+DEPENDENCIES:
+  - InterfaCSS (from `../../`)
+  - InterfaCSS/Layout (from `../../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Yoga
+    - YogaKit
+
+EXTERNAL SOURCES:
+  InterfaCSS:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  InterfaCSS: 1eacc5d3c5e7444ee1300d14e977a7817fc385fb
+  Yoga: cff67a400f6b74dc38eb0bad4f156673d9aa980c
+  YogaKit: d447a9bb808718e6f58e52a2255a8050081a3ead
+
+PODFILE CHECKSUM: f47aa59d4444736388fb5c04f2c30270fa2ef9f7
+
+COCOAPODS: 1.5.3

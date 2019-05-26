@@ -23,6 +23,6 @@ Pod::Spec.new do |s|
       ss.frameworks = 'Foundation', 'UIKit'
       ss.source_files = 'Layout/Source/*.{swift}'
       ss.dependency 'InterfaCSS/Core'
-      ss.dependency 'YogaKit', '~> 1.0'
+      ss.dependency 'YogaKit', '~> 1.9.0'
   end
 end
