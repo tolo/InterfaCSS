@@ -96,6 +96,7 @@
 				8A089E0B21A82863005A8E28 /* MainView.xml */,
 				8A746B6921B3E44C00D14EC8 /* MainView.css */,
 				F662D1A0221B3F0500EB8888 /* ListCell.swift */,
+				8A089E0021A8272A005A8E28 /* LaunchScreen.storyboard */,
 				F6E1F07B2210595C00BF3540 /* ListCell.xml */,
 				F6A704942224A8CA00EB1395 /* ListCell.css */,
 				F61820B1220DCBB000CE5E50 /* styles-common.css */,
@@ -142,7 +143,6 @@
 			isa = PBXGroup;
 			children = (
 				8A089DFE21A8272A005A8E28 /* Assets.xcassets */,
-				8A089E0021A8272A005A8E28 /* LaunchScreen.storyboard */,
 				8A089E0321A8272A005A8E28 /* Info.plist */,
 				F6218E182205EA3C003A73F6 /* Images */,
 			);
