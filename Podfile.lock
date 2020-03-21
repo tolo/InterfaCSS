@@ -1,20 +1,27 @@
 PODS:
-  - Yoga (1.9.0)
-  - YogaKit (1.9.0):
-    - Yoga (~> 1.9)
+  - Parsicle (0.9.0)
+  - Yoga (1.14.0)
+  - YogaKit (1.18.1):
+    - Yoga (~> 1.14)
 
 DEPENDENCIES:
-  - YogaKit (~> 1.0)
+  - Parsicle (from `../Parsicle/`)
+  - YogaKit (~> 1.18.0)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Yoga
     - YogaKit
 
+EXTERNAL SOURCES:
+  Parsicle:
+    :path: "../Parsicle/"
+
 SPEC CHECKSUMS:
-  Yoga: aaae8abea68951f60bee05f6277d3eed90bb91bb
-  YogaKit: d447a9bb808718e6f58e52a2255a8050081a3ead
+  Parsicle: 7225d44bd0a22048451ef627fafa83ea1da3e30a
+  Yoga: cff67a400f6b74dc38eb0bad4f156673d9aa980c
+  YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 78cc97364f1b16b2f04e7559ff3ee7a7a52b64d5
+PODFILE CHECKSUM: a701ae01b04f99894f7a3301c3bbd16588148d48
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.8.4

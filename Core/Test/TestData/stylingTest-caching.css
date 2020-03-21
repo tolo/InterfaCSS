@@ -1,25 +1,25 @@
-// Test caching using enabled/disabled pseudo class
+/* Test caching using enabled/disabled pseudo class */
 .class1 uilabel:enabled {
-    alpha: 0.25;
+  alpha: 0.25;
 }
 
 .class1 uilabel:disabled {
-    alpha: 0.75;
+  alpha: 0.75;
 }
 
 .class1 uicontrol:enabled uilabel {
-    alpha: 0.33;
+  alpha: 0.33;
 }
 
 .class1 uicontrol:disabled uilabel {
-    alpha: 0.66;
+  alpha: 0.66;
 }
 
 .class2 {
-    showsTouchWhenHighlighted: YES;
-    alpha: 0.99;
+  showsTouchWhenHighlighted: YES;
+  alpha: 0.99;
 }
 
 .class10 {
-    alpha: 0.1;
+  alpha: 0.1;
 }

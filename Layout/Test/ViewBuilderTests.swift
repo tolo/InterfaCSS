@@ -6,4 +6,11 @@
 //  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
 //
 
-import Foundation
+import XCTest
+@testable import Layout
+
+class ViewBuilderTests: XCTestCase {
+  func testDummy() {
+    XCTFail("Not implemented")
+  }
+}

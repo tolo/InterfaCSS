@@ -1,124 +1,124 @@
 /* Variables: */
 @variable: 0.666;
 
-// Type selector
+/* Type selector */
 uilabel {
-    alpha: @variable;
+  alpha: @variable;
 }
 
-// Type+class selector
+/* Type+class selector */
 uilabel.class1 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Type+elementId+class selector
+/* Type+elementId+class selector */
 uilabel#identity.class1 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uilabel#identity.class1.class2 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// elementId+class selector
+/* elementId+class selector */
 #identity.class1 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Class selector
+/* Class selector */
 .class1 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Multi-class selector
+/* Multi-class selector */
 .class1.class2 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Descendant selector chain
+/* Descendant selector chain */
 uiview .class1 .class2 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview .class1.class2 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Child/sibling selector chain
+/* Child/sibling selector chain */
 uiview > .class1 + .class2 ~ .class3 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Multiple selector (chains)
+/* Multiple selector (chains) */
 uilabel, uilabel.class1, .class1, uiview .class1 .class2 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uilabel, uilabel.class1.class2, .class1, uiview .class1.class2 .class3 {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Nested declarations
+/* Nested declarations */
 uiview {
+  alpha: 0.666;
+  .classN1 {
     alpha: 0.666;
-    .classN1 {
-        alpha: 0.666;
-        .classN2 {
-            alpha: 0.666;
-        }
+    .classN2 {
+      alpha: 0.666;
     }
+  }
 }
 
-// Pseudo classes
+/* Pseudo classes */
 uiview:onlychild {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview:minOSVersion(8.4) {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview#identifier.class1:onlychild {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview:nthchild(2n+1) {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview uilabel:first-of-type {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview.classx {
+  alpha: 0.666;
+  
+  uilabel:last-of-type {
     alpha: 0.666;
-
-    uilabel:last-of-type {
-        alpha: 0.666;
-    }
+  }
 }
 
 uiview:pad:landscape {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview:portrait:phone {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
-// Wildcard selectors
+/* Wildcard selectors */
 * uiview {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 * uiview * {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview * {
-    alpha: 0.666;
+  alpha: 0.666;
 }
 
 uiview * uiview {
-    alpha: 0.666;
+  alpha: 0.666;
 }

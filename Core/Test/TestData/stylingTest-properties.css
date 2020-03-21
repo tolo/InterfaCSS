@@ -1,18 +1,22 @@
-
-// UIView properties
+/* UIView properties */
 .uiViewTest {
-    autoresizingMask: width height;
-    background-color: red;
-    clipsToBounds: true;
-    hidden: true;
-    frame: rect(1,2,3,4);
-    tag: 5;
-    tintColor: blue;
+  autoresizingMask: width height;
+  background-color: red;
+  clipsToBounds: true;
+  hidden: true;
+  frame: rect(1,2,3,4);
+  tag: 5;
+  tintColor: blue;
 }
 
-// Label properties
+/* Label properties */
 .labelTest {
-    UILabel {
-        text: "test";
-    }
+  UILabel {
+    text: "test";
+  }
+}
+
+.nextedProperties {
+  layer.cornerRadius: 5;
+  layer.borderWidth: 10;
 }
