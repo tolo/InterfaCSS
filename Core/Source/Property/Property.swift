@@ -1,9 +1,9 @@
 //
 //  Property.swift
-//  InterfaCSS-Core
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias on 2019-02-12.
-//  Copyright © 2019 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import Foundation
@@ -17,17 +17,17 @@ public typealias PropertyParameterTransformer = (_ property: Property, _ rawValu
 /**
  * Represents the definition of a property that can be declared in a stylesheet.
  */
-public class Property: CustomStringConvertible, CustomDebugStringConvertible {
+public class Property: CustomStringConvertible, CustomDebugStringConvertible, Hashable {
   
   public let name: String
-  public var normalizedName: String {
+  private (set) lazy var normalizedName: String = {
     return Self.normalizeName(name)
-  }
+  }()
   
   public let declaredInClass: AnyClass
-  var fqn: String {
+  private (set) lazy var fqn: String = {
     return "\(NSStringFromClass(declaredInClass.self)).\(name)"
-  }
+  }()
   
   public let type: PropertyType
   public let enumValueMapping: AnyPropertyEnumValueMappingType?
@@ -67,11 +67,31 @@ public class Property: CustomStringConvertible, CustomDebugStringConvertible {
     self.init(withName: name, in: clazz, type: type, enumValueMapping: enumValueMapping, parameterTransformers: parameterTransformers, setterBlock: setter)
   }
   
-  public convenience init(withCompoundName compoundName: String, type: PropertyType) {
-    self.init(withName: name, in: Property.self, type: type) { (_, _ : AnyObject, _ : Any? , _) in }
+  public convenience init(runtimeProperty: RuntimeProperty, type: PropertyType, enumValueMapping: AnyPropertyEnumValueMappingType? = nil) {
+    self.init(withName: runtimeProperty.propertyName, in: runtimeProperty.foundInClass, type: type, enumValueMapping: enumValueMapping, parameterTransformers: nil, setterBlock: { property, target, value, parameters in
+      var propertyValue: Any = value ?? NSNull()
+      if let mapping = enumValueMapping, let val = value as? String {
+        propertyValue = mapping.value(from: val)
+      }
+      return RuntimeIntrospectionUtils.invokeSetter(for: runtimeProperty, withValue: propertyValue, in: target)
+    })
   }
   
-  public func transformParameters(_ rawParams: [String]) -> [Any] {
+  public convenience init(withName name: String, in clazz: AnyClass, type: PropertyType, selector: Foundation.Selector, enumValueMapping: AnyPropertyEnumValueMappingType? = nil, parameterTransformers: [PropertyParameterTransformer]? = nil) {
+    self.init(withName: name, in: clazz, type: type, enumValueMapping: enumValueMapping, parameterTransformers: parameterTransformers, setterBlock: { property, target, value, parameters in
+      let arguments = [value ?? NSNull()] + parameters
+      RuntimeIntrospectionUtils.invokeInstanceSelector(selector, withArguments: arguments, in: target)
+      return true
+    })
+  }
+  
+//  public convenience init(withCompoundName compoundName: String, type: PropertyType) {
+//    let setter: PropertySetterBlock = { (_, _ : AnyObject, _ : Any? , _) -> Bool in return true }
+//    self.init(withName: compoundName, in: AnyObject.self, type: type, setterBlock: setter)
+//  }
+  
+  
+  public func transform(parameters rawParams: [String]) -> [Any] {
     guard let parameterTransformers = self.parameterTransformers else { return Array.init(repeating: NSNull(), count: rawParams.count) }
     var transformedParameters: [Any] = []
     for i in 0..<parameterTransformers.count {
@@ -81,8 +101,31 @@ public class Property: CustomStringConvertible, CustomDebugStringConvertible {
     return transformedParameters
   }
   
+  public func transform(value: PropertyValue) -> Any? {
+    return type.parser.parse(propertyValue: value)
+  }
+  
+//  public func setValue(_ value: PropertyValue, onTarget target: AnyObject) -> Bool {
+//    let value = type.parser.parse(propertyValue: value)
+//    return setValue(value, onTarget: target, withParameters: )
+//  }
+  
   public func setValue(_ value: Any?, onTarget target: AnyObject, withParameters params: [Any]? = nil) -> Bool {
     return setterBlock(self, target, value, params ?? [])
+  }
+  
+  /// Hashable and Equatable
+  
+  public static func == (lhs: Property, rhs: Property) -> Bool {
+    return lhs.fqn == rhs.fqn
+  }
+  
+  public static func == (lhs: Property, rhs: PropertyValue) -> Bool {
+    return lhs.normalizedName == rhs.propertyName
+  }
+  
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(fqn)
   }
 }
 

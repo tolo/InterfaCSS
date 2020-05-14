@@ -1,14 +1,16 @@
 //
-//  PropertyManager+DefaultProperties.swift
+//  PropertyRepository+UIKit.swift
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
-//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import UIKit
+import Parsicle
 
-extension PropertyManager {
+
+extension PropertyRepository {
   
   // MARK: - Registration utility methods
   

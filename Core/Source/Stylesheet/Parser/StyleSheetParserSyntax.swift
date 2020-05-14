@@ -12,7 +12,8 @@ import Parsicle
 
 private typealias P = AnyParsicle
 
-public class StyleSheetParserSyntax: StyleSheetParserSupport {
+
+public class StyleSheetParserSyntax {
   
   public static let shared: StyleSheetParserSyntax = {
     return StyleSheetParserSyntax()
@@ -245,6 +246,12 @@ public class StyleSheetParserSyntax: StyleSheetParserSupport {
   
   
   // MARK: - Misc
+  
+  func char(_ char: Character, skipSpaces: Bool = false) -> StringParsicle { return P.char(char, skipSpaces: skipSpaces) }
+  
+  func charIgnore<Result>(_ char: Character, skipSpaces: Bool = false) -> Parsicle<Result> { return P.char(char, skipSpaces: skipSpaces).ignore() }
+  
+  func string(_ string: String) -> StringParsicle { return P.string(string) }
   
   func cleanedStringValue(_ string: String) -> String {
     return string.trimQuotes().stringByReplacingUnicodeSequences()

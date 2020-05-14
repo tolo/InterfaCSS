@@ -41,7 +41,6 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     let notificationCenter = NotificationCenter.default
     notificationCenter.addObserver(self, selector: #selector(StylingManager.memoryWarning(_:)), name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
-    // TODO: More notifications?
   }
   
   deinit {
@@ -145,13 +144,11 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     }
   }
   
-  private func styles(for element: ElementStyle, force: Bool, styleSheetScope: StyleSheetScope) -> [PropertyValue] {
-    
-  }
-  
   private func style(element: ElementStyle, force: Bool, styleSheetScope: StyleSheetScope) {
-    let styles = effectiveStyles(for: element, force: force, styleSheetScope: styleSheetScope)
+    var styles = effectiveStyles(for: element, force: force, styleSheetScope: styleSheetScope)
     guard styles.count > 0 else { return } // If 'styles' is empty, current styling information has already been applied
+    
+    styles = propertyManager.preProcess(propertyValues: styles, styleSheetScope: styleSheetScope)
     
     //    if element.willApplyStylingBlock {
     //      styles = element.willApplyStylingBlock(styles)
@@ -326,7 +323,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
       }
       childElements.addObjects(from: additionalSubViews)
     }
-      // Special case: UITabBar - add tab bar items to "subview" list
+    // Special case: UITabBar - add tab bar items to "subview" list
     else if let tabBar = element.view as? UITabBar, let items = tabBar.items {
       childElements.addObjects(from: items)
     }

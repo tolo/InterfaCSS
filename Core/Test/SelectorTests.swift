@@ -1,9 +1,9 @@
 //
 //  SelectorTests.swift
-//  CoreTests
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2019-10-17.
-//  Copyright © 2019 Tobias Löfstrand. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import XCTest

@@ -1,9 +1,9 @@
 //
 //  NSArray+Additions.swift
-//  InterfaCSS-Core
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias on 2019-02-12.
-//  Copyright © 2019 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import Foundation
@@ -15,6 +15,12 @@ extension Array where Element == String {
       trimmed.append(e.trim())
     }
     return trimmed
+  }
+}
+
+extension Array where Element: Hashable {
+  public func toSet() -> Set<Element> {
+    return Set(self)
   }
 }
 

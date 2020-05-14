@@ -5,15 +5,16 @@
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
 //  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
-import Foundation
 
-// TODO: Move
-public let WillRefreshStyleSheetsNotification = NSNotification.Name("InterfaCSS.WillRefreshStyleSheetsNotification")
-public let DidRefreshStyleSheetNotification = NSNotification.Name("InterfaCSS.DidRefreshStyleSheetNotification")
+import Foundation
 
 
 public class StyleSheetManager: NSObject {
-  private let notValidIdentifierCharsSet = StyleSheetParserSyntax.shared.validIdentifierCharsSet.inverted
+  public static let WillRefreshStyleSheetsNotification = NSNotification.Name("InterfaCSS.WillRefreshStyleSheetsNotification")
+  public static let DidRefreshStyleSheetNotification = NSNotification.Name("InterfaCSS.DidRefreshStyleSheetNotification")
+  
+  private let styleSheetRepository = StyleSheetRepository()
+  private let variableRepository = VariableRepository();
   
   weak var stylingManager: StylingManager? // TODO: Review if this dependency can be removed
   
@@ -23,32 +24,39 @@ public class StyleSheetManager: NSObject {
   /**
    * All currently active stylesheets (`StyleSheet`).
    */
-  private(set) var styleSheets: [StyleSheet] = []
+  public var styleSheets: [StyleSheet] { styleSheetRepository.styleSheets }
+  //private(set) var styleSheets: [StyleSheet] = []
   
-  private var activeStylesheets: [StyleSheet] {
-    return styleSheets.filter { $0.active }
-  }
+  var activeStylesheets: [StyleSheet] { styleSheetRepository.activeStylesheets }
+//  private var activeStylesheets: [StyleSheet] {
+//    return styleSheets.filter { $0.active }
+//  }
   
-  private var runtimeStyleSheetsVariables: [String : String] = [:]
-  //    private let pseudoClassTypes: Set<ISSPseudoClassType>
-  private var timer: Timer?
+//  private var runtimeStyleSheetsVariables: [String : String] = [:]
+
+//  private var timer: Timer?
   
   /**
    * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds. If value is set to <= 0, automatic refresh is disabled. Note: this is only use for stylesheets loaded from a remote URL.
    */
-  private var _stylesheetAutoRefreshInterval: TimeInterval = 0.0
-  var stylesheetAutoRefreshInterval: TimeInterval {
-    get {
-      return _stylesheetAutoRefreshInterval
-    }
-    set {
-      _stylesheetAutoRefreshInterval = newValue
-      if timer != nil {
-        disableAutoRefreshTimer()
-        enableAutoRefreshTimer()
-      }
-    }
+  public var stylesheetAutoRefreshInterval: TimeInterval {
+    get { styleSheetRepository.stylesheetAutoRefreshInterval }
+    set { styleSheetRepository.stylesheetAutoRefreshInterval = newValue }
   }
+//  private var _stylesheetAutoRefreshInterval: TimeInterval = 0.0
+//  var stylesheetAutoRefreshInterval: TimeInterval {
+//    get {
+//      return _stylesheetAutoRefreshInterval
+//    }
+//    set {
+//      _stylesheetAutoRefreshInterval = newValue
+//      if timer != nil {
+//        disableAutoRefreshTimer()
+//        enableAutoRefreshTimer()
+//      }
+//    }
+//  }
+  
   
   /**
    * Gets the shared StyleSheetManager instance (via the shared ISSStylingManager).
@@ -64,9 +72,12 @@ public class StyleSheetManager: NSObject {
     super.init()
     
     styleSheetParser.styleSheetManager = self
+    styleSheetRepository.styleSheetManager = self
+    variableRepository.styleSheetManager = self
   }
   
-  // MARK: - Stylesheets
+  
+  // MARK: - Stylesheets loading
   
   /**
    * Loads a stylesheet from the main bundle.
@@ -75,17 +86,18 @@ public class StyleSheetManager: NSObject {
   public func loadStyleSheet(fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
     return loadNamedStyleSheet(nil, group: StyleSheetGroupDefault, fromMainBundleFile: styleSheetFileName)
   }
-  
+
   @discardableResult
   public func loadNamedStyleSheet(_ name: String?, group groupName: String, fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
-    if let url = Bundle.main.url(forResource: styleSheetFileName, withExtension: nil) {
-      return loadStyleSheet(fromLocalFileURL: url, withName: name, group: groupName)
-    } else {
-      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName) // TODO:
-      return nil
-    }
+//    if let url = Bundle.main.url(forResource: styleSheetFileName, withExtension: nil) {
+//      return loadStyleSheet(fromLocalFileURL: url, withName: name, group: groupName)
+//    } else {
+//      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName) // TODO:
+//      return nil
+//    }
+    return styleSheetRepository.loadNamedStyleSheet(name, group: groupName, fromMainBundleFile: styleSheetFileName)
   }
-  
+
   /**
    * Loads a stylesheet from an absolute file path.
    */
@@ -93,17 +105,18 @@ public class StyleSheetManager: NSObject {
   public func loadStyleSheet(fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
     return loadNamedStyleSheet(nil, group: StyleSheetGroupDefault, fromFileURL: styleSheetFileURL)
   }
-  
+
   @discardableResult
   public func loadNamedStyleSheet(_ name: String?, group groupName: String?, fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
-    if FileManager.default.fileExists(atPath: styleSheetFileURL.path) {
-      return loadStyleSheet(fromLocalFileURL: styleSheetFileURL, withName: name, group: groupName)
-    } else {
-      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found!", styleSheetFileURL)
-      return nil
-    }
+//    if FileManager.default.fileExists(atPath: styleSheetFileURL.path) {
+//      return loadStyleSheet(fromLocalFileURL: styleSheetFileURL, withName: name, group: groupName)
+//    } else {
+//      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found!", styleSheetFileURL)
+//      return nil
+//    }
+    return styleSheetRepository.loadNamedStyleSheet(name, group: groupName, fromFileURL: styleSheetFileURL)
   }
-  
+
   /**
    * Loads an auto-refreshable stylesheet from a URL (both file and http URLs are supported).
    * Note: Refreshable stylesheets are only intended for use during development, and not in production.
@@ -112,101 +125,111 @@ public class StyleSheetManager: NSObject {
   public func loadRefreshableStyleSheet(from styleSheetURL: URL) -> StyleSheet {
     return loadRefreshableNamedStyleSheet(nil, group: StyleSheetGroupDefault, from: styleSheetURL)
   }
-  
+
   @discardableResult
   public func loadRefreshableNamedStyleSheet(_ name: String?, group groupName: String, from styleSheetURL: URL) -> StyleSheet {
-    let styleSheet = RefreshableStyleSheet(styleSheetURL: styleSheetURL, name: name, group: groupName)
-    styleSheets.append(styleSheet)
-    reload(styleSheet, force: false)
-    var usingStyleSheetModificationMonitoring = false
-    if styleSheet.styleSheetModificationMonitoringSupported {
-      // Attempt to use file monitoring instead of polling, if supported
-      weak var weakSelf: StyleSheetManager? = self
-      styleSheet.startMonitoringStyleSheetModification({ refreshed in
-        weakSelf?.reload(styleSheet, force: true)
-      })
-      usingStyleSheetModificationMonitoring = styleSheet.styleSheetModificationMonitoringEnabled
-    }
-    if !usingStyleSheetModificationMonitoring {
-      enableAutoRefreshTimer()
-    }
-    return styleSheet
+//    let styleSheet = RefreshableStyleSheet(styleSheetURL: styleSheetURL, name: name, group: groupName)
+//    styleSheets.append(styleSheet)
+//    reload(styleSheet, force: false)
+//    var usingStyleSheetModificationMonitoring = false
+//    if styleSheet.styleSheetModificationMonitoringSupported {
+//      // Attempt to use file monitoring instead of polling, if supported
+//      weak var weakSelf: StyleSheetManager? = self
+//      styleSheet.startMonitoringStyleSheetModification({ refreshed in
+//        weakSelf?.reload(styleSheet, force: true)
+//      })
+//      usingStyleSheetModificationMonitoring = styleSheet.styleSheetModificationMonitoringEnabled
+//    }
+//    if !usingStyleSheetModificationMonitoring {
+//      enableAutoRefreshTimer()
+//    }
+//    return styleSheet
+    return styleSheetRepository.loadRefreshableNamedStyleSheet(name, group: groupName, from: styleSheetURL)
   }
-  
-  // MARK: - Stylesheets
+
   @discardableResult
   public func loadStyleSheet(fromLocalFileURL styleSheetFile: URL, withName name: String?, group groupName: String?) -> StyleSheet? {
-    var styleSheet: StyleSheet? = nil
-    for existingStyleSheet in styleSheets {
-      if existingStyleSheet.styleSheetURL == styleSheetFile {
-        //                ISSLogDebug("Stylesheet %@ already loaded", styleSheetFile) // TODO:
-        return existingStyleSheet
-      }
-    }
-    
-    if let styleSheetData = try? String(contentsOf: styleSheetFile) {
-      //            let t: TimeInterval = Date.timeIntervalSinceReferenceDate
-      if let styleSheetContent = styleSheetParser.parse(styleSheetData) {
-        //            ISSLogDebug("Loaded stylesheet '%@' in %f seconds", styleSheetFile.lastPathComponent, (Date.timeIntervalSinceReferenceDate - t)) // TODO:
-        styleSheet = StyleSheet(styleSheetURL: styleSheetFile, name: name, group: groupName, content: styleSheetContent)
-        if let styleSheet = styleSheet {
-          styleSheets.append(styleSheet)
-        }
-        stylingManager?.clearAllCachedStyles()
-      }
-    } else {
-      //            ISSLogWarning("Error loading stylesheet data from '%@' - %@", styleSheetFile, error) // TODO:
-    }
-    return styleSheet
-  }
-  
-  //* Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified.
-  public func reloadRefreshableStyleSheets(_ force: Bool) {
-    NotificationCenter.default.post(name: WillRefreshStyleSheetsNotification, object: nil)
-    for styleSheet: StyleSheet in styleSheets {
-      guard let refreshableStylesheet = styleSheet as? RefreshableStyleSheet else { continue }
-      if refreshableStylesheet.active && !refreshableStylesheet.styleSheetModificationMonitoringEnabled {
-        // Attempt to get updated stylesheet
-        doReload(refreshableStylesheet, force: force)
-      }
-    }
-  }
-  
-  //* Reloads a refreshable stylesheet. If force is `YES`, the stylesheet will be reloaded even if is hasn't been modified.
-  public func reload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
-    NotificationCenter.default.post(name: WillRefreshStyleSheetsNotification, object: styleSheet)
-    doReload(styleSheet, force: force)
+//    var styleSheet: StyleSheet? = nil
+//    for existingStyleSheet in styleSheets {
+//      if existingStyleSheet.styleSheetURL == styleSheetFile {
+//        //                ISSLogDebug("Stylesheet %@ already loaded", styleSheetFile) // TODO:
+//        return existingStyleSheet
+//      }
+//    }
+//
+//    if let styleSheetData = try? String(contentsOf: styleSheetFile) {
+//      //            let t: TimeInterval = Date.timeIntervalSinceReferenceDate
+//      if let styleSheetContent = styleSheetParser.parse(styleSheetData) {
+//        //            ISSLogDebug("Loaded stylesheet '%@' in %f seconds", styleSheetFile.lastPathComponent, (Date.timeIntervalSinceReferenceDate - t)) // TODO:
+//        styleSheet = StyleSheet(styleSheetURL: styleSheetFile, name: name, group: groupName, content: styleSheetContent)
+//        if let styleSheet = styleSheet {
+//          styleSheets.append(styleSheet)
+//        }
+//        stylingManager?.clearAllCachedStyles()
+//      }
+//    } else {
+//      //            ISSLogWarning("Error loading stylesheet data from '%@' - %@", styleSheetFile, error) // TODO:
+//    }
+//    return styleSheet
+    return styleSheetRepository.loadStyleSheet(fromLocalFileURL: styleSheetFile, withName: name, group: groupName)
   }
   
   public func register(_ styleSheet: StyleSheet) {
-    styleSheets.append(styleSheet)
-    stylingManager?.clearAllCachedStyles()
+    //    styleSheets.append(styleSheet)
+    //    stylingManager?.clearAllCachedStyles()
+    styleSheetRepository.register(styleSheet);
   }
   
+  
+  // MARK: - Reload and unload
+
+  /// Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified.
+  public func reloadRefreshableStyleSheets(_ force: Bool) {
+//    NotificationCenter.default.post(name: Self.WillRefreshStyleSheetsNotification, object: nil)
+//    for styleSheet: StyleSheet in styleSheets {
+//      guard let refreshableStylesheet = styleSheet as? RefreshableStyleSheet else { continue }
+//      if refreshableStylesheet.active && !refreshableStylesheet.styleSheetModificationMonitoringEnabled {
+//        // Attempt to get updated stylesheet
+//        doReload(refreshableStylesheet, force: force)
+//      }
+//    }
+    styleSheetRepository.reloadRefreshableStyleSheets(force);
+  }
+
+  //* Reloads a refreshable stylesheet. If force is `YES`, the stylesheet will be reloaded even if is hasn't been modified.
+  public func reload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
+//    NotificationCenter.default.post(name: Self.WillRefreshStyleSheetsNotification, object: styleSheet)
+//    doReload(styleSheet, force: force)
+    styleSheetRepository.reload(styleSheet, force: force);
+  }
+
   /**
    * Unloads the specified styleSheet.
    * @param styleSheet the stylesheet to unload.
    */
   public func unload(_ styleSheet: StyleSheet) {
-    styleSheets.removeAll { $0 == styleSheet }
-    styleSheet.unload()
-    stylingManager?.clearAllCachedStyles()
+//    styleSheets.removeAll { $0 == styleSheet }
+//    styleSheet.unload()
+//    stylingManager?.clearAllCachedStyles()
+    styleSheetRepository.unload(styleSheet);
   }
-  //- (void) unloadStyleSheet:(StyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
-  
+
   /**
    * Unloads all loaded stylesheets, effectively resetting the styling of all views.
    */
   public func unloadAllStyleSheets() {
-    styleSheets.removeAll()
-    stylingManager?.clearAllCachedStyles()
+//    styleSheets.removeAll()
+//    stylingManager?.clearAllCachedStyles()
+    styleSheetRepository.unloadAllStyleSheets();
   }
-  //- (void) unloadAllStyleSheets:(BOOL)refreshStyling {
+  
+
+  // MARK: - Parsing and matching
   
   /**
    * Parses the specified stylesheet data and returns an object (`StyleSheetContent`) representing the stylesheet content (rulesets and variables).
    */
-  public func parseStyleSheetData(_ styleSheetData: String) -> StyleSheetContent? {
+  public func parseStyleSheetContent(_ styleSheetData: String) -> StyleSheetContent? {
     return styleSheetParser.parse(styleSheetData)
   }
   
@@ -235,93 +258,104 @@ public class StyleSheetManager: NSObject {
     return rulesets
   }
   
-  // MARK: - Variables and property parsing
+  
+  // MARK: - Variables
+  
   /**
    * Returns the raw value of the stylesheet variable with the specified name.
    */
   public func valueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .defaultGroupScope) -> String? {
-    var value: String? = runtimeStyleSheetsVariables[variableName]
-    if value == nil {
-      for styleSheet in activeStylesheets.reversed() {
-        value = styleSheet.content.variables[variableName] // TODO: Review access
-        if value != nil {
-          break
-        }
-      }
-    }
-    return value
+    return variableRepository.valueOfStyleSheetVariable(withName: variableName, scope: scope)
+  //    var value: String? = runtimeStyleSheetsVariables[variableName]
+  //    if value == nil {
+  //      for styleSheet in activeStylesheets.reversed() {
+  //        value = styleSheet.content.variables[variableName] // TODO: Review access
+  //        if value != nil {
+  //          break
+  //        }
+  //      }
+  //    }
+  //    return value
   }
   
   /**
    * Sets the raw value of the stylesheet variable with the specified name.
    */
   public func setValue(_ value: String, forStyleSheetVariableWithName variableName: String) {
-    runtimeStyleSheetsVariables[variableName] = value
+    return variableRepository.setValue(value, forStyleSheetVariableWithName: variableName)
+//    runtimeStyleSheetsVariables[variableName] = value
   }
   
-  
   public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .defaultGroupScope, didReplace: inout Bool) -> String {
-    var location: Int = 0
-    var propertyValue = inPropertyValue
-    while location < propertyValue.count {
-      // Replace any variable references
-      var varPrefixLength = 2;
-      var varBeginLocation = propertyValue.index(ofString: "--", from: location);
-      if (varBeginLocation == NSNotFound) {
-        varPrefixLength = 1;
-        varBeginLocation = propertyValue.index(ofChar: "@", from: location)
-      }
-      
-      if varBeginLocation != NSNotFound {
-        location = varBeginLocation + varPrefixLength
-        
-        let variableNameRangeEnd = propertyValue.index(ofCharInSet: notValidIdentifierCharsSet, from: location)
-        let variableNameRange = propertyValue.range(from: location, to: variableNameRangeEnd)
-        
-        var variableValue: String? = nil
-        if !variableNameRange.isEmpty {
-          let variableName = propertyValue[variableNameRange]
-          variableValue = valueOfStyleSheetVariable(withName: String(variableName), scope: scope)
-        }
-        if let variableValue = variableValue {
-          var variableValue = variableValue.trimQuotes()
-          variableValue = replaceVariableReferences(variableValue, scope: scope, didReplace: &didReplace) // Resolve nested variables
-          // Replace variable occurrence in propertyValue string with variableValue string
-          propertyValue = propertyValue.replaceCharacterInRange(from: varBeginLocation, to: variableNameRangeEnd, with: variableValue)
-          location += variableValue.count
-          didReplace = true
-        } else  {
-          // ISSLogWarning("Unrecognized property variable: %@ (property value: %@)", variableName, propertyValue)
-          location = variableNameRangeEnd
-        }
-      } else {
-        break
-      }
-    }
-    return propertyValue
+    return variableRepository.replaceVariableReferences(inPropertyValue, scope: scope, didReplace: &didReplace)
+  //    var location: Int = 0
+  //    var propertyValue = inPropertyValue
+  //    while location < propertyValue.count {
+  //      // Replace any variable references
+  //      var varPrefixLength = 2
+  //      var varBeginLocation = propertyValue.index(ofString: "--", from: location)
+  //      if (varBeginLocation == NSNotFound) {
+  //        varPrefixLength = 1
+  //        varBeginLocation = propertyValue.index(ofChar: "@", from: location)
+  //      }
+  //
+  //      if varBeginLocation != NSNotFound {
+  //        location = varBeginLocation + varPrefixLength
+  //
+  //        let variableNameRangeEnd = propertyValue.index(ofCharInSet: notValidIdentifierCharsSet, from: location)
+  //        let variableNameRange = propertyValue.range(from: location, to: variableNameRangeEnd)
+  //
+  //        var variableValue: String? = nil
+  //        if !variableNameRange.isEmpty {
+  //          let variableName = propertyValue[variableNameRange]
+  //          variableValue = valueOfStyleSheetVariable(withName: String(variableName), scope: scope)
+  //        }
+  //        if let variableValue = variableValue {
+  //          var variableValue = variableValue.trimQuotes()
+  //          variableValue = replaceVariableReferences(variableValue, scope: scope, didReplace: &didReplace) // Resolve nested variables
+  //          // Replace variable occurrence in propertyValue string with variableValue string
+  //          propertyValue = propertyValue.replaceCharacterInRange(from: varBeginLocation, to: variableNameRangeEnd, with: variableValue)
+  //          location += variableValue.count
+  //          didReplace = true
+  //        } else  {
+  //          // ISSLogWarning("Unrecognized property variable: %@ (property value: %@)", variableName, propertyValue)
+  //          location = variableNameRangeEnd
+  //        }
+  //      } else {
+  //        break
+  //      }
+  //    }
+  //    return propertyValue
   }
   
   /**
    * Returns the value of the stylesheet variable with the specified name, transformed to the specified type.
    */
   public func transformedValueOfStyleSheetVariable(withName variableName: String, as propertyType: PropertyType, scope: StyleSheetScope = .defaultGroupScope) -> Any? {
-    if let value = valueOfStyleSheetVariable(withName: variableName, scope: scope) {
-      var didReplace = false
-      let modValue = replaceVariableReferences(value, scope: scope, didReplace: &didReplace)
-      return styleSheetParser.parsePropertyValue(modValue, as: propertyType)
-    }
-    return nil
+    return variableRepository.transformedValueOfStyleSheetVariable(withName: variableName, as: propertyType, scope: scope)
+//    if let rawValue = valueOfStyleSheetVariable(withName: variableName, scope: scope) {
+//      var didReplace = false
+//      let value = replaceVariableReferences(rawValue, scope: scope, didReplace: &didReplace)
+//      return propertyType.parser.parse(propertyValue: PropertyValue(propertyName: variableName, value: value))
+////      return styleSheetParser.parsePropertyValue(modValue, as: propertyType)
+//    }
+//    return nil
   }
   
-  public func parsePropertyValue(_ value: String, as type: PropertyType, scope: StyleSheetScope = .defaultGroupScope) -> Any? {
-    var didReplace = false
-    return parsePropertyValue(value, as: type, scope: scope, didReplaceVariableReferences: &didReplace)
-  }
   
-  public func parsePropertyValue(_ value: String, as type: PropertyType, scope: StyleSheetScope = .defaultGroupScope, didReplaceVariableReferences didReplace: inout Bool) -> Any? {
-    let modValue = replaceVariableReferences(value, scope: scope, didReplace: &didReplace)
-    return styleSheetParser.parsePropertyValue(modValue, as: type)
-  }
+  // MARK: - Property parsing
+  
+
+
+//  public func parsePropertyValue(_ value: String, as type: PropertyType, scope: StyleSheetScope = .defaultGroupScope) -> Any? {
+//    var didReplace = false
+//    return parsePropertyValue(value, as: type, scope: scope, didReplaceVariableReferences: &didReplace)
+//  }
+//
+//  public func parsePropertyValue(_ value: String, as type: PropertyType, scope: StyleSheetScope = .defaultGroupScope, didReplaceVariableReferences didReplace: inout Bool) -> Any? {
+//    let modValue = replaceVariableReferences(value, scope: scope, didReplace: &didReplace)
+//    return styleSheetParser.parsePropertyValue(modValue, as: type)
+//  }
   
   public func parsePropertyNameValuePair(_ nameAndValue: String) -> PropertyValue? {
     return styleSheetParser.parsePropertyNameValuePair(nameAndValue)
@@ -331,7 +365,9 @@ public class StyleSheetManager: NSObject {
     return styleSheetParser.parsePropertyNameValuePairs(propertyPairsString)
   }
   
+  
   // MARK: - Selector creation support
+  
   public func createSelector(withType type: String? = nil, elementId: String? = nil, styleClasses: [String]? = nil, pseudoClasses: [PseudoClass]? = nil) -> Selector? {
     var selectorType: SelectorType? = nil
     var wildcardType = false
@@ -358,7 +394,9 @@ public class StyleSheetManager: NSObject {
     return nil
   }
   
+  
   // MARK: - Debugging support
+  
   public func logMatchingRulesets(forElement element: ElementStyle, styleSheetScope: StyleSheetScope) {
     guard let uiElement = element.uiElement, let stylingManager = stylingManager else { return }
     var existingSelectorChains: Set<SelectorChain> = []
@@ -390,36 +428,36 @@ public class StyleSheetManager: NSObject {
     }
   }
   
-  
-  // MARK: - Properties
-  // MARK: - Timer
-  func enableAutoRefreshTimer() {
-    if timer == nil && stylesheetAutoRefreshInterval > 0 {
-      timer = Timer.scheduledTimer(timeInterval: stylesheetAutoRefreshInterval, target: self, selector: #selector(StyleSheetManager.autoRefreshTimerTick), userInfo: nil, repeats: true)
-    }
-  }
-  func disableAutoRefreshTimer() {
-    timer?.invalidate()
-    timer = nil
-  }
-  @objc func autoRefreshTimerTick() {
-    reloadRefreshableStyleSheets(false)
-  }
-  func doReload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
-    styleSheet.refreshStylesheet(with: self, andCompletionHandler: {
-      //        [self.styleSheets removeObject:styleSheet];
-      //        [self.styleSheets addObject:styleSheet]; // Make stylesheet "last added/updated"
-      self.stylingManager?.clearAllCachedStyles()
-      NotificationCenter.default.post(name: DidRefreshStyleSheetNotification, object: styleSheet)
-    }, force: force)
-  }
-  //- (void) unloadStyleSheet:(StyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
-  //- (void) unloadAllStyleSheets:(BOOL)refreshStyling {
-  func activeStylesheets(in scope: StyleSheetScope) -> [Any] {
-    return styleSheets.filter { styleSheet in
-      return styleSheet.active && scope.contains(styleSheet)
-    }
-  }
+//
+//  // MARK: - Properties
+//  // MARK: - Timer
+//  func enableAutoRefreshTimer() {
+//    if timer == nil && stylesheetAutoRefreshInterval > 0 {
+//      timer = Timer.scheduledTimer(timeInterval: stylesheetAutoRefreshInterval, target: self, selector: #selector(StyleSheetManager.autoRefreshTimerTick), userInfo: nil, repeats: true)
+//    }
+//  }
+//  func disableAutoRefreshTimer() {
+//    timer?.invalidate()
+//    timer = nil
+//  }
+//  @objc func autoRefreshTimerTick() {
+//    reloadRefreshableStyleSheets(false)
+//  }
+//  func doReload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
+//    styleSheet.refreshStylesheet(with: self, andCompletionHandler: {
+//      //        [self.styleSheets removeObject:styleSheet];
+//      //        [self.styleSheets addObject:styleSheet]; // Make stylesheet "last added/updated"
+//      self.stylingManager?.clearAllCachedStyles()
+//      NotificationCenter.default.post(name: Self.DidRefreshStyleSheetNotification, object: styleSheet)
+//    }, force: force)
+//  }
+//  //- (void) unloadStyleSheet:(StyleSheet*)styleSheet refreshStyling:(BOOL)refreshStyling {
+//  //- (void) unloadAllStyleSheets:(BOOL)refreshStyling {
+//  func activeStylesheets(in scope: StyleSheetScope) -> [Any] {
+//    return styleSheets.filter { styleSheet in
+//      return styleSheet.active && scope.contains(styleSheet)
+//    }
+//  }
   // MARK: - Variables
   // MARK: - Selector creation support
   // MARK: - Pseudo class customization support

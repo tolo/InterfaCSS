@@ -3,7 +3,7 @@
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
-//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import UIKit
@@ -126,7 +126,7 @@ public final class AbstractViewTreeParser: NSObject {
 
     var styleSheetContent: StyleSheetContent?
     if let styleNodeContent = styleNodeContent?.content, styleNodeContent.hasData() {
-      styleSheetContent = styler.styleSheetManager.parseStyleSheetData(styleNodeContent)
+      styleSheetContent = styler.styleSheetManager.parseStyleSheetContent(styleNodeContent)
     }
     let layout = AbstractLayout(rootNode: rootViewTreeNode, title: layoutTitle, layoutStyle: styleSheetContent, layoutAttributes: layoutAttributes)
 //    completion(layout, parseError)

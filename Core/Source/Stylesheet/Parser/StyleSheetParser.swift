@@ -15,22 +15,13 @@ private let S = StyleSheetParserSyntax.shared
 private let spaces = S.spacesIgnored
 
 
-public protocol StyleSheetPropertyParsingDelegate: AnyObject {
-  func setup(with styleSheetParser: StyleSheetParser)
-  func parsePropertyValue(_ propertyValue: String, of type: PropertyType) -> Any?
+extension StyleSheetParser {
+  func char(_ char: Character, skipSpaces: Bool = false) -> StringParsicle { return S.char(char, skipSpaces: skipSpaces) }
+  func charIgnore<Result>(_ char: Character, skipSpaces: Bool = false) -> Parsicle<Result> { return S.charIgnore(char, skipSpaces: skipSpaces) }
+  func string(_ string: String) -> StringParsicle { return S.string(string) }
 }
 
-
-protocol StyleSheetParserSupport {
-}
-
-extension StyleSheetParserSupport { // TODO: Remove?
-  func char(_ char: Character, skipSpaces: Bool = false) -> StringParsicle { return P.char(char, skipSpaces: skipSpaces) }
-  func charIgnore<Result>(_ char: Character, skipSpaces: Bool = false) -> Parsicle<Result> { return P.char(char, skipSpaces: skipSpaces).ignore() }
-  func string(_ string: String) -> StringParsicle { return P.string(string) }
-}
-
-public class StyleSheetParser: NSObject, StyleSheetParserSupport {
+public class StyleSheetParser: NSObject {
   
   var cssParser: Parsicle<[CSSContent]>!
   var variableParser: Parsicle<Void>!
@@ -38,10 +29,9 @@ public class StyleSheetParser: NSObject, StyleSheetParserSupport {
   var simpleSelectorChainComponent: Parsicle<SelectorChainComponent>!
   private var standalonePropertyPairParser: Parsicle<PropertyValue>!
   private var standalonePropertyPairsParser: Parsicle<[PropertyValue]>!
-  @objc weak var styleSheetManager: StyleSheetManager?
-  var propertyParser: StyleSheetPropertyParsingDelegate!
+  weak var styleSheetManager: StyleSheetManager!
   
-  required init(propertyParser: StyleSheetPropertyParsingDelegate? = nil) {
+  override init() {
     super.init()
     
     //* Ruleset parser setup *
@@ -177,10 +167,6 @@ public class StyleSheetParser: NSObject, StyleSheetParserSupport {
       return PropertyValue(propertyName: propertyComponents.propertyName, value: propertyComponents.value, rawParameters: propertyComponents.rawParameters)
     }
     standalonePropertyPairsParser = standalonePropertyPairParser.sepBy(P.charSpaced(";"))
-    
-    // Finally - create property parser, if needed
-    self.propertyParser = propertyParser ?? StyleSheetPropertyParser()
-    self.propertyParser.setup(with: self)
   }
   
   /**
@@ -221,9 +207,9 @@ public class StyleSheetParser: NSObject, StyleSheetParserSupport {
   /**
    * Parses a property value of the specified type from a string. Any variable references in `value` will be replaced with their corresponding values.
    */
-  public func parsePropertyValue(_ value: String, as type: PropertyType) -> Any? {
-    return propertyParser.parsePropertyValue(value, of: type)
-  }
+//  public func parsePropertyValue(_ value: String, as type: PropertyType) -> Any? {
+//    return propertyParser.parsePropertyValue(value, of: type)
+//  }
   
   public func parsePropertyNameValuePair(_ nameAndValue: String) -> PropertyValue? {
     let parseResult = standalonePropertyPairParser.parse(nameAndValue)
@@ -242,14 +228,15 @@ public class StyleSheetParser: NSObject, StyleSheetParserSupport {
     var parameters: [String]? = nil
     
     // Extract parameters
+    // TODO: Remove this?
     if let parametersRange = propertyNameString.range(of: "__") {
       let parameterString = propertyNameString[parametersRange.upperBound...]
       parameters = parameterString.components(separatedBy: "_")
       propertyNameString = String(propertyNameString[..<parametersRange.lowerBound])
     }
     
-    // Remove any dashes from string and convert to lowercase string, before attempting to find matching ISSPropertyDeclaration
-    propertyNameString = propertyNameString.trim().replacingOccurrences(of: "-", with: "").lowercased()
+    // Normalize property name - i.e. remove any dashes from string and convert to lowercase string
+    propertyNameString = Property.normalizeName(propertyNameString.trim())
     // Check for any key path in the property name
     var prefixKeyPath: String? = nil
     let dotRange = propertyNameString.rangeOf(".", options: .backwards)
@@ -400,112 +387,4 @@ public class StyleSheetParser: NSObject, StyleSheetParserSupport {
       print("No valid selector chains in declaration (count before validation: \(parsedSelectorChains.count) - properties: \(properties)") // TODO: ISSLogWarning?
     }
   }
-}
-
-
-private func createPseudoClass(_ parts: [Any], styleSheetManager: StyleSheetManager?) -> PseudoClass? {
-  let pseudoClassType = parts.first as? String ?? ""
-  let params = parts.last
-  return styleSheetManager?.pseudoClassFactory.createPseudoClass(ofType: pseudoClassType, parameters: params)
-  
-}
-
-private func createSelector(_ type: Any?, elementId: Any?, classNames: Any?, pseudoClasses: Any?, styleSheetManager: StyleSheetManager?) -> Selector? {
-  return styleSheetManager?.createSelector(withType: type as? String, elementId: elementId as? String,
-                                           styleClasses: classNames as? [String], pseudoClasses: pseudoClasses as? [PseudoClass])
-}
-
-/**
- * Internal placeholder class to reference a ruleset declaration that is to be extended.
- */
-class RulesetExtension {
-  var extendedSelectorChain: SelectorChain
-  init(_ extendedSelectorChain: SelectorChain) {
-    self.extendedSelectorChain = extendedSelectorChain
-  }
-}
-
-enum CSSContent {
-  case comment(String)
-  case variable
-  case ruleset(ParsedRuleset)
-  case unrecognizedContent(String)
-}
-
-typealias TransformedPropertyPair = (propertyName: String, prefixKeyPath: String?, value: PropertyValue.Value, rawParameters: [String]?)
-
-enum ParsedRulesetContent {
-  case comment(String)
-  case propertyDeclaration(PropertyValue)
-//  case prefixedProperty(TransformedPropertyPair)
-  case nestedRuleset(ParsedRuleset)
-  case extendedDeclaration(RulesetExtension)
-  case unsupportedNestedRuleset(String)
-  case unrecognizedContent(String)
-  
-  var property: PropertyValue? {
-    if case .propertyDeclaration(let p) = self {
-      return p
-    }
-    return nil
-  }
-}
-
-enum ParsedSelectorChain {
-  case selectorChain(chain: SelectorChain)
-  case badData(badData: String)
-  
-  var selectorChain: SelectorChain? {
-    switch self {
-      case .selectorChain(let chain): return chain
-      default: return nil
-    }
-  }
-}
-
-class ParsedRuleset: CustomStringConvertible { // TODO: Equatable?
-  let parsedChains: [ParsedSelectorChain]
-  var parsedProperties: [ParsedRulesetContent] = []
-  var nestedElementKeyPath: String?
-  
-  lazy var ruleset: Ruleset = {
-    let chains = parsedChains.compactMap{ $0.selectorChain }
-    let properties = parsedProperties.compactMap{ $0.property }
-    return Ruleset(selectorChains: chains, andProperties: properties)
-  }()
-  var chains: [SelectorChain] { return ruleset.selectorChains }
-  var properties: [PropertyValue] { return ruleset.properties }
-  
-  convenience init(withSelectorChains parsedChains: [ParsedSelectorChain]) {
-    self.init(withSelectorChains: parsedChains, nestedElementKeyPath: nil)
-  }
-  
-  init(withSelectorChains parsedChains: [ParsedSelectorChain], nestedElementKeyPath: String?) {
-    self.parsedChains = parsedChains
-    self.nestedElementKeyPath = nestedElementKeyPath
-  }
-  
-  var chainsDescription: String {
-    return ruleset.chainsDescription
-  }
-  
-  var propertiesDescription: String {
-    return ruleset.propertiesDescription
-  }
-  
-  var description: String {
-    return ruleset.description
-  }
-  
-  var firstSelector: Selector? {
-    return parsedChains.first?.selectorChain?.selectorComponents.first?.selector
-  }
-}
-
-
-/**
- * Internal parsing context object.
- */
-class StyleSheetParsingContext: NSObject {
-  var variables: [String : String] = [:]
 }

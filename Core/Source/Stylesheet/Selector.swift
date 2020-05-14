@@ -3,7 +3,7 @@
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
-//  License: MIT (http://www.github.com/tolo/InterfaCSS/LICENSE)
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import Foundation
@@ -129,7 +129,7 @@ public enum Selector: Hashable, CustomStringConvertible, CustomDebugStringConver
         
     // TODO: This assumes ISSRuntimeIntrospectionUtils.validKeyPath executes fast - may need to optimize that method...
     //return RuntimeIntrospectionUtils.validKeyPath(forCaseInsensitivePath: nestedElementKeyPath, in: type(of: ownerUIElement)) != nil
-    return context.styler.propertyManager.doesPropertyExist(nestedElementKeyPath, in: ownerUIElement)
+    return PropertyManager.doesPropertyExist(nestedElementKeyPath, in: ownerUIElement)
   }
   
   public var isNestedElementSelector: Bool {

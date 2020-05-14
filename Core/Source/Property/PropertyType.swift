@@ -1,41 +1,50 @@
 //
 //  PropertyType.swift
-//  InterfaCSS-Core
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias on 2019-02-12.
-//  Copyright © 2019 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import Foundation
 
-// TODO: Only define some property types here?
-// TODO: Compound property support
-public struct PropertyType : Hashable, Equatable, RawRepresentable {
-  public typealias RawValue = String
-  public let rawValue: String
+public struct PropertyType : Hashable {
+  public let type: String
+  public let parser: PropertyTypeValueParser
   
-  public init(_ rawValue: RawValue) {
-    self.rawValue = rawValue
+  public init(_ type: String, parser: PropertyTypeValueParser) {
+    self.type = type
+    self.parser = parser
   }
   
-  public init?(rawValue: RawValue) {
-    self.rawValue = rawValue
+  public static func == (lhs: PropertyType, rhs: PropertyType) -> Bool {
+    return lhs.type == rhs.type
   }
   
-  static let string = PropertyType("String")
-  static let bool = PropertyType("Bool")
-  static let number = PropertyType("Number")
-  static let relativeNumber = PropertyType("RelativeNumber")
-  static let color = PropertyType("Color")
-  static let cgColor = PropertyType("CGColor")
-  static let image = PropertyType("Image")
-  static let transform = PropertyType("Transform") // TODO: Transform 3d?
-  static let enumType = PropertyType("EnumType")
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(type)
+  }
+  
+  static let string = PropertyType("String", parser: StringPropertyParser())
+  static let bool = PropertyType("Bool", parser: BoolPropertyParser())
+  static let number = PropertyType("Number", parser: NumberPropertyParser())
+  static let relativeNumber = PropertyType("RelativeNumber", parser: RelativeNumberPropertyParser())
+  static let color = PropertyType("Color", parser: UIColorPropertyParser())
+  static let cgColor = PropertyType("CGColor", parser: CGColorPropertyParser())
+  static let image = PropertyType("Image", parser: ImagePropertyParser())
+  static let transform = PropertyType("Transform", parser: TransformPropertyParser())
+  // TODO: Transform 3d?
+  static let offset = PropertyType("Offset", parser: UIOffsetPropertyParser())
+  static let rect = PropertyType("Rect", parser: CGRectPropertyParser())
+  static let size = PropertyType("Size", parser: CGSizePropertyParser())
+  static let point = PropertyType("Point", parser: CGPointPropertyParser())
+  static let edgeInsets = PropertyType("EdgeInsets", parser: UIEdgeInsetsPropertyParser())
+  static let font = PropertyType("Font", parser: UIFontPropertyParser())
+  static let textAttributes = PropertyType("TextAttributes", parser: StringPropertyParser()) // TODO
+  static let enumType = PropertyType("EnumType", parser: EnumPropertyParser())
+  static let unknown = PropertyType("Unknown", parser: StringPropertyParser())
 }
 
-struct ComplexProperty {
-  
-  let properties: [Property]
-  
-  
+public protocol PropertyTypeValueParser {
+   func parse(propertyValue: PropertyValue) -> Any?
 }
