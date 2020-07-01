@@ -48,12 +48,14 @@ final class VariableRepository {
       if varBeginLocation != NSNotFound {
         location = varBeginLocation + varPrefixLength
         
-        let variableNameRangeEnd = propertyValue.index(ofCharInSet: Self.notValidIdentifierCharsSet, from: location)
+        var variableNameRangeEnd = propertyValue.index(ofCharInSet: Self.notValidIdentifierCharsSet, from: location)
+        if (variableNameRangeEnd == NSNotFound) { variableNameRangeEnd = inPropertyValue.count }
         let variableNameRange = propertyValue.range(from: location, to: variableNameRangeEnd)
         
         var variableValue: String? = nil
+        var variableName = "n/a"
         if !variableNameRange.isEmpty {
-          let variableName = propertyValue[variableNameRange]
+          variableName = String(propertyValue[variableNameRange])
           variableValue = valueOfStyleSheetVariable(withName: String(variableName), scope: scope)
         }
         if let variableValue = variableValue {
@@ -64,7 +66,7 @@ final class VariableRepository {
           location += variableValue.count
           didReplace = true
         } else  {
-          // ISSLogWarning("Unrecognized property variable: %@ (property value: %@)", variableName, propertyValue)
+          Logger.stylesheets.error("Unrecognized property variable: \(variableName) (property value: \(propertyValue)")
           location = variableNameRangeEnd
         }
       } else {
@@ -78,8 +80,7 @@ final class VariableRepository {
     if let rawValue = valueOfStyleSheetVariable(withName: variableName, scope: scope) {
       var didReplace = false
       let value = replaceVariableReferences(rawValue, scope: scope, didReplace: &didReplace)
-      return propertyType.parser.parse(propertyValue: PropertyValue(propertyName: variableName, value: value))
-      //      return styleSheetParser.parsePropertyValue(modValue, as: propertyType)
+      return propertyType.parseAny(propertyValue: PropertyValue(propertyName: variableName, value: value))
     }
     return nil
   }

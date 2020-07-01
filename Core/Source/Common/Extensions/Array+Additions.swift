@@ -8,8 +8,8 @@
 
 import Foundation
 
-extension Array where Element == String {
-  public func trimStringElements() -> [String] {
+internal extension Array where Element == String {
+  func trimStringElements() -> [String] {
     var trimmed: [String] = []
     for e in self {
       trimmed.append(e.trim())
@@ -18,26 +18,26 @@ extension Array where Element == String {
   }
 }
 
-extension Array where Element: Hashable {
-  public func toSet() -> Set<Element> {
+internal extension Array where Element: Hashable {
+  func toSet() -> Set<Element> {
     return Set(self)
   }
 }
 
-extension Array {
-  public func compactFlattened<Result>() -> [Result] {
+internal extension Array {
+  func compactFlattened<Result>() -> [Result] {
     return compactAndFlattenArray(self)
   }
 }
 
-extension Array where Element: Equatable {
-  public mutating func addAndReplaceUniqueObjects(inArray array: [Element]) {
+internal extension Array where Element: Equatable {
+  mutating func addAndReplaceUniqueObjects(inArray array: [Element]) {
     removeAll { array.contains($0) }
     append(contentsOf: array)
   }
 }
 
-public func compactAndFlattenArray<Result>(_ array: [Any]) -> [Result] {
+internal func compactAndFlattenArray<Result>(_ array: [Any]) -> [Result] {
   var flattened: [Result] = []
   for e in array.compactMap({ $0 }) {
     if let e = e as? [Any] {

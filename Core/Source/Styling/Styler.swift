@@ -9,7 +9,9 @@
 import Foundation
 
 /**
+ * A styler is responsible for applying style to UI elements, possibly in a particular scope.
  *
+ * @see StylingManager
  */
 public protocol Styler {
   
@@ -22,7 +24,8 @@ public protocol Styler {
   
   func stylingProxy(for uiElement: Stylable) -> ElementStyle
   
-  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope)
+  //func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope)
+  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope?)
   
   func clearCachedStylingInformation(for uiElement: Stylable, includeSubViews: Bool)
 }
@@ -37,8 +40,9 @@ public extension Styler {
     return styler(with: styleSheetScope, includeCurrent: includeCurrent)
   }
   
-  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope = .defaultGroupScope) {
-    applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
+  //func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope = .defaultGroupScope) {
+  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope? = nil) {
+    applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope ?? self.styleSheetScope)
   }
   
   // MARK: - StyleSheetManager convenience methods

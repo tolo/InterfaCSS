@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout useSafeAreaInsets="false" useDefaultMargins="true">
+  
+  <view id="rootView" style="flex-direction: column">
+    
+    <label id="label1" style="margin-top: 42">Hello</label>
+    <button id="button1" style="padding-vertical: 10" type="system">World</button>
+    <image id="image1" src="image.png"/>
+    
+  </view>
+  
+  <style>
+    #label1 {
+      background-color: red;
+    }
+  </style>
+  
+</layout>

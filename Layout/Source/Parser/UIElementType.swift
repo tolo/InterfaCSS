@@ -8,7 +8,11 @@
 
 import UIKit
 
-public enum UIElementType {
+public enum UIElementType: String, StringParsableEnum {
+  
+  public static var defaultEnumValue: UIElementType {
+    return .view
+  }
   
   public enum ButtonType: String, StringParsableEnum {
     case custom
@@ -22,20 +26,35 @@ public enum UIElementType {
     }
   }
   
-  case button(type: ButtonType, title: String?)
-  case imageView(image: UIImage?)
-  case label(text: String?)
-  case textField(text: String?)
-  case textView(text: String?)
-  case collectionView(layoutClass: UICollectionViewLayout.Type)
-  case collectionViewCell(cellLayoutFile: String?, elementClass: LayoutCollectionViewCell.Type?)
-  case tableView
-  case tableViewCell(cellLayoutFile: String?, elementClass: LayoutTableViewCell.Type?)
-  case viewController(layoutFile: String?, elementClass: UIViewController.Type)
-  case other(elementClass: UIResponder.Type)
+  case view
+  case button
+  case imageView
+  case label
+  case textField
+  case textView
+  case collectionView
+  case collectionViewCell // TODO: Remove?
+  case tableView // TODO: Remove?
+  case tableViewCell // TODO: Remove?
+  case viewController // TODO: Rename? "Widget" instead?
+  
+  // TODO: ActivityIndicator
+  // TODO: Picker
+  // TODO: Switch
+  // TODO: ScrollView
+  // TODO: "Slot"?
+  
+  static func typeFrom(elementName _elementName: String) -> UIElementType {
+    var elementName = _elementName.lowercased()
+    elementName = elementName.hasPrefix("ui") ? String(elementName.substring(from: 2)) : elementName
+    return enumValueWithDefault(from: elementName)
+  }
   
   public func createElement(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, fileOwner: AnyObject?) -> UIResponder? {
-    guard let element = elementTypeToElement(forNode: node, parentView: parentView, viewBuilder: viewBuilder, fileOwner: fileOwner) else { return nil }
+    let bodyContent = (node.stringContent?.hasData() ?? false) ? node.stringContent : nil
+    
+    guard let element = elementTypeToElement(forNode: node, bodyContent: bodyContent, parentView: parentView,
+                                             viewBuilder: viewBuilder, fileOwner: fileOwner) else { return nil }
     let stylingProxy = viewBuilder.styler.stylingProxy(for: element)
     
     if let elementId = node.elementId {
@@ -59,19 +78,7 @@ public enum UIElementType {
     if let element = element as? UIView, let accessibilityIdentifier = node.accessibilityIdentifier {
       element.accessibilityIdentifier = accessibilityIdentifier
     }
-    if let stringContent = node.stringContent, stringContent.hasData() {
-      if let label = element as? UILabel {
-        label.text = stringContent
-      } else if let button = element as? UIButton {
-        button.setTitle(stringContent, for: .normal)
-      } else if let textInput = element as? UITextField {
-        textInput.text = stringContent
-      } else if let textInput = element as? UITextView {
-        textInput.text = stringContent
-      } else if let imageView = element as? UIImageView {
-        imageView.image = UIImage(named: stringContent)
-      }
-    }
+
     return element
   }
 }
@@ -80,43 +87,57 @@ public enum UIElementType {
 // MARK: - Private methods - element creation
 private extension UIElementType {
   
-  private func elementTypeToElement(forNode node: AbstractViewTreeNode, parentView: AnyObject?, viewBuilder: ViewBuilder, fileOwner: AnyObject?) -> UIResponder? {
+  private func elementTypeToElement(forNode node: AbstractViewTreeNode, bodyContent: String?, parentView: AnyObject?, viewBuilder: ViewBuilder, fileOwner: AnyObject?) -> UIResponder? {
+    let attributes = node.attributes
+    
     switch self {
-    case .button(let type, let title):
-      let button = UIButton(type: type.uiButtonType)
-      button.setTitle(title, for: .normal)
+    case .button:
+      let button = UIButton(type: attributes.buttonType.uiButtonType)
+      button.setTitle(bodyContent ?? attributes.text, for: .normal)
       return button
-    case .label(let text):
+    case .label:
       let label = UILabel(frame: .zero)
-      label.text = text
+      label.text = bodyContent ?? attributes.text
       return label
-    case .textField(let text):
+    case .textField:
       let textfield = UITextField(frame: .zero)
-      textfield.text = text
+      textfield.text = bodyContent ?? attributes.text
       return textfield
-    case .textView(let text):
+    case .textView:
       let textview = UITextView(frame: .zero)
-      textview.text = text
+      textview.text = bodyContent ?? attributes.text
       return textview
-    case .imageView(let image):
+    case .imageView:
+      var image: UIImage?
+      if let name = bodyContent ?? attributes.src { image = UIImage(named: name) }
       return UIImageView(image: image)
       
-    case .collectionView(let layoutClass):
-      return createCollectionView(layoutClass: layoutClass, fileOwner: fileOwner)
-    case .collectionViewCell(let cellLayoutFile, let elementClass):
-      registerCollectionViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
+    case .collectionView:
+      return createCollectionView(layoutClass: attributes.collectionViewLayoutClass, fileOwner: fileOwner)
+    case .collectionViewCell:
+      if let elementClass = node.nodeViewClass(withStyler: viewBuilder.styler) as? LayoutCollectionViewCell.Type {
+        registerCollectionViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile:attributes.layoutFile, elementClass: elementClass)
+      } else {
+        error(.layout, "Unable to register invalid UICollectionView cell class: \(attributes)")
+      }
       return nil
+      
     case .tableView:
       return createTableView(fileOwner: fileOwner)
-    case .tableViewCell(let cellLayoutFile, let elementClass):
-      registerTableViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: cellLayoutFile, elementClass: elementClass)
+    case .tableViewCell:
+      if let elementClass = node.nodeViewClass(withStyler: viewBuilder.styler) as? LayoutTableViewCell.Type {
+        registerTableViewCellClass(forNode: node, parentView: parentView, viewBuilder: viewBuilder, cellLayoutFile: attributes.layoutFile, elementClass: elementClass)
+      } else {
+        error(.layout, "Unable to register invalid UITableView cell class: \(attributes)")
+      }
       return nil
       
-    case .viewController(let layoutFile, let elementClass):
-      return createViewController(viewBuilder: viewBuilder, fileOwner: fileOwner, layoutFile: layoutFile, elementClass: elementClass)
+    case .viewController:
+      let elementClass = node.nodeViewClass(withStyler: viewBuilder.styler) as? UIViewController.Type
+      return createViewController(viewBuilder: viewBuilder, fileOwner: fileOwner, layoutFile: attributes.layoutFile, elementClass: elementClass ?? UIViewController.self)
       
-    case .other(let elementClass):
-      return elementClass.init()
+    case .view:
+      return node.nodeViewClass(withStyler: viewBuilder.styler).init()
     }
   }
   

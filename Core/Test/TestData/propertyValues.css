@@ -89,7 +89,7 @@
 
 @font1: HelveticaNeue-Medium 15;
 .fonts {
-  font1: HelveticaNeue-Medium 14;
+  font1: @font1;
   font2: bigger(@font1, 1);
   font3: smaller(@font1, 1);
   font4: fontWithSize(@font1, 10);

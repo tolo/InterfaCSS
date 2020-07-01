@@ -10,12 +10,6 @@ import Foundation
 
 public typealias StyleSheetMatcher = (StyleSheet) -> Bool
 
-// TODO: Move into StyleSheet?
-public extension Notification.Name {
-  static let StyleSheetRefreshedNotification = Notification.Name("InterfaCSS.StyleSheetRefreshedNotification")
-  static let StyleSheetRefreshFailedNotification = NSNotification.Name("InterfaCSS.StyleSheetRefreshFailedNotification")
-}
-
 
 public typealias RefreshableStyleSheetObserverBlock = (RefreshableStyleSheet) -> Void
 
@@ -132,17 +126,17 @@ public class StyleSheet: Hashable, CustomStringConvertible, CustomDebugStringCon
   
   public final func rulesets(matching element: ElementStyle, context: StylingContext) -> [Ruleset] {
     if !context.styleSheetScope.contains(self) {
-      logError(.stylesheets, "Stylesheet not in scope - skipping for '\(element)'")
+      error(.stylesheets, "Stylesheet not in scope - skipping for '\(element)'")
       return []
     }
     
-    logDebug(.stylesheets, "Getting matching rulesets for '\(element)'")
+    debug(.stylesheets, "Getting matching rulesets for '\(element)'")
     
     var matchingRulesets: [Ruleset] = []
     
     for ruleset in content.rulesets {
       if let matchingRuleset = ruleset.ruleset(matching: element, context: context) {
-        logDebug(.stylesheets, "Matching rulesets: \(matchingRuleset)")
+        debug(.stylesheets, "Matching rulesets: \(matchingRuleset)")
         matchingRulesets.append(matchingRuleset)
       }
     }
@@ -215,19 +209,19 @@ public class RefreshableStyleSheet: StyleSheet {
           
           let parseTime = (Date.timeIntervalSinceReferenceDate - t)
           if hasRulesets {
-            logDebug(.stylesheets, "Reloaded stylesheet '\(self.styleSheetURL.lastPathComponent)' in \(parseTime) seconds")
+            debug(.stylesheets, "Reloaded stylesheet '\(self.styleSheetURL.lastPathComponent)' in \(parseTime) seconds")
           } else {
-            logDebug(.stylesheets, "Loaded stylesheet '\(self.styleSheetURL.lastPathComponent)' in \(parseTime) seconds")
+            debug(.stylesheets, "Loaded stylesheet '\(self.styleSheetURL.lastPathComponent)' in \(parseTime) seconds")
           }
           
           completionHandler()
         } else {
-          logDebug(.stylesheets, "Remote stylesheet didn't contain any rulesets!")
+          debug(.stylesheets, "Remote stylesheet didn't contain any rulesets!")
         }
         
-        NotificationCenter.default.post(name: .StyleSheetRefreshedNotification, object: self)
+        InterfaCSS.StyleSheetRefreshedNotification.post(object: self)
       } else {
-        NotificationCenter.default.post(name: .StyleSheetRefreshFailedNotification, object: self)
+        InterfaCSS.StyleSheetRefreshFailedNotification.post(object: self)
       }
     }
   }

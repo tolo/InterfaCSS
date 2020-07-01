@@ -11,7 +11,7 @@ import Foundation
   
 public typealias PropertySetterBlock = (_ property: Property, _ target: AnyObject, _ value: Any?, _ parameters: [Any]) -> Bool
 public typealias TypedNeverFailingPropertySetterBlock<TargetType, ValueType> = (_ property: Property, _ target: TargetType, _ value: ValueType, _ parameters: [Any]) -> Void
-public typealias PropertyParameterTransformer = (_ property: Property, _ rawValue: String) -> Any
+public typealias PropertyParameterTransformer = (_ rawValue: String) -> Any
 
 
 /**
@@ -42,6 +42,8 @@ public class Property: CustomStringConvertible, CustomDebugStringConvertible, Ha
     return "Property[\(description)]"
   }
   
+  
+  // MARK: - Initialization
   
   convenience init() {
     fatalError("Hold on there professor, init not allowed!")
@@ -85,36 +87,33 @@ public class Property: CustomStringConvertible, CustomDebugStringConvertible, Ha
     })
   }
   
-//  public convenience init(withCompoundName compoundName: String, type: PropertyType) {
-//    let setter: PropertySetterBlock = { (_, _ : AnyObject, _ : Any? , _) -> Bool in return true }
-//    self.init(withName: compoundName, in: AnyObject.self, type: type, setterBlock: setter)
-//  }
   
+  // MARK: - Value and parameter transformations
   
   public func transform(parameters rawParams: [String]) -> [Any] {
     guard let parameterTransformers = self.parameterTransformers else { return Array.init(repeating: NSNull(), count: rawParams.count) }
     var transformedParameters: [Any] = []
     for i in 0..<parameterTransformers.count {
       let transformer = parameterTransformers[i]
-      transformedParameters.append(transformer(self, i < rawParams.count ? rawParams[i] : ""))
+      transformedParameters.append(transformer(i < rawParams.count ? rawParams[i] : ""))
     }
     return transformedParameters
   }
   
   public func transform(value: PropertyValue) -> Any? {
-    return type.parser.parse(propertyValue: value)
+    return type.parseAny(propertyValue: value)
   }
   
-//  public func setValue(_ value: PropertyValue, onTarget target: AnyObject) -> Bool {
-//    let value = type.parser.parse(propertyValue: value)
-//    return setValue(value, onTarget: target, withParameters: )
+//  public func transform<T>(value: PropertyValue) -> T? {
+//    return type.parse(propertyValue: value)
 //  }
   
   public func setValue(_ value: Any?, onTarget target: AnyObject, withParameters params: [Any]? = nil) -> Bool {
     return setterBlock(self, target, value, params ?? [])
   }
   
-  /// Hashable and Equatable
+  
+  // MARK: - Hashable and Equatable
   
   public static func == (lhs: Property, rhs: Property) -> Bool {
     return lhs.fqn == rhs.fqn

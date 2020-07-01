@@ -10,8 +10,6 @@ import ObjectiveC
 import UIKit
 
 
-// TODO: Define notification names elsewhere?
-let MarkCachedStylingInformationAsDirtyNotification = NSNotification.Name("InterfaCSS.MarkCachedStylingInformationAsDirtyNotification")
 
 /**
  *
@@ -19,6 +17,7 @@ let MarkCachedStylingInformationAsDirtyNotification = NSNotification.Name("Inter
 public protocol Stylable: AnyObject {
   var interfaCSS: ElementStyle { get set }
 }
+
 
 private var interfaCSSStoredPropertyKey: UInt8 = 0
 
@@ -77,7 +76,7 @@ public class ElementStyle: NSObject {
   }
   
   private weak var _ownerElement: AnyObject?
-  public weak var ownerElement: AnyObject? { // Element holding a property reference (which is defined validNestedElements) to this element, otherwise parentElement
+  public weak var ownerElement: AnyObject? { // Element which is the logical owner of this element - this could either be the parent view (superview) or another element which controls the lifecycle of this element
     get {
       return _ownerElement ?? parentElement
     }
@@ -101,9 +100,7 @@ public class ElementStyle: NSObject {
     }
     return _closestViewController
   }
-  
-//  private(set) var validNestedElements: [String : String]?
-  
+    
   public var elementId: String? {
     didSet {
       isDirty = true
@@ -175,6 +172,7 @@ public class ElementStyle: NSObject {
     return elementStyleIdentity
   }
   
+  private var markDirtyNotificationToken: NotificationObserverToken!
   
   // MARK: - Lifecycle
   
@@ -188,18 +186,19 @@ public class ElementStyle: NSObject {
     isDirty = true // Make as dirty to start with to make sure object is properly configured later (resetWith:)
     _ = parentElement // Make sure weak reference to super view is set directly
     
-    NotificationCenter.default.addObserver(self, selector: #selector(ElementStyle.markCachedStylingInformationAsDirty), name: MarkCachedStylingInformationAsDirtyNotification, object: nil)
+    markDirtyNotificationToken = InterfaCSS.MarkCachedStylingInformationAsDirtyNotification.observe { [weak self] in
+      self?.markCachedStylingInformationAsDirty()
+    }
   }
   
   deinit {
-    NotificationCenter.default.removeObserver(self, name: MarkCachedStylingInformationAsDirtyNotification, object: nil)
+    markDirtyNotificationToken.removeObserver()
   }
   
   public func reset(with styler: Styler) {
     guard let element = uiElement else { return }
     let elementClass: AnyClass = type(of: element)
     canonicalType = styler.propertyManager.canonicalTypeClass(for: elementClass) ?? elementClass
-//    validNestedElements = nil
     // Identity and structure:
     elementStyleIdentity = createElementStyleIdentity()
     updateElementStyleIdentityPathIfNeeded(forceRevalidate: true) // Will result in re-evaluation of elementStyleIdentityPath, ancestorHasElementId and ancestorUsesCustomElementStyleIdentity in method below:
@@ -229,7 +228,7 @@ public class ElementStyle: NSObject {
   }
   
   public class func markAllCachedStylingInformationAsDirty() {
-    NotificationCenter.default.post(name: MarkCachedStylingInformationAsDirtyNotification, object: nil)
+    InterfaCSS.MarkCachedStylingInformationAsDirtyNotification.post()
   }
   
   @objc func markCachedStylingInformationAsDirty() {
@@ -262,26 +261,6 @@ public class ElementStyle: NSObject {
   public func style() {
     style(with: StylingManager.shared)
   }
-  
-  
-//  // MARK: - Nested elements
-//
-//  func childElement(forKeyPath keyPath: String) -> Any? {
-//    guard let element = uiElement as? NSObject, let validKeyPath = validNestedElements?[keyPath.lowercased()] else { return nil }
-//    return element.value(forKeyPath: validKeyPath)
-//  }
-//
-//  @discardableResult
-//  func addValidNestedElementKeyPath(_ keyPath: String) -> Bool {
-//    guard let element = uiElement else { return false }
-//    let lcPath = keyPath.lowercased()
-//    if let _ = validNestedElements?[lcPath] { return true }
-//
-//    guard let validKeyPathForClass = RuntimeIntrospectionUtils.validKeyPath(forCaseInsensitivePath: keyPath, in: type(of: element)) else { return false }
-//    validNestedElements = validNestedElements ?? [:]
-//    validNestedElements?[lcPath] = validKeyPathForClass
-//    return true
-//  }
 }
 
 
@@ -349,21 +328,3 @@ public extension UIView {
     return nil
   }
 }
-
-// TOOD: Remove (experiment)
-//protocol ChildElementHost {
-//  func childElements() -> [UIView]
-//}
-//
-//extension UIView: ChildElementHost {
-//  @objc func childElements() -> [UIView] {
-//    return subviews
-//  }
-//}
-//
-//extension UIButton {
-//  override func childElements() -> [UIView] {
-//    guard let titleLabel = titleLabel else { return super.childElements() }
-//    return subviews + [titleLabel]
-//  }
-//}

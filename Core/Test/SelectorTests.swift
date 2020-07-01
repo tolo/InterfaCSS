@@ -13,17 +13,12 @@ class SelectorTests: XCTestCase {
   
   var styler: StylingManager!
   var styleSheetManager: StyleSheetManager!
-  var parser: StyleSheetParser!
-  var propertyParser: TestStyleSheetPropertyParser!
   var window: UIWindow!
   var rootView: UIView!
   
   override func setUp() {
-    propertyParser = TestStyleSheetPropertyParser()
-    parser = StyleSheetParser(propertyParser: propertyParser)
-    styleSheetManager = StyleSheetManager(styleSheetParser: parser)
-    parser.styleSheetManager = styleSheetManager
-    styler = StylingManager(propertyRegistry: nil, styleSheetManager: styleSheetManager)
+    styler = StylingManager()
+    styleSheetManager = styler.styleSheetManager
     
     window = UIWindow()
     window.makeKeyAndVisible()
@@ -163,12 +158,12 @@ class SelectorTests: XCTestCase {
                                            .combinator(.child),
                                            .selector(createSelector(withType: "UIButton")),
                                            .combinator(.descendant),
-                                           .selector(.nestedElement(nestedElementKeyPath: "titleLabel"))
-                                           ])
+                                           .selector(.nestedElement(nestedElementKeyPath: "titleLabel")),
+                                          ])
     
-    let labelStyle = button.titleLabel!.interfaCSS
+    let elementStyle = button.titleLabel!.interfaCSS
     
-    XCTAssertTrue(chain!.matches(labelStyle, context: createStylingContext()), "Deep descendant/child selector chain must match!")
+    XCTAssertTrue(chain!.matches(elementStyle, context: createStylingContext()), "Deep descendant/child selector chain must match!")
   }
   
   private func doTestSibling(adjacent: Bool) {

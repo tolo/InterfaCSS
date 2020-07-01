@@ -8,7 +8,7 @@
 
 import UIKit
 
-extension Double {
+internal extension Double {
   func isEqualToWithScreenPrecision(_ other: Double) -> Bool {
     return self.isEqualTo(other, upToNumberOfFractionalDigits: 3)
   }
@@ -19,7 +19,7 @@ extension Double {
   
 }
 
-extension CGFloat {
+internal extension CGFloat {
   func isEqualToWithScreenPrecision(_ other: CGFloat) -> Bool {
     return Double(self).isEqualToWithScreenPrecision(Double(other))
   }

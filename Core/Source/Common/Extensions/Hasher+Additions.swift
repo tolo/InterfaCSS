@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension Hasher {
+internal extension Hasher {
   mutating func combine<H1: Hashable, H2: Hashable>(_ h1: H1, _ h2: H2) {
     combineAll(AnyHashable(h1), AnyHashable(h2))
   }

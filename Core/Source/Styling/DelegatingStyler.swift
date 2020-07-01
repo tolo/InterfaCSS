@@ -30,7 +30,7 @@ public class DelegatingStyler: Styler {
     return styler.stylingProxy(for: uiElement)
   }
   
-  public func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope) {
+  public func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope?) {
     styler.applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
   }
   

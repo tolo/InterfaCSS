@@ -155,9 +155,12 @@ public class StyleSheetParserSyntax {
     let invertedCharacterSet: CharacterSet = mathExpressionCharsSet.inverted
     return AnyParsicle.take(untilIn: invertedCharacterSet, minCount: 1).map { value, context in
       guard !context.matchOnly else { return true }
-      let expr = NSPredicate(format: value)
-      return expr.evaluate(with: nil)
-      // TODO: Catch and handle error
+      if let value = NSPredicate.evaluatePredicateAndCatchError(value) {
+        return value.boolValue
+      } else {
+        error(.stylesheets, "Error evaluating logical expression '\(value)'")
+        return false
+      }
     }
   }
   
@@ -170,9 +173,12 @@ public class StyleSheetParserSyntax {
   }
   
   func parseMathExpression(_ value: String) -> NSNumber? {
-    let expr = NSExpression(format: value)
-    return expr.expressionValue(with: nil, context: nil) as? NSNumber
-    // TODO: Catch and handle error
+    if let value = NSPredicate.evaluateExpressionAndCatchError(value) {
+      return value as? NSNumber
+    } else {
+      error(.stylesheets, "Error evaluating math expression '\(value)'")
+      return false
+    }
   }
   
   
@@ -251,7 +257,7 @@ public class StyleSheetParserSyntax {
   
   func charIgnore<Result>(_ char: Character, skipSpaces: Bool = false) -> Parsicle<Result> { return P.char(char, skipSpaces: skipSpaces).ignore() }
   
-  func string(_ string: String) -> StringParsicle { return P.string(string) }
+  func string(_ string: String, skipSpaces: Bool = false) -> StringParsicle { return P.string(string, skipSpaces: skipSpaces) }
   
   func cleanedStringValue(_ string: String) -> String {
     return string.trimQuotes().stringByReplacingUnicodeSequences()

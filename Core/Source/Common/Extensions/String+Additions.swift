@@ -11,8 +11,8 @@ import Foundation
 fileprivate let splitOnSpaceOrCommaCharacterSet: CharacterSet = CharacterSet(charactersIn: " ,")
 
 
-extension String.StringInterpolation {
-  public mutating func appendInterpolation<T>(describing value: T?) {
+internal extension String.StringInterpolation {
+  mutating func appendInterpolation<T>(describing value: T?) {
     if let value = value {
       appendInterpolation(value)
     } else {
@@ -22,14 +22,14 @@ extension String.StringInterpolation {
 }
 
 
-infix operator ==⇧ : ComparisonPrecedence
+infix operator ~= : ComparisonPrecedence
 
-func ==⇧(lhs: String, rhs: String) -> Bool {
+internal func ~=(lhs: String, rhs: String) -> Bool {
   return lhs.caseInsensitiveCompare(rhs) == .orderedSame
 }
 
 
-public extension StringProtocol where Self.Index == String.Index {
+internal extension StringProtocol where Self.Index == String.Index {
   
   var str: String {
     if let s = self as? String { return s }
@@ -130,13 +130,13 @@ public extension StringProtocol where Self.Index == String.Index {
     return replacingCharacters(in: range, with: string)
   }
   
-  internal subscript(index: Int) -> Character {
+  subscript(index: Int) -> Character {
     return charAt(index: index)
   }
 }
 
 
-public extension Optional where Wrapped == String {
+internal extension Optional where Wrapped == String {
   func asSet() -> Set<String>? {
     if let self = self {
       return Set([self])
@@ -153,15 +153,15 @@ public extension Optional where Wrapped == String {
 }
 
 
-public extension String {
+internal extension String {
   
   func isCaseInsensitiveEqual(_ otherString: String) -> Bool {
-    return self ==⇧ otherString
+    return self ~= otherString
   }
   
   func isCaseInsensitiveEqual(_ otherString: String, withOptionalPrefix prefix: String) -> Bool {
     if isCaseInsensitiveEqual(otherString) { return true }
-    return (prefix + self).isCaseInsensitiveEqual(prefix + otherString)
+    return (prefix + self).isCaseInsensitiveEqual(otherString)
   }
   
   func stringByReplacingUnicodeSequences() -> String {
@@ -239,13 +239,13 @@ public extension String {
 }
 
 
-extension Character {
+internal extension Character {
   var toInt: UInt32 {
     return unicodeScalars.first?.value ?? 0
   }
 }
 
-extension CharacterSet {
+internal extension CharacterSet {
   func containsUnicodeScalars(of member: Character) -> Bool {
     return member.unicodeScalars.allSatisfy(contains(_:))
   }

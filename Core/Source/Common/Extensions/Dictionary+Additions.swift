@@ -8,9 +8,9 @@
 
 import Foundation
 
-extension Dictionary where Key == String, Value: Any {
+internal extension Dictionary where Key == String, Value: Any {
   
-  public func dictionaryWithLowerCaseKeys() -> [String: Value] {
+  func dictionaryWithLowerCaseKeys() -> [String: Value] {
     return Dictionary(uniqueKeysWithValues: self.map({ (key, value) in
       (key.lowercased(), value)
     }))

@@ -110,7 +110,7 @@ class InterfaCSSTests: XCTestCase {
     let styler = initializeWithStyleSheet("stylingTest-properties")
     
     let rootView = UIView()
-    rootView.interfaCSS.addStyleClass("nextedProperties")
+    rootView.interfaCSS.addStyleClass("nestedProperties")
     styler.applyStyling(rootView)
     
     XCTAssertEqual(rootView.layer.cornerRadius, 5)

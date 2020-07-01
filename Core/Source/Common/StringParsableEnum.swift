@@ -37,3 +37,7 @@ public extension StringParsableEnum where RawValue: ExpressibleByStringLiteral {
     return String(describing: rawValue)
   }
 }
+
+public extension StringParsableEnum where RawValue == String {
+  var description: String { rawValue }
+}

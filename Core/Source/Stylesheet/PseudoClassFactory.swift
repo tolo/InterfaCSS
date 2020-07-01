@@ -100,12 +100,12 @@ open class PseudoClassFactory: PseudoClassFactoryType {
   open func createPseudoClass(ofType type: String, parameters: Any?) -> PseudoClass? {
     let typeCleaned = type.lowercased().replacingOccurrences(of: "-", with: "")
     guard let matcherBuilder = pseudoMatchers[typeCleaned] else {
-      logError(.stylesheets, "Invalid pseudo class: '\(type)'")
+      error(.stylesheets, "Invalid pseudo class: '\(type)'")
       return nil
     }
     
     guard let matcher = matcherBuilder.matcher(withParameters: parameters) else {
-      logError(.stylesheets, "Invalid pseudo class: '\(type)'")
+      error(.stylesheets, "Invalid pseudo class: '\(type)'")
       return nil
     }
     

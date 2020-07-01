@@ -6,6 +6,7 @@
 //  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
+
 /**
  * Represents the declaration of a property name/value pair in a stylesheet.
  */
@@ -18,9 +19,8 @@ public struct PropertyValue: Hashable, CustomStringConvertible, CustomDebugStrin
   }
   
   public let propertyName: String /// Normalized property name
-//  public let prefixKeyPath: String?
   public let value: Value
-  public let rawParameters: [String]? // TODO: Remove
+  public let rawParameters: [String]? // TODO: Remove?
   
   public func copyWith(value newValue: String? = nil, parameters newRawParameters: [String]? = nil) -> PropertyValue {
     let newVal = newValue != nil ? Value.value(rawValue: newValue!) : nil
@@ -30,14 +30,10 @@ public struct PropertyValue: Hashable, CustomStringConvertible, CustomDebugStrin
   public var fqn: String {
     var parameterString = ""
     if let rawParameters = rawParameters {
-      parameterString = "__(\(rawParameters.joined(separator: "_")))"
+      parameterString = "__\(rawParameters.joined(separator: "_"))"
     }
     
-//    if let prefix = prefixKeyPath {
-//      return "\(prefix).\(propertyName)\(parameterString)"
-//    } else {
-      return "\(propertyName)\(parameterString)"
-//    }
+    return "\(propertyName)\(parameterString)"
   }
   
   public var rawValue: String? {
@@ -50,15 +46,10 @@ public struct PropertyValue: Hashable, CustomStringConvertible, CustomDebugStrin
   }
   
   public var description: String {
-    var parameterString = ""
-    if let rawParameters = rawParameters {
-      parameterString = "__(\(rawParameters.joined(separator: "_")))"
-    }
-    
     switch value {
-      case .value(let rawValue): return "\(fqn)\(parameterString): \(rawValue)"
-      case .compoundValues(_, let compoundValues): return "\(fqn)\(parameterString): \(compoundValues.map({$0.description}).joined(separator: ", "))"
-      case .currentValue: return "\(fqn)\(parameterString): <using current>"
+      case .value(let rawValue): return "\(fqn): \(rawValue)"
+      case .compoundValues(_, let compoundValues): return "\(fqn): \(compoundValues.map({$0.description}).joined(separator: ", "))"
+      case .currentValue: return "\(fqn): <using current>"
     }
   }
   
@@ -75,19 +66,16 @@ public struct PropertyValue: Hashable, CustomStringConvertible, CustomDebugStrin
   }
 }
 
+
 public extension PropertyValue {
   init(propertyName: String, value: String, rawParameters: [String]? = nil) {
-    self.init(propertyName: propertyName, /*prefixKeyPath: nil,*/ value: .value(rawValue: value), rawParameters: rawParameters)
+    self.init(propertyName: propertyName, value: .value(rawValue: value), rawParameters: rawParameters)
   }
   
   init(propertyName: String, compoundProperty: CompoundProperty, compoundValues: [PropertyValue], rawParameters: [String]? = nil) {
-    self.init(propertyName: propertyName, /*prefixKeyPath: nil,*/
+    self.init(propertyName: propertyName,
       value: .compoundValues(compoundProperty: compoundProperty, compoundValues: compoundValues), rawParameters: rawParameters)
   }
-  
-//  init(propertyName: String, value: Value, rawParameters: [String]? = nil) {
-//    self.init(propertyName: propertyName, prefixKeyPath: nil, value: value, rawParameters: rawParameters)
-//  }
   
   init(propertyUsingCurrentValue propertyName: String, rawParameters: [String]? = nil) {
     self.init(propertyName: propertyName, /*prefixKeyPath: nil,*/ value: .currentValue, rawParameters: rawParameters)

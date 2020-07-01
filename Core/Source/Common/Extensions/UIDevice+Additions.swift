@@ -8,7 +8,7 @@
 
 import UIKit
 
-extension UIDevice {
+internal extension UIDevice {
   static func versionGreaterOrEqual(to version: String) -> Bool {
     return UIDevice.current.systemVersion.compare(version, options: .numeric) != .orderedAscending
   }

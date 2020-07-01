@@ -20,9 +20,11 @@ private let identifier = S.identifier
 // Ex: image(image.png, 1, 2, 3, 4);
 class ImagePropertyParser: BasicPropertyParser<UIImage> {
   
+  static var imageNamed: (String) -> UIImage? = { name in UIImage(named: name) }
+  
   class var imageParser: Parsicle<UIImage> {
     return S.parameterString(withPrefix: "image", optionalPrefix: true).map(S.cleanedString).map { v -> UIImage? in
-      guard v.count > 0, let image = UIImage(named: v[0]) else { return nil }
+      guard v.count > 0, let image = imageNamed(v[0]) else { return nil }
       let str = v as [NSString]
       
       if v.count == 5 {
@@ -38,20 +40,22 @@ class ImagePropertyParser: BasicPropertyParser<UIImage> {
     
     // Parse color functions as UIImage
     let colorFunctionParser = UIColorPropertyParser.colorFunctionParser(colorValueParsers, preDefColorParser: preDefColorParser)
-    let colorFunctionAsImage = colorFunctionParser.map {
-      $0.asUIImage()
+    let colorFunctionAsImage = colorFunctionParser.map { c -> UIImage? in
+      let v: UIImage? = c.asUIImage()
+      return v
     }
     
     // Parses well defined color values (i.e. basicColorValueParsers)
     let colorParser = P.choice(colorValueParsers)
-    let colorAsImage = colorParser.map {
-      $0.asUIImage()
+    let colorAsImage = colorParser.map { c -> UIImage? in
+      let v: UIImage? = c.asUIImage()
+      return v
     }
     
     // Parses an arbitrary text string as an image from file name or pre-defined color name - in that order
     let catchAll = S.cleanedString.map { value -> UIImage? in
       let trimmed = value.trim()
-      if let image = UIImage(named: trimmed) {
+      if let image = imageNamed(trimmed) {
         return image
       } else if let color = UIColorPropertyParser.parsePredefColorValue(trimmed) {
         return color.asUIImage()
@@ -62,7 +66,6 @@ class ImagePropertyParser: BasicPropertyParser<UIImage> {
   }
   
   init() {
-    
     super.init(parser: Self.imageParsers(Self.imageParser, colorValueParsers: UIColorPropertyParser.basicColorValueParsers))
   }
 }

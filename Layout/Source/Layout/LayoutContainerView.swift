@@ -78,7 +78,7 @@ open class LayoutContainerView: UIView {
             stylesheet = styler.styleSheetManager.loadNamedStyleSheet(cssFileName, group: viewBuilder.styleSheetGroupName, fromFileURL: cssFileURL)
           }
 
-          stylesheetObserver = NotificationCenter.default.addObserver(forName: .StyleSheetRefreshedNotification, object: stylesheet, queue: nil) { [weak self] _ in
+          stylesheetObserver = InterfaCSS.StyleSheetRefreshedNotification.observe { [weak self] in
             self?.updateLayout()
           }
         }

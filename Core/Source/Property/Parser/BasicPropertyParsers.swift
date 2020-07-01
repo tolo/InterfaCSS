@@ -15,15 +15,20 @@ private let S = StyleSheetParserSyntax.shared
 private let identifier = S.identifier
 
 
-class BasicPropertyParser<T>: PropertyTypeValueParser {
-  let parser: Parsicle<T>
+class BasicPropertyParser<ParsedType>: TypedPropertyParser<ParsedType> {
+  let parser: Parsicle<ParsedType>
   
-  init(parser: Parsicle<T>) {
+  init(parser: Parsicle<ParsedType>) {
     self.parser = parser
   }
   
-  func parse(propertyValue: PropertyValue) -> Any? {
-    return propertyValue.rawValue != nil ? parser.parse(propertyValue.rawValue!) : nil
+  override public func parse(propertyValue: PropertyValue) -> ParsedType? {
+    guard let rawValue = propertyValue.rawValue else { return nil }
+    let result = parser.parse(rawValue)
+    if result.match, let value = result.value {
+      return value
+    }
+    return nil
   }
 }
 
@@ -54,7 +59,11 @@ class NumberPropertyParser: BasicPropertyParser<NSNumber> {
   init() {
     let numberValue = S.numberValue.beforeEOI()
     let numericExpressionValue = S.numberOrExpressionValue.beforeEOI()
-    let numberParser = P.choice([numberValue, numericExpressionValue])
+    let pointsValue = numberValue.keepLeft(S.string("pt", skipSpaces: true))
+    let pixelsValue = numberValue.keepLeft(S.string("px", skipSpaces: true)).map { (value: NSNumber) in
+      return NSNumber(value: value.doubleValue / Double(UIScreen.main.scale))
+    }
+    let numberParser = P.choice([pointsValue, pixelsValue, numberValue, numericExpressionValue])
     super.init(parser: numberParser)
   }
 }

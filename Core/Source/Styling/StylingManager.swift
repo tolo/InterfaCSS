@@ -26,31 +26,29 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
   /// Style identity path to array of cached rulesets
   private var cachedElementRulesets: [String: [Ruleset]] = [:]
   
+  private let notificationObserverTokenBag = NotificationObserverTokenBag();
   
   // MARK: - Creation & destruction
   
-  convenience init() {
-    self.init(propertyRegistry: nil, styleSheetManager: nil)
-  }
-  
-  required init(propertyRegistry propertyManager: PropertyManager?, styleSheetManager: StyleSheetManager?) {
+  required init(propertyManager: PropertyManager? = nil, styleSheetManager: StyleSheetManager? = nil) {
     self.propertyManager = propertyManager ?? PropertyManager()
     self.styleSheetManager = styleSheetManager ?? StyleSheetManager()
-    self.propertyManager.stylingManager = self
-    self.styleSheetManager.stylingManager = self
+    self.propertyManager.styleSheetManager = self.styleSheetManager
+    self.styleSheetManager.propertyManager = self.propertyManager
     
-    let notificationCenter = NotificationCenter.default
-    notificationCenter.addObserver(self, selector: #selector(StylingManager.memoryWarning(_:)), name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+    InterfaCSS.ShouldClearAllCachedStylingInformation.observe { [weak self] _ in
+      self?.clearAllCachedStyles()
+    }.disposedBy(notificationObserverTokenBag)
+    
+    UIApplication.didReceiveMemoryWarningNotification.observe { [weak self] _ in
+      self?.clearAllCachedStyles()
+    }.disposedBy(notificationObserverTokenBag)
   }
-  
+    
   deinit {
-    NotificationCenter.default.removeObserver(self)
+    notificationObserverTokenBag.removeObservers()
   }
-  
-  @objc func memoryWarning(_ notification: Notification) {
-    clearAllCachedStyles()
-  }
-  
+    
   
   // MARK: - Styler
   
@@ -73,7 +71,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
   // MARK: - Styling - Style matching and application
   
   private func buildRulesets(for element: ElementStyle, styleSheetScope: StyleSheetScope) -> [Ruleset] {
-    logDebug(Logger.styling, "FULL stylesheet scan for '\(element.elementStyleIdentityPath)'")
+    debug(.styling, "FULL stylesheet scan for '\(element.elementStyleIdentityPath)'")
     
     element.stylingApplied = false // Reset 'stylingApplied' flag if declaration cache has been cleared, to make sure element is re-styled
     
@@ -82,9 +80,9 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     var rulesets = styleSheetManager.rulesets(matchingElement: element, context: stylingContext)
     
     if stylingContext.containsPartiallyMatchedDeclarations {
-      logDebug(Logger.styling, "Found \(rulesets.count) matching declarations, and at least one partially matching declaration, for '\(element.elementStyleIdentityPath)'.")
+      debug(.styling, "Found \(rulesets.count) matching declarations, and at least one partially matching declaration, for '\(element.elementStyleIdentityPath)'.")
     } else {
-      logDebug(Logger.styling, "Found \(rulesets.count) matching declarations for '\(element.elementStyleIdentityPath)'.")
+      debug(.styling, "Found \(rulesets.count) matching declarations for '\(element.elementStyleIdentityPath)'.")
     }
     
     // ...sort declarations on specificity (ascending)
@@ -99,7 +97,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     if stylingContext.stylesCacheable && (element.stylesCacheable || element.stylesFullyResolved) {
       cachedElementRulesets[element.elementStyleIdentityPath] = rulesets
     } else {
-      logDebug(Logger.styling, "Can NOT cache styles for '\(element.elementStyleIdentityPath)'")
+      debug(.styling, "Can NOT cache styles for '\(element.elementStyleIdentityPath)'")
     }
     
     return rulesets
@@ -111,11 +109,11 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     if !force && element.stylingApplied && element.stylingStatic {
       // Current styling information has already been applied, and declarations contain no pseudo classes
-      logDebug(Logger.styling, "Styles aleady applied for '\(element.elementStyleIdentityPath)'")
+      debug(.styling, "Styles aleady applied for '\(element.elementStyleIdentityPath)'")
       return []
     } else {
       // Styling information has not been applied, or declarations contains pseudo classes (in which case we need to re-evaluate the styles every time styling is initiated), or is forced
-      logDebug(Logger.styling, "Processing style declarations for '\(element.elementStyleIdentityPath)'")
+      debug(.styling, "Processing style declarations for '\(element.elementStyleIdentityPath)'")
       
       // Process declarations to see which styles currently match
       var containsPseudoClassSelector = false
@@ -138,7 +136,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
       if element.stylesCacheable || element.stylesFullyResolved {
         element.stylingApplied = true
       } else {
-        logDebug(Logger.styling, "Cannot mark element '\(element.elementStyleIdentityPath)' as styled")
+        debug(.styling, "Cannot mark element '\(element.elementStyleIdentityPath)' as styled")
       }
       return viewStyles
     }
@@ -203,7 +201,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
   /// Clears all cached style information, but does not initiate re-styling.
   public func clearAllCachedStyles() {
     if cachedElementRulesets.count > 0 {
-      logDebug(Logger.styling, "Clearing all cached styles")
+      debug(.styling, "Clearing all cached styles")
       cachedElementRulesets.removeAll()
       ElementStyle.markAllCachedStylingInformationAsDirty()
     }
@@ -213,29 +211,29 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
   // MARK: - Styling
   
   /// Applies styling of the specified UI object and optionally also all its children.
-  public func applyStyling(_ stylable: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope) {
+  public func applyStyling(_ stylable: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope? = nil) {
     applyStyling(stylable.interfaCSS, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
   }
   
   // Main styling method (stylable element version)
   /// Applies styling of the specified UI object and optionally also all its children.
-  public func applyStyling(_ element: ElementStyle, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope) {
+  public func applyStyling(_ element: ElementStyle, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope? = nil) {
     guard let uiElement = element.uiElement else { return }
     // Prevent loops during styling
     guard !element.isApplyingStyle else {
-      logInfo(.styling, "Warning: already styling '\(uiElement)' - aborting.")
+      info(.styling, "Warning: already styling '\(uiElement)' - aborting.")
       return
     }
     element.isApplyingStyle = true
     defer { element.isApplyingStyle = false }
     
-    applyStylingInternal(element, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
+    applyStylingInternal(element, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope ?? self.styleSheetScope)
   }
   
   // Internal styling method ("inner") - should only be called by applyStyling above
-  private func applyStylingInternal(_ element: ElementStyle, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope = .defaultGroupScope) {
+  private func applyStylingInternal(_ element: ElementStyle, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope) {
     guard let uiElement = element.uiElement else { return }
-    logDebug(.styling, "Applying style to '\(uiElement)'")
+    debug(.styling, "Applying style to '\(uiElement)'")
     let styleSheetScope = element.styleSheetScope ?? styleSheetScope // Use styleSheetScope on element first, if set
     if styleSheetScope != StyleSheetScope.defaultGroupScope {
       element.styleSheetScope = styleSheetScope
@@ -245,7 +243,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     let dirty = element.isDirty
     if dirty {
-      logDebug(Logger.styling, "Cached styling information for element of '\(element)' dirty - resetting cached styling information")
+      debug(.styling, "Cached styling information for element of '\(element)' dirty - resetting cached styling information")
       reset(element: element)
       
       // If not including subviews, make sure child elements are marked dirty
@@ -293,7 +291,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     if let view = element.view {
       childElements.addObjects(from: view.subviews)
-      //      childElements.add(view.layer)
+      childElements.add(view.layer)
     }
     
     #if os(iOS)
@@ -330,18 +328,6 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     // TODO: Add more special cases (as replacement for removed element.validNestedElements...)?
     
-    // TODO: Remove? Or review?
-//    for (_, nestedElementKeyPath) in (element.validNestedElements ?? [:]) {
-//      let nestedElement = RuntimeIntrospectionUtils.invokeGetter(forKeyPath: nestedElementKeyPath, ignoringCase: false, in: uiElement) as AnyObject
-//
-//      // Do quick initial sanity checks for circular relationship
-//      if nestedElement !== uiElement && nestedElement !== element.parentElement, let childElementStyling = (nestedElement as? Stylable)?.interfaCSS {
-//        childElementStyling.ownerElement = element.uiElement
-//        childElementStyling.nestedElementKeyPath = nestedElementKeyPath
-//        childElements.add(nestedElement)
-//      }
-//    }
-    
     return childElements.compactMap { $0 as? Stylable }.map {
       let childStyle = self.stylingProxy(for: $0)
       if childStyle.parentElement == nil { // If element doesn't have a parent view (i.e. super view)...
@@ -358,6 +344,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
    * Logs the active rulesets for the specified UI element.
    */
   func logMatchingRulesets(for uiElement: Stylable, styleSheetScope: StyleSheetScope) {
-    styleSheetManager.logMatchingRulesets(forElement: uiElement.interfaCSS, styleSheetScope: styleSheetScope)
+    let context = StylingContext(styler: self, styleSheetScope: styleSheetScope)
+    styleSheetManager.logMatchingRulesets(forElement: uiElement.interfaCSS, context: context)
   }
 }

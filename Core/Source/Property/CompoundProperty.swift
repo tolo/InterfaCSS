@@ -8,14 +8,12 @@
 
 import UIKit
 
-open class CompoundProperty: Hashable { // TODO: Maybe just protocol?
+open class CompoundProperty: Hashable {
   public let propertyName: String
-  //  public let propertyType: PropertyType
   public let compoundPropertyNames: Set<String>
   
   init(name: String, compoundNames: [String]) {
     self.propertyName = name
-    //    self.propertyType = type
     self.compoundPropertyNames = compoundNames.map { Property.normalizeName($0) }.toSet()
   }
   
@@ -34,10 +32,7 @@ open class CompoundProperty: Hashable { // TODO: Maybe just protocol?
     
     return Dictionary(uniqueKeysWithValues: entries)
   }
-  
-  //  public func value(ofCompoundValues compoundValues: [PropertyValue]) -> Any? {
-  //    return propertyType.parser.parse(propertyValue: <#T##PropertyValue#>)
-  //  }
+
   
   /// Hashable and Equatable
   

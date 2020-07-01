@@ -32,11 +32,11 @@ class UIFontPropertyParser: BasicPropertyParser<UIFont> {
         .then(fontParser).keepLeft(.charSpaced(","))
         .then(S.plainNumberValue).keepLeft(.charSpaced(")"))
         .map { (fun, font, adjust) -> UIFont in
-          if "larger" ==⇧ fun || "bigger" ==⇧ fun {
+          if "larger" ~= fun || "bigger" ~= fun {
             return font.withSize(font.pointSize + adjust.cgFloatValue)
-          } else if "smaller" ==⇧ fun {
+          } else if "smaller" ~= fun {
             return font.withSize(font.pointSize - adjust.cgFloatValue)
-          } else if "fontWithSize" ==⇧ fun {
+          } else if "fontWithSize" ~= fun {
             return font.withSize(adjust.cgFloatValue)
           } else {
             return font
@@ -65,7 +65,7 @@ class UIFontPropertyParser: BasicPropertyParser<UIFont> {
     super.init(parser: parser)
   }
   
-  override func parse(propertyValue: PropertyValue) -> Any? {
+  override public func parse(propertyValue: PropertyValue) -> UIFont? {
     if case .compoundValues(let compoundProperty, let compoundValues) = propertyValue.value {
       let values = compoundProperty.rawValues(from: compoundValues)
       return Self.parseFont(name: values[CompoundFontProperty.fontFamily], size: values[CompoundFontProperty.fontWeight])
@@ -99,7 +99,7 @@ extension UIFontPropertyParser {
     if let fontLC = name?.lowercased() {
       if fontLC.hasPrefix("boldsystem") || fontLC.hasPrefix("systembold") { return UIFont.boldSystemFont(ofSize: fontSize) }
       else if fontLC.hasPrefix("italicsystem") || fontLC.hasPrefix("systemitalic") { return UIFont.italicSystemFont(ofSize: fontSize) }
-      else if fontLC ==⇧ "system" { return UIFont.systemFont(ofSize: fontSize) }
+      else if fontLC ~= "system" { return UIFont.systemFont(ofSize: fontSize) }
       else if let dynamicFontStyle = textStyleMapping[fontLC] { return UIFont.preferredFont(forTextStyle: dynamicFontStyle) }
     }
     if let fontName = name {

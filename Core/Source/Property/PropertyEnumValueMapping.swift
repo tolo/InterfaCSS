@@ -13,6 +13,12 @@ public protocol AnyPropertyEnumValueMappingType {
   func value(from string: String) -> Any
 }
 
+extension AnyPropertyEnumValueMappingType {
+  func toParameterTransformer() -> PropertyParameterTransformer {
+    return { [self] in self.value(from: $0) }
+  }
+}
+
 public protocol PropertyEnumValueMappingType: AnyPropertyEnumValueMappingType {
   associatedtype EnumValueType: RawRepresentable
   func enumValue(from string: String) -> EnumValueType

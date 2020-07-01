@@ -92,43 +92,38 @@ public enum Selector: Hashable, CustomStringConvertible, CustomDebugStringConver
   
   private func matchesSelector(_ element: ElementStyle, context: StylingContext, type: SelectorType?, isWildcardType: Bool, elementId: String?, styleClasses: [String]?, pseudoClasses: [PseudoClass]?) -> Bool {
     // TYPE
-    var match: Bool = type == nil || isWildcardType
-    if !match {
+    if !isWildcardType, let type = type?.type {
       if element.canonicalType == nil {
         element.reset(with: context.styler) // Make sure canonicalType is initialized
       }
-      match = element.canonicalType == type?.type
+      guard element.canonicalType == type else { return false }
     }
     
     // ELEMENT ID
-    if match, let elementId = elementId {
-      match = elementId ==⇧ (element.elementId ?? "")
+    if let elementId = elementId {
+      guard elementId ~= (element.elementId ?? "") else { return false }
     }
     
     // STYLE CLASSES
-    if match, let styleClasses = styleClasses {
+    if let styleClasses = styleClasses {
       let elementStyleClasses = element.styleClasses ?? []
-      for styleClass in styleClasses where match {
-        match = elementStyleClasses.contains(styleClass)
-      }
+      guard elementStyleClasses.isSuperset(of: styleClasses) else { return false }
     }
     
     // PSEUDO CLASSES
-    if !context.ignorePseudoClasses && match {
-      for pseudoClass in (pseudoClasses ?? []) where match {
-        match = pseudoClass.matches(element, context: context)
-      }
+    if !context.ignorePseudoClasses, let pseudoClasses = pseudoClasses {
+      let firstNotMatch = pseudoClasses.first { !$0.matches(element, context: context) }
+      guard firstNotMatch == nil else { return false }
     }
     
-    return match
+    return true
   }
   
   private func matchesNestedElementSelector(_ element: ElementStyle, context: StylingContext, nestedElementKeyPath: String) -> Bool {
     guard let ownerElement = element.ownerElementStyle,
       let ownerUIElement = ownerElement.uiElement else { return false }
         
-    // TODO: This assumes ISSRuntimeIntrospectionUtils.validKeyPath executes fast - may need to optimize that method...
-    //return RuntimeIntrospectionUtils.validKeyPath(forCaseInsensitivePath: nestedElementKeyPath, in: type(of: ownerUIElement)) != nil
+    // TODO: This assumes doesPropertyExist (ISSRuntimeIntrospectionUtils.validKeyPath) executes fast - may need to optimize that method...
     return PropertyManager.doesPropertyExist(nestedElementKeyPath, in: ownerUIElement)
   }
   

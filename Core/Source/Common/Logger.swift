@@ -9,7 +9,7 @@
 import Foundation
 import os.log
 
-public final class Logger: NSObject { // TODO: Remove NSObject
+public final class Logger: CustomStringConvertible {
   
   private static var subsystem = Bundle.main.bundleIdentifier!
   
@@ -20,7 +20,7 @@ public final class Logger: NSObject { // TODO: Remove NSObject
   public static let layout: Logger = { Logger("layout") }()
   
   public let name: String
-  public override var description: String { return name }
+  public var description: String { return name }
   
   public let log: OSLog
   
@@ -46,18 +46,18 @@ public final class Logger: NSObject { // TODO: Remove NSObject
   }
 }
 
-internal func logDebug(_ logger: Logger, _ message: String) {
+internal func debug(_ logger: Logger, _ message: String) {
   logger.debug(message)
 }
 
-internal func logInfo(_ logger: Logger, _ message: String) {
+internal func info(_ logger: Logger, _ message: String) {
   logger.info(message)
 }
 
-internal func logError(_ logger: Logger, _ message: String) {
+internal func error(_ logger: Logger, _ message: String) {
   logger.error(message)
 }
 
-internal func logFault(_ logger: Logger, _ message: String) {
+internal func fault(_ logger: Logger, _ message: String) {
   logger.fault(message)
 }

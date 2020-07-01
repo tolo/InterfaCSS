@@ -56,13 +56,13 @@ class UIColorPropertyParser: BasicPropertyParser<UIColor> {
       .then(anyName).keepLeft(.charSpaced(")")).map { values -> UIColor in
         let (fun, color, paramString) = values
         let param = CGFloat((paramString as NSString).floatValue)
-        if "lighten" ==⇧ fun { return color.adjustBrightness(by: param) }
-        else if "darken" ==⇧ fun { return color.adjustBrightness(by: -param) }
-        else if "saturate" ==⇧ fun { return color.adjustSaturation(by: param) }
-        else if "desaturate" ==⇧ fun { return color.adjustSaturation(by: -param) }
-        else if "fadein" ==⇧ fun { return color.adjustAlpha(by: param) }
-        else if "fadeout" ==⇧ fun { return color.adjustAlpha(by: -param) }
-        else if "opacity" ==⇧ fun || "alpha" ==⇧ fun { return color.withAlphaComponent(param) }
+        if "lighten" ~= fun { return color.adjustBrightness(by: param) }
+        else if "darken" ~= fun { return color.adjustBrightness(by: -param) }
+        else if "saturate" ~= fun { return color.adjustSaturation(by: param) }
+        else if "desaturate" ~= fun { return color.adjustSaturation(by: -param) }
+        else if "fadein" ~= fun { return color.adjustAlpha(by: param) }
+        else if "fadeout" ~= fun { return color.adjustAlpha(by: -param) }
+        else if "opacity" ~= fun || "alpha" ~= fun { return color.withAlphaComponent(param) }
         return .magenta
     }
     colorFunctionParserProxy.delegate = colorFunctionParser

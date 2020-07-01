@@ -189,9 +189,9 @@ public class StyleSheetParser: NSObject {
             lastElement = rulesetDeclaration
           case .unrecognizedContent(let badData):
             if let lastElement = lastElement {
-              logError(.stylesheets, "Warning! \(badData) - near \(lastElement.description)")
+              error(.stylesheets, "Warning! \(badData) - near \(lastElement.description)")
             } else {
-              logError(.stylesheets, "Warning! \(badData) - near beginning of file")
+              error(.stylesheets, "Warning! \(badData) - near beginning of file")
           }
           default: break
         }
@@ -238,18 +238,18 @@ public class StyleSheetParser: NSObject {
     // Normalize property name - i.e. remove any dashes from string and convert to lowercase string
     propertyNameString = Property.normalizeName(propertyNameString.trim())
     // Check for any key path in the property name
-    var prefixKeyPath: String? = nil
+    var prefix: String? = nil
     let dotRange = propertyNameString.rangeOf(".", options: .backwards)
     if let dotRange = dotRange, dotRange.upperBound < propertyNameString.endIndex {
-      prefixKeyPath = String(propertyNameString[..<dotRange.lowerBound])
+      prefix = String(propertyNameString[..<dotRange.lowerBound])
       propertyNameString = String(propertyNameString[dotRange.upperBound...])
     }
     
     // Check for special `current` keyword
-    if propertyValue.trim() ==⇧ "current" {
-      return (propertyNameString, prefixKeyPath, .currentValue, parameters)
+    if propertyValue.trim() ~= "current" {
+      return (propertyNameString, prefix, .currentValue, parameters)
     } else {
-      return (propertyNameString, prefixKeyPath, .value(rawValue: propertyValue), parameters)
+      return (propertyNameString, prefix, .value(rawValue: propertyValue), parameters)
     }
   }
   
@@ -275,12 +275,17 @@ public class StyleSheetParser: NSObject {
     
     //* -- Property pair -- *
     let propertyPairParser = S.propertyPairParser(false).map { [unowned self] value -> ParsedRulesetContent in
-      let propertyValue = self.transformPropertyPair(value)
-//      if let _ = propertyValue.prefixKeyPath {
-//        return .prefixedProperty(propertyValue)
-//      } else {
-        return .propertyDeclaration(PropertyValue(propertyName: propertyValue.propertyName, value: propertyValue.value, rawParameters: propertyValue.rawParameters))
-//      }
+      let propertyPair = self.transformPropertyPair(value)
+      let propertyDeclaration: ParsedRulesetContent = .propertyDeclaration(
+        PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters))
+      
+      if let nestedElementKeyPath = propertyPair.prefix {
+        let chain = ParsedSelectorChain.selectorChain(chain: SelectorChain(selector: .nestedElement(nestedElementKeyPath: nestedElementKeyPath)))
+        let ruleset = ParsedRuleset(withSelectorChains: [chain], parsedProperties: [propertyDeclaration])
+        return .nestedRuleset(ruleset)
+      } else {
+        return propertyDeclaration
+      }
     }
     
     //* -- Extension/Inheritance -- *
@@ -377,14 +382,18 @@ public class StyleSheetParser: NSObject {
       }
       
       // Add ruleset
-      rulesets.append(Ruleset(selectorChains: selectorChains, andProperties: propertyValues, extendedDeclarationSelectorChain: extendedDeclarationSelectorChain))
+      if (propertyValues.count > 0) {
+        rulesets.append(Ruleset(selectorChains: selectorChains, andProperties: propertyValues, extendedDeclarationSelectorChain: extendedDeclarationSelectorChain))
+      } else {
+        Logger.stylesheets.debug("No properties in ruleset (\(selectorChains)) - skipping")
+      }
       
       // Process nested rulesets
       for declarationPair in nestedDeclarations {
         processProperties(declarationPair.properties, withSelectorChains: declarationPair.chains, andAddToRulesets: &rulesets)
       }
     } else {
-      print("No valid selector chains in declaration (count before validation: \(parsedSelectorChains.count) - properties: \(properties)") // TODO: ISSLogWarning?
+      Logger.stylesheets.debug("No valid selector chains in declaration (count before validation: \(parsedSelectorChains.count) - properties: \(properties)")
     }
   }
 }

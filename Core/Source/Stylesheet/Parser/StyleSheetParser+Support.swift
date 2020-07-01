@@ -38,7 +38,7 @@ enum CSSContent {
   case unrecognizedContent(String)
 }
 
-typealias TransformedPropertyPair = (propertyName: String, prefixKeyPath: String?, value: PropertyValue.Value, rawParameters: [String]?)
+typealias TransformedPropertyPair = (propertyName: String, prefix: String?, value: PropertyValue.Value, rawParameters: [String]?)
 
 enum ParsedRulesetContent {
   case comment(String)
@@ -72,7 +72,6 @@ enum ParsedSelectorChain {
 class ParsedRuleset: CustomStringConvertible { // TODO: Equatable?
   let parsedChains: [ParsedSelectorChain]
   var parsedProperties: [ParsedRulesetContent] = []
-  var nestedElementKeyPath: String?
   
   lazy var ruleset: Ruleset = {
     let chains = parsedChains.compactMap{ $0.selectorChain }
@@ -82,13 +81,9 @@ class ParsedRuleset: CustomStringConvertible { // TODO: Equatable?
   var chains: [SelectorChain] { return ruleset.selectorChains }
   var properties: [PropertyValue] { return ruleset.properties }
   
-  convenience init(withSelectorChains parsedChains: [ParsedSelectorChain]) {
-    self.init(withSelectorChains: parsedChains, nestedElementKeyPath: nil)
-  }
-  
-  init(withSelectorChains parsedChains: [ParsedSelectorChain], nestedElementKeyPath: String?) {
+  init(withSelectorChains parsedChains: [ParsedSelectorChain], parsedProperties: [ParsedRulesetContent] = []) {
     self.parsedChains = parsedChains
-    self.nestedElementKeyPath = nestedElementKeyPath
+    self.parsedProperties = parsedProperties
   }
   
   var chainsDescription: String {

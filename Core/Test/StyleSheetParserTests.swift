@@ -11,28 +11,39 @@ import XCTest
 
 private let S = StyleSheetParserSyntax.shared
 
-class TestStyleSheetPropertyParser: StyleSheetPropertyParser {
-  override func imageNamed(_ name: String) -> UIImage? {
-    guard let path = Bundle(for: type(of: self)).path(forResource: name, ofType: nil) else { return nil }
-    return UIImage(contentsOfFile: path)
-  }
-}
-
 class StyleSheetParserTests: XCTestCase {
   var styler: StylingManager!
   var styleSheetManager: StyleSheetManager!
   var parser: StyleSheetParser!
-  var propertyParser: TestStyleSheetPropertyParser!
   
   override func setUp() {
-    propertyParser = TestStyleSheetPropertyParser()
-    parser = StyleSheetParser(propertyParser: propertyParser)
+    parser = StyleSheetParser()
     styleSheetManager = StyleSheetManager(styleSheetParser: parser)
     parser.styleSheetManager = styleSheetManager
-    styler = StylingManager(propertyRegistry: nil, styleSheetManager: styleSheetManager)
+    styler = StylingManager(styleSheetManager: styleSheetManager)
+    
+    ImagePropertyParser.imageNamed = Self.imageNamed
   }
   
   override func tearDown() {
+  }
+    
+  private static func imageNamed(_ name: String) -> UIImage? {
+    guard let path = Bundle(for: self).path(forResource: name, ofType: nil) else { return nil }
+    return UIImage(contentsOfFile: path)
+  }
+  
+  func parse<T>(propertyValue: String, as propertyType: PropertyType) -> T? {
+    return parse(propertyValue: PropertyValue(propertyName: "", value: propertyValue), as: propertyType)
+  }
+  
+  func parse<T>(propertyValue: PropertyValue, as propertyType: PropertyType) -> T? {
+    return parseAny(propertyValue: propertyValue, as: propertyType) as? T
+  }
+  
+  func parseAny(propertyValue: PropertyValue, as propertyType: PropertyType) -> Any? {
+    let stringValue = styleSheetManager.replaceVariableReferences(propertyValue.rawValue ?? "")
+    return propertyType.parseAny(propertyValue: propertyValue.copyWith(value: stringValue))
   }
   
   func colorOfFirstPixel(_ image: UIImage?) -> UIColor? {
@@ -85,7 +96,7 @@ class StyleSheetParserTests: XCTestCase {
     let properties = loadProperties(withStyleClass: className, in: styleSheet)
     var result = [String: T]()
     properties.forEach {
-      if let prop = styleSheetManager.parsePropertyValue($0.rawValue ?? "", as: propertyType) as? T {
+      if let prop: T = parse(propertyValue: $0, as: propertyType) {
         result[$0.propertyName] = prop
       }
     }
@@ -95,11 +106,16 @@ class StyleSheetParserTests: XCTestCase {
   func parseProperties(withStyleClass className: String, in styleSheet: String = "propertyValues", propertyType: PropertyType) -> [String] {
     let properties = loadProperties(withStyleClass: className, in: styleSheet)
     return properties.compactMap {
-      let value = styleSheetManager.parsePropertyValue($0.rawValue ?? "", as: propertyType)
-      return "\($0.propertyName): \(describing: value)"
+      if let value = parseAny(propertyValue: $0, as: propertyType) {
+        return "\($0.propertyName): \(describing: value)"
+      } else {
+        return "\($0.propertyName): null"
+      }
     }
   }
   
+  
+  // MARK: - Tests for parsers of individual parts of the CSS format
   
   func testParameterString() {
     let p = S.parameterString(withPrefix: "moo")
@@ -114,8 +130,6 @@ class StyleSheetParserTests: XCTestCase {
     XCTAssertTrue(r1.match)
     XCTAssertEqual(r1.value, [CGFloat(1), CGFloat(2)])
   }
-  
-  // MARK: - Tests for parsers of individual parts of the CSS format
   
   func testVariableParser() {
     var parsingContext = StyleSheetParsingContext()
@@ -164,28 +178,29 @@ class StyleSheetParserTests: XCTestCase {
   }
   
   func testStringParser() {
-    let r1 = parser.parsePropertyValue("42", as: .string) as? String
+    let r1: String? = parse(propertyValue: "42", as: .string)
     XCTAssertEqual(r1 ?? "", "42")
-    let r2 = parser.parsePropertyValue("\"dr \\\"evil\\\" rules\"", as: .string) as? String
+    let r2: String? = parse(propertyValue: "\"dr \\\"evil\\\" rules\"", as: .string)
     XCTAssertEqual(r2 ?? "", "dr \"evil\" rules")
   }
   
   func testNumberParser() {
-    let r = parser.parsePropertyValue("42", as: .number) as? Int
+    let r: Int? = parse(propertyValue: "42", as: .number)
     XCTAssertEqual(r ?? 0, 42)
   }
   
   func testPointParser() {
-    let r = parser.parsePropertyValue("point(50, 50)", as: .point) as? CGPoint
+    let r: CGPoint? = parse(propertyValue: "point(50, 50)", as: .point)
     XCTAssertEqual(r ?? CGPoint.zero, CGPoint(x: 50, y: 50))
   }
   
   func testColorParser() {
-    let r = parser.parsePropertyValue("lighten(rgb(17, 34, 51), 50%)", as: .color) as? UIColor
+    let r: UIColor? = parse(propertyValue: "lighten(rgb(17, 34, 51), 50%)", as: .color)
     XCTAssertEqual(r ?? UIColor.magenta, UIColor(fromHexString: "112233")!.adjustBrightness(by: 50))
   }
   
-  // MARK: -
+  
+  // MARK: - Structure and parsing tests
   
   func testStylesheetStructure() {
     guard let content = parseStyleSheet("styleSheetStructure") else {
@@ -302,7 +317,7 @@ class StyleSheetParserTests: XCTestCase {
   
   func testFonts() {
     let properties: [String: UIFont] = parsePropertiesToDict(withStyleClass: "fonts", in: "propertyValues", propertyType: .font)
-    XCTAssertEqual(properties["font1"], UIFont(name: "HelveticaNeue-Medium", size: 14))
+    XCTAssertEqual(properties["font1"], UIFont(name: "HelveticaNeue-Medium", size: 15))
     XCTAssertEqual(properties["font2"], UIFont(name: "HelveticaNeue-Medium", size: 16))
     XCTAssertEqual(properties["font3"], UIFont(name: "HelveticaNeue-Medium", size: 14))
     XCTAssertEqual(properties["font4"], UIFont(name: "HelveticaNeue-Medium", size: 10))
@@ -332,15 +347,14 @@ class StyleSheetParserTests: XCTestCase {
   func testParameters() {
     let properties = loadProperties(withStyleClass: "parameters", in: "propertyValues")
     let actual = properties.map { $0.description }
-    let expected = ["params1(selected): blue", "params2(selected, highlighted): blue"]
+    let expected = ["params1__selected: blue", "params2__selected_highlighted: blue"]
     XCTAssertEqual(Set(actual), Set(expected))
   }
   
   func testPrefixes() {
     let rulesets = loadRulesets(withStyleClass: "prefixes", in: "propertyValues")
     let actual = rulesets.map { $0.description }
-    //let expected = [".prefixes { propertyKeyPathToRegister: layer }", ".prefixes $layer { borderwidth: 10 }"]
-    let expected = [".prefixes { layer.borderwidth: 10 }", ".prefixes $layer { borderwidth: 10 }"]
+    let expected = [".prefixes $layer { borderwidth: 10 }"]
     print("rulesets: \(actual)")
     XCTAssertEqual(Set(actual), Set(expected))
   }
@@ -348,7 +362,7 @@ class StyleSheetParserTests: XCTestCase {
   func testImages() {
     let properties: [String: UIImage] = parsePropertiesToDict(withStyleClass: "images", in: "propertyValues", propertyType: .image)
     let actual = properties.values.compactMap { $0.pngData() }
-    let refImage = propertyParser.imageNamed("image.png")?.pngData()
+    let refImage = ImagePropertyParser.imageNamed("image.png")?.pngData()
     XCTAssertEqual(properties.count, 8)
     actual.forEach { XCTAssertEqual($0, refImage) }
   }

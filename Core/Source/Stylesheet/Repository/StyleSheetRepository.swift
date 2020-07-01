@@ -46,7 +46,7 @@ final class StyleSheetRepository {
     if let url = Bundle.main.url(forResource: styleSheetFileName, withExtension: nil) {
       return loadStyleSheet(fromLocalFileURL: url, withName: name, group: groupName)
     } else {
-      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found in main bundle!", styleSheetFileName) // TODO:
+      error(.stylesheets, "Unable to load stylesheet '\(styleSheetFileName)' - file not found in main bundle!")
       return nil
     }
   }
@@ -56,7 +56,7 @@ final class StyleSheetRepository {
     if FileManager.default.fileExists(atPath: styleSheetFileURL.path) {
       return loadStyleSheet(fromLocalFileURL: styleSheetFileURL, withName: name, group: groupName)
     } else {
-      //            ISSLogWarning("Unable to load stylesheet '%@' - file not found!", styleSheetFileURL)
+      error(.stylesheets, "Unable to load stylesheet '\(styleSheetFileURL)' - file not found!")
       return nil
     }
   }
@@ -85,30 +85,30 @@ final class StyleSheetRepository {
     var styleSheet: StyleSheet? = nil
     for existingStyleSheet in styleSheets {
       if existingStyleSheet.styleSheetURL == styleSheetFile {
-        //                ISSLogDebug("Stylesheet %@ already loaded", styleSheetFile) // TODO:
+        error(.stylesheets, "Stylesheet '\(styleSheetFile)' already loaded")
         return existingStyleSheet
       }
     }
     
     if let styleSheetData = try? String(contentsOf: styleSheetFile) {
-      //            let t: TimeInterval = Date.timeIntervalSinceReferenceDate
+      let t: TimeInterval = Date.timeIntervalSinceReferenceDate
       if let styleSheetContent = styleSheetManager.styleSheetParser.parse(styleSheetData) {
-        //            ISSLogDebug("Loaded stylesheet '%@' in %f seconds", styleSheetFile.lastPathComponent, (Date.timeIntervalSinceReferenceDate - t)) // TODO:
+        debug(.stylesheets, "Loaded stylesheet '\(styleSheetFile.lastPathComponent)' in \((Date.timeIntervalSinceReferenceDate - t)) seconds")
         styleSheet = StyleSheet(styleSheetURL: styleSheetFile, name: name, group: groupName, content: styleSheetContent)
         if let styleSheet = styleSheet {
           styleSheets.append(styleSheet)
         }
-//        stylingManager?.clearAllCachedStyles() // TODO: Notification instead
+        InterfaCSS.ShouldClearAllCachedStylingInformation.post()
       }
     } else {
-      //            ISSLogWarning("Error loading stylesheet data from '%@' - %@", styleSheetFile, error) // TODO:
+      error(.stylesheets, "Error loading stylesheet data from '\(styleSheetFile)'")
     }
     return styleSheet
   }
   
   func register(_ styleSheet: StyleSheet) {
     styleSheets.append(styleSheet)
-    //    stylingManager?.clearAllCachedStyles() // TODO: Notification instead
+    InterfaCSS.ShouldClearAllCachedStylingInformation.post()
   }
   
   
@@ -116,7 +116,7 @@ final class StyleSheetRepository {
   
   /// Reloads all (remote) refreshable stylesheets. If force is `YES`, stylesheets will be reloaded even if they haven't been modified.
   func reloadRefreshableStyleSheets(_ force: Bool) {
-    NotificationCenter.default.post(name: StyleSheetManager.WillRefreshStyleSheetsNotification, object: nil)
+    InterfaCSS.WillRefreshStyleSheetsNotification.post()
     for styleSheet: StyleSheet in styleSheets {
       guard let refreshableStylesheet = styleSheet as? RefreshableStyleSheet else { continue }
       if refreshableStylesheet.active && !refreshableStylesheet.styleSheetModificationMonitoringEnabled {
@@ -128,16 +128,14 @@ final class StyleSheetRepository {
   
   /// Reloads a refreshable stylesheet. If force is `YES`, the stylesheet will be reloaded even if is hasn't been modified.
   func reload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
-    NotificationCenter.default.post(name: StyleSheetManager.WillRefreshStyleSheetsNotification, object: styleSheet)
+    InterfaCSS.WillRefreshStyleSheetsNotification.post(object: styleSheet)
     doReload(styleSheet, force: force)
   }
   
   private func doReload(_ styleSheet: RefreshableStyleSheet, force: Bool) {
     styleSheet.refreshStylesheet(with: styleSheetManager, andCompletionHandler: {
-      //        [self.styleSheets removeObject:styleSheet];
-      //        [self.styleSheets addObject:styleSheet]; // Make stylesheet "last added/updated"
-      //      self.stylingManager?.clearAllCachedStyles() // TODO: Notification instead
-      NotificationCenter.default.post(name: StyleSheetManager.DidRefreshStyleSheetNotification, object: styleSheet)
+      InterfaCSS.ShouldClearAllCachedStylingInformation.post()
+      InterfaCSS.DidRefreshStyleSheetNotification.post(object: styleSheet)
     }, force: force)
   }
   
@@ -148,7 +146,7 @@ final class StyleSheetRepository {
   func unload(_ styleSheet: StyleSheet) {
     styleSheets.removeAll { $0 == styleSheet }
     styleSheet.unload()
-    //stylingManager?.clearAllCachedStyles() // TODO: Notification instead
+    InterfaCSS.ShouldClearAllCachedStylingInformation.post()
   }
   
   /**
@@ -156,7 +154,7 @@ final class StyleSheetRepository {
    */
   func unloadAllStyleSheets() {
     styleSheets.removeAll()
-    //stylingManager?.clearAllCachedStyles() // TODO: Notification instead
+    InterfaCSS.ShouldClearAllCachedStylingInformation.post()
   }
   
 

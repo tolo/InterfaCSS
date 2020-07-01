@@ -104,9 +104,6 @@ final class PropertyRepository {
     return clazz
   }
   
-  func canonicalTypeClass(forType type: String) -> AnyClass? {
-    return canonicalTypeClass(forType: type, registerIfNotFound: false)
-  }
   
   /**
    * Registers a class for use as a valid type selector in stylesheets. Note: this happens automatically whenever an unknown, but valid, class name is encountered
@@ -164,8 +161,10 @@ final class PropertyRepository {
   /**
    * Registers a custom property.
    */
-  func register(_ property: Property, in clazz: AnyClass, replaceExisting: Bool = true) -> Property {
+  //func register(_ property: Property, in clazz: AnyClass, replaceExisting: Bool = true) -> Property {
+  func register(_ property: Property, replaceExisting: Bool = true) -> Property {
     let normalizedName = property.normalizedName
+    let clazz: AnyClass = property.declaredInClass
     let typeName = registerCanonicalTypeClass(clazz) // Register canonical type, if needed
     if var properties = propertiesByType[typeName] {
       if !replaceExisting, let existing = findProperty(withName: normalizedName, in: clazz) {

@@ -16,7 +16,7 @@
   }
 }
 
-.nextedProperties {
+.nestedProperties {
   layer.cornerRadius: 5;
   layer.borderWidth: 10;
 }

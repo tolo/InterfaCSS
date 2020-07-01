@@ -13,9 +13,6 @@ public typealias ViewBuilderCompletionHandler = (_ rootView: UIView?, _ childVie
 
 public typealias ViewBuilderLayoutRefreshedObserver = NSObjectProtocol
 
-extension Notification.Name {
-  public static let ViewBuilderLayoutRefreshed = Notification.Name(rawValue: "ISSViewBuilderLayoutRefreshedNotification")
-}
 
 public enum LayoutDimension {
   case both
@@ -23,7 +20,9 @@ public enum LayoutDimension {
   case height
 }
 
-
+/**
+ * ViewBuilder provides support for building views from an XML-based layout file.
+ */
 open class ViewBuilder {
 
   let logger: Logger
@@ -88,14 +87,13 @@ open class ViewBuilder {
   public final func addRefreshObserverIfSupported(fileOwner: AnyObject? = nil, completionHandler: @escaping ViewBuilderCompletionHandler) -> NotificationObserverToken? {
     weak var effectiveFileOwner = fileOwner ?? defaultFileOwner
     if let refresher = refresher, refresher.resourceModificationMonitoringSupported {
-      let token = NotificationCenter.default.addObserver(forName: .ViewBuilderLayoutRefreshed, object: self, queue: nil) { [weak self] notification in
+      return InterfaCSS.ViewBuilderLayoutRefreshed.observe { [weak self] notification in
         guard let self = self, let (layout, parseError) = notification.userInfo?[ViewBuilder.ViewBuilderLayoutRefreshedDataKay] as? ViewBuilderLayoutRefreshedData else {
           completionHandler(nil, nil, nil, nil) // TODO: Error?
           return
         }
         self.buildViewFrom(layout: layout, parseError: parseError, fileOwner: effectiveFileOwner, completionHandler: completionHandler)
       }
-      return NotificationObserverToken(token: token)
     } else {
       return nil
     }
@@ -133,7 +131,8 @@ open class ViewBuilder {
   
   private final func refreshLayout() {
     loadLayoutFromLayoutFile { [unowned self] (parsedLayout, parseError) in
-      NotificationCenter.default.post(name: .ViewBuilderLayoutRefreshed, object: self, userInfo: [ViewBuilder.ViewBuilderLayoutRefreshedDataKay: (parsedLayout, parseError)])
+      InterfaCSS.ViewBuilderLayoutRefreshed.post(object: self,
+         userInfo: [ViewBuilder.ViewBuilderLayoutRefreshedDataKay: (parsedLayout, parseError)])
     }
   }
   
@@ -174,13 +173,8 @@ open class ViewBuilder {
 
   open func createViewTree(withRootNode root: AbstractViewTreeNode, fileOwner: AnyObject? = nil) -> (UIView, [UIViewController])? {
     var childViewControllers: [UIViewController] = []
-    let rootView = root.visitAbstractViewTree() { (node, parentNode, parentView) in
-      guard let viewObject = instantiateViewObject(for: node, parentView: parentView, fileOwner: fileOwner), node.addToViewHierarchy else {
-        return nil
-      }
-      guard let parentView = parentView as? UIView else {
-        return viewObject
-      }
+    let rootView = root.visitViewTree(with: self, fileOwner: fileOwner) { (viewObject, parentView) in
+      guard let parentView = parentView else { return viewObject }
       if let childViewController = viewObject as? UIViewController, let parentViewController = fileOwner as? UIViewController {
         parentViewController.addChild(childViewController)
         childViewController.view.frame = parentView.bounds
@@ -191,7 +185,7 @@ open class ViewBuilder {
         addViewObject(viewObject, toParentView: parentView, fileOwner: fileOwner)
         return viewObject
       }
-    } as? UIView
+    }
 
     if let rootView = rootView {
       return (rootView, childViewControllers)
@@ -205,14 +199,11 @@ open class ViewBuilder {
       parentView.addSubview(view)
     }
   }
-
-  open func instantiateViewObject(for node: AbstractViewTreeNode, parentView: AnyObject?, fileOwner: AnyObject?) -> AnyObject? {
-    return node.elementType.createElement(forNode: node, parentView: parentView, viewBuilder: self, fileOwner: fileOwner)
-  }
 }
 
 
 // MARK: - Layout loading
+
 extension ViewBuilder {
   final func loadLayout(forceRefresh: Bool = false, completionHandler: @escaping AbstractLayoutCompletionHandler) {
     if !forceRefresh, let loadedLayout = loadedLayout {

@@ -16,13 +16,9 @@ open class PropertyManager {
   
   let logger = Logger.properties
   
-  public weak var stylingManager: StylingManager? // TODO: Review if this dependency can be removed
-  
-  var styleSheetManager: StyleSheetManager {
-    assert(stylingManager != nil)
-    return stylingManager!.styleSheetManager
-  }
-  
+  /// Dependencies
+  public weak var styleSheetManager: StyleSheetManager!
+    
   let propertyRepository: PropertyRepository
   
   
@@ -50,20 +46,9 @@ open class PropertyManager {
     }
     return clazz
   }
-  
-// TODO: Maybe, as replacement for use of RuntimeIntrospectionUtils
-//  public static func validProperty(_ propertyName: String, in object: AnyObject) -> String? {
-//    let mirror = Mirror(reflecting: object)
-//    for child in mirror.children {
-//      guard let label = child.label else { continue }
-//      if label ==⇧ propertyName { return label }
-//    }
-//    return nil
-//  }
-  
+    
   public static func doesPropertyExist(_ propertyName: String, in object: AnyObject) -> Bool {
     return RuntimeIntrospectionUtils.validKeyPath(forCaseInsensitivePath: propertyName, in: type(of: object)) != nil
-    //return validProperty(propertyName, in: object) != nil
   }
   
   
@@ -81,8 +66,8 @@ open class PropertyManager {
     return propertyRepository.canonicalType(for: clazz)
   }
   
-  open func canonicalTypeClass(forType type: String) -> AnyClass? {
-    return propertyRepository.canonicalTypeClass(forType: type)
+  open func canonicalTypeClass(forType type: String, registerIfNotFound: Bool = false) -> AnyClass? {
+    return propertyRepository.canonicalTypeClass(forType: type, registerIfNotFound: registerIfNotFound)
   }
   
   /**
@@ -115,8 +100,9 @@ open class PropertyManager {
   /**
    * Registers a custom property.
    */
-  open func register(_ property: Property, in clazz: AnyClass, replaceExisting: Bool = true) -> Property {
-    return propertyRepository.register(property, in: clazz, replaceExisting: replaceExisting)
+  //open func register(_ property: Property, in clazz: AnyClass, replaceExisting: Bool = true) -> Property {
+  open func register(_ property: Property, replaceExisting: Bool = true) -> Property {
+    return propertyRepository.register(property, replaceExisting: replaceExisting)
   }
   
   
