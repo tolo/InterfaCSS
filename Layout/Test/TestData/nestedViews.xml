@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Layout useSafeAreaInsets="false" useDefaultMargins="true">
+  
+  <View id="rootView">
+    <View id="view1">
+      <Text id="label1">Hello</Text>
+      <View id="view2">
+        <Text id="label2">Hello</Text>
+      </View>
+    </View>
+    
+    <View id="view3">
+      <Text id="label3">Hello</Text>
+      <View id="view4">
+        <Text id="label4">Hello</Text>
+      </View>
+    </View>
+  </View>
+    
+</Layout>

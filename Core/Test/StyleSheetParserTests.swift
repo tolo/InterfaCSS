@@ -75,7 +75,7 @@ class StyleSheetParserTests: XCTestCase {
     guard let url = Bundle(for: type(of: self)).url(forResource: name, withExtension: "css") else {
       return nil
     }
-    return styleSheetManager.loadStyleSheet(fromFileURL: url)?.content
+    return styleSheetManager.loadStyleSheet(fromLocalFile: url)?.content
   }
   
   func loadRulesets(withStyleClass className: String, in styleSheet: String = "propertyValues") -> [Ruleset] {
@@ -157,7 +157,7 @@ class StyleSheetParserTests: XCTestCase {
   
   func testPropertyPairParser() {
     let s = StyleSheetParserSyntax()
-    let p = s.propertyPairParser(false)
+    let p = s.propertyPairParser(forVariable: false, standalone: true)
     var r = p.parse("name=value;")
     XCTAssertTrue(r.match)
     XCTAssertEqual(r.value?.first, "name")
@@ -165,6 +165,15 @@ class StyleSheetParserTests: XCTestCase {
     r = p.parse("name = \"value\";")
     XCTAssertEqual(r.value?.first, "name")
     XCTAssertEqual(r.value?.last, "\"value\"")
+  }
+  
+  func testParsePropertyPairs() {
+    let values = parser.parsePropertyNameValuePairs("flex-direction: column; background-color: red")
+    XCTAssertEqual(values?.count, 2)
+    XCTAssertEqual(values?.first?.propertyName, "flexdirection")
+    XCTAssertEqual(values?.first?.rawValue, "column")
+    XCTAssertEqual(values?.last?.propertyName, "backgroundcolor")
+    XCTAssertEqual(values?.last?.rawValue, "red")
   }
   
   func testSelectorsChainsParser() {
@@ -323,11 +332,13 @@ class StyleSheetParserTests: XCTestCase {
     XCTAssertEqual(properties["font4"], UIFont(name: "HelveticaNeue-Medium", size: 10))
     XCTAssertEqual(properties["font5"], UIFont(name: "HelveticaNeue-Medium", size: 5))
     XCTAssertEqual(properties["font6"], UIFont(name: "Courier", size: 5))
-    XCTAssertEqual(properties["font7"], UIFont(name: "Courier", size: 5))
+    XCTAssertEqual(properties["font7"], UIFont(name: "Avenir", size: 5))
     XCTAssertEqual(properties["font8"], UIFont.systemFont(ofSize: 42))
     XCTAssertEqual(properties["font9"], UIFont.systemFont(ofSize: 42))
     XCTAssertEqual(properties["font10"], UIFont.italicSystemFont(ofSize: 42))
-    XCTAssertEqual(properties["font11"], UIFont.boldSystemFont(ofSize: 42))
+    XCTAssertEqual(properties["font11"], UIFont.systemFont(ofSize: 42, weight: .bold))
+    XCTAssertEqual(properties["font12"], UIFont.systemFont(ofSize: 24, weight: .ultraLight))
+    XCTAssertEqual(properties["font13"], UIFont(name: "GillSans", size: 42))
   }
   
   func testTransforms() {

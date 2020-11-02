@@ -14,7 +14,7 @@ public typealias ViewTreeVisitor = (_ view: UIResponder, _ parentView: UIView?) 
 /**
  * AbstractViewTreeNode
  */
-public final class AbstractViewTreeNode {
+public final class AbstractViewTreeNode { // TODO: Rename to AbstractLayoutElement
   public let elementType: UIElementType
   public let attributes: ElementAttributes
   
@@ -52,7 +52,7 @@ public final class AbstractViewTreeNode {
   
   public func visitViewTree(with viewBuilder: ViewBuilder, fileOwner: AnyObject? = nil, visitor: ViewTreeVisitor) -> UIView? {
     return visitAbstractViewTree() { (node, parentNode, parentView) in
-      guard let viewObject = createElement(viewBuilder: viewBuilder) else {
+      guard let viewObject = node.createElement(viewBuilder: viewBuilder) else {
         return nil
       }
       guard let parentView = parentView as? UIView else {

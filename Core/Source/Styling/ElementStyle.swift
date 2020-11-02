@@ -6,40 +6,7 @@
 //  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
-import ObjectiveC
 import UIKit
-
-
-
-/**
- *
- */
-public protocol Stylable: AnyObject {
-  var interfaCSS: ElementStyle { get set }
-}
-
-
-private var interfaCSSStoredPropertyKey: UInt8 = 0
-
-public extension Stylable {
-  
-  var interfaCSS: ElementStyle {
-    get {
-      return objc_getAssociatedObject(self, &interfaCSSStoredPropertyKey) as? ElementStyle ?? {
-        let stylingProxy = ElementStyle(uiElement: self)
-        self.interfaCSS = stylingProxy
-        return stylingProxy
-        }()
-    }
-    set {
-      objc_setAssociatedObject(self, &interfaCSSStoredPropertyKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-    }
-  }
-}
-
-extension UIResponder: Stylable {}
-extension UIBarItem: Stylable {}
-extension CALayer: Stylable {}
 
 
 /**

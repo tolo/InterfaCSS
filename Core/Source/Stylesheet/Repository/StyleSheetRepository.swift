@@ -1,9 +1,9 @@
 //
 //  StyleSheetRepository.swift
-//  InterfaCSS
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2020-05-07.
-//  Copyright © 2020 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import Foundation
@@ -15,7 +15,7 @@ final class StyleSheetRepository {
   
   var styleSheets: [StyleSheet] = []
   
-  var activeStylesheets: [StyleSheet] { styleSheets.filter { $0.active } }
+  //var activeStylesheets: [StyleSheet] { styleSheets.filter { $0.active } }
   
   private var _stylesheetAutoRefreshInterval: TimeInterval = 0.0
   var stylesheetAutoRefreshInterval: TimeInterval {
@@ -35,16 +35,16 @@ final class StyleSheetRepository {
   // MARK: - Utilities
   
   func activeStylesheets(in scope: StyleSheetScope) -> [StyleSheet] {
-    return styleSheets.filter { $0.active && scope.contains($0) }
+    return styleSheets.filter { $0.active && scope.matches(styleSheet: $0) }
   }
   
   
   // MARK: - Stylesheets loading
   
   @discardableResult
-  func loadNamedStyleSheet(_ name: String?, group groupName: String, fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
+  func loadStyleSheet(fromMainBundleFile styleSheetFileName: String, name: String?, group groupName: String?) -> StyleSheet? {
     if let url = Bundle.main.url(forResource: styleSheetFileName, withExtension: nil) {
-      return loadStyleSheet(fromLocalFileURL: url, withName: name, group: groupName)
+      return loadStyleSheet(fromLocalFile: url, name: name, group: groupName)
     } else {
       error(.stylesheets, "Unable to load stylesheet '\(styleSheetFileName)' - file not found in main bundle!")
       return nil
@@ -52,17 +52,7 @@ final class StyleSheetRepository {
   }
   
   @discardableResult
-  func loadNamedStyleSheet(_ name: String?, group groupName: String?, fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
-    if FileManager.default.fileExists(atPath: styleSheetFileURL.path) {
-      return loadStyleSheet(fromLocalFileURL: styleSheetFileURL, withName: name, group: groupName)
-    } else {
-      error(.stylesheets, "Unable to load stylesheet '\(styleSheetFileURL)' - file not found!")
-      return nil
-    }
-  }
-  
-  @discardableResult
-  func loadRefreshableNamedStyleSheet(_ name: String?, group groupName: String, from styleSheetURL: URL) -> StyleSheet {
+  func loadStyleSheet(fromRefreshableFile styleSheetURL: URL, name: String?, group groupName: String?) -> StyleSheet {
     let styleSheet = RefreshableStyleSheet(styleSheetURL: styleSheetURL, name: name, group: groupName)
     styleSheets.append(styleSheet)
     reload(styleSheet, force: false)
@@ -81,7 +71,12 @@ final class StyleSheetRepository {
   }
   
   @discardableResult
-  func loadStyleSheet(fromLocalFileURL styleSheetFile: URL, withName name: String?, group groupName: String?) -> StyleSheet? {
+  func loadStyleSheet(fromLocalFile styleSheetFile: URL, name: String?, group groupName: String?) -> StyleSheet? {
+    guard FileManager.default.fileExists(atPath: styleSheetFile.path) else {
+      error(.stylesheets, "Unable to load stylesheet '\(styleSheetFile)' - file not found!")
+      return nil
+    }
+    
     var styleSheet: StyleSheet? = nil
     for existingStyleSheet in styleSheets {
       if existingStyleSheet.styleSheetURL == styleSheetFile {
@@ -92,9 +87,9 @@ final class StyleSheetRepository {
     
     if let styleSheetData = try? String(contentsOf: styleSheetFile) {
       let t: TimeInterval = Date.timeIntervalSinceReferenceDate
-      if let styleSheetContent = styleSheetManager.styleSheetParser.parse(styleSheetData) {
-        debug(.stylesheets, "Loaded stylesheet '\(styleSheetFile.lastPathComponent)' in \((Date.timeIntervalSinceReferenceDate - t)) seconds")
-        styleSheet = StyleSheet(styleSheetURL: styleSheetFile, name: name, group: groupName, content: styleSheetContent)
+      if let content = styleSheetManager.styleSheetParser.parse(styleSheetData) {
+        debug(.stylesheets, "Loaded stylesheet '\(styleSheetFile.lastPathComponent)' (\(content.rulesets.count) rulesets, \(content.variables.count) variables) in \((Date.timeIntervalSinceReferenceDate - t)) seconds")
+        styleSheet = StyleSheet(styleSheetURL: styleSheetFile, name: name, group: groupName, content: content)
         if let styleSheet = styleSheet {
           styleSheets.append(styleSheet)
         }

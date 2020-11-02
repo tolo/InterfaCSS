@@ -27,7 +27,7 @@ public class StylingContext {
   
   // MARK: - Creation
   
-  public init(styler: Styler, styleSheetScope: StyleSheetScope = StyleSheetScope.defaultGroupScope, ignorePseudoClasses: Bool = false) {
+  public init(styler: Styler, styleSheetScope: StyleSheetScope = .all, ignorePseudoClasses: Bool = false) {
     self.styler = styler
     self.styleSheetScope = styleSheetScope
     self.ignorePseudoClasses = ignorePseudoClasses

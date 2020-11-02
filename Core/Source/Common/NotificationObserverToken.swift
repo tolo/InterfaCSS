@@ -27,7 +27,7 @@ public final class NotificationObserverToken {
   }
   
   func disposedBy(_ bag: NotificationObserverTokenBag) {
-    
+    bag.add(self)
   }
 }
 

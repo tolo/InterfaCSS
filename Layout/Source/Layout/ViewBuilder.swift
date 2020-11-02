@@ -163,7 +163,9 @@ open class ViewBuilder {
       fileOwner.title = title
       fileOwner.navigationItem.title = title
     }
-    rootView.interfaCSS.elementId = styleSheetName
+    if rootView.interfaCSS.elementId == nil {
+      rootView.interfaCSS.elementId = styleSheetName
+    }
     styler.applyStyling(rootView)
     return (rootView, childViewControllers)
   }
@@ -207,12 +209,12 @@ open class ViewBuilder {
 extension ViewBuilder {
   final func loadLayout(forceRefresh: Bool = false, completionHandler: @escaping AbstractLayoutCompletionHandler) {
     if !forceRefresh, let loadedLayout = loadedLayout {
-      logger.debug("buildLayout - using existing layout")
+      logger.trace("buildLayout - using existing layout")
       completionHandler(loadedLayout, nil)
       return
     }
     
-    logger.debug("buildLayout - building layout")
+    logger.trace("buildLayout - building layout")
     loadLayoutFromLayoutFile(completionHandler: completionHandler)
   }
   

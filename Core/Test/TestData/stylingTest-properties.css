@@ -20,3 +20,24 @@
   layer.cornerRadius: 5;
   layer.borderWidth: 10;
 }
+
+
+/* Compound properties */
+.cssfont1 {
+  font-family: system;
+  font-size: 42;
+  font-weight: bold;
+}
+
+.cssfont2 {
+  font-family: system;
+  font-size: 42;
+  font-weight: 800;
+}
+
+.cssfont3 {
+  font-family: system;
+  font-size: 42;
+  font-weight: 800;
+  font-scaling-style: largeTitle;
+}

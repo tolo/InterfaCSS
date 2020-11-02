@@ -8,33 +8,34 @@
 
 import Foundation
 
+// TODO: Rename? Only use a concret styler and no protocol?
+
 public class DelegatingStyler: Styler {
-  private let styler: Styler
+  private let stylingManager: StylingManager
   
   public let styleSheetScope: StyleSheetScope
   
-  public var propertyManager: PropertyManager { return styler.propertyManager }
-  public var styleSheetManager: StyleSheetManager { return styler.styleSheetManager }
+  public var propertyManager: PropertyManager { return stylingManager.propertyManager }
+  public var styleSheetManager: StyleSheetManager { return stylingManager.styleSheetManager }
   
-  public init(styler: Styler, styleSheetScope: StyleSheetScope) {
-    self.styler = styler
+  public init(stylingManager: StylingManager, styleSheetScope: StyleSheetScope) {
+    self.stylingManager = stylingManager
     self.styleSheetScope = styleSheetScope
   }
   
-  public func styler(with styleSheetScope: StyleSheetScope, includeCurrent: Bool = true) -> Styler {
-    let scope = includeCurrent ? self.styleSheetScope.including(styleSheetScope) : styleSheetScope
-    return DelegatingStyler(styler: styler, styleSheetScope: scope)
+  public func styler(withScope styleSheetScope: StyleSheetScope) -> DelegatingStyler {
+    return DelegatingStyler(stylingManager: stylingManager, styleSheetScope: styleSheetScope)
   }
   
-  public func stylingProxy(for uiElement: Stylable) -> ElementStyle {
-    return styler.stylingProxy(for: uiElement)
+  public func style(for uiElement: Stylable) -> ElementStyle {
+    return stylingManager.style(for: uiElement)
   }
   
-  public func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope?) {
-    styler.applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
+  public func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false) {
+    stylingManager.applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope)
   }
   
-  public func clearCachedStylingInformation(for uiElement: Stylable, includeSubViews: Bool) {
-    styler.clearCachedStylingInformation(for: uiElement, includeSubViews: includeSubViews)
+  public func clearCachedStylingInformation(for uiElement: Stylable, includeSubViews: Bool = true) {
+    stylingManager.clearCachedStylingInformation(for: uiElement, includeSubViews: includeSubViews)
   }
 }

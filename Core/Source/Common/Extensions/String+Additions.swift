@@ -24,6 +24,7 @@ internal extension String.StringInterpolation {
 
 infix operator ~= : ComparisonPrecedence
 
+/// caseInsensitiveCompare operator ~=
 internal func ~=(lhs: String, rhs: String) -> Bool {
   return lhs.caseInsensitiveCompare(rhs) == .orderedSame
 }
@@ -98,6 +99,20 @@ internal extension StringProtocol where Self.Index == String.Index {
   
   func charAt(index charIndex: Int) -> Character {
     return self[index(startIndex, offsetBy: charIndex)]
+  }
+  
+  func deletingPrefix(_ prefix: String) -> Self.SubSequence {
+    guard self.hasPrefix(prefix) else { return self[startIndex...] }
+    return self.dropFirst(prefix.count)
+  }
+  
+  func extractPrefix(withCharactersIn charset: CharacterSet) -> Self.SubSequence? {
+    if let range = rangeOfCharacter(from: charset.inverted) {
+      if range.lowerBound != startIndex { return self[startIndex ..< range.lowerBound] } // If first char not in char set is larger than startIndex...
+      else { return nil }
+    } else {
+      return self[startIndex...]
+    }
   }
   
   func rangeOf(_ string: String, options: String.CompareOptions = [], from index: Int = 0) -> Range<Self.Index>? {

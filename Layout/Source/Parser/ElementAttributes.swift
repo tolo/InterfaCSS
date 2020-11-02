@@ -43,17 +43,12 @@ public struct ElementAttributes {
   let inlineStyle: [PropertyValue]?
   let accessibilityIdentifier: String?
   let implementationClass: UIResponder.Type?
-//  var viewClass: UIResponder.Type? {
-//    if (implementationClass == nil) {
-//      return viewClassFor(elementName: elementName)
-//    }
-//    return implementationClass
-//  }
   let addToViewHierarchy: Bool
   let collectionViewLayoutClass: UICollectionViewLayout.Type
   let layoutFile: String?
   let buttonType: UIElementType.ButtonType
   let src: String?
+
   let text: String?
   
   let rawAttributes: [String: String]

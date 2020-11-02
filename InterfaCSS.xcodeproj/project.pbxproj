@@ -46,9 +46,20 @@
 		F632A9B224071AA8000E9945 /* PropertyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = F632A9B024071A9F000E9945 /* PropertyType.swift */; };
 		F632A9B524071ADE000E9945 /* PropertyEnumValueMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = F632A9B424071ADE000E9945 /* PropertyEnumValueMapping.swift */; };
 		F632A9B624071ADE000E9945 /* PropertyEnumValueMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = F632A9B424071ADE000E9945 /* PropertyEnumValueMapping.swift */; };
+		F6382578254CC5C60030F300 /* StyleSheetScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6382577254CC5C60030F300 /* StyleSheetScope.swift */; };
+		F6382579254CC5C60030F300 /* StyleSheetScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6382577254CC5C60030F300 /* StyleSheetScope.swift */; };
+		F638257F254CE50B0030F300 /* Stylable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F638257E254CE50B0030F300 /* Stylable.swift */; };
+		F6382580254CE50B0030F300 /* Stylable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F638257E254CE50B0030F300 /* Stylable.swift */; };
+		F64D8CA3254DA0CA00089182 /* scopeTest-base.css in Resources */ = {isa = PBXBuildFile; fileRef = F64D8CA2254DA0CA00089182 /* scopeTest-base.css */; };
+		F64D8CA9254DA0DC00089182 /* scopeTest-scope.css in Resources */ = {isa = PBXBuildFile; fileRef = F64D8CA8254DA0DC00089182 /* scopeTest-scope.css */; };
 		F68CDE0E24ABEA270077A006 /* ElementAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68CDE0D24ABEA270077A006 /* ElementAttributes.swift */; };
 		F68CDE1124ACDB790077A006 /* simpleView.xml in Resources */ = {isa = PBXBuildFile; fileRef = F68CDE1024ACDB790077A006 /* simpleView.xml */; };
 		F68CDE1324AD23B10077A006 /* YogaKitAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68CDE1224AD23B10077A006 /* YogaKitAdditions.swift */; };
+		F68CDE1524ADD6730077A006 /* AbstractLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68CDE1424ADD6730077A006 /* AbstractLayout.swift */; };
+		F68CDE1724ADDD8B0077A006 /* FlexViewBuilder+Properties.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68CDE1624ADDD8B0077A006 /* FlexViewBuilder+Properties.swift */; };
+		F68CDE1D24AF07DE0077A006 /* nestedViews.xml in Resources */ = {isa = PBXBuildFile; fileRef = F68CDE1B24AF07060077A006 /* nestedViews.xml */; };
+		F68CDE1F24AF7C9F0077A006 /* testLayoutColumn.xml in Resources */ = {isa = PBXBuildFile; fileRef = F68CDE1E24AF7C9F0077A006 /* testLayoutColumn.xml */; };
+		F68CDE2124AF80030077A006 /* testLayoutRow.xml in Resources */ = {isa = PBXBuildFile; fileRef = F68CDE2024AF80030077A006 /* testLayoutRow.xml */; };
 		F69308DD23B63F9500DCE4E7 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F69308D323B63F9500DCE4E7 /* Core.framework */; };
 		F69308FB23B63FCF00DCE4E7 /* Layout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F69308F223B63FCF00DCE4E7 /* Layout.framework */; };
 		F693092F23B6490D00DCE4E7 /* StyleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F693090A23B6490500DCE4E7 /* StyleSheet.swift */; };
@@ -143,10 +154,16 @@
 		F6C1C08124AB76D50097BBF9 /* NSPredicate+Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = F6C1C07E24AB76D50097BBF9 /* NSPredicate+Additions.h */; };
 		F6C1C08224AB76D50097BBF9 /* NSPredicate+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = F6C1C07F24AB76D50097BBF9 /* NSPredicate+Additions.m */; };
 		F6C1C08324AB76D50097BBF9 /* NSPredicate+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = F6C1C07F24AB76D50097BBF9 /* NSPredicate+Additions.m */; };
+		F6D6B2D92550B8A4005DAB6D /* CompoundFontProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6B2D82550B8A4005DAB6D /* CompoundFontProperty.swift */; };
+		F6D6B2DA2550B8A4005DAB6D /* CompoundFontProperty.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6B2D82550B8A4005DAB6D /* CompoundFontProperty.swift */; };
+		F6D6B2E02550BC3B005DAB6D /* UIFont+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6B2DF2550BC3B005DAB6D /* UIFont+Additions.swift */; };
+		F6D6B2E12550BC3B005DAB6D /* UIFont+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6B2DF2550BC3B005DAB6D /* UIFont+Additions.swift */; };
 		F6E228E4246470750033BB3A /* VariableRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E228E3246470750033BB3A /* VariableRepository.swift */; };
 		F6E228E5246470750033BB3A /* VariableRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E228E3246470750033BB3A /* VariableRepository.swift */; };
 		F6E228E72464708D0033BB3A /* StyleSheetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E228E62464708D0033BB3A /* StyleSheetRepository.swift */; };
 		F6E228E82464708D0033BB3A /* StyleSheetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E228E62464708D0033BB3A /* StyleSheetRepository.swift */; };
+		F6F396F0254F11150000F6F8 /* StylingAware.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F396EF254F11150000F6F8 /* StylingAware.swift */; };
+		F6F396F1254F11150000F6F8 /* StylingAware.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6F396EF254F11150000F6F8 /* StylingAware.swift */; };
 		FCE3AF9E78DE4613292EF9FF /* Pods_Layout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B81A959ABE087AB16597A574 /* Pods_Layout.framework */; };
 /* End PBXBuildFile section */
 
@@ -201,10 +218,19 @@
 		F632A9AB240716C1000E9945 /* Layout copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Layout copy-Info.plist"; path = "/Users/tobias/Dropbox/Projekt/GitHub/tolo/InterfaCSS-develop/Layout copy-Info.plist"; sourceTree = "<absolute>"; };
 		F632A9B024071A9F000E9945 /* PropertyType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyType.swift; sourceTree = "<group>"; };
 		F632A9B424071ADE000E9945 /* PropertyEnumValueMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyEnumValueMapping.swift; sourceTree = "<group>"; };
+		F6382577254CC5C60030F300 /* StyleSheetScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleSheetScope.swift; sourceTree = "<group>"; };
+		F638257E254CE50B0030F300 /* Stylable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stylable.swift; sourceTree = "<group>"; };
+		F64D8CA2254DA0CA00089182 /* scopeTest-base.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "scopeTest-base.css"; sourceTree = "<group>"; };
+		F64D8CA8254DA0DC00089182 /* scopeTest-scope.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "scopeTest-scope.css"; sourceTree = "<group>"; };
 		F679331F23C4C87900533872 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F68CDE0D24ABEA270077A006 /* ElementAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementAttributes.swift; sourceTree = "<group>"; };
 		F68CDE1024ACDB790077A006 /* simpleView.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = simpleView.xml; sourceTree = "<group>"; };
 		F68CDE1224AD23B10077A006 /* YogaKitAdditions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YogaKitAdditions.swift; sourceTree = "<group>"; };
+		F68CDE1424ADD6730077A006 /* AbstractLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AbstractLayout.swift; sourceTree = "<group>"; };
+		F68CDE1624ADDD8B0077A006 /* FlexViewBuilder+Properties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FlexViewBuilder+Properties.swift"; sourceTree = "<group>"; };
+		F68CDE1B24AF07060077A006 /* nestedViews.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = nestedViews.xml; sourceTree = "<group>"; };
+		F68CDE1E24AF7C9F0077A006 /* testLayoutColumn.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = testLayoutColumn.xml; sourceTree = "<group>"; };
+		F68CDE2024AF80030077A006 /* testLayoutRow.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = testLayoutRow.xml; sourceTree = "<group>"; };
 		F69308D323B63F9500DCE4E7 /* Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F69308D723B63F9500DCE4E7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F69308DC23B63F9500DCE4E7 /* CoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -273,8 +299,11 @@
 		F6C1C07C24AB71F20097BBF9 /* InterfaCSS+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InterfaCSS+Layout.swift"; sourceTree = "<group>"; };
 		F6C1C07E24AB76D50097BBF9 /* NSPredicate+Additions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSPredicate+Additions.h"; sourceTree = "<group>"; };
 		F6C1C07F24AB76D50097BBF9 /* NSPredicate+Additions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+Additions.m"; sourceTree = "<group>"; };
+		F6D6B2D82550B8A4005DAB6D /* CompoundFontProperty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundFontProperty.swift; sourceTree = "<group>"; };
+		F6D6B2DF2550BC3B005DAB6D /* UIFont+Additions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont+Additions.swift"; sourceTree = "<group>"; };
 		F6E228E3246470750033BB3A /* VariableRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableRepository.swift; sourceTree = "<group>"; };
 		F6E228E62464708D0033BB3A /* StyleSheetRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleSheetRepository.swift; sourceTree = "<group>"; };
+		F6F396EF254F11150000F6F8 /* StylingAware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StylingAware.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -369,6 +398,7 @@
 				F61D3EE424598E2200DF82D7 /* PropertyRepository.swift */,
 				F61D3EE8245991A200DF82D7 /* PropertyRepository+CSS.swift */,
 				F61D3EEC2459A44100DF82D7 /* PropertyRepository+UIKit.swift */,
+				F6D6B2D82550B8A4005DAB6D /* CompoundFontProperty.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -388,6 +418,9 @@
 			isa = PBXGroup;
 			children = (
 				F68CDE1024ACDB790077A006 /* simpleView.xml */,
+				F68CDE1B24AF07060077A006 /* nestedViews.xml */,
+				F68CDE1E24AF7C9F0077A006 /* testLayoutColumn.xml */,
+				F68CDE2024AF80030077A006 /* testLayoutRow.xml */,
 			);
 			path = TestData;
 			sourceTree = "<group>";
@@ -474,6 +507,7 @@
 				F693092723B6490600DCE4E7 /* StyleSheetManager.swift */,
 				F693090B23B6490500DCE4E7 /* PseudoClassFactory.swift */,
 				F693090A23B6490500DCE4E7 /* StyleSheet.swift */,
+				F6382577254CC5C60030F300 /* StyleSheetScope.swift */,
 				F693090C23B6490500DCE4E7 /* StyleSheetContent.swift */,
 				F693091723B6490500DCE4E7 /* Ruleset.swift */,
 				F693092D23B6490600DCE4E7 /* SelectorChain.swift */,
@@ -517,6 +551,8 @@
 				F693091523B6490500DCE4E7 /* DelegatingStyler.swift */,
 				F693091423B6490500DCE4E7 /* StylingContext.swift */,
 				F693092023B6490500DCE4E7 /* ElementStyle.swift */,
+				F638257E254CE50B0030F300 /* Stylable.swift */,
+				F6F396EF254F11150000F6F8 /* StylingAware.swift */,
 			);
 			path = Styling;
 			sourceTree = "<group>";
@@ -547,6 +583,7 @@
 				F693092E23B6490600DCE4E7 /* Number+Additions.swift */,
 				F693092A23B6490600DCE4E7 /* String+Additions.swift */,
 				F693091823B6490500DCE4E7 /* UIColor+Additions.swift */,
+				F6D6B2DF2550BC3B005DAB6D /* UIFont+Additions.swift */,
 				F632A96D24070BB5000E9945 /* UIDevice+Additions.swift */,
 				F6C1C07824AB6B380097BBF9 /* NotificationCenter+Additions.swift */,
 				F6C1C07E24AB76D50097BBF9 /* NSPredicate+Additions.h */,
@@ -564,6 +601,8 @@
 				F693098523B64D9200DCE4E7 /* stylingTest-properties.css */,
 				F693098623B64D9200DCE4E7 /* propertyValues.css */,
 				F693098723B64D9200DCE4E7 /* image.png */,
+				F64D8CA2254DA0CA00089182 /* scopeTest-base.css */,
+				F64D8CA8254DA0DC00089182 /* scopeTest-scope.css */,
 			);
 			path = TestData;
 			sourceTree = "<group>";
@@ -581,10 +620,11 @@
 		F69309BA23B6570600DCE4E7 /* Parser */ = {
 			isa = PBXGroup;
 			children = (
-				F693099823B656D200DCE4E7 /* AbstractViewTreeNode.swift */,
-				F693099923B656D200DCE4E7 /* UIElementType.swift */,
+				F68CDE1424ADD6730077A006 /* AbstractLayout.swift */,
 				F693099C23B656D200DCE4E7 /* AbstractLayoutParser.swift */,
+				F693099823B656D200DCE4E7 /* AbstractViewTreeNode.swift */,
 				F68CDE0D24ABEA270077A006 /* ElementAttributes.swift */,
+				F693099923B656D200DCE4E7 /* UIElementType.swift */,
 			);
 			path = Parser;
 			sourceTree = "<group>";
@@ -606,6 +646,7 @@
 			isa = PBXGroup;
 			children = (
 				F69309A023B656D200DCE4E7 /* FlexViewBuilder.swift */,
+				F68CDE1624ADDD8B0077A006 /* FlexViewBuilder+Properties.swift */,
 				F68CDE1224AD23B10077A006 /* YogaKitAdditions.swift */,
 			);
 			path = Flex;
@@ -739,7 +780,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1210;
 				ORGANIZATIONNAME = "Leafnode AB";
 				TargetAttributes = {
 					F69308D223B63F9500DCE4E7 = {
@@ -792,6 +833,8 @@
 			files = (
 				F693098F23B64D9200DCE4E7 /* propertyValues.css in Resources */,
 				F693098B23B64D9200DCE4E7 /* stylingTest-caching.css in Resources */,
+				F64D8CA3254DA0CA00089182 /* scopeTest-base.css in Resources */,
+				F64D8CA9254DA0DC00089182 /* scopeTest-scope.css in Resources */,
 				F693098E23B64D9200DCE4E7 /* stylingTest-properties.css in Resources */,
 				F693098C23B64D9200DCE4E7 /* badData.css in Resources */,
 				F693098D23B64D9200DCE4E7 /* styleSheetStructure.css in Resources */,
@@ -810,7 +853,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F68CDE2124AF80030077A006 /* testLayoutRow.xml in Resources */,
+				F68CDE1F24AF7C9F0077A006 /* testLayoutColumn.xml in Resources */,
 				F68CDE1124ACDB790077A006 /* simpleView.xml in Resources */,
+				F68CDE1D24AF07DE0077A006 /* nestedViews.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -946,6 +992,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6D6B2E02550BC3B005DAB6D /* UIFont+Additions.swift in Sources */,
 				F693095923B6490D00DCE4E7 /* Styler.swift in Sources */,
 				F61D3EDC2458AB7000DF82D7 /* GeometryPropertyParsers.swift in Sources */,
 				F6E228E72464708D0033BB3A /* StyleSheetRepository.swift in Sources */,
@@ -969,8 +1016,10 @@
 				F693096523B6490D00DCE4E7 /* Array+Additions.swift in Sources */,
 				F693096923B6490D00DCE4E7 /* StyleSheetManager.swift in Sources */,
 				F6C1C07B24AB6CEB0097BBF9 /* NotificationObserverToken.swift in Sources */,
+				F6F396F0254F11150000F6F8 /* StylingAware.swift in Sources */,
 				F62C5BE12407D12700343B17 /* CssColors.swift in Sources */,
 				F61D3ECC24585A0900DF82D7 /* BasicPropertyParsers.swift in Sources */,
+				F638257F254CE50B0030F300 /* Stylable.swift in Sources */,
 				F632A96E24070BB5000E9945 /* UIDevice+Additions.swift in Sources */,
 				F61D3ED0245887DD00DF82D7 /* ColorPropertyParser.swift in Sources */,
 				F693097523B6490D00DCE4E7 /* SelectorChain.swift in Sources */,
@@ -984,10 +1033,12 @@
 				F693094923B6490D00DCE4E7 /* Ruleset.swift in Sources */,
 				F61D3EE9245991A200DF82D7 /* PropertyRepository+CSS.swift in Sources */,
 				F632A9B124071A9F000E9945 /* PropertyType.swift in Sources */,
+				F6D6B2D92550B8A4005DAB6D /* CompoundFontProperty.swift in Sources */,
 				F61D3EF6245A185100DF82D7 /* StyleSheetParser+Support.swift in Sources */,
 				F69309C523B65DB300DCE4E7 /* ResourceFile.swift in Sources */,
 				F69309C623B65E8000DCE4E7 /* StringParsableEnum.swift in Sources */,
 				F693093123B6490D00DCE4E7 /* PseudoClassFactory.swift in Sources */,
+				F6382578254CC5C60030F300 /* StyleSheetScope.swift in Sources */,
 				F6C1C07424AB68F90097BBF9 /* InterfaCSS.swift in Sources */,
 				F61D3EE524598E2200DF82D7 /* PropertyRepository.swift in Sources */,
 				F693094D23B6490D00DCE4E7 /* Logger.swift in Sources */,
@@ -1033,6 +1084,8 @@
 				F693096823B6490D00DCE4E7 /* RelativeNumber.swift in Sources */,
 				F632A9B224071AA8000E9945 /* PropertyType.swift in Sources */,
 				F69309AD23B656D300DCE4E7 /* AbstractLayoutParser.swift in Sources */,
+				F6382579254CC5C60030F300 /* StyleSheetScope.swift in Sources */,
+				F6D6B2DA2550B8A4005DAB6D /* CompoundFontProperty.swift in Sources */,
 				F61D3EF7245A185100DF82D7 /* StyleSheetParser+Support.swift in Sources */,
 				F6E228E5246470750033BB3A /* VariableRepository.swift in Sources */,
 				F693097023B6490D00DCE4E7 /* String+Additions.swift in Sources */,
@@ -1048,9 +1101,11 @@
 				F693096623B6490D00DCE4E7 /* Array+Additions.swift in Sources */,
 				F61D3EE624598E2200DF82D7 /* PropertyRepository.swift in Sources */,
 				F69309B923B656D300DCE4E7 /* LayoutContainerView.swift in Sources */,
+				F68CDE1524ADD6730077A006 /* AbstractLayout.swift in Sources */,
 				F693096A23B6490D00DCE4E7 /* StyleSheetManager.swift in Sources */,
 				F69309A923B656D300DCE4E7 /* AbstractViewTreeNode.swift in Sources */,
 				F61D3ED9245890D100DF82D7 /* TransformPropertyParser.swift in Sources */,
+				F6382580254CE50B0030F300 /* Stylable.swift in Sources */,
 				F693097623B6490D00DCE4E7 /* SelectorChain.swift in Sources */,
 				F62C5BE22407D12700343B17 /* CssColors.swift in Sources */,
 				F68CDE0E24ABEA270077A006 /* ElementAttributes.swift in Sources */,
@@ -1075,9 +1130,12 @@
 				F62C5BE42407D3A700343B17 /* UIDevice+Additions.swift in Sources */,
 				F61D3EF4245A12EB00DF82D7 /* CompoundProperty.swift in Sources */,
 				F61D3EEA245991A200DF82D7 /* PropertyRepository+CSS.swift in Sources */,
+				F68CDE1724ADDD8B0077A006 /* FlexViewBuilder+Properties.swift in Sources */,
 				F69309B723B656D300DCE4E7 /* LayoutCell.swift in Sources */,
+				F6D6B2E12550BC3B005DAB6D /* UIFont+Additions.swift in Sources */,
 				F693096223B6490D00DCE4E7 /* StylingManager.swift in Sources */,
 				F69309B523B656D300DCE4E7 /* LayoutViewController.swift in Sources */,
+				F6F396F1254F11150000F6F8 /* StylingAware.swift in Sources */,
 				F693093423B6490D00DCE4E7 /* StyleSheetContent.swift in Sources */,
 				F693094423B6490D00DCE4E7 /* StylingContext.swift in Sources */,
 				F693096423B6490D00DCE4E7 /* PseudoClass.swift in Sources */,
@@ -1136,6 +1194,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1161,7 +1220,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1199,6 +1258,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1218,7 +1278,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -1290,6 +1350,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "$(SRCROOT)/Core/Test-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1311,6 +1372,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = "$(SRCROOT)/Core/Test-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

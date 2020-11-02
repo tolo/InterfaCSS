@@ -16,10 +16,11 @@ final class VariableRepository {
   
   private var runtimeStyleSheetsVariables: [String : String] = [:]
   
-  public func valueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .defaultGroupScope) -> String? {
+  public func valueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .all) -> String? {
     var value: String? = runtimeStyleSheetsVariables[variableName]
     if value == nil {
-      for styleSheet in styleSheetManager.activeStylesheets.reversed() {
+      let stylesheetsInScope = styleSheetManager.activeStylesheets(in: scope)
+      for styleSheet in stylesheetsInScope.reversed() {
         value = styleSheet.content.variables[variableName] // TODO: Review access
         if value != nil {
           break
@@ -33,7 +34,7 @@ final class VariableRepository {
     runtimeStyleSheetsVariables[variableName] = value
   }
   
-  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .defaultGroupScope, didReplace: inout Bool) -> String {
+  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .all, didReplace: inout Bool) -> String {
     var location: Int = 0
     var propertyValue = inPropertyValue
     while location < propertyValue.count {
@@ -46,11 +47,11 @@ final class VariableRepository {
       }
       
       if varBeginLocation != NSNotFound {
-        location = varBeginLocation + varPrefixLength
+        let variableNameLocation = varBeginLocation + varPrefixLength
         
-        var variableNameRangeEnd = propertyValue.index(ofCharInSet: Self.notValidIdentifierCharsSet, from: location)
-        if (variableNameRangeEnd == NSNotFound) { variableNameRangeEnd = inPropertyValue.count }
-        let variableNameRange = propertyValue.range(from: location, to: variableNameRangeEnd)
+        var variableNameRangeEnd = propertyValue.index(ofCharInSet: Self.notValidIdentifierCharsSet, from: variableNameLocation)
+        if (variableNameRangeEnd == NSNotFound) { variableNameRangeEnd = propertyValue.count }
+        let variableNameRange = propertyValue.range(from: variableNameLocation, to: variableNameRangeEnd)
         
         var variableValue: String? = nil
         var variableName = "n/a"
@@ -65,7 +66,7 @@ final class VariableRepository {
           propertyValue = propertyValue.replaceCharacterInRange(from: varBeginLocation, to: variableNameRangeEnd, with: variableValue)
           location += variableValue.count
           didReplace = true
-        } else  {
+        } else {
           Logger.stylesheets.error("Unrecognized property variable: \(variableName) (property value: \(propertyValue)")
           location = variableNameRangeEnd
         }
@@ -76,11 +77,24 @@ final class VariableRepository {
     return propertyValue
   }
   
-  public func transformedValueOfStyleSheetVariable(withName variableName: String, as propertyType: PropertyType, scope: StyleSheetScope = .defaultGroupScope) -> Any? {
+  private func stringValueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .all) -> String? {
     if let rawValue = valueOfStyleSheetVariable(withName: variableName, scope: scope) {
       var didReplace = false
-      let value = replaceVariableReferences(rawValue, scope: scope, didReplace: &didReplace)
-      return propertyType.parseAny(propertyValue: PropertyValue(propertyName: variableName, value: value))
+      return replaceVariableReferences(rawValue, scope: scope, didReplace: &didReplace)
+    }
+    return nil
+  }
+  
+  public func transformedValueOfStyleSheetVariable(withName variableName: String, as propertyType: PropertyType, scope: StyleSheetScope = .all) -> Any? {
+    if let string = stringValueOfStyleSheetVariable(withName: variableName, scope: scope) {
+      return propertyType.parseAny(propertyValue: PropertyValue(propertyName: variableName, value: string))
+    }
+    return nil
+  }
+  
+  public func transformedValueOfStyleSheetVariable<T>(withName variableName: String, as propertyType: TypedPropertyType<T>, scope: StyleSheetScope = .all) -> T? {
+    if let string = stringValueOfStyleSheetVariable(withName: variableName, scope: scope) {
+      return propertyType.parse(propertyValue: PropertyValue(propertyName: variableName, value: string))
     }
     return nil
   }

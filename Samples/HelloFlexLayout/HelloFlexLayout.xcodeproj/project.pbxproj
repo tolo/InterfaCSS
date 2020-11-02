@@ -19,6 +19,7 @@
 		07FE5B1DF27A3C0FDBE2ADC9 /* Pods_HelloFlexLayout.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HelloFlexLayout.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62C9729E9064A5A33DF18721 /* Pods-HelloFlexLayout.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloFlexLayout.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout.debug.xcconfig"; sourceTree = "<group>"; };
 		D6B5B9ECF390FAF023434B4A /* Pods-HelloFlexLayout.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HelloFlexLayout.release.xcconfig"; path = "Pods/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout.release.xcconfig"; sourceTree = "<group>"; };
+		F68CDE1824ADE0740077A006 /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; };
 		F6E27A0F229B2F4200BD3A3D /* HelloFlexLayout.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloFlexLayout.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6E27A12229B2F4200BD3A3D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F6E27A14229B2F4200BD3A3D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -60,6 +61,7 @@
 		F6E27A06229B2F4200BD3A3D = {
 			isa = PBXGroup;
 			children = (
+				F68CDE1824ADE0740077A006 /* Podfile */,
 				F6E27A11229B2F4200BD3A3D /* HelloFlexLayout */,
 				F6E27A10229B2F4200BD3A3D /* Products */,
 				95B56EDEB5599BB15F4A270D /* Pods */,
@@ -192,24 +194,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/InterfaCSS/InterfaCSS.framework",
-				"${BUILT_PRODUCTS_DIR}/Yoga/yoga.framework",
-				"${BUILT_PRODUCTS_DIR}/YogaKit/YogaKit.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/InterfaCSS.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/yoga.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YogaKit.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HelloFlexLayout/Pods-HelloFlexLayout-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

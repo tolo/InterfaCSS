@@ -8,6 +8,7 @@
 
 import UIKit
 
+/// Handles the case when multiple (CSS) properties correspond to a single native property
 open class CompoundProperty: Hashable {
   public let propertyName: String
   public let compoundPropertyNames: Set<String>
@@ -29,10 +30,13 @@ open class CompoundProperty: Hashable {
       guard let value = propertyValues.first(where: { $0.propertyName == name })?.rawValue else { return nil }
       return (name, value)
     }
-    
+
     return Dictionary(uniqueKeysWithValues: entries)
   }
-
+  
+  func resolve(propertyValues: [PropertyValue]) -> Any? {
+    return nil
+  }
   
   /// Hashable and Equatable
   

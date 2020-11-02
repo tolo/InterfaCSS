@@ -11,11 +11,16 @@ import XCTest
 
 class InterfaCSSTests: XCTestCase {
   
-  private func initializeWithStyleSheet(_ name: String) -> Styler {
+  private func initializeWithStyleSheet(_ name: String) -> StylingManager {
     let styler = StylingManager()
     let path = Bundle(for: type(of: self)).url(forResource: name, withExtension: "css")!
-    styler.loadStyleSheet(fromFileURL: path)
+    styler.loadStyleSheet(fromLocalFile: path)
     return styler;
+  }
+  
+  private func loadStyleSheet(stylingManager: StylingManager, name: String, group: String? = nil) {
+    let path = Bundle(for: type(of: self)).url(forResource: name, withExtension: "css")!
+    stylingManager.loadStyleSheet(fromLocalFile: path, group: group)
   }
   
   private func format(_ value: CGFloat) -> String {
@@ -116,4 +121,59 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(rootView.layer.cornerRadius, 5)
     XCTAssertEqual(rootView.layer.borderWidth, 10)
   }
+    
+  // MARK: - Stylesheet scopes
+  
+  func testScoping() {
+    let stylingManager = initializeWithStyleSheet("scopeTest-base")
+    
+    let rootView = UIView()
+    rootView.interfaCSS.addStyleClass("someClass")
+    
+    stylingManager.applyStyling(rootView)
+    XCTAssertEqual(rootView.isHidden, true)
+    XCTAssertEqual(rootView.tag, 5)
+    
+    loadStyleSheet(stylingManager: stylingManager, name: "scopeTest-scope", group: "group")
+    let scopedStyler = stylingManager.styler(withScope: .using(group: "group"))
+    
+    rootView.isHidden = false
+    scopedStyler.applyStyling(rootView, force: true)
+    XCTAssertEqual(rootView.isHidden, true)
+    XCTAssertEqual(rootView.tag, 10)
+    
+    let globalScopedStyler = stylingManager.styler(withScope: .global)
+    
+    rootView.isHidden = false
+    globalScopedStyler.applyStyling(rootView, force: true)
+    XCTAssertEqual(rootView.isHidden, true)
+    XCTAssertEqual(rootView.tag, 5)
+  }
+  
+  
+  // MARK: - Compound properties
+  
+  func testCompoundFontProperty() {
+    let styler = initializeWithStyleSheet("stylingTest-properties")
+    
+    let label = UILabel()
+    label.text = "Test"
+    label.adjustsFontForContentSizeCategory = true
+    label.interfaCSS.addStyleClass("cssfont1")
+    styler.applyStyling(label)
+    
+    XCTAssertEqual(label.font, UIFont.systemFont(ofSize: 42, weight: .bold))
+    
+    label.interfaCSS.addStyleClass("cssfont2")
+    styler.applyStyling(label)
+    XCTAssertEqual(label.font, UIFont.systemFont(ofSize: 42, weight: .heavy))
+    
+    //UITraitCollection(preferredContentSizeCategory: .extraExtraLarge).performAsCurrent {
+      label.interfaCSS.addStyleClass("cssfont3")
+      styler.applyStyling(label)
+    // TODO: This may have to be tested manually
+      XCTAssertEqual(label.font.pointSize, UIFont.systemFont(ofSize: 42, weight: .heavy).scaledFont(for: .largeTitle).pointSize)
+    //}
+  }
 }
+

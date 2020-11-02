@@ -25,8 +25,6 @@ public class StyleSheetManager: NSObject {
    */
   public var styleSheets: [StyleSheet] { styleSheetRepository.styleSheets }
   
-  var activeStylesheets: [StyleSheet] { styleSheetRepository.activeStylesheets }
-  
   /**
    * The interval at which refreshable stylesheets are refreshed. Default is 5 seconds. If value is set to <= 0, automatic refresh is disabled. Note: this is only use for stylesheets loaded from a remote URL.
    */
@@ -56,31 +54,13 @@ public class StyleSheetManager: NSObject {
   
   
   // MARK: - Stylesheets loading
-  
+
   /**
    * Loads a stylesheet from the main bundle.
    */
   @discardableResult
-  public func loadStyleSheet(fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
-    return loadNamedStyleSheet(nil, group: StyleSheetGroupDefault, fromMainBundleFile: styleSheetFileName)
-  }
-
-  @discardableResult
-  public func loadNamedStyleSheet(_ name: String?, group groupName: String, fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
-    return styleSheetRepository.loadNamedStyleSheet(name, group: groupName, fromMainBundleFile: styleSheetFileName)
-  }
-
-  /**
-   * Loads a stylesheet from an absolute file path.
-   */
-  @discardableResult
-  public func loadStyleSheet(fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
-    return loadNamedStyleSheet(nil, group: StyleSheetGroupDefault, fromFileURL: styleSheetFileURL)
-  }
-
-  @discardableResult
-  public func loadNamedStyleSheet(_ name: String?, group groupName: String?, fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
-    return styleSheetRepository.loadNamedStyleSheet(name, group: groupName, fromFileURL: styleSheetFileURL)
+  public func loadStyleSheet(fromMainBundleFile styleSheetFileName: String, name: String? = nil, group groupName: String? = nil) -> StyleSheet? {
+    return styleSheetRepository.loadStyleSheet(fromMainBundleFile: styleSheetFileName, name: name, group: groupName)
   }
 
   /**
@@ -88,18 +68,16 @@ public class StyleSheetManager: NSObject {
    * Note: Refreshable stylesheets are only intended for use during development, and not in production.
    */
   @discardableResult
-  public func loadRefreshableStyleSheet(from styleSheetURL: URL) -> StyleSheet {
-    return loadRefreshableNamedStyleSheet(nil, group: StyleSheetGroupDefault, from: styleSheetURL)
+  public func loadStyleSheet(fromRefreshableFile styleSheetURL: URL, name: String? = nil, group groupName: String? = nil) -> StyleSheet {
+    return styleSheetRepository.loadStyleSheet(fromRefreshableFile: styleSheetURL, name: name, group: groupName)
   }
 
+  /**
+   * Loads a stylesheet from an local file path.
+   */
   @discardableResult
-  public func loadRefreshableNamedStyleSheet(_ name: String?, group groupName: String, from styleSheetURL: URL) -> StyleSheet {
-    return styleSheetRepository.loadRefreshableNamedStyleSheet(name, group: groupName, from: styleSheetURL)
-  }
-
-  @discardableResult
-  public func loadStyleSheet(fromLocalFileURL styleSheetFile: URL, withName name: String?, group groupName: String?) -> StyleSheet? {
-    return styleSheetRepository.loadStyleSheet(fromLocalFileURL: styleSheetFile, withName: name, group: groupName)
+  public func loadStyleSheet(fromLocalFile styleSheetFile: URL, name: String? = nil, group groupName: String? = nil) -> StyleSheet? {
+    return styleSheetRepository.loadStyleSheet(fromLocalFile: styleSheetFile, name: name, group: groupName)
   }
   
   public func register(_ styleSheet: StyleSheet) {
@@ -137,6 +115,10 @@ public class StyleSheetManager: NSObject {
 
   // MARK: - Parsing and matching
   
+  public func activeStylesheets(in scope: StyleSheetScope) -> [StyleSheet] {
+    return styleSheetRepository.activeStylesheets(in: scope)
+  }
+  
   /**
    * Parses the specified stylesheet data and returns an object (`StyleSheetContent`) representing the stylesheet content (rulesets and variables).
    */
@@ -146,7 +128,7 @@ public class StyleSheetManager: NSObject {
   
   public func rulesets(matchingElement element: ElementStyle, context: StylingContext) -> [Ruleset] {
     var rulesets: [Ruleset] = []
-    for styleSheet in activeStylesheets {
+    for styleSheet in activeStylesheets(in: context.styleSheetScope) {
       if styleSheet.refreshable {
         context.stylesCacheable = false
       }
@@ -155,7 +137,7 @@ public class StyleSheetManager: NSObject {
       for ruleset in styleSheetRulesets {
         // Get reference to inherited rulesets, if any:
         if let extendedDeclarationSelectorChain = ruleset.extendedDeclarationSelectorChain, ruleset.extendedDeclaration == nil {
-          for s in activeStylesheets {
+          for s in activeStylesheets(in: context.styleSheetScope) {
             // TODO: Review caching of extendedDeclaration
             ruleset.extendedDeclaration = s.findRuleset(with: extendedDeclarationSelectorChain)
             if ruleset.extendedDeclaration != nil {
@@ -175,7 +157,7 @@ public class StyleSheetManager: NSObject {
   /**
    * Returns the raw value of the stylesheet variable with the specified name.
    */
-  public func valueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .defaultGroupScope) -> String? {
+  public func valueOfStyleSheetVariable(withName variableName: String, scope: StyleSheetScope = .all) -> String? {
     return variableRepository.valueOfStyleSheetVariable(withName: variableName, scope: scope)
   }
   
@@ -186,19 +168,26 @@ public class StyleSheetManager: NSObject {
     return variableRepository.setValue(value, forStyleSheetVariableWithName: variableName)
   }
   
-  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .defaultGroupScope) -> String {
+  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .all) -> String {
     var didReplace: Bool = false
-    return replaceVariableReferences(inPropertyValue, scope: scope, didReplace: &didReplace)
+    return variableRepository.replaceVariableReferences(inPropertyValue, scope: scope, didReplace: &didReplace)
   }
   
-  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .defaultGroupScope, didReplace: inout Bool) -> String {
+  public func replaceVariableReferences(_ inPropertyValue: String, scope: StyleSheetScope = .all, didReplace: inout Bool) -> String {
     return variableRepository.replaceVariableReferences(inPropertyValue, scope: scope, didReplace: &didReplace)
   }
   
   /**
    * Returns the value of the stylesheet variable with the specified name, transformed to the specified type.
    */
-  public func transformedValueOfStyleSheetVariable(withName variableName: String, as propertyType: PropertyType, scope: StyleSheetScope = .defaultGroupScope) -> Any? {
+  public func transformedValueOfStyleSheetVariable(withName variableName: String, as propertyType: PropertyType, scope: StyleSheetScope = .all) -> Any? {
+    return variableRepository.transformedValueOfStyleSheetVariable(withName: variableName, as: propertyType, scope: scope)
+  }
+  
+  /**
+   * Returns the value of the stylesheet variable with the specified name, transformed to the specified type.
+   */
+  public func transformedValueOfStyleSheetVariable<T>(withName variableName: String, as propertyType: TypedPropertyType<T>, scope: StyleSheetScope = .all) -> T? {
     return variableRepository.transformedValueOfStyleSheetVariable(withName: variableName, as: propertyType, scope: scope)
   }
   
@@ -247,7 +236,7 @@ public class StyleSheetManager: NSObject {
     guard let uiElement = element.uiElement else { return }
     var existingSelectorChains: Set<SelectorChain> = []
     var match = false
-    for styleSheet in activeStylesheets {
+    for styleSheet in activeStylesheets(in: context.styleSheetScope) {
       let matchingDeclarations = styleSheet.rulesets(matching: element, context: context)
       var descriptions: [String] = []
       if matchingDeclarations.count > 0 {

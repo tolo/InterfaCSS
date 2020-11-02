@@ -19,21 +19,8 @@ public enum AbstractViewTreeParserError: Error {
 }
 
 
-public struct AbstractLayout {
-  public let rootNode: AbstractViewTreeNode
-  public let title: String?
-  public let layoutStyle: StyleSheetContent?
-  public let layoutAttributes: LayoutAttributes
-}
-
-public class LayoutAttributes {
-  public var useSafeAreaInsets: Bool = true
-  public var useDefaultMargins: Bool = false
-}
-
-
 /**
- * AbstractViewTreeParser
+ * Responsible for parsing layouts from XML-data.
  */
 public final class AbstractViewTreeParser: NSObject {
 
@@ -111,6 +98,8 @@ public final class AbstractViewTreeParser: NSObject {
   }
 }
 
+
+/// Parser implementation (XMLParserDelegate)
 extension AbstractViewTreeParser: XMLParserDelegate {
 
   public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
@@ -144,7 +133,7 @@ extension AbstractViewTreeParser: XMLParserDelegate {
       // Attributes
       let attributes = ElementAttributes(forElementName: elementName, attributes: attributeDict, withStyler: styler)
       let elementType = UIElementType.typeFrom(elementName: elementName)
-
+      
       let viewTreeNode = AbstractViewTreeNode(elementType: elementType, attributes: attributes)
       if let parentNode = nodeStack.last, case .viewNode(let parentViewNode) = parentNode {
         parentViewNode.addChild(node: viewTreeNode)

@@ -42,7 +42,7 @@ extension LayoutCellCompositeView {
     let viewBuilder = type(of: parentViewBuilder).init(layoutFileURL: url, refreshable: parentViewBuilder.refreshable, styler: parentViewBuilder.styler)
     viewBuilder.loadLayout { (layout, error) in
       if layout != nil {
-        Logger("LayoutCellView").debug("Preloaded cell layout '\(layoutFile)'")
+        Logger("LayoutCellView").trace("Preloaded cell layout '\(layoutFile)'")
       } else {
         Logger("LayoutCellView").error("Error preloading cell layout '\(layoutFile)' - \(String(describing: error))")
       }

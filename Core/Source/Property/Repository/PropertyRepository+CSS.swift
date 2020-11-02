@@ -15,15 +15,6 @@ private let identifier = S.identifier
 private let anyName = S.anyName
 
 
-class CompoundFontProperty: CompoundProperty {
-  static let fontFamily = "font-family"
-  static let fontWeight = "font-weight"
-  // font-style (maybe)
-  
-  init() {
-    super.init(name: "font", compoundNames: [Self.fontFamily, Self.fontWeight])
-  }
-}
 
 //private typealias CGFloatSetter = (UIView, CGFloat) -> Void
 private typealias TypedSetter<ViewType, ValueType> = (ViewType, ValueType) -> Void

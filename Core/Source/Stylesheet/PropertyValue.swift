@@ -41,6 +41,11 @@ public struct PropertyValue: Hashable, CustomStringConvertible, CustomDebugStrin
     return rawValue
   }
   
+  public var resolvedCompoundValue: Any? {
+    guard case .compoundValues(let compoundProperty, let compoundValues) = value else { return nil }
+    return compoundProperty.resolve(propertyValues: compoundValues)
+  }
+  
   public var useCurrentValue: Bool {
     return value == .currentValue
   }

@@ -1,10 +1,12 @@
+/* A comment */
+/* Another comment, directly after the first one */
 
-@numericalConstant: 42;
-@mathExpressionConstant: 10 ** (3 - 1);
+--numericalConstant: 42;
+--mathExpressionConstant: 10 ** (3 - 1);
 
-@fontNameVariable  : "GillSans";
-@fontSizeVariable: 42;
-@nestedVariable : @fontNameVariable @fontSizeVariable;
+--fontNameVariable  : "GillSans";
+--fontSizeVariable: 42;
+--nestedVariable : --fontNameVariable --fontSizeVariable;
 
 .numbers {
   numberOne: 0.33;
@@ -12,15 +14,17 @@
   expression: 10 ** (3 - 1);
 }
 
+/* A comment, between declarations */
+
 .numericExpressions {
   number1: 2 > 1;
   number2: 2 * 3 - (2*2.5 + 0.5);
-  number3: @numericalConstant + @mathExpressionConstant;
-  number4: size(@numericalConstant, @mathExpressionConstant);
+  number3: --numericalConstant + --mathExpressionConstant;
+  number4: size(--numericalConstant, --mathExpressionConstant);
 }
 
 .booleans {
-  bool1: YES;
+  bool1: YES; /* A comment, at the end of a line in a declaration */
   bool2: "YES";
   bool3: true;
   bool4: "true";
@@ -87,19 +91,21 @@
   color8: saturate(fadeout(#112233, 50%), 50%);
 }
 
-@font1: HelveticaNeue-Medium 15;
+--font1: HelveticaNeue-Medium 15;
 .fonts {
-  font1: @font1;
-  font2: bigger(@font1, 1);
-  font3: smaller(@font1, 1);
-  font4: fontWithSize(@font1, 10);
+  font1: --font1;
+  font2: bigger(--font1, 1);
+  font3: smaller(--font1, 1);
+  font4: fontWithSize(--font1, 10);
   font5: HelveticaNeue-Medium 5;
   font6: "Courier" 5;
-  font7: 'Courier' 5;
+  font7: 'Avenir' 5;
   font8: 42;
   font9: system 42;
-  font10: systemItalic 42;
-  font11: systemBold 42;
+  font10: system-italic 42;
+  font11: 42 systemBold;
+  font12: 24 system-ultraLight;
+  font13: --fontSizeVariable --fontNameVariable;
 }
 
 .transforms {

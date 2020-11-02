@@ -11,6 +11,8 @@ import os.log
 
 public final class Logger: CustomStringConvertible {
   
+  public static var traceLoggingEnabled = false
+  
   private static var subsystem = Bundle.main.bundleIdentifier!
   
   public static let misc: Logger = { Logger("misc") }()
@@ -29,6 +31,10 @@ public final class Logger: CustomStringConvertible {
     log = OSLog(subsystem: Logger.subsystem, category: "InterfaCSS (\(name))")
   }
   
+  public func trace(_ message: String) {
+    if Self.traceLoggingEnabled { os_log("[TRACE] %{public}@", log: log, type: .debug, message) }
+  }
+  
   public func debug(_ message: String) {
     os_log("%{public}@", log: log, type: .debug, message)
   }
@@ -44,6 +50,10 @@ public final class Logger: CustomStringConvertible {
   public func fault(_ message: String) {
     os_log("%{public}@", log: log, type: .fault, message)
   }
+}
+
+internal func trace(_ logger: Logger, _ message: String) {
+  logger.trace(message)
 }
 
 internal func debug(_ logger: Logger, _ message: String) {

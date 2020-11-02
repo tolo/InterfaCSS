@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Layout useSafeAreaInsets="false" useDefaultMargins="true">
+  
+  <View id="rootView" style="flex-direction: column">
+    
+    <View id="view1" style="flex-grow: 1; background-color: red"/>
+    <View id="view2" style="flex-grow: 1; background-color: green"/>
+    
+  </View>
+  
+</Layout>

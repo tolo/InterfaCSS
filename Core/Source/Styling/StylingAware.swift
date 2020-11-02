@@ -1,5 +1,5 @@
 //
-//  InterfaCSS+Layout.swift
+//  StylingAware.swift
 //  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
 //  Copyright (c) Tobias Löfstrand, Leafnode AB.
@@ -8,8 +8,8 @@
 
 import Foundation
 
-public extension InterfaCSS {
+public protocol StylingAware {
   
-  static let ViewBuilderLayoutRefreshed = Notification.Name("InterfaCSS.ViewBuilderLayoutRefreshedNotification")
-    
+  func didApplyStyling(withStyler styler: Styler)
+  
 }

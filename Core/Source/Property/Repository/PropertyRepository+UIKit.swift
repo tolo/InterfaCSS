@@ -120,7 +120,7 @@ extension PropertyRepository {
     let barMetricsTransformer: PropertyParameterTransformer = { barMetricsMapping.enumValue(from: $0) }
     let barPositionTransformer: PropertyParameterTransformer = { barPositionMapping.enumValue(from: $0) }
     let integerTransformer: PropertyParameterTransformer = { Int($0) ?? 0 }
-    let segmentTypeTransformer: PropertyParameterTransformer = { segmentTypeMapping.enumValue(from: $0) }
+    //let segmentTypeTransformer: PropertyParameterTransformer = { segmentTypeMapping.enumValue(from: $0) }
     let searchBarIconTransformer: PropertyParameterTransformer = { searchBarIconMapping.enumValue(from: $0) }
     
     //* UIView *//

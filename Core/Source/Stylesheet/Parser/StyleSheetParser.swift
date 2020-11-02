@@ -39,13 +39,13 @@ public class StyleSheetParser: NSObject {
     let openParenIgnored: StringParsicle = char("(").ignore()
     let closeParenIgnored: StringParsicle = char(")").ignore()
     //* Comments *
-    let commentParser = S.comment.map {
-      //            ISSLogTrace("Comment: %@", value.trim()) // TODO: Use Logger?
-      return $0
+    let commentParser = S.comment.map { s -> String in
+      trace(.stylesheets , "Comment: \(s)")
+      return s
     }
     
     //* Variables *
-    variableParser = S.propertyPairParser(true).map { (pair, context) -> Void in
+    variableParser = S.propertyPairParser(forVariable: true).map { (pair, context) -> Void in
       if let context = context.userInfo as? StyleSheetParsingContext {
         context.variables[pair[0]] = pair[1]
       }
@@ -139,7 +139,7 @@ public class StyleSheetParser: NSObject {
       if let chain = SelectorChain(components: values) {
         return ParsedSelectorChain.selectorChain(chain: chain)
       } else {
-        return ParsedSelectorChain.badData(badData: "Invalid selector chain: \(values.map({ String(describing: $0) }).joined(separator: " "))") // TODO: Is this logged?
+        return ParsedSelectorChain.badData(badData: "Invalid selector chain: \(values.map({ String(describing: $0) }).joined(separator: " "))")
       }
     }
     
@@ -162,7 +162,7 @@ public class StyleSheetParser: NSObject {
     let cssParserRuleset = rulesetParser.map { CSSContent.ruleset($0) }
     cssParser = P.choice([cssParserCommentParser, cssParserVariable, cssParserRuleset, unrecognizedContent]).many()
     
-    standalonePropertyPairParser = S.propertyPairParser(false).map { [unowned self] value in
+    standalonePropertyPairParser = S.propertyPairParser(forVariable: false, standalone: true).map { [unowned self] value in
       let propertyComponents = self.transformPropertyPair(value)
       return PropertyValue(propertyName: propertyComponents.propertyName, value: propertyComponents.value, rawParameters: propertyComponents.rawParameters)
     }
@@ -174,7 +174,7 @@ public class StyleSheetParser: NSObject {
    */
   public func parse(_ styleSheetData: String) -> StyleSheetContent? {
     guard styleSheetData.hasData() else {
-      debugPrint("Empty/nil stylesheet data!") // TODO: ISSLogWarning ...or debug?
+      error(.stylesheets, "Empty/nil stylesheet data!")
       return nil
     }
     let parsingContext = StyleSheetParsingContext()
@@ -196,10 +196,9 @@ public class StyleSheetParser: NSObject {
           default: break
         }
       }
-      //            ISSLogTrace("Parse result: \n%@", rulesets) // TODO: ISSLogTrace
       return StyleSheetContent(rulesets: rulesets, variables: parsingContext.variables)
     } else {
-      debugPrint("Error parsing stylesheet") // TODO: ISSLogWarning ...or debug?
+      error(.stylesheets, "Error parsing stylesheet")
       return nil
     }
   }
@@ -274,7 +273,7 @@ public class StyleSheetParser: NSObject {
     }
     
     //* -- Property pair -- *
-    let propertyPairParser = S.propertyPairParser(false).map { [unowned self] value -> ParsedRulesetContent in
+    let propertyPairParser = S.propertyPairParser(forVariable: false).map { [unowned self] value -> ParsedRulesetContent in
       let propertyPair = self.transformPropertyPair(value)
       let propertyDeclaration: ParsedRulesetContent = .propertyDeclaration(
         PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters))
@@ -286,6 +285,19 @@ public class StyleSheetParser: NSObject {
       } else {
         return propertyDeclaration
       }
+    }
+    
+    let atttributesCollectionPropertyPairParser = S.propertyPairParser(forVariable: false).map { [unowned self] value -> PropertyValue in
+      let propertyPair = self.transformPropertyPair(value)
+      return PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters)
+    }.many()
+    let propertyName = S.propertyName.skipSurroundingSpaces().keepLeft(S.propertyNameValueSeparator.optional())
+// TODO:
+    let mu = propertyName.then(atttributesCollectionPropertyPairParser.between(S.openBraceSkipSpace, and: S.closeBraceSkipSpace)).map { [unowned self] values -> ParsedRulesetContent in
+      let (name, properties) = values
+      let propertyPair = self.transformPropertyPair([name, ""])
+      return .propertyDeclaration(
+        PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters))
     }
     
     //* -- Extension/Inheritance -- *
@@ -330,7 +342,11 @@ public class StyleSheetParser: NSObject {
   private func processProperties(_ properties: [ParsedRulesetContent], withSelectorChains parsedSelectorChains: [ParsedSelectorChain], andAddToRulesets rulesets: inout [Ruleset]) {
     var nestedDeclarations: [(properties: [ParsedRulesetContent], chains: [ParsedSelectorChain])] = []
     
-    let selectorChains = parsedSelectorChains.compactMap { $0.selectorChain } // TODO: Log error for invalid selector chains here?
+    let selectorChains = parsedSelectorChains.compactMap { $0.selectorChain }
+    let badChains = parsedSelectorChains.compactMap { $0.badChainMessage }
+    if badChains.count > 0 {
+      error(.stylesheets, "Bad selector chains: \(badChains.joined(separator: ", "))")
+    }
     
     if selectorChains.count != 0 {
       var propertyValues: [PropertyValue] = []
@@ -339,7 +355,7 @@ public class StyleSheetParser: NSObject {
         switch entry {
           case .unsupportedNestedRuleset(let description), .unrecognizedContent(let description):
             let rulsetDescription = Ruleset(selectorChains: selectorChains, andProperties: []).debugDescription
-            print("Warning! \(description) - in ruleset: \(rulsetDescription)") // TODO: ISSLogWarning
+            info(.stylesheets, "Warning! \(description) - in ruleset: \(rulsetDescription)")
           
 //          case .prefixedProperty(let propertyValue):
 //            let prefixKeyPath = propertyValue.prefixKeyPath!
@@ -355,7 +371,6 @@ public class StyleSheetParser: NSObject {
 //            propertyValues.append(PropertyValue(propertyName: propertyValue.propertyName, /*prefixKeyPath: prefixKeyPath,*/ value: propertyValue.value, rawParameters: propertyValue.rawParameters))
           
           case .nestedRuleset(let ruleset):
-            // TODO: Log error for invalid nested selector chains here?
             // Construct new selector chains by appending selector to parent selector chains
             var nestedSelectorChains: [ParsedSelectorChain] = []
             for nestedSelectorChain in ruleset.chains {
@@ -385,7 +400,7 @@ public class StyleSheetParser: NSObject {
       if (propertyValues.count > 0) {
         rulesets.append(Ruleset(selectorChains: selectorChains, andProperties: propertyValues, extendedDeclarationSelectorChain: extendedDeclarationSelectorChain))
       } else {
-        Logger.stylesheets.debug("No properties in ruleset (\(selectorChains)) - skipping")
+        Logger.stylesheets.trace("No properties in ruleset (\(selectorChains)) - skipping")
       }
       
       // Process nested rulesets
@@ -393,7 +408,7 @@ public class StyleSheetParser: NSObject {
         processProperties(declarationPair.properties, withSelectorChains: declarationPair.chains, andAddToRulesets: &rulesets)
       }
     } else {
-      Logger.stylesheets.debug("No valid selector chains in declaration (count before validation: \(parsedSelectorChains.count) - properties: \(properties)")
+      Logger.stylesheets.trace("No valid selector chains in declaration (count before validation: \(parsedSelectorChains.count) - properties: \(properties)")
     }
   }
 }

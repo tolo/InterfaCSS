@@ -1,5 +1,5 @@
 PODS:
-  - Parsicle (0.9.0)
+  - Parsicle (0.1.0)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -18,10 +18,10 @@ EXTERNAL SOURCES:
     :path: "../Parsicle/"
 
 SPEC CHECKSUMS:
-  Parsicle: 7225d44bd0a22048451ef627fafa83ea1da3e30a
+  Parsicle: 6c6e3d7cf87ee27a333a7c704070b3e7f8b467bb
   Yoga: cff67a400f6b74dc38eb0bad4f156673d9aa980c
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: a701ae01b04f99894f7a3301c3bbd16588148d48
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.1

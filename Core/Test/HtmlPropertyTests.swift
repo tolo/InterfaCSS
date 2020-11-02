@@ -1,9 +1,9 @@
 //
 //  HtmlPropertyTests.swift
-//  CoreTests
+//  Part of InterfaCSS - http://www.github.com/tolo/InterfaCSS
 //
-//  Created by Tobias Löfstrand on 2020-05-21.
-//  Copyright © 2020 Leafnode AB. All rights reserved.
+//  Copyright (c) Tobias Löfstrand, Leafnode AB.
+//  License: MIT - http://www.github.com/tolo/InterfaCSS/blob/master/LICENSE
 //
 
 import XCTest

@@ -62,10 +62,13 @@ enum ParsedSelectorChain {
   case badData(badData: String)
   
   var selectorChain: SelectorChain? {
-    switch self {
-      case .selectorChain(let chain): return chain
-      default: return nil
-    }
+    if case .selectorChain(let chain) = self { return chain }
+    else { return nil }
+  }
+  
+  var badChainMessage: String? {
+    if case .badData(let badData) = self { return badData }
+    else { return nil }
   }
 }
 

@@ -8,64 +8,8 @@
 
 import Foundation
 
-public typealias StyleSheetMatcher = (StyleSheet) -> Bool
-
 
 public typealias RefreshableStyleSheetObserverBlock = (RefreshableStyleSheet) -> Void
-
-// TODO: Review where these should be placed
-public let StyleSheetGroupDefault = "ISSStyleSheetGroupDefault"
-public let StyleSheetNoGroup: String? = nil
-
-
-/**
- * Class representing a scope used for limiting which stylesheets should be used for styling.
- */
-public class StyleSheetScope: NSObject {
-  public static let defaultGroupScope: StyleSheetScope = {
-    StyleSheetScope(matcher: { styleSheet in
-      return styleSheet.group == StyleSheetGroupDefault
-    })
-  }()
-  
-  public static func defaultGroupScope(includingStyleSheetNames names: [String]) -> StyleSheetScope {
-    return StyleSheetScope.defaultGroupScope.including(StyleSheetScope(styleSheetNames: names))
-  }
-  
-  private let matcher: StyleSheetMatcher
-  
-  public convenience init(styleSheetNames names: [String]) {
-    let nameSet = Set<AnyHashable>(names)
-    self.init(matcher: { styleSheet in
-      return nameSet.contains(styleSheet.name)
-    })
-  }
-  
-  public convenience init(styleSheetGroups groups: [String]) {
-    let groupsSet = Set<AnyHashable>(groups)
-    self.init(matcher: { styleSheet in
-      return groupsSet.contains(styleSheet.group ?? "")
-    })
-  }
-  
-  public convenience init(defaultStyleSheetGroupAndGroups groups: [String]) {
-    self.init(styleSheetGroups: groups + [StyleSheetGroupDefault])
-  }
-  
-  public init(matcher: @escaping StyleSheetMatcher) {
-    self.matcher = matcher
-  }
-  
-  public func including(_ otherScope: StyleSheetScope) -> StyleSheetScope {
-    return StyleSheetScope(matcher: { styleSheet in
-      return self.matcher(styleSheet) || otherScope.matcher(styleSheet)
-    })
-  }
-  
-  public func contains(_ styleSheet: StyleSheet) -> Bool {
-    return Bool(matcher(styleSheet))
-  }
-}
 
 
 /**
@@ -78,7 +22,7 @@ public class StyleSheet: Hashable, CustomStringConvertible, CustomDebugStringCon
   }
   
   public let name: String
-  public let group: String?
+  public let group: String? // Can be nil, which means the stylesheet is groupless (StyleSheetNoGroup), which means that it would be used even in default styling
   public let styleSheetURL: URL
   public var content: StyleSheetContent
   public var active = false
@@ -125,18 +69,18 @@ public class StyleSheet: Hashable, CustomStringConvertible, CustomDebugStringCon
   // MARK: - Matching
   
   public final func rulesets(matching element: ElementStyle, context: StylingContext) -> [Ruleset] {
-    if !context.styleSheetScope.contains(self) {
-      error(.stylesheets, "Stylesheet not in scope - skipping for '\(element)'")
+    if !context.styleSheetScope.matches(styleSheet: self) {
+      trace(.stylesheets, "(\(name)) Stylesheet not in scope - skipping for '\(element)'")
       return []
     }
     
-    debug(.stylesheets, "Getting matching rulesets for '\(element)'")
+    trace(.stylesheets, "(\(name)) Getting matching rulesets for '\(element)'")
     
     var matchingRulesets: [Ruleset] = []
     
     for ruleset in content.rulesets {
       if let matchingRuleset = ruleset.ruleset(matching: element, context: context) {
-        debug(.stylesheets, "Matching rulesets: \(matchingRuleset)")
+        trace(.stylesheets, "(\(name))Matching rulesets: \(matchingRuleset)")
         matchingRulesets.append(matchingRuleset)
       }
     }

@@ -81,9 +81,19 @@ public class StyleSheetParserSyntax {
     singleQuote.keepRight(identifier).keepLeft(singleQuote).or(doubleQuote.keepRight(identifier).keepLeft(doubleQuote))
   }()
   private(set) public lazy var comment: StringParsicle = {
-    let commentParser = P.string("/*").keepRight(P.take(untilString: "*/", andSkip: true))
+    let commentParser = P.string("/*", skipSpaces: true).keepRight(P.take(untilString: "*/", andSkip: true))
     return commentParser.map { $0.trim() }
   }()
+  
+  private(set) public lazy var propertyName: StringParsicle = {
+    let nameInitial = AnyParsicle.char(in: validInitialIdentifierCharacterCharsSet)
+    var validIdentifierCharsAndDotSet = CharacterSet(charactersIn: ".")
+    validIdentifierCharsAndDotSet.formUnion(validIdentifierCharsSet)
+    let nameRemaining = AnyParsicle.take(whileIn: validIdentifierCharsAndDotSet)
+    return nameInitial.then(nameRemaining).concat()
+  }()
+  
+  private(set) public lazy var propertyNameValueSeparator: StringParsicle = { AnyParsicle.char(":").or(AnyParsicle.char("=")) }()
   
   
   init() {
@@ -184,26 +194,21 @@ public class StyleSheetParserSyntax {
   
   // MARK: - Property pair parsing
   
-  func propertyPairParser(_ forVariableDefinition: Bool) -> Parsicle<[String]> {
-    let nameInitial = AnyParsicle.char(in: validInitialIdentifierCharacterCharsSet)
-    var validIdentifierCharsAndDotSet = CharacterSet(charactersIn: ".")
-    validIdentifierCharsAndDotSet.formUnion(validIdentifierCharsSet)
-    let nameRemaining = AnyParsicle.take(whileIn: validIdentifierCharsAndDotSet)
-    let nameParser = nameInitial.then(nameRemaining).concat()
-    let separator = AnyParsicle.char(":").or(AnyParsicle.char("="))
-    let valueParser = propertyValueParser(forVariableDefinition).skipSurroundingSpaces()
+  func propertyPairParser(forVariable forVariableDefinition: Bool, standalone: Bool = false) -> Parsicle<[String]> {
+    let nameParser = propertyName
+    let valueParser = propertyValueParser(forVariable: forVariableDefinition, standalone: standalone).skipSurroundingSpaces()
     if forVariableDefinition {
       let nameAndSpacesParser = AnyParsicle.string("--").or(.char("@")).keepRight(nameParser).skipSurroundingSpaces()
-      return nameAndSpacesParser.keepLeft(separator).then(valueParser)
+      return nameAndSpacesParser.keepLeft(propertyNameValueSeparator).then(valueParser)
     } else {
       let nameAndSpacesParser = nameParser.skipSurroundingSpaces()
-      return nameAndSpacesParser.keepLeft(separator).then(valueParser)
+      return nameAndSpacesParser.keepLeft(propertyNameValueSeparator).then(valueParser)
     }
   }
   
-  private func propertyValueParser(_ forVariableDefinition: Bool) -> StringParsicle {
+  private func propertyValueParser(forVariable forVariableDefinition: Bool, standalone: Bool) -> StringParsicle {
     let invalidChars = CharacterSet(charactersIn: "{}")
-    return StringParsicle.stringWithEscapesUp(to: ";", skipPastEndChar: true, replaceEscapes: false, invalidChars: invalidChars)
+    return StringParsicle.stringWithEscapesUp(to: ";", skipPastEndChar: !standalone, replaceEscapes: false, invalidChars: invalidChars)
   }
   
   

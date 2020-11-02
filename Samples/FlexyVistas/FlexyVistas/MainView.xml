@@ -6,7 +6,7 @@
   <imageView id="image" class="aspectFill" image="holuhraun.jpg" style="flex-grow:1; flex-max-height: 30%"/>
 
   <view id="summaryView">
-    <label id="popularityLabel" style="flex-grow: 1">★★★★★</label>
+    <text id="popularityLabel" style="flex-grow: 1">★★★★★</text>
     <view id="summaryInfoView" style="flex-direction: row; flex-grow:2; justify-content: space-between">
       <label id="yearLabel">2014</label>
       <label id="ratingLabel">7+</label>
@@ -15,7 +15,7 @@
     <view style="flex-grow: 1; flex-width: 100"/>
   </view>
 
-  <view id="titleView" class="bottomSpacing">
+  <!--<view id="titleView" class="bottomSpacing">
     <label id="episodeLabel" class="headline">S1:E0</label>
     <label id="titleLabel" class="headline" style="margin-left: 20">Holuhraun &amp; Bárðarbunga</label>
   </view>
@@ -49,8 +49,8 @@
   </view>
   
   <tableView id="tableView" style="flex-grow: 1; flex-shrink: 1; background-color: clear; mu: mu">
-    <cell id="listCell" layout="ListCell.xml" implementation="ListCell"/>
-  </tableView>
+    <tableViewCell id="listCell" layout="ListCell.xml" implementation="ListCell"/>
+  </tableView>-->
 
 </view>
 

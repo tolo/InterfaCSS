@@ -20,46 +20,42 @@ public protocol Styler {
   var propertyManager: PropertyManager { get }
   var styleSheetManager: StyleSheetManager { get }
   
-  func styler(with styleSheetScope: StyleSheetScope, includeCurrent: Bool) -> Styler
+  //func styler(withScope styleSheetScope: StyleSheetScope) -> Styler
   
-  func stylingProxy(for uiElement: Stylable) -> ElementStyle
+  func style(for uiElement: Stylable) -> ElementStyle
   
-  //func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope)
-  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool, styleSheetScope: StyleSheetScope?)
+  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool, force: Bool)
   
   func clearCachedStylingInformation(for uiElement: Stylable, includeSubViews: Bool)
 }
 
 
+// MARK: - Styler/StylingManager convenience methods and methods with default parameters
 public extension Styler {
   
-  // MARK: - Convenience methods with default parameters
-  
-  
-  func styler(with styleSheetScope: StyleSheetScope, includeCurrent: Bool = true) -> Styler {
-    return styler(with: styleSheetScope, includeCurrent: includeCurrent)
+  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true) {
+    applyStyling(uiElement, includeSubViews: includeSubViews, force: false)
   }
-  
-  //func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope = .defaultGroupScope) {
-  func applyStyling(_ uiElement: Stylable, includeSubViews: Bool = true, force: Bool = false, styleSheetScope: StyleSheetScope? = nil) {
-    applyStyling(uiElement, includeSubViews: includeSubViews, force: force, styleSheetScope: styleSheetScope ?? self.styleSheetScope)
-  }
-  
-  // MARK: - StyleSheetManager convenience methods
+}
+
+
+// MARK: - StyleSheetManager convenience methods
+
+public extension Styler {
   
   @discardableResult
-  func loadStyleSheet(fromMainBundleFile styleSheetFileName: String) -> StyleSheet? {
-    return styleSheetManager.loadStyleSheet(fromMainBundleFile: styleSheetFileName)
+  func loadStyleSheet(fromMainBundleFile styleSheetFileName: String, name: String? = nil, group groupName: String? = nil) -> StyleSheet? {
+    return styleSheetManager.loadStyleSheet(fromMainBundleFile: styleSheetFileName, name: name, group: groupName)
   }
   
   @discardableResult
-  func loadStyleSheet(fromFileURL styleSheetFileURL: URL) -> StyleSheet? {
-    return styleSheetManager.loadStyleSheet(fromFileURL: styleSheetFileURL)
+  func loadStyleSheet(fromLocalFile styleSheetFileURL: URL, name: String? = nil, group groupName: String? = nil) -> StyleSheet? {
+    return styleSheetManager.loadStyleSheet(fromLocalFile: styleSheetFileURL, name: name, group: groupName)
   }
   
   @discardableResult
-  func loadRefreshableStyleSheet(from styleSheetFileURL: URL) -> StyleSheet? {
-    return styleSheetManager.loadRefreshableStyleSheet(from: styleSheetFileURL)
+  func loadStyleSheet(fromRefreshableFile styleSheetFileURL: URL, name: String? = nil, group groupName: String? = nil) -> StyleSheet? {
+    return styleSheetManager.loadStyleSheet(fromRefreshableFile: styleSheetFileURL, name: name, group: groupName)
   }
   
   @discardableResult
@@ -71,9 +67,21 @@ public extension Styler {
   @discardableResult
   func loadStyleSheet(fromResourceFile resourceFile: ResourceFile) -> StyleSheet? {
     if resourceFile.refreshable {
-      return loadRefreshableStyleSheet(from: resourceFile.fileURL)
+      return loadStyleSheet(fromRefreshableFile: resourceFile.fileURL)
     } else {
-      return loadStyleSheet(fromFileURL: resourceFile.fileURL)
+      return loadStyleSheet(fromLocalFile: resourceFile.fileURL)
     }
+  }
+  
+  func stringValueOf(variableWithName variableName: String) -> String? {
+    styleSheetManager.valueOfStyleSheetVariable(withName: variableName, scope: styleSheetScope)
+  }
+  
+  func valueOf(variableWithName variableName: String, as propertyType: PropertyType) -> Any? {
+    styleSheetManager.transformedValueOfStyleSheetVariable(withName: variableName, as: propertyType, scope: styleSheetScope)
+  }
+  
+  func valueOf<T>(variableWithName variableName: String, as propertyType: TypedPropertyType<T>) -> T? {
+    styleSheetManager.transformedValueOfStyleSheetVariable(withName: variableName, as: propertyType, scope: styleSheetScope)
   }
 }

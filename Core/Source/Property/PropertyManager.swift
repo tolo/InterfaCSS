@@ -108,7 +108,7 @@ open class PropertyManager {
   
   // MARK: - Property application
   
-  func preProcess(propertyValues: [PropertyValue], styleSheetScope scope: StyleSheetScope) -> [PropertyValue] {
+  open func preProcess(propertyValues: [PropertyValue], styleSheetScope scope: StyleSheetScope) -> [PropertyValue] {
     // Replace variable references in values and paramerters
     var propertyValues = propertyValues.map { p -> PropertyValue in
       guard let propertyRawValueInitial = p.rawValue else { return p }
@@ -138,21 +138,21 @@ open class PropertyManager {
   }
   
   @discardableResult
-  func apply(_ propertyValue: PropertyValue, onTarget targetElement: ElementStyle, styleSheetScope scope: StyleSheetScope) -> Bool {
+  open func apply(_ propertyValue: PropertyValue, onTarget targetElement: ElementStyle, styleSheetScope scope: StyleSheetScope) -> Bool {
     guard let element = targetElement.uiElement else { return false }
     if propertyValue.useCurrentValue {
-      logger.debug("Property value not changed - using existing value for '\(propertyValue.description)' in '\(targetElement)'")
+      logger.trace("Property value not changed - using existing value for '\(propertyValue.description)' in '\(targetElement)'")
       return true
     }
     
     guard let property = findProperty(withName: propertyValue.propertyName, in: type(of: element)) else {
-      logger.debug("Cannot apply property value to '\(targetElement)' - unknown property (\(propertyValue))!")
+      logger.trace("Cannot apply property value to '\(targetElement)' - unknown property (\(propertyValue))!")
       return false
     }
     
     // Transform value
     guard let value = property.transform(value: propertyValue) else {
-      logger.error("Cannot apply property value to '\(property.fqn)' in '\(targetElement)' - value is nil!")
+      logger.trace("Cannot apply property value to '\(property.fqn)' in '\(targetElement)' - value is nil!")
       return false
     }
     
@@ -164,9 +164,9 @@ open class PropertyManager {
   
     let result = property.setValue(value, onTarget: element, withParameters: params)
     if result {
-      //logger.debug("Applied property value \(propertyRawValue) to '\(property.fqn)' in '\(targetElement)'")
+      logger.trace("Applied property value \(propertyValue.rawValue ?? "") to '\(property.fqn)' in '\(targetElement)'")
     } else {
-      logger.error("Unable to apply property value to '\(property.fqn)' in '\(targetElement)'!")
+      logger.trace("Unable to apply property value to '\(property.fqn)' in '\(targetElement)'!")
     }
     return result
   }
