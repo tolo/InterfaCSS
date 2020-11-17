@@ -11,7 +11,10 @@ import Parsicle
 
 func createPseudoClass(_ parts: [Any], styleSheetManager: StyleSheetManager?) -> PseudoClass? {
   let pseudoClassType = parts.first as? String ?? ""
-  let params = parts.last
+  var params = parts.last
+  if let parsedChains = params as? [ParsedSelectorChain] {
+    params = parsedChains.compactMap { $0.selectorChain }
+  }
   return styleSheetManager?.pseudoClassFactory.createPseudoClass(ofType: pseudoClassType, parameters: params)
   
 }
@@ -35,6 +38,7 @@ enum CSSContent {
   case comment(String)
   case variable
   case ruleset(ParsedRuleset)
+  case rootBlockContent
   case unrecognizedContent(String)
 }
 
@@ -42,8 +46,8 @@ typealias TransformedPropertyPair = (propertyName: String, prefix: String?, valu
 
 enum ParsedRulesetContent {
   case comment(String)
+  case variable
   case propertyDeclaration(PropertyValue)
-  //  case prefixedProperty(TransformedPropertyPair)
   case nestedRuleset(ParsedRuleset)
   case extendedDeclaration(RulesetExtension)
   case unsupportedNestedRuleset(String)

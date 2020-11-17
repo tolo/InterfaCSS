@@ -40,7 +40,9 @@ public enum Selector: Hashable, CustomStringConvertible, CustomDebugStringConver
   private func specificity(type: SelectorType?, isWildcardType: Bool, elementId: String?, styleClasses: [String]?, pseudoClasses: [PseudoClass]?) -> Int {
     var specificity: Int = elementId != nil ? 100 : 0
     specificity += 10 * (styleClasses ?? []).count
-    specificity += 10 * (pseudoClasses ?? []).count
+    specificity += (pseudoClasses ?? []).reduce(0) { (currentValue, pseudo) in
+      currentValue + pseudo.specificity
+    }
     specificity += type != nil ? 1 : 0
     return specificity
   }

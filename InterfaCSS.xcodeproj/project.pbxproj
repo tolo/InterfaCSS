@@ -505,7 +505,6 @@
 				F6E228E924648C360033BB3A /* Repository */,
 				F693097A23B649A400DCE4E7 /* Parser */,
 				F693092723B6490600DCE4E7 /* StyleSheetManager.swift */,
-				F693090B23B6490500DCE4E7 /* PseudoClassFactory.swift */,
 				F693090A23B6490500DCE4E7 /* StyleSheet.swift */,
 				F6382577254CC5C60030F300 /* StyleSheetScope.swift */,
 				F693090C23B6490500DCE4E7 /* StyleSheetContent.swift */,
@@ -513,6 +512,7 @@
 				F693092D23B6490600DCE4E7 /* SelectorChain.swift */,
 				F693091B23B6490500DCE4E7 /* Selector.swift */,
 				F693092423B6490600DCE4E7 /* PseudoClass.swift */,
+				F693090B23B6490500DCE4E7 /* PseudoClassFactory.swift */,
 				F693090D23B6490500DCE4E7 /* PropertyValue.swift */,
 				F693092623B6490600DCE4E7 /* RelativeNumber.swift */,
 			);

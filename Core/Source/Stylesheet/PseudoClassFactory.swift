@@ -8,6 +8,8 @@
 
 import UIKit
 
+
+///PseudoClassFactoryType
 public protocol PseudoClassFactoryType {
   func createPseudoClass(ofType type: String, parameters: Any?) -> PseudoClass?
 }
@@ -30,22 +32,16 @@ public extension PseudoClassFactoryType {
 }
 
 
-// TODO:
-//public struct PseudoClassType: Hashable, Equatable, RawRepresentable {
-//  public let rawValue: String
-//  public init(rawValue: String) {
-//    self.rawValue = rawValue
-//  }
-//  public init(_ rawValue: String) {
-//    self.rawValue = rawValue
-//  }
-//}
-
+///PseudoClassFactory
 open class PseudoClassFactory: PseudoClassFactoryType {
   
-  private (set) var pseudoMatchers: [String: PseudoClassMatcherBuilder]
+  private (set) var pseudoMatchers: [String: PseudoClassBuilder]
   
   init() {
+    let pad: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .pad }
+    let phone: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .phone }
+    let tv: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .tv }
+    
     self.pseudoMatchers = [
       "root": .simple { (e, _) in e.parentViewController != nil },
       "nthchild": .structural { (a, b, e, _) in matchesIndex(a, b, e, false) },
@@ -60,10 +56,15 @@ open class PseudoClassFactory: PseudoClassFactoryType {
       "lastoftype": .simple { (e, c) in matchesTypeQualifiedIndex(0, 1, e, c, true) },
       "empty": .structural { (_, _, e, _) in e.view?.subviews.count == 0 },
       
-      "pad": .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .pad },
-      "tablet": .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .pad },
-      "phone": .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .phone },
-      "tv": .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .tv },
+      "not": .not, 
+      
+      "pad": pad,
+      "ipad": pad,
+      "tablet": pad,
+      "phone": phone,
+      "iphone": phone, 
+      "tv": tv,
+      "appletv": tv,
       
       "landscape": .simple { (e, _) in checkOrientation(e, isLandscape: true) },
       "portrait": .simple { (e, _) in checkOrientation(e, isLandscape: false) },
@@ -93,8 +94,8 @@ open class PseudoClassFactory: PseudoClassFactoryType {
     
   }
   
-  public func registerPseudoClassMatcher(_ pseudoClassMatcherBuilder: PseudoClassMatcherBuilder, for name: String) {
-    pseudoMatchers[name.lowercased()] = pseudoClassMatcherBuilder
+  public func registerPseudoClassBuilder(_ pseudoClassBuilder: PseudoClassBuilder, for name: String) {
+    pseudoMatchers[name.lowercased()] = pseudoClassBuilder
   }
   
   open func createPseudoClass(ofType type: String, parameters: Any?) -> PseudoClass? {
@@ -104,14 +105,15 @@ open class PseudoClassFactory: PseudoClassFactoryType {
       return nil
     }
     
-    guard let matcher = matcherBuilder.matcher(withParameters: parameters) else {
+    guard let pseudoClass = matcherBuilder.pseudoClass(withType: typeCleaned, parameters: parameters) else {
       error(.stylesheets, "Invalid pseudo class: '\(type)'")
       return nil
     }
     
-    return PseudoClass(type: typeCleaned, matcher: matcher)
+    return pseudoClass
   }
 }
+
 
 
 // MARK: - Internal pseudo class matching helpers

@@ -9,6 +9,8 @@
 import XCTest
 @testable import Core
 
+// TODO: Test "initial" / "current"
+
 class InterfaCSSTests: XCTestCase {
   
   private func initializeWithStyleSheet(_ name: String) -> StylingManager {
@@ -109,6 +111,24 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(label.tintColor, UIColor.blue)
   }
   
+  func testButton() {
+    let styler = initializeWithStyleSheet("stylingTest-properties")
+    
+    let button = UIButton()
+    button.interfaCSS.addStyleClass("buttonTest")
+    styler.applyStyling(button)
+    
+    XCTAssertEqual(button.title(for: .normal), "1")
+    XCTAssertEqual(button.title(for: .selected), "2")
+    XCTAssertEqual(button.title(for: .highlighted), "3")
+    XCTAssertEqual(button.title(for: [.selected, .highlighted]), "4")
+    
+    XCTAssertEqual(button.titleColor(for: .normal), .red)
+    XCTAssertEqual(button.titleColor(for: .selected), .green)
+    XCTAssertEqual(button.titleColor(for: .highlighted), .blue)
+    XCTAssertEqual(button.titleColor(for: [.selected, .highlighted]), UIColor.init(fromHexString: "ff00ff"))
+  }
+  
   // MARK: - Nested element properties
   
   func testNestedElements() {
@@ -122,6 +142,34 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(rootView.layer.borderWidth, 10)
   }
     
+  
+  func testNotPseudoClass() {
+    let styler = initializeWithStyleSheet("stylingTest-properties")
+    
+    let rootView = UIView()
+    rootView.interfaCSS.styleClass = "notPseudoTest"
+    
+    let label1 = UILabel()
+    label1.interfaCSS.styleClass = "label"
+    label1.interfaCSS.elementId = "label1"
+    rootView.addSubview(label1)
+    let label2 = UILabel()
+    label2.interfaCSS.styleClass = "label"
+    label2.interfaCSS.elementId = "label2"
+    rootView.addSubview(label2)
+    let label3 = UILabel()
+    label3.interfaCSS.styleClasses = ["label", "other-label"]
+    label3.interfaCSS.elementId = "label3"
+    rootView.addSubview(label3)
+    
+    rootView.interfaCSS.applyStyling(with: styler)
+    
+    XCTAssertEqual(label1.tag, 42)
+    XCTAssertEqual(label2.tag, 10)
+    XCTAssertEqual(label3.tag, 20)
+  }
+  
+  
   // MARK: - Stylesheet scopes
   
   func testScoping() {
@@ -174,6 +222,32 @@ class InterfaCSSTests: XCTestCase {
     // TODO: This may have to be tested manually
       XCTAssertEqual(label.font.pointSize, UIFont.systemFont(ofSize: 42, weight: .heavy).scaledFont(for: .largeTitle).pointSize)
     //}
+  }
+  
+  func testElementStyleIdentityPath() {
+    let root = UIView()
+    root.interfaCSS.styleClass = "root"
+    let level1 = UIView()
+    level1.interfaCSS.styleClass = "level1"
+    let level2 = UIView()
+    level2.interfaCSS.styleClass = "level2"
+    let level3 = UIView()
+    level3.interfaCSS.styleClass = "level3"
+    
+    root.addSubview(level1)
+    level1.addSubview(level2)
+    level2.addSubview(level3)
+    
+    StylingManager.shared.applyStyling(root) // Apply style to make sure ElementStyle objects are initialized
+    XCTAssertEqual(level3.interfaCSS.elementStyleIdentityPath, "UIView[root] UIView[level1] UIView[level2] UIView[level3]")
+    
+    level1.interfaCSS.elementId = "level1"
+    StylingManager.shared.applyStyling(root) // Apply style to make sure ElementStyle objects are initialized
+    XCTAssertEqual(level3.interfaCSS.elementStyleIdentityPath, "#level1[level1] UIView[level2] UIView[level3]")
+    
+    level2.interfaCSS.isRootElement = true
+    StylingManager.shared.applyStyling(root) // Apply style to make sure ElementStyle objects are initialized
+    XCTAssertEqual(level3.interfaCSS.elementStyleIdentityPath, "UIView[level2] UIView[level3]")
   }
 }
 

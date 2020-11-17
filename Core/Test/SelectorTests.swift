@@ -9,6 +9,9 @@
 import XCTest
 @testable import Core
 
+
+// TODO: Testa combinators mer? (child)
+
 class SelectorTests: XCTestCase {
   
   var styler: StylingManager!
@@ -47,10 +50,11 @@ class SelectorTests: XCTestCase {
     return SelectorChain(components: [.selector(parentSelector), .combinator(combinator), .selector(childSelector)])!
   }
   
-  private func pseudoClassWithTypeString(_ type: String, andParameter param: String? = nil) -> PseudoClass {
+  private func pseudoClassWithTypeString(_ type: String, andParameter param: Any? = nil) -> PseudoClass {
     if let param = param {
-      return styleSheetManager.pseudoClassFactory.createPseudoClass(ofType: type, withParameter: param)!
-    } else {
+      return styleSheetManager.pseudoClassFactory.createPseudoClass(ofType: type, parameters: param)!
+    }
+    else {
       return styleSheetManager.pseudoClassFactory.createSimplePseudoClass(ofType: type)!
     }
   }
@@ -409,6 +413,29 @@ class SelectorTests: XCTestCase {
     XCTAssertFalse(widthPseudoClass.matches(randomViewDetails, context: context))
   }
   
+  func testPseudoClassNot() {
+    let pseudoSelector1 = SelectorChain(selector: createSelector(elementId: "element2"))
+    let pseudoSelector2 = SelectorChain(selector: createSelector(styleClass: "other-label"))
+    let pseudo = pseudoClassWithTypeString("not", andParameter: [pseudoSelector1, pseudoSelector2])
+    let selector = createSelector(withType: "UILabel", styleClass: "label", pseudoClasses: [pseudo])
+    let chain = SelectorChain(selector: selector)
+    
+    let label1 = UILabel()
+    label1.interfaCSS.styleClass = "label"
+    label1.interfaCSS.elementId = "element1"
+    XCTAssertTrue(chain.matches(label1.interfaCSS, context:createStylingContext()))
+    
+    let label2 = UILabel()
+    label2.interfaCSS.styleClass = "label"
+    label2.interfaCSS.elementId = "element2"
+    XCTAssertFalse(chain.matches(label2.interfaCSS, context:createStylingContext()))
+    
+    let label3 = UILabel()
+    label3.interfaCSS.styleClasses = ["label", "other-label"]
+    label3.interfaCSS.elementId = "element3"
+    XCTAssertFalse(chain.matches(label3.interfaCSS, context:createStylingContext()))
+  }
+  
   func testWildcardSelectorFirst() {
     let wildcardSelector = createSelector(withType: "*")
     let childSelector = createSelector(withType: "UILabel", styleClass:"childClass")
@@ -518,21 +545,7 @@ class SelectorTests: XCTestCase {
     // When added to super view, selector chanin should match:
     XCTAssertTrue(someViewControllerSelectorChain2.matches(viewProxy, context:createStylingContext()))
   }
-  
-  func testSelectorChainPartialMatch() {
-    let label = UILabel()
     
-    let viewSelector = createSelector(withType: "UIView")
-    let labelSelector = createSelector(withType: "UILabel")
-    let selectorChain = SelectorChain(components: [.selector(viewSelector), .combinator(.descendant), .selector(labelSelector)])!
-    
-    let context = createStylingContext()
-    let result = selectorChain.matches(label.interfaCSS, context: context)
-    
-    XCTAssertEqual(result, false);
-    XCTAssertEqual(context.containsPartiallyMatchedDeclarations, true)
-  }
-  
   func testRulesetPartialMatch() {
     let label = UILabel()
     
@@ -545,8 +558,35 @@ class SelectorTests: XCTestCase {
     let context = createStylingContext()
     let result = ruleset.matches(label.interfaCSS, context: context)
     
-    XCTAssertEqual(result, false);
+    XCTAssertEqual(result, false)
     XCTAssertEqual(context.containsPartiallyMatchedDeclarations, true)
+  }
+  
+  func testSpecificity() {
+    let typeSelector1 = createSelector(withType: "UIView")
+    let classSelector1 = createSelector(withType: nil, styleClass: "class")
+    let elementIdSelector1 = createSelector(withType: nil, elementId: "element")
+    let typeClassElementSelector1 = createSelector(withType: "UIView", elementId: "element", styleClass: "class")
+    
+    XCTAssertEqual(typeSelector1.specificity, 1)
+    XCTAssertEqual(classSelector1.specificity, 10)
+    XCTAssertEqual(elementIdSelector1.specificity, 100)
+    XCTAssertEqual(typeClassElementSelector1.specificity, 111)
+    
+    let typeClassElementSelector2 = createSelector(withType: "UIView", elementId: "element", styleClasses: ["class1", "class2", "class3"])
+    XCTAssertEqual(typeClassElementSelector2.specificity, 131)
+    
+    let pseudo1 = pseudoClassWithTypeString("enabled")
+    let pseudo2 = pseudoClassWithTypeString("disabled")
+    let typeElementIdClassPseudoSelector1 = createSelector(withType: "UILabel", elementId: "element", styleClasses: ["class1", "class2"], pseudoClasses: [pseudo1, pseudo2])
+    let chain1 = SelectorChain(components: [.selector(typeClassElementSelector1), .combinator(.descendant), .selector(typeElementIdClassPseudoSelector1)])
+    
+    XCTAssertEqual(chain1!.specificity, 252)
+    
+    let pseudo3 = pseudoClassWithTypeString("not", andParameter: [SelectorChain(selector: typeClassElementSelector2)]) // 131
+    let typeElementIdClassPseudoSelector2 = createSelector(withType: "UILabel", elementId: "element", styleClasses: ["class1"], pseudoClasses: [pseudo3]) // 1 + 100 + 10 + 131
+    let chain2 = SelectorChain(components: [.selector(typeClassElementSelector1), .combinator(.descendant), .selector(typeElementIdClassPseudoSelector2)]) // 111 + 242
+    XCTAssertEqual(chain2!.specificity, 353)
   }
 }
 

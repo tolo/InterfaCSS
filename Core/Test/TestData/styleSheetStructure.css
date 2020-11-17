@@ -66,6 +66,8 @@ uiview {
     .classN2 {
       alpha: 0.666;
     }
+    .justAnEmptyDeclaration {
+    }
   }
 }
 

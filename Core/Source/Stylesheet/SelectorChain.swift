@@ -147,8 +147,8 @@ public struct SelectorChain: Hashable, CustomStringConvertible, CustomDebugStrin
       nextElement = SelectorChain.matchElement(nextElement, parentElement: nextParentElement, selector: selector, combinator: combinator, context: context)
     }
     
-    // If element at least matched last selector in chain, but didn't match it completely - set a flag indicating that there are partial matches
-    if nextElement == nil {
+    // If element at least matched last selector in chain, but didn't match it completely (due to pseudo class) - set a flag indicating that there are partial matches
+    if nextElement == nil && hasPseudoClassSelector {
       context.containsPartiallyMatchedDeclarations = true
     }
     return nextElement != nil

@@ -18,6 +18,10 @@ extension PropertyRepository {
   static let controlStateMapping = PropertyBitMaskEnumValueMapping(enumValues: controlStateParametersValues, enumBaseName: "UIControlState", defaultValue: .normal)
   static let controlStateTransformer: PropertyParameterTransformer = { return controlStateMapping.enumValue(from: $0) }
   
+  static let textAlignmentMapping = PropertyEnumValueMapping<NSTextAlignment>(enumValues: [
+    "left": .left, "center": .center, "right": .right
+  ], enumBaseName: "NSTextAlignment", defaultValue: .left)
+  
   // MARK: - Registration utility methods
   
   func _register(_ name: String, inClasses classes: [AnyClass], type: PropertyType, enums enumValueMapping: AnyPropertyEnumValueMappingType? = nil) {
@@ -49,9 +53,10 @@ extension PropertyRepository {
   }
   
   @discardableResult
-  //func _register<TargetType, ValueType>(_ name: String, in clazz: TargetType.Type, type: PropertyType, typedSetter: @escaping TypedNeverFailingPropertySetterBlock<TargetType, ValueType>) -> Property {
-  func _register<TargetType: UIResponder, ValueType>(_ name: String, in clazz: TargetType.Type, type: PropertyType, typedSetter: @escaping TypedNeverFailingPropertySetterBlock<TargetType, ValueType>) -> Property {
-    return register(Property(withName: name, in: clazz, type: type, setterBlock: typedSetter))
+  func _register<TargetType: UIResponder, ValueType>(_ name: String, in clazz: TargetType.Type, type: PropertyType,
+                                                     params parameterTransformers: [PropertyParameterTransformer]? = nil,
+                                                     typedSetter: @escaping TypedNeverFailingPropertySetterBlock<TargetType, ValueType>) -> Property {
+    return register(Property(withName: name, in: clazz, type: type, parameterTransformers: parameterTransformers, setterBlock: typedSetter))
   }
   
   
@@ -93,10 +98,6 @@ extension PropertyRepository {
       "all": .all, "none": [], "address": .address, "calendarEvent": .calendarEvent, "link": .link, "phoneNumber": .phoneNumber
     ], enumBaseName: "UIDataDetectorType", defaultValue: [])
     #endif
-    
-    let textAlignmentMapping = PropertyEnumValueMapping<NSTextAlignment>(enumValues: [
-      "left": .left, "center": .center, "right": .right
-    ], enumBaseName: "NSTextAlignment", defaultValue: .left)
     
     let viewModeMapping = PropertyEnumValueMapping<UITextField.ViewMode>(enumValues: [
       "never": .never, "always": .always, "unlessEditing": .unlessEditing, "whileEditing": .whileEditing
@@ -166,7 +167,7 @@ extension PropertyRepository {
       "clip": .byClipping, "clipping": .byClipping, "truncateHead": .byTruncatingHead, "truncatingHead": .byTruncatingHead,
       "truncateTail": .byTruncatingTail, "truncatingTail": .byTruncatingTail, "truncateMiddle": .byTruncatingMiddle, "truncatingMiddle": .byTruncatingMiddle,
     ], enumBaseName: "NSLineBreakBy", defaultValue: .byTruncatingTail))
-    _register("textAlignment", in: clazz, type: .enumType, enums: textAlignmentMapping)
+    _register("textAlignment", in: clazz, type: .enumType, enums: Self.textAlignmentMapping)
     
     //* UISegmentedControl *//
     clazz = UISegmentedControl.self
@@ -226,7 +227,7 @@ extension PropertyRepository {
     _register("defaultTextAttributes", in: clazz, type: .textAttributes, enums: nil)
     _register("leftViewMode", in: clazz, type: .enumType, enums: viewModeMapping)
     _register("rightViewMode", in: clazz, type: .enumType, enums: viewModeMapping)
-    _register("textAlignment", in: clazz, type: .enumType, enums: textAlignmentMapping)
+    _register("textAlignment", in: clazz, type: .enumType, enums: Self.textAlignmentMapping)
     
     //* UITextView *//
     clazz = UITextView.self
@@ -234,7 +235,7 @@ extension PropertyRepository {
     _register("dataDetectorTypes", in: clazz, type: .enumType, enums: dataDetectorTypesMapping)
     #endif
     _register("linkTextAttributes", in: clazz, type: .textAttributes, enums: nil)
-    _register("textAlignment", in: clazz, type: .enumType, enums: textAlignmentMapping)
+    _register("textAlignment", in: clazz, type: .enumType, enums: Self.textAlignmentMapping)
     _register("typingAttributes", in: clazz, type: .textAttributes, enums: nil)
     
     //* UIScrollView *//

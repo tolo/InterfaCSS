@@ -9,6 +9,7 @@
 import Foundation
 
 
+// TODO: Move, to Styler maybe
 public struct InterfaCSS {
   
   public static let ShouldClearAllCachedStylingInformation = Notification.Name("InterfaCSS.ShouldClearAllCachedStylingInformation")

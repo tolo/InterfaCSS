@@ -1,27 +1,27 @@
 /* A comment */
 /* Another comment, directly after the first one */
 
---numericalConstant: 42;
---mathExpressionConstant: 10 ** (3 - 1);
+:root {
+  --numericalConstant: 42;
 
---fontNameVariable  : "GillSans";
---fontSizeVariable: 42;
---nestedVariable : --fontNameVariable --fontSizeVariable;
+  /* Comment */
+  --fontNameVariable  : "GillSans";
+  --fontSizeVariable: 42;
+  --nestedVariable : --fontNameVariable --fontSizeVariable;
+}
+
+/* Variable defined outside any ruleset, i.e. non-standard css */
+--mathExpressionConstant: 10 ** (3 - 1);
 
 .numbers {
   numberOne: 0.33;
   numberTwo: 5;
-  expression: 10 ** (3 - 1);
+  expression1: 10 ** (3 - 1);
+  expression2: 2 * 3 - (2*2.5 + 0.5);
+  expression3: --numericalConstant + --mathExpressionConstant;
 }
 
 /* A comment, between declarations */
-
-.numericExpressions {
-  number1: 2 > 1;
-  number2: 2 * 3 - (2*2.5 + 0.5);
-  number3: --numericalConstant + --mathExpressionConstant;
-  number4: size(--numericalConstant, --mathExpressionConstant);
-}
 
 .booleans {
   bool1: YES; /* A comment, at the end of a line in a declaration */
@@ -32,6 +32,7 @@
   bool6: "NO";
   bool7: false;
   bool8: "false";
+  bool9: 2 > 1; /* Boolean expression */
 }
 
 .points {
@@ -48,6 +49,7 @@
 .sizes {
   size1: size(50, 50);
   size2: (50, 50);
+  size3: size(--numericalConstant, --mathExpressionConstant);
 }
 
 .offsets {
@@ -146,4 +148,12 @@
 .imageColorFunctions {
   image: lighten(#112233, 50%);
   backgroundImage: saturate(fadeout(#112233, 50%), 50%);
+}
+
+.nestedWithEmpty {
+  .withValue {
+    tag: 42;
+  }
+  .an_empty_declaration {
+  }
 }

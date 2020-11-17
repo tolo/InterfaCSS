@@ -10,6 +10,7 @@ import Foundation
 
 public protocol StylingAware {
   
+  /// Called when styling has been applied to this element and all its children
   func didApplyStyling(withStyler styler: Styler)
   
 }

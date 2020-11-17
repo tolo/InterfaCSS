@@ -13,9 +13,16 @@ import UIKit
  * A companion class to UI elements, containing information related to styling.
  */
 public class ElementStyle: NSObject {
-  private(set) weak var uiElement: AnyObject?
+  
+  /// Indicating if this element is at the root of a (sub) view hierarchy, independent of any views above when it comes to styling
+  public var isRootElement = false {
+    didSet {
+      isDirty = true
+    }
+  }
+  private(set) public weak var uiElement: AnyObject?
   public weak var view: UIView? { return uiElement as? UIView } // uiElement, if instance of UIView, otherwise nil
-  private(set) weak var parentView: UIView? // parentElement, if instance of UIView, otherwise nil
+  private(set) public weak var parentView: UIView? // parentElement, if instance of UIView, otherwise nil
   
   private weak var _parentElement: AnyObject?
   public weak var parentElement: AnyObject? {
@@ -31,7 +38,7 @@ public class ElementStyle: NSObject {
       } else if let viewController = uiElement as? UIViewController {
         _parentElement = viewController.view.superview // Use the super view of the view controller root view
       }
-      if _parentElement != nil {
+      if _parentElement != nil && !isRootElement {
         isDirty = true
       }
     }
@@ -74,7 +81,7 @@ public class ElementStyle: NSObject {
     }
   }
   
-  private (set) var canonicalType: AnyClass?
+  private (set) public var canonicalType: AnyClass?
   
   public var styleClasses: Set<String>? {
     didSet {
@@ -110,18 +117,23 @@ public class ElementStyle: NSObject {
   // TODO: Remove?
   //@property (nonatomic, weak, nullable) NSArray<Ruleset*>* cachedRulesets; // Optimization for quick access to cached declarations
   
+  /// Indicates if styles 
   public var stylesFullyResolved = false
-  /** Indicates if styles have been applied to element  */
+  /// Indicates if styles have been applied to element
   public var stylingApplied = false // TODO: Maybe we don't need this in core...
-  /** Indicates that applied styling contains no pseudo classes for instance */
+  /// Indicates that applied styling contains no pseudo classes for instance
   public var stylingStatic = false
+  
+  public var stylingAppliedAndStatic: Bool { stylingApplied && stylingStatic }
   
   public var addedToViewHierarchy: Bool {
     return parentView?.window != nil || (parentView is UIWindow) || (view is UIWindow)
   }
   
   public var stylesCacheable: Bool {
-    return (elementId != nil) || ancestorHasElementId || (customElementStyleIdentity != nil) || ancestorUsesCustomElementStyleIdentity || addedToViewHierarchy
+    return (elementId != nil) || ancestorHasElementId ||
+          (customElementStyleIdentity != nil) || ancestorUsesCustomElementStyleIdentity ||
+          addedToViewHierarchy || isRootElement
   }
   
   internal var isDirty = false
@@ -167,8 +179,7 @@ public class ElementStyle: NSObject {
     let elementClass: AnyClass = type(of: element)
     canonicalType = styler.propertyManager.canonicalTypeClass(for: elementClass) ?? elementClass
     // Identity and structure:
-    elementStyleIdentity = createElementStyleIdentity()
-    updateElementStyleIdentityPathIfNeeded(forceRevalidate: true) // Will result in re-evaluation of elementStyleIdentityPath, ancestorHasElementId and ancestorUsesCustomElementStyleIdentity in method below:
+    updateElementStyleIdentityPathIfNeeded() // Will result in re-evaluation of elementStyleIdentityPath, ancestorHasElementId and ancestorUsesCustomElementStyleIdentity in method below:
     _closestViewController = nil
     // Reset fields related to style caching
     stylingApplied = false
@@ -181,17 +192,13 @@ public class ElementStyle: NSObject {
   
   // MARK: - Cache invalidation
   
-  @discardableResult
-  public func checkForUpdatedParentElement() -> Bool {
-    var didChangeParent = false
+  public func checkForUpdatedParentElement() {
     if view != nil && view?.superview != parentView {
       // Check for updated superview
       _parentElement = nil // Reset parent element to make sure it's re-evaluated
-      isDirty = true
-      didChangeParent = true
+      if !isRootElement { isDirty = true }
     }
     _ = parentElement // Update parent element, if needed...
-    return didChangeParent
   }
   
   public class func markAllCachedStylingInformationAsDirty() {
@@ -199,6 +206,7 @@ public class ElementStyle: NSObject {
   }
   
   @objc func markCachedStylingInformationAsDirty() {
+    stylingApplied = false
     isDirty = true
   }
   
@@ -220,13 +228,13 @@ public class ElementStyle: NSObject {
   
   // MARK: - Styling
   
-  public func style(with styler: Styler) { // TODO: Review name
+  public func applyStyling(with styler: Styler, includeSubViews: Bool = true, force: Bool = false) {
     guard let element = uiElement as? Stylable else { return }
-    styler.applyStyling(element)
+    styler.applyStyling(element, includeSubViews: includeSubViews, force: force)
   }
   
-  public func style() {
-    style(with: StylingManager.shared)
+  public func style(includeSubViews: Bool = true, force: Bool = false) {
+    applyStyling(with: StylingManager.shared, includeSubViews: includeSubViews, force: force)
   }
 }
 
@@ -242,28 +250,28 @@ private extension ElementStyle {
     }
   }
   
-  func createElementStyleIdentity() -> String {
+  func createElementStyleIdentity() {
     if let customElementStyleIdentity = customElementStyleIdentity {
-      elementStyleIdentityPath = "@\(customElementStyleIdentity)\(classNamesStyleIdentityFragment())" // Prefix custom style id with @
-      return elementStyleIdentityPath
+      elementStyleIdentity = "@\(customElementStyleIdentity)\(classNamesStyleIdentityFragment())" // Prefix custom style id with @
     } else if let elementId = elementId {
-      elementStyleIdentityPath = "#\(elementId)\(classNamesStyleIdentityFragment())" // Prefix element id with #
-      return elementStyleIdentityPath
+      elementStyleIdentity = "#\(elementId)\(classNamesStyleIdentityFragment())" // Prefix element id with #
     } else if let nestedElementKeyPath = nestedElementKeyPath {
-      elementStyleIdentityPath = "$\(nestedElementKeyPath)" // Prefix nested elements with $
-      return elementStyleIdentityPath
+      elementStyleIdentity = "$\(nestedElementKeyPath)" // Prefix nested elements with $
     } else if styleClasses != nil {
-      var str = canonicalType != nil ? String(describing: canonicalType!) : ""
-      str += classNamesStyleIdentityFragment()
-      return str
+      let str = canonicalType != nil ? String(describing: canonicalType!) : ""
+      elementStyleIdentity = str + classNamesStyleIdentityFragment()
     } else {
-      return canonicalType != nil ? String(describing: canonicalType!) : ""
+      elementStyleIdentity = canonicalType != nil ? String(describing: canonicalType!) : ""
     }
+    elementStyleIdentityPath = elementStyleIdentity // Set default path
   }
   
   @discardableResult
-  func updateElementStyleIdentityPathIfNeeded(forceRevalidate: Bool = false) -> String {
-    if !forceRevalidate && elementStyleIdentity != elementStyleIdentityPath { return elementStyleIdentityPath }
+  func updateElementStyleIdentityPathIfNeeded() -> String {
+    createElementStyleIdentity()
+    
+    // If element is a "root" element, uses element Id, or custom style id, elementStyleIdentityPath will have been set by call above, and will only contain the element Id itself
+    if isRootElement || elementId != nil || customElementStyleIdentity != nil { return elementStyleIdentityPath }
     
     if let parentElement = parentElementStyle {
       let parentStyleIdentityPath = parentElement.updateElementStyleIdentityPathIfNeeded()

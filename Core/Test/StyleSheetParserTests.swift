@@ -11,6 +11,8 @@ import XCTest
 
 private let S = StyleSheetParserSyntax.shared
 
+// TODO: Text extend
+
 class StyleSheetParserTests: XCTestCase {
   var styler: StylingManager!
   var styleSheetManager: StyleSheetManager!
@@ -243,14 +245,14 @@ class StyleSheetParserTests: XCTestCase {
   
   func testNumbers() {
     let properties = parseProperties(withStyleClass: "numbers", in: "propertyValues", propertyType: .number)
-    let expected = ["numberone: 0.33", "numbertwo: 5", "expression: 100"]
+    let expected = ["numberone: 0.33", "numbertwo: 5", "expression1: 100", "expression2: 0.5", "expression3: 142"]
     XCTAssertEqual(Set(properties), Set(expected))
   }
   
   func testBooleans() {
     let properties = parseProperties(withStyleClass: "booleans", in: "propertyValues", propertyType: .bool)
     let expected = ["bool1: true", "bool2: true", "bool3: true", "bool4: true",
-                    "bool5: false", "bool6: false", "bool7: false", "bool8: false"]
+                    "bool5: false", "bool6: false", "bool7: false", "bool8: false", "bool9: true"]
     XCTAssertEqual(Set(properties), Set(expected))
   }
   
@@ -271,7 +273,8 @@ class StyleSheetParserTests: XCTestCase {
   func testSizes() {
     let properties = parseProperties(withStyleClass: "sizes", in: "propertyValues", propertyType: .size)
     let expextedValue = CGSize(width: 50.0, height: 50.0)
-    let expected = ["size1: \(expextedValue)", "size2: \(expextedValue)"]
+    let expextedExpressionValue = CGSize(width: 42, height: 100)
+    let expected = ["size1: \(expextedValue)", "size2: \(expextedValue)", "size3: \(expextedExpressionValue)"]
     XCTAssertEqual(Set(properties), Set(expected))
   }
   
@@ -366,7 +369,6 @@ class StyleSheetParserTests: XCTestCase {
     let rulesets = loadRulesets(withStyleClass: "prefixes", in: "propertyValues")
     let actual = rulesets.map { $0.description }
     let expected = [".prefixes $layer { borderwidth: 10 }"]
-    print("rulesets: \(actual)")
     XCTAssertEqual(Set(actual), Set(expected))
   }
   
@@ -382,6 +384,13 @@ class StyleSheetParserTests: XCTestCase {
     let properties: [String: UIImage] = parsePropertiesToDict(withStyleClass: "imageFromColor", in: "propertyValues", propertyType: .image)
     XCTAssertTrue(compareRGBA(color1: colorOfFirstPixel(properties["image1"])!, color2: UIColor(fromHexString: "112233")!))
     XCTAssertTrue(compareRGBA(color1: colorOfFirstPixel(properties["image2"])!, color2: UIColor(fromHexString: "112233")!.adjustBrightness(by: 50)))
+  }
+  
+  func testNestedWithEmptyDeclaration() {
+    let rulesets = loadRulesets(withStyleClass: "nestedWithEmpty", in: "propertyValues")
+    let actual = rulesets.map { $0.description }
+    let expected = [".nestedWithEmpty .withValue { tag: 42 }"]
+    XCTAssertEqual(Set(actual), Set(expected))
   }
 }
 

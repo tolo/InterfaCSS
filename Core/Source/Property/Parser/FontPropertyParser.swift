@@ -98,6 +98,7 @@ extension UIFontPropertyParser {
       var scanned: Double = 0
       if sizeScanner.scanDouble(&scanned) { fontSize = CGFloat(scanned) }
     }
+// TODO: Make sp, rem, em suffix scalable
     
     var alreadyScaled = false
     var font: UIFont?
@@ -173,6 +174,7 @@ extension UIFontPropertyParser {
     if let sizeNumberOnly = fontSize?.extractPrefix(withCharactersIn: .decimalDigits) {
       fontSize = sizeNumberOnly.str
     }
+// TODO: Make sp, rem, em suffix scalable
     // Attepmt switcharoo (if name and size are in incorrect order - legacy support):
     else if let numberInName = fontName?.extractPrefix(withCharactersIn: .decimalDigits) {
       (fontName, fontSize) = (fontSize, numberInName.str)

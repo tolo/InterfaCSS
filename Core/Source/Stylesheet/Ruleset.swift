@@ -79,16 +79,19 @@ public final class Ruleset: CustomStringConvertible, CustomDebugStringConvertibl
   }
   
   public func ruleset(matching element: ElementStyle, context: StylingContext) -> Ruleset? {
-    var matchingChains: [SelectorChain]? = containsPseudoClassSelector ? [] : nil
+//    var matchingChains: [SelectorChain]? = containsPseudoClassSelector ? [] : nil
+    var matchingChains: [SelectorChain] = []
     for selectorChain in selectorChains {
       if selectorChain.matches(element, context: context) {
-        if !containsPseudoClassSelector {
-          return self // If this style sheet declarations block doesn't contain any pseudo classes - return the declarations object itself directly when first selector chain match is found (since no additional matching needs to be done)
-        }
-        matchingChains?.append(selectorChain)
+// TODO: This messes with specificity!
+//        if !containsPseudoClassSelector {
+//          return self // If this style sheet declarations block doesn't contain any pseudo classes - return the declarations object itself directly when first selector chain match is found (since no additional matching needs to be done)
+//        }
+        matchingChains.append(selectorChain)
       }
     }
-    if let matchingChains = matchingChains, matchingChains.count > 0 {
+//    if let matchingChains = matchingChains, matchingChains.count > 0 {
+    if matchingChains.count > 0 {
       return Ruleset(selectorChains: matchingChains, andProperties: properties)
     } else {
       return nil

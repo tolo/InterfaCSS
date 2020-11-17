@@ -23,18 +23,30 @@ private typealias TypedParameterizedSetter<ViewType, ValueType> = (ViewType, Val
 extension PropertyRepository {
    
   
-  private func _registerProperty<ViewType: UIView, ValueType>(_ name: String, _ type: TypedPropertyType<ValueType>, in clazz: ViewType.Type = ViewType.self, setter: @escaping TypedSetter<ViewType, ValueType>) {
-    _register(name, in: clazz, type: type) { (_, view, value: ValueType, _) in
+  private func _registerProperty<ViewType: UIView, ValueType>(_ name: String, _ type: TypedPropertyType<ValueType>, in clazz: ViewType.Type = ViewType.self,
+                                                              params: [PropertyParameterTransformer]? = nil,
+                                                              setter: @escaping TypedSetter<ViewType, ValueType>) {
+    _register(name, in: clazz, type: type, params: params) { (_, view, value: ValueType, _) in
       setter(view, value)
     }
   }
   
-  private func _registerProperty<ViewType: UIView, ValueType>(_ name: String, _ type: TypedPropertyType<ValueType>, in clazz: ViewType.Type = ViewType.self, setter: @escaping TypedParameterizedSetter<ViewType, ValueType>) {
-    _register(name, in: clazz, type: type) { (_, view, value: ValueType, args) in
-      setter(view, value, args)
+  private func _registerProperty<ViewType: UIView, ValueType>(_ name: String, in clazz: ViewType.Type = ViewType.self,
+                                                              enums enumValueMapping: PropertyEnumValueMapping<ValueType>,
+                                                              params: [PropertyParameterTransformer]? = nil,
+                                                              setter: @escaping TypedSetter<ViewType, ValueType>) {
+    _register(name, in: clazz, type: .enumType, params: params) { (_, view, value: ValueType, enumValueMapping) in
+      setter(view, value)
     }
   }
   
+  private func _registerProperty<ViewType: UIView, ValueType>(_ name: String, _ type: TypedPropertyType<ValueType>, in clazz: ViewType.Type = ViewType.self,
+                                                              params: [PropertyParameterTransformer]? = nil,
+                                                              setter: @escaping TypedParameterizedSetter<ViewType, ValueType>) {
+    _register(name, in: clazz, type: type, params: params) { (_, view, value: ValueType, args) in
+      setter(view, value, args)
+    }
+  }
 
   private static func setColor(_ property: Property, _ view: Any, _ color: UIColor, _ parameters: [Any]) {
     let controlState = parameters.first as? UIControl.State ?? UIControl.State.normal
@@ -63,10 +75,15 @@ extension PropertyRepository {
     _registerProperty("color", .color, in: UILabel.self) { $0.textColor = $1 }
     _registerProperty("color", .color, in: UITextField.self) { $0.textColor = $1 }
     _registerProperty("color", .color, in: UITextView.self) { $0.textColor = $1 }
-    _registerProperty("color", .color, in: UIButton.self) { (t, v, args) in
+    _registerProperty("color", .color, in: UIButton.self, params: [Self.controlStateTransformer]) { (t, v, args) in
       let controlState = args.first as? UIControl.State ?? UIControl.State.normal
       t.setTitleColor(v, for: controlState)
     }
+    
+    // TODO: Test this:
+    _registerProperty("text-align", in: UILabel.self, enums: Self.textAlignmentMapping) { $0.textAlignment = $1 }
+    _registerProperty("text-align", in: UITextField.self, enums: Self.textAlignmentMapping) { $0.textAlignment = $1 }
+    _registerProperty("text-align", in: UITextView.self, enums: Self.textAlignmentMapping) { $0.textAlignment = $1 }
     
     
     

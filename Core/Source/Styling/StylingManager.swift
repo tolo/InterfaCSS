@@ -148,25 +148,21 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     styles = propertyManager.preProcess(propertyValues: styles, styleSheetScope: styleSheetScope)
     
-    //    if element.willApplyStylingBlock {
-    //      styles = element.willApplyStylingBlock(styles)
-    //    }
     for propertyValue in styles {
       propertyManager.apply(propertyValue, onTarget: element, styleSheetScope: styleSheetScope)
-    }
-    //    if element.didApplyStylingBlock {
-    //      element.didApplyStylingBlock(styles)
-    //    }
-    if let stylingAware = element.uiElement as? StylingAware {
-      stylingAware.didApplyStyling(withStyler: styler)
     }
   }
   
   
   // MARK: - Styling - Elememt styling proxy
+  
   public func style(for uiElement: Stylable) -> ElementStyle {
+    return style(for: uiElement, resetIfNeeded: true)
+  }
+  
+  func style(for uiElement: Stylable, resetIfNeeded: Bool = true) -> ElementStyle {
     let proxy = uiElement.interfaCSS
-    if proxy.isDirty {
+    if proxy.isDirty && resetIfNeeded {
       proxy.reset(with: self)
     }
     return proxy
@@ -261,7 +257,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
       
       // If not including subviews, make sure child elements are marked dirty
       if !includeSubViews {
-        childElements(for: element).forEach { $0.isDirty = true }
+        childElements(for: element, resetIfNeeded: false).forEach { $0.isDirty = true }
       }
     }
     
@@ -269,12 +265,17 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     
     if includeSubViews {
       // Process subviews
-      for child in childElements(for: element) {
+      for child in childElements(for: element, resetIfNeeded: false) { // Don't reset element here, wait until element itself is styled (i.e. applyStyling below)
         if dirty {
           child.isDirty = true
         }
         applyStyling(child, includeSubViews: true, force: force, styleSheetScope: styleSheetScope)
       }
+    }
+    
+    // Invoke potential implementation of StylingAware after sub view styling has been applied (to let StylingAware override if needed)
+    if let stylingAware = element.uiElement as? StylingAware {
+      stylingAware.didApplyStyling(withStyler: styler)
     }
   }
   
@@ -297,7 +298,7 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     childElements(for: element).forEach { visitViewHierarchyInternal(from: $0, visitor: visitor, visited: &visited) }
   }
   
-  private func childElements(for element: ElementStyle) -> [ElementStyle] {
+  private func childElements(for element: ElementStyle, resetIfNeeded: Bool = true) -> [ElementStyle] {
     guard let _ = element.uiElement else { return [] }
     let childElements = NSMutableOrderedSet()
     
@@ -337,11 +338,22 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
     else if let tabBar = element.view as? UITabBar, let items = tabBar.items {
       childElements.addObjects(from: items)
     }
+    else if let cell = element.view as? UITableViewCell {
+      if let view = cell.backgroundView { childElements.add(view) }
+      if let view = cell.selectedBackgroundView { childElements.add(view) }
+    }
+    else if let cell = element.view as? UITableViewHeaderFooterView {
+      if let view = cell.backgroundView { childElements.add(view) }
+    }
+    else if let cell = element.view as? UICollectionViewCell {
+      if let view = cell.backgroundView { childElements.add(view) }
+      if let view = cell.selectedBackgroundView { childElements.add(view) }
+    }
     
     // TODO: Add more special cases (as replacement for removed element.validNestedElements...)?
     
     return childElements.compactMap { $0 as? Stylable }.map {
-      let childStyle = self.style(for: $0)
+      let childStyle = self.style(for: $0, resetIfNeeded: resetIfNeeded)
       if childStyle.parentElement == nil { // If element doesn't have a parent view (i.e. super view)...
         childStyle.ownerElement = element.uiElement // ... assign an owner instead
       }

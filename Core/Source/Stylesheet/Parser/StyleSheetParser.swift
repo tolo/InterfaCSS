@@ -57,6 +57,8 @@ public class StyleSheetParser: NSObject {
     let classNamesSelector = S.dot.keepRight(S.identifier).many()
     let elementIdSelector = S.hashSymbol.keepRight(S.identifier)
     
+    let selectorsChainsParserProxy = DelegatingParsicle<[ParsedSelectorChain]>()
+    
     // Pseudo class parsers:
     let plusOrMinus = P.choice([char("+"), char("-")])
     let optionalPlusOrMinus = P.optional(plusOrMinus, defaultValue: "")
@@ -79,20 +81,23 @@ public class StyleSheetParser: NSObject {
     let pseudoClassParameterParserOdd = P.sequential([openParenIgnored, spaces, P.string("odd"), spaces, closeParenIgnored])
       .map { _ in (2, 1) }
     let structuralPseudoClassParameterParsers = P.choice([pseudoClassParameterParserFull, pseudoClassParameterParserAN, pseudoClassParameterParserEven, pseudoClassParameterParserOdd])
-    let pseudoClassParameterParser = P.sequential([openParenIgnored, spaces,
+    
+    let pseudoClassSingleStringParameterParser = P.sequential([openParenIgnored, spaces,
                                                    P.choice([S.quotedString, S.anyName]), spaces, closeParenIgnored])
       .map { $0[0].trimQuotes() }
     let parameterizedPseudoClassSelector = P.sequential([colon.ignore(), S.identifier.asAny(),
-                                                         P.choice([structuralPseudoClassParameterParsers.asAny(), pseudoClassParameterParser.asAny()])])
+                                                         P.choice([structuralPseudoClassParameterParsers.asAny(), pseudoClassSingleStringParameterParser.asAny()])])
       .map { [unowned self] (values: [Any]) -> PseudoClass? in
         return createPseudoClass(values, styleSheetManager: self.styleSheetManager)
     }
     let simplePseudoClassSelector = colon.keepRight(S.identifier).map { [unowned self] type -> PseudoClass? in
       return createPseudoClass([type], styleSheetManager: self.styleSheetManager)
-      //                let pseudoClassType = self.styleSheetManager?.pseudoClassType(from: type) ?? .unknown
-      //                return self.styleSheetManager?.createPseudoClass(withParameter: nil, type: pseudoClassType)
     }
-    let pseudoClassSelector = P.choice([parameterizedPseudoClassSelector, simplePseudoClassSelector]).many()
+    let notPseudoClassSelectorParams = selectorsChainsParserProxy.skipSurroundingSpaces().between(openParenIgnored, and: closeParenIgnored)
+    let notPseudoClassSelector = colon.keepRight(P.string("not").asAny().then(notPseudoClassSelectorParams.asAny())).map { [unowned self] values -> PseudoClass? in
+      return createPseudoClass(values, styleSheetManager: self.styleSheetManager)
+    }
+    let pseudoClassSelector = P.choice([notPseudoClassSelector, parameterizedPseudoClassSelector, simplePseudoClassSelector]).many()
     
     
     // Actual selectors parsers:
@@ -127,6 +132,7 @@ public class StyleSheetParser: NSObject {
     simpleSelectorChainComponent = P.choice([typeSelector1, typeSelector2, typeSelector3, typeSelector4,
                                              elementSelector1, elementSelector2, classSelector]).map { SelectorChainComponent.selector($0) }
     
+    
     // Selector combinator parsers:
     let descendantCombinator = P.space().many().map { _ in SelectorChainComponent.combinator(.descendant) }
     let childCombinator = P.char(">", skipSpaces: true).map { _ in SelectorChainComponent.combinator(.child) }
@@ -143,15 +149,21 @@ public class StyleSheetParser: NSObject {
       }
     }
     
-    selectorsChainsParser = selectorChain.skipSurroundingSpaces().sepBy(S.comma).map { values in
+    let _selectorsChainsParser = selectorChain.skipSurroundingSpaces().sepBy(S.comma)
+    selectorsChainsParserProxy.delegate = _selectorsChainsParser
+    selectorsChainsParser = _selectorsChainsParser.map { values in
       return ParsedRuleset(withSelectorChains: values)
     }
     
+    
     /** Properties **/
-    let propertyDeclarations = self.propertyParser(selectorsChainsParser, commentParser: commentParser, selectorChainParser: selectorChain)
+    let propertyDeclarations = self.propertyParser(selectorsChainsParser, commentParser: commentParser, variableParser: variableParser, selectorChainParser: selectorChain)
     
     /** Ruleset **/
     let rulesetParser = self.rulesetParser(withContentParser: propertyDeclarations, selectorsChainsDeclarations: selectorsChainsParser)
+    
+    /** :root  **/
+    let rootBlockContent = self.rootBlockParser(withContentParser: propertyDeclarations)
     
     /** Unrecognized content **/
     let unrecognizedContent = unrecognizedLineParser().map { string -> CSSContent in
@@ -160,7 +172,8 @@ public class StyleSheetParser: NSObject {
     let cssParserCommentParser = commentParser.map { CSSContent.comment($0) }
     let cssParserVariable = variableParser.map { CSSContent.variable }
     let cssParserRuleset = rulesetParser.map { CSSContent.ruleset($0) }
-    cssParser = P.choice([cssParserCommentParser, cssParserVariable, cssParserRuleset, unrecognizedContent]).many()
+    let cssRootBlockContent = rootBlockContent.map { _ in CSSContent.rootBlockContent }
+    cssParser = P.choice([cssParserCommentParser, cssParserVariable, cssRootBlockContent, cssParserRuleset, unrecognizedContent]).many()
     
     standalonePropertyPairParser = S.propertyPairParser(forVariable: false, standalone: true).map { [unowned self] value in
       let propertyComponents = self.transformPropertyPair(value)
@@ -203,6 +216,9 @@ public class StyleSheetParser: NSObject {
     }
   }
   
+  
+  // MARK: - Property name/value pair parsing
+  
   /**
    * Parses a property value of the specified type from a string. Any variable references in `value` will be replaced with their corresponding values.
    */
@@ -244,15 +260,17 @@ public class StyleSheetParser: NSObject {
       propertyNameString = String(propertyNameString[dotRange.upperBound...])
     }
     
-    // Check for special `current` keyword
-    if propertyValue.trim() ~= "current" {
+    // Check for special  `current` keyword
+    let trimmed = propertyValue.trim()
+    if trimmed ~= "initial" || trimmed ~= "current" {
       return (propertyNameString, prefix, .currentValue, parameters)
     } else {
       return (propertyNameString, prefix, .value(rawValue: propertyValue), parameters)
     }
   }
   
-  // MARK: - Additional parser setup
+  
+  // MARK: - Additional (internal) parser setup
   
   func unrecognizedLineParser() -> StringParsicle {
     return S.parseLineUpToInvalidCharacters(in: "{}")
@@ -266,13 +284,19 @@ public class StyleSheetParser: NSObject {
     }
   }
   
-  private func propertyParser(_ selectorsChainsDeclarations: Parsicle<ParsedRuleset>, commentParser: StringParsicle, selectorChainParser: Parsicle<ParsedSelectorChain>) -> Parsicle<[ParsedRulesetContent]> {
+  private func rootBlockParser(withContentParser rulesetContentParser: Parsicle<[ParsedRulesetContent]>) -> Parsicle<ParsedRuleset> {
+    return S.string(":root").skipSurroundingSpaces().keepRight(rulesetContentParser.asAny().between(S.openBraceSkipSpace, and: S.closeBraceSkipSpace)).ignore()
+  }
+  
+  private func propertyParser(_ selectorsChainsDeclarations: Parsicle<ParsedRuleset>, commentParser: StringParsicle, variableParser: Parsicle<Void>,
+                              selectorChainParser: Parsicle<ParsedSelectorChain>) -> Parsicle<[ParsedRulesetContent]> {
     //* -- Unrecognized line -- *
     let unrecognizedLine = unrecognizedLineParser().map { string in
       return "Unrecognized property line: '\(string.trim())'"
     }
     
     //* -- Property pair -- *
+    // TODO: !important
     let propertyPairParser = S.propertyPairParser(forVariable: false).map { [unowned self] value -> ParsedRulesetContent in
       let propertyPair = self.transformPropertyPair(value)
       let propertyDeclaration: ParsedRulesetContent = .propertyDeclaration(
@@ -287,7 +311,7 @@ public class StyleSheetParser: NSObject {
       }
     }
     
-    let atttributesCollectionPropertyPairParser = S.propertyPairParser(forVariable: false).map { [unowned self] value -> PropertyValue in
+    /*let atttributesCollectionPropertyPairParser = S.propertyPairParser(forVariable: false).map { [unowned self] value -> PropertyValue in
       let propertyPair = self.transformPropertyPair(value)
       return PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters)
     }.many()
@@ -298,7 +322,7 @@ public class StyleSheetParser: NSObject {
       let propertyPair = self.transformPropertyPair([name, ""])
       return .propertyDeclaration(
         PropertyValue(propertyName: propertyPair.propertyName, value: propertyPair.value, rawParameters: propertyPair.rawParameters))
-    }
+    }*/
     
     //* -- Extension/Inheritance -- *
     let optionalColon = char(":").skipSurroundingSpaces().optional()
@@ -325,9 +349,14 @@ public class StyleSheetParser: NSObject {
     
     // Property declarations
     let rulesetContent: Parsicle<[ParsedRulesetContent]> = P.choice([
-      commentParser.map { .comment($0) }, propertyPairParser, nestedRulesetParserProxy.map { .nestedRuleset($0) },
-      extendDeclarationParser.map { .extendedDeclaration($0) }, unsupportedNestedRulesetParser.map { .unsupportedNestedRuleset($0) }, unrecognizedLine.map { .unrecognizedContent($0) }
-    ]).many()
+      commentParser.map { .comment($0) },
+      variableParser.map { .variable },
+      propertyPairParser,
+      nestedRulesetParserProxy.map { .nestedRuleset($0) },
+      extendDeclarationParser.map { .extendedDeclaration($0) },
+      unsupportedNestedRulesetParser.map { .unsupportedNestedRuleset($0) },
+      unrecognizedLine.map { .unrecognizedContent($0) }
+    ]).many(0)
     
     // Create parser for nested declarations
     let nestedRulesetParser = rulesetParser(withContentParser: rulesetContent, selectorsChainsDeclarations: selectorsChainsDeclarations)
@@ -356,21 +385,8 @@ public class StyleSheetParser: NSObject {
           case .unsupportedNestedRuleset(let description), .unrecognizedContent(let description):
             let rulsetDescription = Ruleset(selectorChains: selectorChains, andProperties: []).debugDescription
             info(.stylesheets, "Warning! \(description) - in ruleset: \(rulsetDescription)")
+                 case .nestedRuleset(let ruleset):
           
-//          case .prefixedProperty(let propertyValue):
-//            let prefixKeyPath = propertyValue.prefixKeyPath!
-//            let nestedElementSelectorChain = SelectorChain(selector: .nestedElement(nestedElementKeyPath: prefixKeyPath))
-//            // Construct new selector chains by appending selector to parent selector chains
-//            var nestedSelectorChains: [ParsedSelectorChain] = []
-//            for parentChain in selectorChains {
-//              nestedSelectorChains.append(.selectorChain(chain: parentChain.addingDescendantSelectorChain(nestedElementSelectorChain)))
-//            }
-//            nestedDeclarations.append(([.propertyDeclaration(PropertyValue(propertyName: propertyValue.propertyName, value: propertyValue.value, rawParameters: propertyValue.rawParameters))], nestedSelectorChains))
-//
-//            // Also add property value with prefix, in case it matches any explicitly defined prefixed (virtual) property
-//            propertyValues.append(PropertyValue(propertyName: propertyValue.propertyName, /*prefixKeyPath: prefixKeyPath,*/ value: propertyValue.value, rawParameters: propertyValue.rawParameters))
-          
-          case .nestedRuleset(let ruleset):
             // Construct new selector chains by appending selector to parent selector chains
             var nestedSelectorChains: [ParsedSelectorChain] = []
             for nestedSelectorChain in ruleset.chains {
@@ -380,19 +396,13 @@ public class StyleSheetParser: NSObject {
             }
             nestedDeclarations.append((ruleset.parsedProperties, nestedSelectorChains))
           
-          // Add placeholder property value for registration of nested element key path:
-          // TODO: Remove
-          //                    if let nestedElementKeyPath = ruleset.nestedElementKeyPath {
-          //                      propertyValues.append(PropertyValue(propertyKeyPathToRegister: nestedElementKeyPath))
-          //                    }
-          
           case .extendedDeclaration(let extendedDeclaration):
             extendedDeclarationSelectorChain = extendedDeclaration.extendedSelectorChain
           
           case .propertyDeclaration(let propertyValue):
             propertyValues.append(propertyValue)
           
-          case .comment: break
+          case .comment, .variable: break
         }
       }
       
