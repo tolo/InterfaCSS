@@ -53,7 +53,9 @@
   font-scaling-style: largeTitle;
 }
 
-.notPseudoTest {
+
+/* :not pseudo class */
+.not-pseudo-test {
   .label:not(#label2):not(.other-label) {
     tag: 42;
   }
@@ -64,5 +66,34 @@
   
   .other-label {
     tag: 20;
+  }
+}
+
+
+/* Extend */
+
+.extension-test {
+  .label {
+    tag: 42;
+    alpha: 0.5;
+    text: "test";
+  }
+  
+  .another-label {
+    @extends .extension-test .label;
+    tag: 4711;
+  }
+}
+
+
+/* Initial */
+
+.initial-test {
+  .label {
+    tag: 42;
+  }
+  
+  #initial-value-label {
+    tag: initial;
   }
 }

@@ -325,9 +325,10 @@ public class StyleSheetParser: NSObject {
     }*/
     
     //* -- Extension/Inheritance -- *
+    let optionalS = char("s").optional()
     let optionalColon = char(":").skipSurroundingSpaces().optional()
     let extendDeclarationParser = P.sequential([
-      string("@extend").or(string("@extends")).ignore(), optionalColon.ignore(), P.spaces().ignore(),
+      string("@extend").ignore(), optionalS.ignore(), optionalColon.ignore(), P.spaces().ignore(),
       selectorChainParser, charIgnore(";", skipSpaces: true)
     ]).map { (value: [ParsedSelectorChain]) -> RulesetExtension? in
       if let chain = value[0].selectorChain {

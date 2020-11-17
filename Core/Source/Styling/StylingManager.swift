@@ -122,12 +122,12 @@ public class StylingManager: Styler { // TODO: Does it need to be NSObject?
       for ruleset in rulesets {
         // Add styles if declarations doesn't contain pseudo selector, or if matching against pseudo class selector is successful
         if !ruleset.containsPseudoClassSelector || ruleset.matches(element, context: stylingContext) {
-          viewStyles.addAndReplaceUniqueObjects(inArray: ruleset.properties)
+          viewStyles.addAndReplace(ruleset.properties)
         }
         containsPseudoClassSelector = containsPseudoClassSelector || ruleset.containsPseudoClassSelector
       }
       if let inlineStyles = element.inlineStyle, inlineStyles.count > 0 {
-        viewStyles.addAndReplaceUniqueObjects(inArray: inlineStyles)
+        viewStyles.addAndReplace(inlineStyles)
       }
       element.stylingStatic = !containsPseudoClassSelector // Record in element if declarations contain pseudo classes, and thus needs constant re-evaluation (i.e. not static)
       

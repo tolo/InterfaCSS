@@ -18,10 +18,11 @@ public final class Ruleset: CustomStringConvertible, CustomDebugStringConvertibl
   private let _properties: [PropertyValue]
   public var properties: [PropertyValue] {
     if let extendedDeclaration = extendedDeclaration, extendedDeclaration !== self {
-      return _properties + extendedDeclaration._properties
-    } else {
-      return _properties
+      var props = extendedDeclaration._properties
+      props.addAndReplace(_properties)
+      return props
     }
+    return _properties
   }
   
   public let containsPseudoClassSelector: Bool
@@ -36,10 +37,7 @@ public final class Ruleset: CustomStringConvertible, CustomDebugStringConvertibl
     }
     return specificity
   }
-  
-  // TODO: Do we need this?
-  // public weak var scope: ISSStyleSheetScope? // The scope used by the parent stylesheet...
-  
+    
   public var chainsDescription: String {
     return selectorChains.map { $0.description }.joined(separator: ", ")
   }
@@ -60,10 +58,11 @@ public final class Ruleset: CustomStringConvertible, CustomDebugStringConvertibl
     self.init(selectorChains: selectorChains, andProperties: properties, extendedDeclarationSelectorChain: nil)
   }
   
-  public init(selectorChains: [SelectorChain], andProperties properties: [PropertyValue], extendedDeclarationSelectorChain: SelectorChain?) {
+  public init(selectorChains: [SelectorChain], andProperties properties: [PropertyValue], extendedDeclarationSelectorChain: SelectorChain?, extendedDeclaration: Ruleset? = nil) {
     self.selectorChains = selectorChains
     self._properties = properties
     self.extendedDeclarationSelectorChain = extendedDeclarationSelectorChain
+    self.extendedDeclaration = extendedDeclaration
     var containsPseudoClassSelector = false
     for chain in selectorChains {
       if chain.hasPseudoClassSelector {
@@ -74,25 +73,23 @@ public final class Ruleset: CustomStringConvertible, CustomDebugStringConvertibl
     self.containsPseudoClassSelector = containsPseudoClassSelector
   }
   
+  public func copyWith(selectorChains: [SelectorChain]) -> Ruleset {
+    Ruleset(selectorChains: selectorChains, andProperties: properties, extendedDeclarationSelectorChain: extendedDeclarationSelectorChain, extendedDeclaration: extendedDeclaration)
+  }
+  
   public func matches(_ element: ElementStyle, context: StylingContext) -> Bool {
     return selectorChains.first { $0.matches(element, context: context) } != nil
   }
   
   public func ruleset(matching element: ElementStyle, context: StylingContext) -> Ruleset? {
-//    var matchingChains: [SelectorChain]? = containsPseudoClassSelector ? [] : nil
     var matchingChains: [SelectorChain] = []
     for selectorChain in selectorChains {
       if selectorChain.matches(element, context: context) {
-// TODO: This messes with specificity!
-//        if !containsPseudoClassSelector {
-//          return self // If this style sheet declarations block doesn't contain any pseudo classes - return the declarations object itself directly when first selector chain match is found (since no additional matching needs to be done)
-//        }
         matchingChains.append(selectorChain)
       }
     }
-//    if let matchingChains = matchingChains, matchingChains.count > 0 {
     if matchingChains.count > 0 {
-      return Ruleset(selectorChains: matchingChains, andProperties: properties)
+      return copyWith(selectorChains: matchingChains)
     } else {
       return nil
     }

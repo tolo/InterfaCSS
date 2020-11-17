@@ -31,7 +31,7 @@ internal extension Array {
 }
 
 internal extension Array where Element: Equatable {
-  mutating func addAndReplaceUniqueObjects(inArray array: [Element]) {
+  mutating func addAndReplace(_ array: [Element]) {
     removeAll { array.contains($0) }
     append(contentsOf: array)
   }

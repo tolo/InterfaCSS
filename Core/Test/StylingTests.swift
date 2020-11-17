@@ -9,7 +9,6 @@
 import XCTest
 @testable import Core
 
-// TODO: Test "initial" / "current"
 
 class InterfaCSSTests: XCTestCase {
   
@@ -129,6 +128,7 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(button.titleColor(for: [.selected, .highlighted]), UIColor.init(fromHexString: "ff00ff"))
   }
   
+  
   // MARK: - Nested element properties
   
   func testNestedElements() {
@@ -143,11 +143,13 @@ class InterfaCSSTests: XCTestCase {
   }
     
   
+  // MARK: - Various CSS functionality
+  
   func testNotPseudoClass() {
     let styler = initializeWithStyleSheet("stylingTest-properties")
     
     let rootView = UIView()
-    rootView.interfaCSS.styleClass = "notPseudoTest"
+    rootView.interfaCSS.styleClass = "not-pseudo-test"
     
     let label1 = UILabel()
     label1.interfaCSS.styleClass = "label"
@@ -167,6 +169,56 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(label1.tag, 42)
     XCTAssertEqual(label2.tag, 10)
     XCTAssertEqual(label3.tag, 20)
+  }
+  
+  func testExtendedDeclaration() {
+    let styler = initializeWithStyleSheet("stylingTest-properties")
+    
+    let rootView = UIView()
+    rootView.interfaCSS.styleClass = "extension-test"
+    
+    let label1 = UILabel()
+    label1.interfaCSS.styleClass = "label"
+    rootView.addSubview(label1)
+    let label2 = UILabel()
+    label2.interfaCSS.styleClass = "another-label"
+    rootView.addSubview(label2)
+    
+    rootView.interfaCSS.applyStyling(with: styler)
+    
+    XCTAssertEqual(label1.tag, 42)
+    XCTAssertEqual(label1.text, "test")
+    XCTAssertEqual(label1.alpha, 0.5)
+    
+    XCTAssertEqual(label2.tag, 4711)
+    XCTAssertEqual(label2.text, "test")
+    XCTAssertEqual(label2.alpha, 0.5)
+  }
+  
+  func testInitial() {
+    let styler = initializeWithStyleSheet("stylingTest-properties")
+    
+    let rootView = UIView()
+    rootView.interfaCSS.styleClass = "initial-test"
+    
+    let label1 = UILabel()
+    label1.interfaCSS.styleClass = "label"
+    rootView.addSubview(label1)
+        
+    label1.interfaCSS.applyStyling(with: styler)
+    XCTAssertEqual(label1.tag, 42)
+    
+    label1.interfaCSS.elementId = "initial-value-label"
+    label1.interfaCSS.applyStyling(with: styler, force: true)
+    XCTAssertEqual(label1.tag, 42)
+    
+    label1.tag = 4711
+    label1.interfaCSS.applyStyling(with: styler, force: true)
+    XCTAssertEqual(label1.tag, 4711)
+
+    label1.interfaCSS.elementId = nil
+    label1.interfaCSS.applyStyling(with: styler, force: true)
+    XCTAssertEqual(label1.tag, 42)
   }
   
   
@@ -224,6 +276,9 @@ class InterfaCSSTests: XCTestCase {
     //}
   }
   
+
+  // MARK: - Misc
+    
   func testElementStyleIdentityPath() {
     let root = UIView()
     root.interfaCSS.styleClass = "root"
@@ -250,4 +305,3 @@ class InterfaCSSTests: XCTestCase {
     XCTAssertEqual(level3.interfaCSS.elementStyleIdentityPath, "UIView[level2] UIView[level3]")
   }
 }
-

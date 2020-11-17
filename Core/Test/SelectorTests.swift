@@ -10,8 +10,6 @@ import XCTest
 @testable import Core
 
 
-// TODO: Testa combinators mer? (child)
-
 class SelectorTests: XCTestCase {
   
   var styler: StylingManager!

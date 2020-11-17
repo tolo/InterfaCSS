@@ -11,7 +11,6 @@ import XCTest
 
 private let S = StyleSheetParserSyntax.shared
 
-// TODO: Text extend
 
 class StyleSheetParserTests: XCTestCase {
   var styler: StylingManager!
