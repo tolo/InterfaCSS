@@ -1,246 +1,159 @@
+/* A comment */
+/* Another comment, directly after the first one */
 
-@attrFont1: HelveticaNeue-Medium 14;
-@attrColor1 : lighten(#ffffff, 0%);
-@attrFont2: HelveticaNeue-Medium 15;
-@attrColor2: rgb(0,0,0);
-@numericalConstant: 42;
-@mathExpressionConstant: 10 ** (3 - 1);
+:root {
+  --numericalConstant: 42;
 
-@fontNameVariable  : "GillSans";
-@fontSizeVariable: 42;
-@nestedVariable : @fontNameVariable @fontSizeVariable;
-
-.simple {
-    alpha : 0.33;
-    tag: 5;
-    autoresizingMask: width height left right top bottom;
-    clipsToBounds: YES;
-    contentMode: bottomRight;
-    text: "Text's:";
-    title: Title;
-    prompt: 'Prompt';
-    searchTextPositionAdjustment: offset(1, 2);
-    contentSize: size(3, 4);
-    contentInset: insets(10, 20, 30, 40);
-    center: point(5, 6);
-    frame: rect(1,2,3,4);
-    bounds: "{{1,2},{3,4}}";
-    color: rgb(128, 128, 128);
-    tintColor: #ffffff;
-    titleColor__selected-highlighted  : blue;
-    textColor : rgba(64, 64, 64, 0.5);
-    shadowColor: red;
-    transform: rotate(10) scale(20,30) translate(40,50);
-    attributedText: "text" (font: HelveticaNeue-Medium 12, backgroundColor: rgb(0,0,255), color: darken(#000000, 0%), baselineOffset: 10, strokeColor: yellow, strokeWidth: 1.0);
-    attributedTitle: "title1 " (font: @attrFont1, foregroundColor: @attrColor1), "title2" (font: @attrFont2, foregroundColor: @attrColor2, underlineStyle: single dash);
+  /* Comment */
+  --fontNameVariable  : "GillSans";
+  --fontSizeVariable: 42;
+  --nestedVariable : --fontNameVariable --fontSizeVariable;
 }
 
-.boolTest {
-    yes: YES;
-    yesQuoted: "YES";
-    true: true;
-    trueQuoted: "true";
-    no: NO;
-    noQuoted: "NO";
-    false: false;
-    falseQuoted: "false";
+/* Variable defined outside any ruleset, i.e. non-standard css */
+--mathExpressionConstant: 10 ** (3 - 1);
+
+.numbers {
+  numberOne: 0.33;
+  numberTwo: 5;
+  expression1: 10 ** (3 - 1);
+  expression2: 2 * 3 - (2*2.5 + 0.5);
+  expression3: --numericalConstant + --mathExpressionConstant;
 }
 
-.hexColorsRGBA {
-    color: #4080B000;
-    titleColor: #00FF80FF;
-    backgroundColor: #00000080;
-    tintColor: #80000000;
-    textColor: #800000FF;
-    shadowColor: #80000080;
+/* A comment, between declarations */
+
+.booleans {
+  bool1: YES; /* A comment, at the end of a line in a declaration */
+  bool2: "YES";
+  bool3: true;
+  bool4: "true";
+  bool5: NO;
+  bool6: "NO";
+  bool7: false;
+  bool8: "false";
+  bool9: 2 > 1; /* Boolean expression */
 }
 
-.hexColorsCompact {
-    color: #000;
-    titleColor: #fff;
-    backgroundColor: #0008;
-    tintColor: #888;
-    textColor: #8888;
-    shadowColor: #8880;
+.points {
+  point1: point(50, 50);
+  point2 : (50, 50);
 }
 
-.localizedStrings {
-    text: L("Text");
-    title: localized('Title');
-    attributedText: L("text1") (font: HelveticaNeue-Medium 12) L("-text2") (font: HelveticaNeue-Medium 12);
+.rects {
+  rect1: rect(1, 2, 3, 4);
+  rect2: (1, 2, 3, 4);
+  rect3 : "{{1,2},{3,4}}";
 }
 
-.stringsWithEscapes {
-    text: "dr \"evil\" rules";
-    attributedText: "dr \"evil\" rules" (font: HelveticaNeue-Medium 12) ", and so does austin \"danger\" powers" (font: HelveticaNeue-Medium 12);
+.sizes {
+  size1: size(50, 50);
+  size2: (50, 50);
+  size3: size(--numericalConstant, --mathExpressionConstant);
 }
 
-.prefixes {
-    cornerRadius: 5;
-    layer.borderWidth: 10;
-    imageView.alpha: 0.42;
-    contentView.alpha: 0.42;
-    backgroundView.alpha: 0.42;
-    selectedBackgroundView.alpha: 0.42;
-    multipleSelectionBackgroundView.alpha: 0.42;
-    titleLabel.alpha: 0.42;
-    textLabel.alpha: 0.42;
-    detailTextLabel.alpha: 0.42;
-    inputView.alpha: 0.42;
-    inputAccessoryView.alpha: 0.42;
-    tableHeaderView.alpha: 0.42;
-    tableFooterView.alpha: 0.42;
+.offsets {
+  offset1: offset(50, 50);
+  offset2: (50, 50);
 }
 
-.point1 {
-    center: parent(50, -50);
+.insets {
+  inset1 : insets(1, 2, 3, 4);
+  inset2: (1, 2, 3, 4);
 }
 
-.point2 {
-    center: window(50, -50);
+.strings {
+  string1: "Text's:";
+  string2: 'Prompt';
+  string3 : Title;
+  string4: "dr \"evil\" rules";
+  string5: L("Text");
+  string6: localized('Title');
 }
 
-/*
-.rect1 { // Parent insets
-    frame: parent(10, 10); // dx/dy inset
-    bounds: parent(10, 20, 30, 40); // top, left, bottom, right inset
-}
-
-.rect2 { // Window insets
-    frame: window(10, 10); // dx/dy inset
-    bounds: window(10, 20, 30, 40); // top, left, bottom, right inset
-}
-
-.rect3 { // Parent relative size
-    frame: size(10%, 20%).left(10).top(20);
-    bounds: size(30%, 40%).right(30).bottom(40);
-}
-
-.rect4 { // Automatic sizes with parent relative insets/positioning
-    frame: size(auto, auto).left(10%).top(20%);
-    bounds: left(50%).right(5).top(0);
-}
-
-.rect5 { // Automatic sizes with parent relative insets/positioning
-    frame: size(auto, auto).insets(10%, 20%, 30%, 40%);
-    bounds: size(auto, auto).top(10%).left(20%).bottom(30%).right(40%);
-}
-*/
-
-@font1: HelveticaNeue-Medium 14;
-.font1 {
-    font: @font1;
-}
-.font2 {
-    font: bigger(@font1, 1);
-}
-.font3 {
-    font: smaller(@font1, 1);
-}
-.font4 {
-    font: fontWithSize(@font1, 10);
-}
-.font5 {
-    font: HelveticaNeue-Medium 5;
-}
-.font6 {
-    font: "Times New Roman" 5;
-}
-.font7 {
-    font: 'Times New Roman' 5;
-}
-.font8 {
-    font: 42;
-}
-.font9 {
-    font: system 42;
-}
-.font10 {
-    font: systemItalic 42;
-}
-.font11 {
-    font: systemBold 42;
-}
-
-.image1 {
-    image: image.png;
-    backgroundImage: "image.png";
-    shadowImage: 'image.png';
-    progressImage: image(image.png);
-    trackImage: image("image.png");
-    highlightedImage: image('image.png');
-    onImage: image(image.png, 1, 2);
-    offImage: image(image.png, 1, 2, 3, 4);
+.colors {
+  color1: rgb(128, 128, 128);
+  color2 : rgba(64, 64, 64, 0.5);
+  color3: blue;
+  color4: #7F7F7F;
+  color5: #4080B000;
+  color6: #80000080;
+  color7 : #8888;
+  color8: #888;
 }
 
 .colorFunctions {
-    color: lighten(rgb(17, 34, 51), 50%);
-    titleColor: darken(#112233, 50%);
-    textColor: saturate(rgb(17, 34, 51), 50%);
-    tintColor: desaturate(#112233, 50%);
-    shadowColor: fadein(rgb(17, 34, 51), 50%);
-    sectionIndexColor: fadeout(#112233, 50%);
-    separatorColor: saturate(fadeout(rgb(17, 34, 51), 50%), 50%);
+  color1: lighten(rgb(17, 34, 51), 50%);
+  color2: darken(#112233, 50%);
+  color3: saturate(rgb(17, 34, 51), 50%);
+  color4: desaturate(#112233, 50%);
+  color5: fadein(rgb(17, 34, 51), 50%);
+  color6: fadeout(#112233, 50%);
+  color7: saturate(fadeout(rgb(17, 34, 51), 50%), 50%);
+  color8: saturate(fadeout(#112233, 50%), 50%);
+}
+
+--font1: 15 HelveticaNeue-Medium;
+.fonts {
+  font1: --font1;
+  font2: bold 5 system;
+  font3: body bold 5 system;
+  font4: body(10) 5 system;
+  font5: 5 HelveticaNeue-Medium;
+  font6: 5 "Courier";
+  font7: 5 'Avenir';
+  font8: 42;
+  font9: 42 system;
+  font10: 42 system-italic;
+  font11: 42 systemBold;
+  font12: 24 system-ultraLight;
+  font13: --fontSizeVariable --fontNameVariable;
+}
+
+.transforms {
+  transform1: rotate(10);
+  transform2: rotate(10) scale(20,30) translate(40,50);
+}
+
+.enums {
+  enum1: width height left right top bottom;
+  enum2: bottomRight;
+}
+
+.parameters {
+  params1__selected  : blue;
+  params2__selected_highlighted  : blue;
+}
+
+.prefixes {
+  layer.borderWidth: 10;
+}
+
+.images {
+  image1: image.png;
+  image2: "image.png";
+  image3: 'image.png';
+  image4: image(image.png);
+  image5: image("image.png");
+  image6: image('image.png');
+  image7: image(image.png, 1, 2);
+  image8: image(image.png, 1, 2, 3, 4);
+}
+
+.imageFromColor {
+  image1: #112233;
+  image2: lighten(#112233, 50%);
 }
 
 .imageColorFunctions {
-    image: lighten(#112233, 50%);
-    backgroundImage: saturate(fadeout(#112233, 50%), 50%);
+  image: lighten(#112233, 50%);
+  backgroundImage: saturate(fadeout(#112233, 50%), 50%);
 }
 
-.fullEnumNames {
-    autoresizingMask: UIViewAutoresizingFlexibleWidth;
-    lineBreakMode: NSLineBreakByWordWrapping;
-    titleColor__UIControlStateSelected: red;
-}
-
-
-.numericExpressions {
-    hidden: 2 > 1;
-    alpha: 2 * 3 - (2*2.5 + 0.5);
-    cornerRadius: @numericalConstant + @mathExpressionConstant;
-    contentSize: size(@numericalConstant, @mathExpressionConstant);
-}
-
-/*
-.layoutParentRelative1 {
-    layout: size(100, 100), center(parent, parent.centerY - 100); // Using implicit centerX attribute...
-}
-.layoutParentRelative2 {
-    layout: size(2 * parent.width, parent.height + 100), left(100), top(100);
-}
-
-.layoutElementRelative1 {
-    layout: size(100, 100), right(elementFoo), bottom(elementFoo.top - 100); // Using implicit left attribute...
-}
-.layoutElementRelative2 {
-    layout: size(elementFoo.width, 2 * elementFoo.height + 100), left(elementFoo.right), top(elementFoo.bottom - 100);
-}
-
-.layoutParentSizeToFit1 {
-    layout: sizeToFit(100, 100), left(parent.right), top(parent.bottom + 100);
-}
-.layoutParentSizeToFit2 {
-    layout: sizeToFit(parent.width * 2, 2 * parent.height + 100), right(3 * parent.left), bottom(guide.bottom);
-}
-
-.layoutImplicitAttributes1 {
-    layout: size(elementFoo, 2 * elementFoo + 100), center(elementFoo, elementFoo - 100);
-}
-.layoutImplicitAttributes2 {
-    layout: size(elementFoo, elementFoo * 2 + 100), topLeft(elementFoo, elementFoo);
-}
-.layoutImplicitAttributes3 {
-    layout: size(elementFoo, 2 * elementFoo + 100), topRight(elementFoo, elementFoo);
-}
-.layoutImplicitAttributes4 {
-    layout: size(elementFoo, elementFoo * 2 + 100), bottomLeft(elementFoo, elementFoo);
-}
-.layoutImplicitAttributes5 {
-    layout: size(elementFoo, 2 * elementFoo + 100), bottomRight(elementFoo, elementFoo);
-}*/
-
-
-.nestedVariableClass {
-    font: @nestedVariable;
+.nestedWithEmpty {
+  .withValue {
+    tag: 42;
+  }
+  .an_empty_declaration {
+  }
 }

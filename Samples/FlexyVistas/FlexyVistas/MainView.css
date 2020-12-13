@@ -1,5 +1,46 @@
 /* A CSS-file with the same name as the layout file will be loaded automatically (by LayoutContainerView) */
 
+.rootClass {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#summaryView, #titleView, #actionsView, #tabsView {
+  flex-direction: row;
+  padding: @stdPadding;
+}
+
+#popularityLabel {
+  text-color: red;
+  font: system 17;
+}
+
+#summaryInfoView label {
+  text-alignment: center;
+}
+
+#titleView label {
+  font: systemBold 16;
+}
+
+.actionButtonTab {
+  flex-direction: column;
+  align-items: center;
+  margin-right: 20;
+  button {
+    padding-horizontal: 10;
+    flex-height: 44;
+  }
+}
+
+#tabsView .tabView {
+  flex-direction: column;
+  align-items: stretch;
+}
+#tabsView button {
+  flex-height: 16;
+}
+
 #tableView {
   separator-style: none;
 }

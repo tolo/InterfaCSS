@@ -16,12 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     // Load common styles used throughout the whole app here
-    StylingManager.shared().loadStyleSheet(fromRefreshableProjectFile: "styles-common.css", relativeToDirectoryContaining: #file)
+    StylingManager.shared.loadStyleSheet(fromRefreshableProjectFile: "styles-common.css", relativeToDirectoryContaining: #file)
     
     window = UIWindow(frame: UIScreen.main.bounds)
     window?.rootViewController = MainViewController()
     window?.makeKeyAndVisible()
-    window?.applyStyling()
+    window?.interfaCSS.applyStyling()
 
     return true
   }

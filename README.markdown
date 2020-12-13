@@ -91,14 +91,15 @@ The following examples are available:
 ## Migrating from InterfaCSS 1.X
 InterfaCSS 2 is still a work in progress (especially documentation wise) - for now, here is a short list of bigger changes from 1.X:
 
+* Codebase ported to **Swift** 
 * The project has been split up into two parts (subspecs): **Core** (containing the most important parts for parsing stylesheets and styling elements) and **Layout** (containing support for defining views/layouts in XML-files - see below)
 * The default layout implementation uses **CSS-flexbox** for expressing the layout (the [Facebook Yoga](https://yogalayout.com) engine is used under the hood)
 * **Hot reload** during development is supported for both layout files and stylesheets!
-* The monolithic main class `InterfaCSS` has now been split up in to several parts (primarily `ISSStylingManager` and `ISSStyleSheetManager`), with a clearer purpose
-* The new "main" class is now `ISSStylingManager`
-* A protocol for making it easier to work with different scopes of stylesheets have been introduces: `ISSStyler`
-* API is even more swiftified - for instance, ISS-prefix of classes is no longer needed.
+* The monolithic main class `InterfaCSS` has now been split up in to several parts (primarily `StylingManager` and `StyleSheetManager`), with a clearer purpose
+* The new "main" class is now `StylingManager`
+* A protocol for making it easier to work with different scopes of stylesheets have been introduces: `Styler`
 * Stylable properties are now (mainly) discovered via runtime introspection, which means that InterfaCSS will easier be able to keep up with changes in UIKit
+* More similarities with web CSS, for instance font properties though separate properties (*ongoing work - more will come*)
 * New examples demonstrating the use of Flexbox layout (see below)
 * And much much more (more and better documentation is coming)...
 

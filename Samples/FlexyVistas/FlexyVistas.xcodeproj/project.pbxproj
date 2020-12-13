@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -91,14 +91,14 @@
 			isa = PBXGroup;
 			children = (
 				8A089DF721A82729005A8E28 /* AppDelegate.swift */,
-				F662D1A2221B3F9C00EB8888 /* Episode.swift */,
-				8A089DF921A82729005A8E28 /* MainViewController.swift */,
-				8A089E0B21A82863005A8E28 /* MainView.xml */,
-				8A746B6921B3E44C00D14EC8 /* MainView.css */,
-				F662D1A0221B3F0500EB8888 /* ListCell.swift */,
 				8A089E0021A8272A005A8E28 /* LaunchScreen.storyboard */,
-				F6E1F07B2210595C00BF3540 /* ListCell.xml */,
+				F662D1A2221B3F9C00EB8888 /* Episode.swift */,
 				F6A704942224A8CA00EB1395 /* ListCell.css */,
+				F662D1A0221B3F0500EB8888 /* ListCell.swift */,
+				F6E1F07B2210595C00BF3540 /* ListCell.xml */,
+				8A746B6921B3E44C00D14EC8 /* MainView.css */,
+				8A089E0B21A82863005A8E28 /* MainView.xml */,
+				8A089DF921A82729005A8E28 /* MainViewController.swift */,
 				F61820B1220DCBB000CE5E50 /* styles-common.css */,
 				F6C2BCFA21B096BE00058802 /* Resources */,
 			);
@@ -182,6 +182,7 @@
 				TargetAttributes = {
 					8A089DF321A82729005A8E28 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1220;
 					};
 				};
 			};
@@ -255,24 +256,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-FlexyVistas/Pods-FlexyVistas-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/InterfaCSS/InterfaCSS.framework",
-				"${BUILT_PRODUCTS_DIR}/Yoga/yoga.framework",
-				"${BUILT_PRODUCTS_DIR}/YogaKit/YogaKit.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-FlexyVistas/Pods-FlexyVistas-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/InterfaCSS.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/yoga.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/YogaKit.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-FlexyVistas/Pods-FlexyVistas-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-FlexyVistas/Pods-FlexyVistas-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FlexyVistas/Pods-FlexyVistas-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -433,7 +425,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.interfacss.FlexyVistas;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -452,7 +444,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.interfacss.FlexyVistas;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

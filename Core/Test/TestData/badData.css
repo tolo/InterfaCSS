@@ -5,8 +5,8 @@ bad bad bad
 
 // Style 1:
 .style1 {
-    alpha: 1;
-    bad bad bad
+  alpha: 1;
+  bad bad bad
 }
 
 
@@ -15,6 +15,6 @@ bad bad bad
 
 // Style 2:
 .style2 {
-    clipsToBounds: YES;
-    bad bad bad
+  clipsToBounds: YES;
+  bad bad bad
 }

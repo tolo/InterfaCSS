@@ -1,18 +1,106 @@
-
-// UIView properties
+/* UIView properties */
 .uiViewTest {
-    autoresizingMask: width height;
-    background-color: red;
-    clipsToBounds: true;
-    hidden: true;
-    frame: rect(1,2,3,4);
-    tag: 5;
-    tintColor: blue;
+  autoresizingMask: width height;
+  background-color: red;
+  clipsToBounds: true;
+  hidden: true;
+  frame: rect(1,2,3,4);
+  tag: 5;
+  tintColor: blue;
 }
 
-// Label properties
+/* Button properties */
+.buttonTest {
+  title: "1";
+  title__selected: "2";
+  title__highlighted: "3";
+  title__selected-highlighted: "4";
+  color: #ff0000;
+  color__selected: #00ff00;
+  color__highlighted: #0000ff;
+  color__selected-highlighted: #ff00ff;
+}
+
+/* Label properties */
 .labelTest {
-    UILabel {
-        text: "test";
-    }
+  .test1 {
+    text: "test";
+    text-align: center;
+  }
+  .test2 {
+    text-align: left;
+  }
+  .test3 {
+    text-align: right;
+  }
+}
+
+.nestedProperties {
+  layer.cornerRadius: 5;
+  layer.borderWidth: 10;
+}
+
+
+/* Compound properties */
+.cssfont1 {
+  font-family: system;
+  font-size: 42;
+  font-weight: bold;
+}
+
+.cssfont2 {
+  font-family: system;
+  font-size: 42;
+  font-weight: 800;
+}
+
+.cssfont3 {
+  font-family: system;
+  font-size: 42;
+  font-scaling-style: largeTitle;
+}
+
+
+/* :not pseudo class */
+.not-pseudo-test {
+  .label:not(#label2):not(.other-label) {
+    tag: 42;
+  }
+  
+  .label {
+    tag: 10;
+  }
+  
+  .other-label {
+    tag: 20;
+  }
+}
+
+
+/* Extend */
+
+.extension-test {
+  .label {
+    tag: 42;
+    alpha: 0.5;
+    text: "test";
+  }
+  
+  .another-label {
+    @extends .extension-test .label;
+    tag: 4711;
+  }
+}
+
+
+/* Initial */
+
+.initial-test {
+  .label {
+    tag: 42;
+  }
+  
+  #initial-value-label {
+    tag: initial;
+  }
 }

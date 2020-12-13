@@ -26,17 +26,13 @@ image.aspectFill {
   clipsToBounds: true;
 }
 
-
-
-      label {
-        text-color: lightGray;
-        font: system 14;
-      }
-      label.headline {
-        font: systemBold 16;
-      }
-
-
+label {
+  text-color: white;
+  font: system 14;
+}
+label.headline {
+  font: systemBold 16;
+}
 
 button {
   titleLabel.font: systemBold 14;

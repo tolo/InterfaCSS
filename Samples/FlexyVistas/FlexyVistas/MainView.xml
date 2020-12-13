@@ -6,7 +6,7 @@
   <imageView id="image" class="aspectFill" image="holuhraun.jpg" style="flex-grow:1; flex-max-height: 30%"/>
 
   <view id="summaryView">
-    <label id="popularityLabel" style="flex-grow: 1">★★★★★</label>
+    <text id="popularityLabel" style="flex-grow: 1">★★★★★</text>
     <view id="summaryInfoView" style="flex-direction: row; flex-grow:2; justify-content: space-between">
       <label id="yearLabel">2014</label>
       <label id="ratingLabel">7+</label>
@@ -49,8 +49,8 @@
   </view>
   
   <tableView id="tableView" style="flex-grow: 1; flex-shrink: 1; background-color: clear; mu: mu">
-    <cell id="listCell" layout="ListCell.xml" implementation="ListCell"/>
-  </tableView>
+    <tableViewCell id="listCell" layout="ListCell.xml" implementation="ListCell"/>
+  </tableView>-->
 
 </view>
 
@@ -60,46 +60,7 @@
   with other views in the app.
  -->
 <style>
-  .rootClass {
-    flex-direction: column;
-    align-items: stretch;
-  }
   
-  #summaryView, #titleView, #actionsView, #tabsView {
-    flex-direction: row;
-    padding: @stdPadding;
-  }
-
-  #popularityLabel {
-    text-color: red;
-    font: system 17;
-  }
-
-  #summaryInfoView label {
-    text-alignment: center;
-  }
-
-  #titleView label {
-    font: systemBold 16;
-  }
-
-  .actionButtonTab {
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20;
-    button {
-      padding-horizontal: 10;
-      flex-height: 44;
-    }
-  }
-  
-  #tabsView .tabView {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  #tabsView button {
-    flex-height: 16;
-  }
 </style>
 
 </layout>
