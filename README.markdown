@@ -99,7 +99,7 @@ InterfaCSS 2 is still a work in progress (especially documentation wise) - for n
 * The new "main" class is now `StylingManager`
 * A protocol for making it easier to work with different scopes of stylesheets have been introduces: `Styler`
 * Stylable properties are now (mainly) discovered via runtime introspection, which means that InterfaCSS will easier be able to keep up with changes in UIKit
-* More similarities with web CSS, for instance font properties though separate properties (*ongoing work - more will come*)
+* More similarities with web CSS, for instance fonts can now be specified through separate properties for font-name and font-size (*ongoing work - more will come*)
 * New examples demonstrating the use of Flexbox layout (see below)
 * And much much more (more and better documentation is coming)...
 
