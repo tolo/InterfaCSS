@@ -38,9 +38,9 @@ open class PseudoClassFactory: PseudoClassFactoryType {
   private (set) var pseudoMatchers: [String: PseudoClassBuilder]
   
   init() {
-    let pad: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .pad }
-    let phone: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .phone }
-    let tv: PseudoClassBuilder = .simple { (_,_) in UI_USER_INTERFACE_IDIOM() == .tv }
+    let pad: PseudoClassBuilder = .simple { (_,_) in UIDevice.current.userInterfaceIdiom == .pad }
+    let phone: PseudoClassBuilder = .simple { (_,_) in UIDevice.current.userInterfaceIdiom == .phone }
+    let tv: PseudoClassBuilder = .simple { (_,_) in UIDevice.current.userInterfaceIdiom == .tv }
     
     self.pseudoMatchers = [
       "root": .simple { (e, _) in e.parentViewController != nil },
